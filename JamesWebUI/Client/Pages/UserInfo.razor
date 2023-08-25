@@ -1,0 +1,22 @@
+﻿@page "/UserInfo"
+@using JamesWebUI.Shared
+@using James.Shared.Model
+@using System.Diagnostics
+@inject HttpClient Http
+@attribute [Authorize]
+<h3>User Info</h3>
+
+<textarea>@result</textarea>
+
+
+@code {
+    private SiteUserInfo SiteUserInfo;
+    private string result;
+    protected override async Task OnInitializedAsync()
+    {
+        var userinfo = await Http.GetAsync("GetCurrentUserInfo");
+        Debug.WriteLine(userinfo);
+        var body = await userinfo.Content.ReadAsStringAsync();
+        Debug.WriteLine(body);
+    }
+}

@@ -6,17 +6,74 @@
 @attribute [Authorize]
 <h3>User Info</h3>
 
-<textarea>@result</textarea>
+
+<table>
+    <tr>
+        <td>Username</td>
+        <td>@SiteUserInfo?.Username</td>
+    </tr>
+    <tr>
+        <td>FirstName</td>
+        <td>@SiteUserInfo?.FirstName</td>
+    </tr>
+    <tr>
+        <td>LastName</td>
+        <td>@SiteUserInfo?.LastName</td>
+    </tr>
+    <tr>
+        <td>FullName</td>
+        <td>@SiteUserInfo?.FullName</td>
+    </tr>
+    <tr>
+        <td>Initials</td>
+        <td>@SiteUserInfo?.Initials</td>
+    </tr>
+    <tr>
+        <td>Title</td>
+        <td>@SiteUserInfo?.Title</td>
+    </tr>
+    <tr>
+        <td>IsUnderwriter</td>
+        <td>@(SiteUserInfo?.IsUnderwriter == true?"True":"false")</td>
+    </tr>
+    <tr>
+        <td>IsHomeOfficeApprover</td>
+        <td>@(SiteUserInfo?.IsHomeOfficeApprover == true ? "True" : "false")</td>
+    </tr>
+    <tr>
+        <td>Email</td>
+        <td>@SiteUserInfo?.Email</td>
+    </tr>
+    <tr>
+        <td style="vertical-align: top">AD Groups</td>
+        <td>
+            @if (null != SiteUserInfo && SiteUserInfo.ActiveDirectoryGroups.Length > 0)
+            {
+                <table>
+                    @foreach (var group in SiteUserInfo.ActiveDirectoryGroups)
+                    {
+                        <tr><td>@group</td></tr>
+                    }
+                </table>
+            }
+            @*@(null != SiteUserInfo ? string.Join("<br/>", SiteUserInfo.ActiveDirectoryGroups) : "")*@
+        </td>
+    </tr>
+</table>
 
 
 @code {
     private SiteUserInfo SiteUserInfo;
     private string result;
+
     protected override async Task OnInitializedAsync()
     {
-        var userinfo = await Http.GetAsync("GetCurrentUserInfo");
-        Debug.WriteLine(userinfo);
-        var body = await userinfo.Content.ReadAsStringAsync();
-        Debug.WriteLine(body);
+        //var userinfo = await Http.GetAsync("GetCurrentUserInfo");
+        //Debug.WriteLine(userinfo);
+        //var body = await userinfo.Content.ReadAsStringAsync();
+        //Debug.WriteLine(body);
+        SiteUserInfo = await Http.GetFromJsonAsync<SiteUserInfo>("/GetCurrentUserInfo");
+        Debug.WriteLine(SiteUserInfo);
+        //TODO: Error handling
     }
 }

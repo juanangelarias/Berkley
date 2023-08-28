@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\JApplicationLog\ApplicationLog.csproj" />
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
     <ProjectReference Include="..\SharedBusinessLogic\SharedBusinessLogic.csproj" />
   </ItemGroup>

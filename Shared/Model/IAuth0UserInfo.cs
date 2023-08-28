@@ -7,4 +7,5 @@ public interface IAuth0UserInfo
     string FirstName { get; set; }
     string LastName { get; set; }
     string Username { get; set; }
+    string FullName { get; set; }
 }

@@ -2,26 +2,19 @@
 
 namespace James.Shared.Model
 {
-    public partial class SiteUserInfo : IApplicationUserInfo, IAuth0UserInfo, IActiveDirectoryUserInfo, IJwtUserInfo
+    public partial class SiteUserInfo : IActiveDirectoryUserInfo, IJwtUserInfo, IAuth0UserInfo, IApplicationUserInfo
     {
+        public string? Username { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? FullName { get; set; }
         public string? Initials { get; set; }
         public string? Title { get; set; }
-        public string? Username { get; set; }
         public bool IsUnderwriter { get; set; } = false;
         public bool IsHomeOfficeApprover { get; set; } = false;
         public string JWT { get; set; }
         public string Email { get; set; }
         public string[] ActiveDirectoryGroups { get; set; } = Array.Empty<string>();
-
-        //public SiteUserInfo(string JWT)
-        //{
-        //    //var handler = new JwtSecurityTokenHandler();
-        //    //var jwtSecurityToken = handler.ReadJwtToken(token);
-        //}
-
     }
 
     public class Auth0UserInfo : IAuth0UserInfo
@@ -34,7 +27,7 @@ namespace James.Shared.Model
         [JsonPropertyName("nickname")]
         public string Username { get; set; }
         [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public string FullName { get; set; }
         [JsonPropertyName("sub")]
         public string Subject { get; set; }
         [JsonPropertyName("updated_at")]
@@ -49,7 +42,7 @@ namespace James.Shared.Model
 
     public class ApplicationUserInformation : IApplicationUserInfo
     {
-        public string FullName { get; set; }
+        public string? FullName { get; set; }
         public string Initials { get; set; }
         public string Title { get; set; }
         public string Username { get; set; }

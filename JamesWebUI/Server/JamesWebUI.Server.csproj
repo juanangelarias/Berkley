@@ -13,8 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\JApplicationLog\ApplicationLog.csproj" />
-    <ProjectReference Include="..\..\BusinessLogic\ServerBusinssLogic\ServerBusinssLogic.csproj" />
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
     <ProjectReference Include="..\Client\JamesWebUI.Client.csproj" />
   </ItemGroup>

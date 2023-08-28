@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
 
 namespace JamesWebUI.Server.Controllers
 {
@@ -17,17 +16,25 @@ namespace JamesWebUI.Server.Controllers
     public class UserController : Controller
     {
         private IHttpClientFactory _httpClientFactory;
-        private HttpClient? _httpClient;
+        private static HttpClient? _httpClient;
 
         private HttpClient UserInfoClient => _httpClient ??= _httpClientFactory.CreateClient("Auth0UserInfo");
 
         public UserController(IHttpClientFactory httpClientFactory)
         {
             _httpClientFactory = httpClientFactory;
-            _httpClient = httpClientFactory.CreateClient("Auth0UserInfo");
+            _httpClient ??= httpClientFactory.CreateClient("Auth0UserInfo");
+            CachedAuth0 ??= new UserInformationCache<IAuth0UserInfo> { LookupTask = GetAuth0UserInfo };
+            CachedActiveDirectory ??= new UserInformationCache<IActiveDirectoryUserInfo>
+                {LookupTask = GetActiveDirectoryUserInfoAsync};
+            CachedApplication ??= new UserInformationCache<IApplicationUserInfo>
+                {LookupTask = GetApplicationUserInfoAsync};
         }
 
-        private UserInformationCache<IAuth0UserInfo> CachedAuth0 = new UserInformationCache<IAuth0UserInfo>();
+        private static UserInformationCache<IAuth0UserInfo>? CachedAuth0;
+        private static UserInformationCache<IActiveDirectoryUserInfo>? CachedActiveDirectory;
+        private static UserInformationCache<IApplicationUserInfo>? CachedApplication;
+        private static readonly JwtSecurityTokenHandler _handler = new();
 
         [HttpGet("/GetCurrentUserInfo")]
         public JsonResult GetCurrentUserInfo()
@@ -35,51 +42,80 @@ namespace JamesWebUI.Server.Controllers
             try
             {
                 var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
-                var handler = new JwtSecurityTokenHandler();
-                var jwtSecurityToken = handler.ReadJwtToken(token);
-                Debug.WriteLine($"JWT encoded: {token}");
-                Debug.WriteLine($"JWT decoded: {jwtSecurityToken}");
-                if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
-                    UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
-                UserInfoClient.DefaultRequestHeaders.Add("Authorization",
-                    Request.Headers[HeaderNames.Authorization].ToString());
-                var userInfo = UserInfoClient.GetStringAsync("https://apps-sbox.wrberkley.auth0.com/userinfo").Result;
-                Debug.WriteLine($"User infor returned: {userInfo}");
+                var userInfo = GetUserInfoAsync(token).Result;
+                Debug.WriteLine($"User info returned: {userInfo}");
                 return new JsonResult(userInfo);
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return new JsonResult(e.ToString());
+                return new JsonResult(e.ToString()) { StatusCode = 500 };
             }
+        }
+
+        public async Task<IAuth0UserInfo> GetAuth0UserInfo(string token)
+        {
+            var jwtSecurityToken = _handler.ReadJwtToken(token);
+            var userInfoEndpoint = jwtSecurityToken.Audiences.First(a => a.StartsWith("http"));
+            if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
+                UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
+            UserInfoClient.DefaultRequestHeaders.Add("Authorization",
+                Request.Headers[HeaderNames.Authorization].ToString());
+            var userInfo = await UserInfoClient.GetFromJsonAsync<Auth0UserInfo>(userInfoEndpoint);
+            Debug.WriteLine("Returning Auth0 data");
+            return userInfo;
         }
 
         public async Task<SiteUserInfo> GetUserInfoAsync(string JWT)
         {
             //Get Email from JWT
-            var handler = new JwtSecurityTokenHandler();
-            var jwtSecurityToken = handler.ReadJwtToken(JWT);
-            var userInfoEndpoint = jwtSecurityToken.Audiences.First(a => a.StartsWith("http"));
+            var jwtSecurityToken = _handler.ReadJwtToken(JWT);
+            //var userInfoEndpoint = jwtSecurityToken.Audiences.First(a => a.StartsWith("http"));
 
             var siteUserInfo = new SiteUserInfo
             { JWT = JWT, Email = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == "http://schemas.wrberkley.com/identity/application/claims/email")?.Value ?? "" };
             //Call Auth0's 
-            if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
-                UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
-            UserInfoClient.DefaultRequestHeaders.Add("Authorization", "bearer " + JWT);
-            var auth0Info = await UserInfoClient.GetFromJsonAsync<Auth0UserInfo>(userInfoEndpoint);
+            //if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
+            //    UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
+            //UserInfoClient.DefaultRequestHeaders.Add("Authorization", "bearer " + JWT);
+            Debug.Assert(CachedAuth0 != null, nameof(CachedAuth0) + " != null");
+            var auth0Info = await CachedAuth0.GetAsync(JWT);
+
             //TODO: Do error handling
             siteUserInfo.FirstName = auth0Info.FirstName;
             siteUserInfo.LastName = auth0Info.LastName;
-            siteUserInfo.FullName = auth0Info.Name;
+            siteUserInfo.FullName = auth0Info.FullName;
             siteUserInfo.Username = auth0Info.Username;
 
-            //var lookupTasks
-
+            //Query Active Directory and application database (if needed)
+            var adLookup = CachedActiveDirectory.GetAsync(siteUserInfo.Username);
+            var appLookup = GetApplicationUserInfoAsync(siteUserInfo.Username);
+            var lookupTasks = new Task[]
+            {
+                adLookup
+                    , appLookup
+            };
+            Task.WaitAll(lookupTasks);
+            var activeDirectoryUserInformation = adLookup.Result;
+            siteUserInfo.ActiveDirectoryGroups = activeDirectoryUserInformation.ActiveDirectoryGroups;
+            var applicationUserInformation = appLookup.Result;
+            siteUserInfo.Initials = applicationUserInformation.Initials;
+            siteUserInfo.IsHomeOfficeApprover = applicationUserInformation.IsHomeOfficeApprover;
+            siteUserInfo.IsUnderwriter = applicationUserInformation.IsUnderwriter;
+            siteUserInfo.Title = applicationUserInformation.Title;
+            //TODO: If your application database keeps a different fullname than what is in Auth0, below is where you would update it
+            //siteUserInfo.FullName = applicationUserInformation.FullName?? siteUserInfo.FullName;
             return siteUserInfo;
         }
 
-        public async Task<IActiveDirectoryUserInfo> GetActiveDirectoryUserInfoAsync(string username)
+        /// <summary>
+        /// Retrieves group information from Active Directory
+        /// </summary>
+        /// <param name="username">User to get group information for</param>
+        /// <returns>A list of all active directory groups the user is a memeber of</returns>
+        /// <remarks>Getting all groups is hideously slow.  It would be much better to either check membership for a specific set of Groups,
+        ///             or to get and cache a list of all members of the relevant groups.</remarks>
+        public static async Task<IActiveDirectoryUserInfo> GetActiveDirectoryUserInfoAsync(string username)
         {
             var result = new List<GroupPrincipal>();
 
@@ -107,14 +143,28 @@ namespace JamesWebUI.Server.Controllers
                     }
                 }
             });
+            Debug.WriteLine("Returning AD info");
             return new ActiveDirectoryUserInformation
             { Username = username, ActiveDirectoryGroups = result.Select(gp => gp.Name).ToArray() };
         }
 
-        public async Task<IApplicationUserInfo> GetApplicationUserInfoAsync(string username)
+        public static async Task<IApplicationUserInfo> GetApplicationUserInfoAsync(string username)
         {
-            //TODO:This should be in the business logic layer.
-            //UNDONE: Query SQL for the info
+            //TODO:This should come from the application database.  Simplified mockup for the demo
+            await Task.Delay(1);
+            return new ApplicationUserInformation
+            {
+                FullName = "Public, John Q.",
+                Initials = "JQP",
+                IsHomeOfficeApprover = false,
+                IsUnderwriter = true,
+                Title = "Example Underwriter",
+                Username = username
+            };
+        }
+
+        public async Task<string[]> GetActiveGroupMembers(string groupName)
+        {
             throw new NotImplementedException();
         }
     }

@@ -1,0 +1,12 @@
+Prerequisites for this demo:
+
+1.  You must have a Single Page Application Auth0 Application setup
+2.  You must have a Machine to Machine Auth0 Application setup with an API authorized.
+3.  You must update the client appsettings.json in JamesWebUI\Client\wwwroot\ as follows:
+	A)  Update "Authority" with "https://<your domain listed in Auth0 for your single page app>"
+	B)  Update "ClientId" with the client Id  listed in Auth0 for your single page app.
+	C)  Update the "Audience" with the Identifier listed in the API of your Auth0 Machine to Machine application.
+4.  You must update the server appsettings.json as follows:
+	A) Update "Authority" with "https://<your domain listed in Auth0 for your Machine to Machine app>"
+	B) Update the "Audience" with the Identifier listed in the API of your Auth0 Machine to Machine application.
+

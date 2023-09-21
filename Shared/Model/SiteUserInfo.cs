@@ -50,4 +50,10 @@ namespace James.Shared.Model
         public bool IsHomeOfficeApprover { get; set; }
     }
 
+    public class ActiveDirectoryGroupMembership : IActiveDirectoryGroupMembership
+    {
+        public string ActiveDirectoryGroup { get; set; }
+        public string[] Members { get; set; }
+    }
+
 }

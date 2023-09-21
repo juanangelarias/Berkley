@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Diagnostics;
 using System.DirectoryServices.AccountManagement;
 using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.Versioning;
 using James.Shared.Model;
 using JamesWebUI.Server.Model;
 using Microsoft.AspNetCore.Authentication;
@@ -26,14 +28,17 @@ namespace JamesWebUI.Server.Controllers
             _httpClient ??= httpClientFactory.CreateClient("Auth0UserInfo");
             CachedAuth0 ??= new UserInformationCache<IAuth0UserInfo> { LookupTask = GetAuth0UserInfo };
             CachedActiveDirectory ??= new UserInformationCache<IActiveDirectoryUserInfo>
-                {LookupTask = GetActiveDirectoryUserInfoAsync};
+            { LookupTask = GetActiveDirectoryUserInfoAsync };
             CachedApplication ??= new UserInformationCache<IApplicationUserInfo>
-                {LookupTask = GetApplicationUserInfoAsync};
+            { LookupTask = GetApplicationUserInfoAsync };
+            CachedActiveDirectoryGroupMembership ??= new UserInformationCache<IActiveDirectoryGroupMembership>
+            { LookupTask = GetActiveDirectoryGroupMembers };
         }
 
         private static UserInformationCache<IAuth0UserInfo>? CachedAuth0;
         private static UserInformationCache<IActiveDirectoryUserInfo>? CachedActiveDirectory;
         private static UserInformationCache<IApplicationUserInfo>? CachedApplication;
+        private static UserInformationCache<IActiveDirectoryGroupMembership>? CachedActiveDirectoryGroupMembership;
         private static readonly JwtSecurityTokenHandler _handler = new();
 
         [HttpGet("/GetCurrentUserInfo")]
@@ -45,6 +50,25 @@ namespace JamesWebUI.Server.Controllers
                 var userInfo = GetUserInfoAsync(token).Result;
                 Debug.WriteLine($"User info returned: {userInfo}");
                 return new JsonResult(userInfo);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return new JsonResult(e.ToString()) { StatusCode = 500 };
+            }
+        }
+
+        [HttpGet("/GetActiveDirectoryGroupMemebership/{groupName}")]
+        public JsonResult GetActiveDirectoryGroupMemebership(string groupName)
+        {
+            try
+            {
+                //var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
+                //var userInfo = GetUserInfoAsync(token).Result;
+                var groupMembership = CachedActiveDirectoryGroupMembership.GetAsync(groupName).Result;
+                Debug.WriteLine(
+                    $"AD Group Membership returned for {groupMembership.ActiveDirectoryGroup}:\r\n{string.Join("\r\n", groupMembership.Members)}");
+                return new JsonResult(groupMembership);
             }
             catch (Exception e)
             {
@@ -115,6 +139,8 @@ namespace JamesWebUI.Server.Controllers
         /// <returns>A list of all active directory groups the user is a memeber of</returns>
         /// <remarks>Getting all groups is hideously slow.  It would be much better to either check membership for a specific set of Groups,
         ///             or to get and cache a list of all members of the relevant groups.</remarks>
+
+        [SupportedOSPlatform("windows")]
         public static async Task<IActiveDirectoryUserInfo> GetActiveDirectoryUserInfoAsync(string username)
         {
             var result = new List<GroupPrincipal>();
@@ -163,9 +189,37 @@ namespace JamesWebUI.Server.Controllers
             };
         }
 
-        public async Task<string[]> GetActiveGroupMembers(string groupName)
+
+        [SupportedOSPlatform("windows")]
+        public async Task<IActiveDirectoryGroupMembership> GetActiveDirectoryGroupMembers(string groupName)
         {
-            throw new NotImplementedException();
+            var yourDomain = new PrincipalContext(ContextType.Domain);
+            GroupPrincipal group;
+            var memberList = new List<string>();
+            await Task.Run(() =>
+            {
+                group = GroupPrincipal.FindByIdentity(yourDomain, groupName);
+                if (group != null)
+                {
+                    var groupQueue = new Queue<GroupPrincipal>();
+                    groupQueue.Enqueue(group);
+                    while (groupQueue.Count > 0)
+                    {
+                        var grp = groupQueue.Dequeue();
+                        foreach (var member in grp.GetMembers())
+                        {
+                            if (member is GroupPrincipal gp)
+                                groupQueue.Enqueue(gp);
+                            else if (member is UserPrincipal user)
+                                memberList.Add(user.UserPrincipalName.Split("@").First());
+                            else
+                                Debug.WriteLine("Was not expecting type " + member.GetType());
+                        }
+                    }
+                }
+            });
+            return new ActiveDirectoryGroupMembership
+            { ActiveDirectoryGroup = groupName, Members = memberList.ToArray() };
         }
     }
 }

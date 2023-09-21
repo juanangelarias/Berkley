@@ -9,3 +9,9 @@ public interface IApplicationUserInfo
     bool IsUnderwriter { get; set; }
     bool IsHomeOfficeApprover { get; set; }
 }
+
+public interface IActiveDirectoryGroupMembership
+{
+    string ActiveDirectoryGroup { get; set; }
+    string[] Members { get; set; }
+}

@@ -1,0 +1,59 @@
+﻿@page "/GroupMembership/{groupName?}"
+@using James.Shared.Model
+@using System.Diagnostics
+@inject HttpClient Http
+@inject NavigationManager Navigation
+@attribute [Authorize]
+<h3>GroupMembership</h3>
+<table>
+    <tr><th>Group Name</th>Member</tr>
+    <tr>
+        <td>@_membership?.ActiveDirectoryGroup</td>
+        @if (null == _membership || _membership.Members.Length == 0)
+        {
+            <td>Group has no members or does not exist.</td>
+        }
+        else
+        {
+            <table>
+                @foreach (var member in _membership.Members.Order(StringComparer.InvariantCultureIgnoreCase))
+                {
+                    <tr><td>@member</td></tr>
+                }
+            </table>
+        }
+    </tr>
+    <tr>
+        <td><InputText @bind-Value="GroupName"></InputText></td>
+        <td><button @onclick="LookupMembership">Get Membership</button></td>
+    </tr>
+</table>
+
+@code {
+    private ActiveDirectoryGroupMembership _membership;
+    [Parameter]
+    public string? GroupName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMembers();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task GetMembers()
+    {
+        if (null != GroupName)
+            _membership =
+                await Http.GetFromJsonAsync<ActiveDirectoryGroupMembership>(
+                    $"GetActiveDirectoryGroupMemebership/{GroupName}");
+        else _membership = new ActiveDirectoryGroupMembership { ActiveDirectoryGroup = "", Members = Array.Empty<string>() };
+    }
+
+    private async Task LookupMembership()
+    {
+        if (GroupName == _membership?.ActiveDirectoryGroup) return;
+        await GetMembers();
+        Navigation.NavigateTo($"/GroupMembership/{GroupName}");
+    }
+
+}

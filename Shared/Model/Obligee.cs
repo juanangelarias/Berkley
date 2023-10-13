@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace James.Shared.Model;
+//Generated for DB
+
+public partial class Obligee
+{
+    public Guid Id { get; set; }
+
+    public DateTime Created { get; set; }
+
+    public DateTime Modified { get; set; }
+
+    public string ObligeeNum { get; set; } = null!;
+
+    public string? Type { get; set; }
+
+    public string? EditedBy { get; set; }
+
+    public bool PrintStatusLetter { get; set; }
+
+    public string? Notes { get; set; }
+
+    public virtual ICollection<BidRequest> BidRequests { get; set; } = new List<BidRequest>();
+
+    public virtual LegalEntity IdNavigation { get; set; } = null!;
+
+    public virtual ObligeeTypeDm? TypeNavigation { get; set; }
+}

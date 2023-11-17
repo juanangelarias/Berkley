@@ -77,4 +77,6 @@ public partial class UserProfile
     public virtual ICollection<UserLineOfAuthority> UserLineOfAuthorityUsers { get; set; } = new List<UserLineOfAuthority>();
 
     public virtual ICollection<VoidedBond> VoidedBonds { get; set; } = new List<VoidedBond>();
+
+    public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; }=new List<AccountStatusLog>();
 }

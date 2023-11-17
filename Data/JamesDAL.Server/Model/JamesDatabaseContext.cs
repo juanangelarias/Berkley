@@ -711,6 +711,10 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Active)
+                .IsRequired()
+                .HasDefaultValueSql("((1))")
+                .HasColumnType("bit");
         });
 
         modelBuilder.Entity<AccountStatusLog>(entity =>
@@ -734,11 +738,13 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.ModifiedBy)
-                .HasMaxLength(4)
-                .IsUnicode(false);
+            entity.Property(e => e.ModifiedBy);
+            entity.HasOne(d => d.UserProfileNavigation).WithMany(p => p.AccountStatusLogs)
+                .HasForeignKey(d => d.ModifiedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccountStatusLog_UserProfile");
 
-            entity.HasOne(d => d.AccountStatusNavigation).WithMany(p => p.AccountStatusLogs)
+                entity.HasOne(d => d.AccountStatusNavigation).WithMany(p => p.AccountStatusLogs)
                 .HasForeignKey(d => d.AccountStatus)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AccountStatusLog_AccountStatusDM");
@@ -1419,7 +1425,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.RecordedBy).HasMaxLength(4);
             entity.Property(e => e.RecordedMessageSent).HasColumnType("datetime");
             entity.Property(e => e.Requested).HasColumnType("date");
-            entity.Property(e => e.SfaaclassCode).HasColumnName("SFAAClassCode");
+            entity.Property(e => e.SfaaCode).HasColumnName("SFAAClassCode");
             entity.Property(e => e.Status)
                 .HasMaxLength(15)
                 .IsUnicode(false);
@@ -1451,7 +1457,7 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.RecordedBy);
 
             entity.HasOne(d => d.SfaaclassCodeNavigation).WithMany(p => p.BidRequestCommercials)
-                .HasForeignKey(d => d.SfaaclassCode)
+                .HasForeignKey(d => d.SfaaCode)
                 .HasConstraintName("FK_BidRequestCommercial_SFAA");
 
             entity.HasOne(d => d.StatusNavigation).WithMany(p => p.BidRequestCommercials)

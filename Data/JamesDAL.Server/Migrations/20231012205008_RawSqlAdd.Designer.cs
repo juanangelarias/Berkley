@@ -2075,7 +2075,7 @@ namespace James.Data.Server.Migrations
                     b.Property<DateTime>("Requested")
                         .HasColumnType("date");
 
-                    b.Property<int?>("SfaaclassCode")
+                    b.Property<int?>("SfaaCode")
                         .HasColumnType("int")
                         .HasColumnName("SFAAClassCode");
 
@@ -2108,7 +2108,7 @@ namespace James.Data.Server.Migrations
 
                     b.HasIndex("RecordedBy");
 
-                    b.HasIndex("SfaaclassCode");
+                    b.HasIndex("SfaaCode");
 
                     b.HasIndex("Status");
 
@@ -2466,7 +2466,7 @@ namespace James.Data.Server.Migrations
                         .HasColumnType("varchar(30)")
                         .HasColumnName("SFAABondType");
 
-                    b.Property<int?>("SfaaclassCode")
+                    b.Property<int?>("SfaaCode")
                         .HasColumnType("int")
                         .HasColumnName("SFAAClassCode");
 
@@ -2750,7 +2750,7 @@ namespace James.Data.Server.Migrations
                     b.Property<double?>("RiskDescription")
                         .HasColumnType("float");
 
-                    b.Property<int?>("SfaaclassCode")
+                    b.Property<int?>("SfaaCode")
                         .HasColumnType("int")
                         .HasColumnName("SFAAClassCode");
 
@@ -9434,7 +9434,7 @@ namespace James.Data.Server.Migrations
 
                     b.HasOne("James.Shared.Model.Sfaa", "SfaaclassCodeNavigation")
                         .WithMany("BidRequestCommercials")
-                        .HasForeignKey("SfaaclassCode")
+                        .HasForeignKey("SfaaCode")
                         .HasConstraintName("FK_BidRequestCommercial_SFAA");
 
                     b.HasOne("James.Shared.Model.BidStatusDm", "StatusNavigation")

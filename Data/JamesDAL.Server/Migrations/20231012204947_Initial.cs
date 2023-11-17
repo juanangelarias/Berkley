@@ -136,7 +136,8 @@ namespace James.Data.Server.Migrations
                     AccountStatus = table.Column<string>(type: "varchar(24)", unicode: false, maxLength: 24, nullable: false),
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
                     Created = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
-                    Modified = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())")
+                    Modified = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
+                    Active = table.Column<bool?>(type:"bit", nullable:false, defaultValueSql:"((1))")
                 },
                 constraints: table =>
                 {
@@ -1004,8 +1005,7 @@ namespace James.Data.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RateGroup", x => x.RateGroup)
-                        .Annotation("SqlServer:Clustered", false);
+                    table.PrimaryKey("PK_RateGroup", x => x.RateGroup);
                 });
 
             migrationBuilder.CreateTable(
@@ -1019,8 +1019,7 @@ namespace James.Data.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RateStructureDM", x => x.RateStructure)
-                        .Annotation("SqlServer:Clustered", false);
+                    table.PrimaryKey("PK_RateStructureDM", x => x.RateStructure);
                 });
 
             migrationBuilder.CreateTable(
@@ -1035,8 +1034,7 @@ namespace James.Data.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ReferenceTypeDM", x => x.Type)
-                        .Annotation("SqlServer:Clustered", false);
+                    table.PrimaryKey("PK_ReferenceTypeDM", x => x.Type);
                 });
 
             migrationBuilder.CreateTable(
@@ -1044,8 +1042,7 @@ namespace James.Data.Server.Migrations
                 columns: table => new
                 {
                     Region = table.Column<string>(type: "char(2)", unicode: false, fixedLength: true, maxLength: 2, nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
                     Created = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
                     Modified = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())")
                 },
@@ -1110,8 +1107,7 @@ namespace James.Data.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ResponsibilityDM", x => x.Responsibility)
-                        .Annotation("SqlServer:Clustered", false);
+                    table.PrimaryKey("PK_ResponsibilityDM", x => x.Responsibility);
                 });
 
             migrationBuilder.CreateTable(
@@ -1519,7 +1515,7 @@ namespace James.Data.Server.Migrations
                     Modified = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
                     AccountNum = table.Column<string>(type: "varchar(8)", unicode: false, maxLength: 8, nullable: false),
                     AccountStatus = table.Column<string>(type: "varchar(24)", unicode: false, maxLength: 24, nullable: false),
-                    ModifiedBy = table.Column<string>(type: "varchar(4)", unicode: false, maxLength: 4, nullable: false),
+                    ModifiedBy = table.Column<Guid>(type: "uniqueid", unicode: false, nullable: false),
                     Comments = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>

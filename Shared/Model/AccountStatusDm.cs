@@ -13,6 +13,7 @@ public partial class AccountStatusDm
     public DateTime Modified { get; set; }
 
     public string AccountStatus { get; set; } = null!;
+    public bool? Active { get; set; }
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
 }

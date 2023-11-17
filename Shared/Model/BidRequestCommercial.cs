@@ -50,7 +50,7 @@ public partial class BidRequestCommercial
 
     public string? Underwriter { get; set; }
 
-    public int? SfaaclassCode { get; set; }
+    public int? SfaaCode { get; set; }
 
     public string? Ccto { get; set; }
 

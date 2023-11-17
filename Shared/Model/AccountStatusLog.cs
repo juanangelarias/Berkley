@@ -16,9 +16,11 @@ public partial class AccountStatusLog
 
     public string AccountStatus { get; set; } = null!;
 
-    public string ModifiedBy { get; set; } = null!;
+    public Guid ModifiedBy { get; set; }
 
     public string? Comments { get; set; }
 
     public virtual AccountStatusDm AccountStatusNavigation { get; set; } = null!;
+
+    public virtual UserProfile UserProfileNavigation { get; set; } = null!;
 }

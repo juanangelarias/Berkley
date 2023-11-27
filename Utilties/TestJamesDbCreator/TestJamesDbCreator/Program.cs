@@ -31,8 +31,7 @@ const string BackupFileName = "testdb.bak";
 var backupFileDir = new DirectoryInfo(ConfigurationManager.AppSettings["LocalRestoreFolder"]!);
 var networkShare = ConfigurationManager.AppSettings["BackupNetworkFolder"]!;
 var shareName = networkShare.Split('\\').Last();
-var snapDbName = new SqlConnectionStringBuilder(ConfigurationManager.ConnectionStrings["SnapDestination"].ConnectionString)
-    .InitialCatalog;
+var snapDbName = GetDestinationDbName();
 var serverSmo = new Server(GetDestinationServerName());
 //Set up share directory for backup to be made to
 //NOTE:Must be run as admin of local machine
@@ -140,6 +139,8 @@ void UpdateForeignKeys(Server serverSmo)
     Debug.Assert(foreignKeysSmo.Length * 2 == scripts.Length);
     using var sqlConn = GetDestinationConnection();
     sqlConn.Open();
+    List<string> SuccessfulKeys = new();
+    List<string> FailedCascadeKeys = new();
     for (var i = 0; i < foreignKeysSmo.Length; i++)
     {
         var fk = foreignKeysSmo[i];
@@ -154,15 +155,19 @@ void UpdateForeignKeys(Server serverSmo)
         try
         {
             createFk.ExecuteNonQuery();
-            Console.WriteLine("Added ON DELETE CASCADE to " + fk.Name);
+            //Console.WriteLine("Added ON DELETE CASCADE to " + fk.Name);
+            SuccessfulKeys.Add(fk.Name);
         }
         catch (SqlException ex) when (ex.Message.Contains("may cause cycles or multiple cascade paths. "))
         {
-            Console.WriteLine($"Skipping {fk.Name} to prevent a cascade path.");
+            //Console.WriteLine($"Skipping {fk.Name} to prevent a cascade path.");
+            FailedCascadeKeys.Add(fk.Name);
             createFk.CommandText = scripts[i * 2] + ";\r\n" + scripts[i * 2 + 1];
             createFk.ExecuteNonQuery();
         }
     }
+    Console.WriteLine("The following keys were updated to ON DELETE CASCADE:\r\n\t" + string.Join("\r\n\t", SuccessfulKeys));
+    Console.WriteLine("The following keys could not be updated due to cascading delete concerns:\r\n\t" + string.Join("\r\n\t", FailedCascadeKeys));
 }
 
 void DeleteExcessData()
@@ -208,7 +213,7 @@ void DeleteExcessData()
     using var agentAgencyPruneCmd = new SqlCommand(SqlPruneAgentAgency, sqlConn) { CommandType = CommandType.Text };
     agentAgencyPruneCmd.ExecuteNonQuery();
 
-    Console.Write("Pruning attorneys and law firms");
+    Console.WriteLine("Pruning attorneys and law firms");
     //NOTE: This is untested because attorneys and law firms aren't being ported over, yet.
     using var lawEntityPruneCmd = new SqlCommand(SqlPruneLawEntities, sqlConn) { CommandType = CommandType.Text };
     lawEntityPruneCmd.ExecuteNonQuery();

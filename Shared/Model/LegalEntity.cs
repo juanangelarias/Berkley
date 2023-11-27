@@ -56,11 +56,9 @@ public partial class LegalEntity
 
     public virtual Agent? Agent { get; set; }
 
-    public virtual ICollection<AgentsInAgency> AgentsInAgencyAgencies { get; set; } = new List<AgentsInAgency>();
+    public virtual AgentsInAgency? AgentsInAgencyAgency { get; set; }
 
     public virtual ICollection<AgentsInAgency> AgentsInAgencyAgents { get; set; } = new List<AgentsInAgency>();
-
-    public virtual ICollection<BidRequestCommercial> BidRequestCommercials { get; set; } = new List<BidRequestCommercial>();
 
     public virtual ICollection<Bond> BondAgencies { get; set; } = new List<Bond>();
 
@@ -75,6 +73,8 @@ public partial class LegalEntity
     public virtual ICollection<BondHold> BondHoldResponsibleParties { get; set; } = new List<BondHold>();
 
     public virtual ICollection<Bond> BondObligees { get; set; } = new List<Bond>();
+
+    public virtual ICollection<BondRequestCommercial> BondRequestCommercials { get; set; } = new List<BondRequestCommercial>();
 
     public virtual ICollection<Bond> BondResponsibleParties { get; set; } = new List<Bond>();
 

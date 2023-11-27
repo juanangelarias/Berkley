@@ -16,13 +16,15 @@ public partial class Obligee
 
     public string? Type { get; set; }
 
-    public string? EditedBy { get; set; }
+    public Guid? EditedBy { get; set; }
 
     public bool PrintStatusLetter { get; set; }
 
     public string? Notes { get; set; }
 
-    public virtual ICollection<BidRequest> BidRequests { get; set; } = new List<BidRequest>();
+    public virtual ICollection<BondRequest> BondRequests { get; set; } = new List<BondRequest>();
+
+    public virtual UserProfile? EditedByNavigation { get; set; }
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 

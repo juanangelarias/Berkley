@@ -24,7 +24,7 @@ public partial class ProfitCenter
 
     public Guid BudgetDefault { get; set; }
 
-    public string? Underwriter { get; set; }
+    public Guid? Underwriter { get; set; }
 
     public DateTime Effective { get; set; }
 

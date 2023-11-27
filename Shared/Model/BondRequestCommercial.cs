@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class BidRequestCommercial
+public partial class BondRequestCommercial
 {
     public Guid Id { get; set; }
 
@@ -30,7 +30,7 @@ public partial class BidRequestCommercial
 
     public int? Amount { get; set; }
 
-    public string? RecordedBy { get; set; }
+    public Guid? RecordedBy { get; set; }
 
     public DateTime? Recorded { get; set; }
 
@@ -38,9 +38,9 @@ public partial class BidRequestCommercial
 
     public string? HomeOfficeAction { get; set; }
 
-    public DateTime? HomeOfficeApproved { get; set; }
+    public DateTime? HomeOfficeActionDate { get; set; }
 
-    public string? HomeOfficeApprovedBy { get; set; }
+    public Guid? HomeOfficeApprovedBy { get; set; }
 
     public string? HomeOfficeConditions { get; set; }
 
@@ -48,11 +48,11 @@ public partial class BidRequestCommercial
 
     public string? Description { get; set; }
 
-    public string? Underwriter { get; set; }
+    public Guid? Underwriter { get; set; }
 
     public int? SfaaCode { get; set; }
 
-    public string? Ccto { get; set; }
+    public Guid? Ccto { get; set; }
 
     public int? LineOfCreditSingle { get; set; }
 
@@ -80,7 +80,7 @@ public partial class BidRequestCommercial
 
     public virtual UserProfile? RecordedByNavigation { get; set; }
 
-    public virtual Sfaa? SfaaclassCodeNavigation { get; set; }
+    public virtual Sfaa? SfaaCodeNavigation { get; set; }
 
     public virtual BidStatusDm StatusNavigation { get; set; } = null!;
 

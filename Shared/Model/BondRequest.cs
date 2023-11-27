@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class BidRequest
+public partial class BondRequest
 {
     public Guid Id { get; set; }
 
@@ -12,13 +12,13 @@ public partial class BidRequest
 
     public DateTime Modified { get; set; }
 
-    public string BidNumber { get; set; } = null!;
+    public string BondRequestNumber { get; set; } = null!;
 
     public string AccountNum { get; set; } = null!;
 
     public DateTime Requested { get; set; }
 
-    public DateTime BidDate { get; set; }
+    public DateTime? BidDate { get; set; }
 
     public Guid? ObligeeId { get; set; }
 
@@ -94,13 +94,13 @@ public partial class BidRequest
 
     public DateTime? HomeOfficeApproved { get; set; }
 
-    public string? HomeOfficeApprover { get; set; }
+    public Guid? HomeOfficeApprover { get; set; }
 
     public DateTime? HomeOfficeEmailSent { get; set; }
 
     public string? HomeOfficeAction { get; set; }
 
-    public string? Underwriter { get; set; }
+    public Guid? Underwriter { get; set; }
 
     public string RequestType { get; set; } = null!;
 
@@ -112,17 +112,13 @@ public partial class BidRequest
 
     public int? ApprovedBidAmount { get; set; }
 
-    public string? Ccto { get; set; }
+    public Guid? Ccto { get; set; }
 
     public string Status { get; set; } = null!;
 
     public string? HomeOfficeConditions { get; set; }
 
-    public string? BidPercent { get; set; }
-
     public virtual Account AccountNumNavigation { get; set; } = null!;
-
-    public virtual BidPercentDm? BidPercentNavigation { get; set; }
 
     public virtual BidResultDm? BidResultNavigation { get; set; }
 
@@ -132,11 +128,11 @@ public partial class BidRequest
 
     public virtual UserProfile? CctoNavigation { get; set; }
 
+    public virtual UserProfile? HomeOfficeApproverNavigation { get; set; }
+
     public virtual Obligee? Obligee { get; set; }
 
     public virtual ICollection<OtherBid> OtherBids { get; set; } = new List<OtherBid>();
-
-    public virtual BidRetainageDm? RetainageNavigation { get; set; }
 
     public virtual BidStatusDm StatusNavigation { get; set; } = null!;
 

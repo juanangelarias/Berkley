@@ -26,7 +26,7 @@ public partial class Bond
 
     public string Status { get; set; } = null!;
 
-    public string Underwriter { get; set; } = null!;
+    public Guid Underwriter { get; set; }
 
     public Guid? AgentId { get; set; }
 
@@ -122,15 +122,17 @@ public partial class Bond
 
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
+    public virtual ICollection<AdditionalObligee> AdditionalObligeesNavigation { get; set; } = new List<AdditionalObligee>();
+
     public virtual LegalEntity Agency { get; set; } = null!;
 
     public virtual LegalEntity? Agent { get; set; }
 
     public virtual LawEntity? AttorneyInFact { get; set; }
 
-    public virtual ICollection<BidRequestCommercial> BidRequestCommercials { get; set; } = new List<BidRequestCommercial>();
+    public virtual ICollection<BondRequestCommercial> BondRequestCommercials { get; set; } = new List<BondRequestCommercial>();
 
-    public virtual ICollection<BidRequest> BidRequests { get; set; } = new List<BidRequest>();
+    public virtual ICollection<BondRequest> BondRequests { get; set; } = new List<BondRequest>();
 
     public virtual ICollection<BondStatusLetter> BondStatusLetters { get; set; } = new List<BondStatusLetter>();
 

@@ -30,7 +30,7 @@ public partial class CommercialRate
 
     public virtual CommercialBondTypeDm CommercialBondTypeNavigation { get; set; } = null!;
 
-    public virtual RateGroup RateGroupNavigation { get; set; } = null!;
+    public virtual RateGroupDm RateGroupNavigation { get; set; } = null!;
 
     public virtual RiskTypeDm RiskTypeNavigation { get; set; } = null!;
 }

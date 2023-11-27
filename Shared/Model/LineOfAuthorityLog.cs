@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class LineOauthorityLog
+public partial class LineOfAuthorityLog
 {
     public Guid Id { get; set; }
 
@@ -28,7 +28,7 @@ public partial class LineOauthorityLog
 
     public string? Status { get; set; }
 
-    public string? ApprovedBy { get; set; }
+    public Guid? ApprovedBy { get; set; }
 
     public DateTime? Approved { get; set; }
 
@@ -40,7 +40,7 @@ public partial class LineOauthorityLog
 
     public bool HomeOfficeApproved { get; set; }
 
-    public string? CreatedBy { get; set; }
+    public Guid? CreatedBy { get; set; }
 
     public virtual UserProfile? ApprovedByNavigation { get; set; }
 

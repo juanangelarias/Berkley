@@ -1,14 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using James.Shared;
 using James.Shared.Model;
 using Microsoft.Data.SqlClient;
-using James.Shared;
+using Microsoft.EntityFrameworkCore;
 
-namespace JamesDAL.Server.Model
+namespace James.Data.Server.Model
 {
     public partial class JamesDatabaseContext
     {

@@ -18,5 +18,5 @@ public partial class OtherBid
 
     public int Amount { get; set; }
 
-    public virtual BidRequest BidNumberNavigation { get; set; } = null!;
+    public virtual BondRequest BidNumberNavigation { get; set; } = null!;
 }

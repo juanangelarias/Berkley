@@ -22,7 +22,7 @@ public partial class BondHold
 
     public string? Branch { get; set; }
 
-    public string? Underwriter { get; set; }
+    public Guid? Underwriter { get; set; }
 
     public Guid? AgencyId { get; set; }
 
@@ -90,7 +90,7 @@ public partial class BondHold
 
     public DateTime? HomeOfficeApproved { get; set; }
 
-    public string? HomeOfficeApprovedBy { get; set; }
+    public Guid? HomeOfficeApprovedBy { get; set; }
 
     public string? HomeOfficeAction { get; set; }
 

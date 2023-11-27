@@ -12,7 +12,7 @@ public partial class AccountProgramUserAuthority
 
     public DateTime Modified { get; set; }
 
-    public string User { get; set; } = null!;
+    public Guid UserId { get; set; }
 
     public Guid AccountClassId { get; set; }
 
@@ -24,7 +24,13 @@ public partial class AccountProgramUserAuthority
 
     public int Aggregate { get; set; }
 
-    public string CreatedBy { get; set; } = null!;
+    public Guid CreatedBy { get; set; }
 
-    public string ModifiedBy { get; set; } = null!;
+    public Guid ModifiedBy { get; set; }
+
+    public virtual UserProfile CreatedByNavigation { get; set; } = null!;
+
+    public virtual UserProfile ModifiedByNavigation { get; set; } = null!;
+
+    public virtual UserProfile User { get; set; } = null!;
 }

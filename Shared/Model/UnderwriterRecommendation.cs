@@ -14,11 +14,13 @@ public partial class UnderwriterRecommendation
 
     public string AccountNum { get; set; } = null!;
 
-    public string PostedBy { get; set; } = null!;
+    public Guid PostedBy { get; set; }
 
     public string Comments { get; set; } = null!;
 
     public string? Description { get; set; }
 
     public virtual Account AccountNumNavigation { get; set; } = null!;
+
+    public virtual UserProfile PostedByNavigation { get; set; } = null!;
 }

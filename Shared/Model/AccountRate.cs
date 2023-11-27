@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace James.Shared.Model;
 //Generated for DB
 
-[Table("AccountRate", Schema ="dbo")]
 public partial class AccountRate
 {
     public Guid Id { get; set; }

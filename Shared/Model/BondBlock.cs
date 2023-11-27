@@ -22,7 +22,7 @@ public partial class BondBlock
 
     public bool? AgencyRestricted { get; set; }
 
-    public string? IssuedBy { get; set; }
+    public Guid? IssuedBy { get; set; }
 
     public string? Comments { get; set; }
 

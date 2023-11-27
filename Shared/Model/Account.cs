@@ -156,11 +156,11 @@ public partial class Account
 
     public virtual PhoneNumber? BankPhone { get; set; }
 
-    public virtual ICollection<BidRequestCommercial> BidRequestCommercials { get; set; } = new List<BidRequestCommercial>();
-
-    public virtual ICollection<BidRequest> BidRequests { get; set; } = new List<BidRequest>();
-
     public virtual ICollection<BondHold> BondHolds { get; set; } = new List<BondHold>();
+
+    public virtual ICollection<BondRequestCommercial> BondRequestCommercials { get; set; } = new List<BondRequestCommercial>();
+
+    public virtual ICollection<BondRequest> BondRequests { get; set; } = new List<BondRequest>();
 
     public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
 

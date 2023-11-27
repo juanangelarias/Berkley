@@ -12,7 +12,9 @@ public partial class AccountProgramEmailNotificationGroup
 
     public DateTime? Modified { get; set; }
 
-    public string UserName { get; set; } = null!;
+    public Guid UserId { get; set; }
 
     public string? SendTo { get; set; }
+
+    public virtual UserProfile User { get; set; } = null!;
 }

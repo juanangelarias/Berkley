@@ -20,7 +20,9 @@ public partial class AccountStatusLog
 
     public string? Comments { get; set; }
 
+    public DateTime Effective { get; set; }
+
     public virtual AccountStatusDm AccountStatusNavigation { get; set; } = null!;
 
-    public virtual UserProfile UserProfileNavigation { get; set; } = null!;
+    public virtual UserProfile ModifiedByNavigation { get; set; } = null!;
 }

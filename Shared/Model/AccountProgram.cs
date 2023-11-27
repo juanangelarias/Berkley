@@ -35,4 +35,6 @@ public partial class AccountProgram
     public bool HomeOfficeApproved { get; set; }
 
     public virtual Account AccountNumNavigation { get; set; } = null!;
+
+    public virtual ICollection<AccountProgramStatusHistory> AccountProgramStatusHistories { get; set; } = new List<AccountProgramStatusHistory>();
 }

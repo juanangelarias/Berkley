@@ -16,7 +16,7 @@ public partial class NotebookEntry
 
     public string Type { get; set; } = null!;
 
-    public string CreatedBy { get; set; } = null!;
+    public Guid CreatedBy { get; set; }
 
     public string? Category { get; set; }
 

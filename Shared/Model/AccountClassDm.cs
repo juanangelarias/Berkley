@@ -17,7 +17,7 @@ public partial class AccountClassDm
     public string Name { get; set; } = null!;
 
     public int? DivisionGeneralLedgerCode { get; set; }
-    
+
     public bool? Active { get; set; }
 
     public string? LineOfAuthorityNotificationGroup { get; set; }

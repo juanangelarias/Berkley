@@ -14,7 +14,7 @@ public partial class Collateral
 
     public string AccountNum { get; set; } = null!;
 
-    public string Type { get; set; } = null!;
+    public string? Type { get; set; }
 
     public int? Amount { get; set; }
 
@@ -27,6 +27,8 @@ public partial class Collateral
     public string? BondNumber { get; set; }
 
     public bool? BondSpecific { get; set; }
+
+    public DateTime? Released { get; set; }
 
     public virtual Bond? BondNumberNavigation { get; set; }
 }

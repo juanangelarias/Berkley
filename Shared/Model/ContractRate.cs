@@ -24,5 +24,5 @@ public partial class ContractRate
 
     public double? PremiumRate { get; set; }
 
-    public virtual RateGroup RateGroupNavigation { get; set; } = null!;
+    public virtual RateGroupDm RateGroupNavigation { get; set; } = null!;
 }

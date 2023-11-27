@@ -20,7 +20,7 @@ public partial class AgencyStatusLog
 
     public string? NewStatus { get; set; }
 
-    public string? ChangedBy { get; set; }
+    public Guid? ChangedBy { get; set; }
 
     public string? Comments { get; set; }
 

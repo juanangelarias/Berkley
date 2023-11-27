@@ -24,7 +24,7 @@ public partial class Surcharge
 
     public string Type { get; set; } = null!;
 
-    public string CreatedBy { get; set; } = null!;
+    public Guid CreatedBy { get; set; }
 
     public virtual UserProfile CreatedByNavigation { get; set; } = null!;
 

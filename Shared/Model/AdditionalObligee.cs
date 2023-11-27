@@ -12,9 +12,13 @@ public partial class AdditionalObligee
 
     public DateTime Modified { get; set; }
 
-    public string ObligeeNum { get; set; } = null!;
+    public Guid ObligeeNum { get; set; }
 
     public bool PrintStatusLetter { get; set; }
 
     public string? Interest { get; set; }
+
+    public string BondNumber { get; set; } = null!;
+
+    public virtual Bond BondNumberNavigation { get; set; } = null!;
 }

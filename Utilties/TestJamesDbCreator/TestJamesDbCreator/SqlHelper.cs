@@ -219,7 +219,7 @@ AS (SELECT AccountNum,
      BidCount
 AS (SELECT AccountNum,
            COUNT(*) BidCount
-    FROM dbo.BidRequest b
+    FROM dbo.BondRequest b
     GROUP BY b.AccountNum),
      FinancialCount
 AS (SELECT AccountNum,
@@ -260,7 +260,6 @@ INSERT INTO @allData
 SELECT a.AccountNum,
        s.AccountStatus,
        a.Division,
-       --DISTINCT
        CASE
            WHEN ISNULL(BondCount, 0) > 1 THEN
                1
@@ -416,6 +415,12 @@ END;
 CLOSE AcctCursur;
 DEALLOCATE AcctCursur;
 
+DELETE bt
+FROM dbo.BondTransaction bt 
+WHERE AccountNum NOT IN
+      (
+          SELECT AccountNum FROM @Dataset
+      );
 DELETE FROM dbo.Bond
 WHERE AccountNum NOT IN
       (
@@ -473,7 +478,7 @@ AS (SELECT b.BondNumber,
      BidCount
 AS (SELECT BondNumber,
            COUNT(*) BidCount
-    FROM dbo.BidRequest b
+    FROM dbo.BondRequest b
     GROUP BY b.BondNumber),
      CompletedDate
 AS (SELECT BondNumber,
@@ -727,11 +732,20 @@ FROM dbo.ResponsibleParty rp
     LEFT JOIN dbo.Bond b
         ON b.ResponsiblePartyId = rp.Id
 WHERE b.Id IS NULL;
+WITH AgencyRefs
+AS (SELECT AgencyId
+    FROM dbo.BondTransaction
+    UNION
+    SELECT AgencyId
+    FROM dbo.VoidedBond)
 DELETE ag
 FROM dbo.Agency ag
     LEFT JOIN dbo.Account a
         ON a.AgencyNumber = ag.AgencyNumber
-WHERE a.AgencyNumber IS NULL;
+    LEFT JOIN AgencyRefs ar
+        ON ar.AgencyId = ag.Id
+WHERE a.AgencyNumber IS NULL
+      AND ar.AgencyId IS NULL;
 
 WITH SicRefs
 AS (SELECT SICCode
@@ -759,7 +773,7 @@ AS (SELECT SfaaCode
     FROM dbo.BondHold
     UNION
     SELECT SFAACode
-    FROM dbo.BidRequestCommercial)
+    FROM dbo.BondRequestCommercial)
 --DELETE s
 SELECT s.*
 FROM dbo.SIC s
@@ -780,29 +794,29 @@ FROM dbo.Agent a
 
         internal static string SqlCreateIdTableType = @"IF NOT EXISTS (SELECT 1 FROM sys.types WHERE name='IdTable')
 CREATE TYPE IdTable AS TABLE (Id UNIQUEIDENTIFIER);
-IF EXISTS
-(
-    SELECT 1
-    FROM sys.tables t
-        INNER JOIN sys.columns c
-            ON c.object_id = t.object_id
-    WHERE c.name = 'SFAAClassCode'
-          AND t.name = 'BidRequestCommercial'
-)
-    EXEC sp_rename 'dbo.BidRequestCommercial.SFAAClassCode',
-                   'SfaaCode',
-                   'COLUMN';
-IF EXISTS
-(
-    SELECT 1
-    FROM sys.tables t
-        INNER JOIN sys.columns c
-            ON c.object_id = t.object_id
-    WHERE c.name = 'SaaCode'
-          AND t.name = 'BondTransaction'
-          AND SCHEMA_NAME(t.schema_id) = 'deleted'
-)
-    EXEC sp_rename 'deleted.BondTransaction.SaaCode', 'SfaaCode', 'COLUMN';";
+--IF EXISTS
+--(
+--    SELECT 1
+--    FROM sys.tables t
+--        INNER JOIN sys.columns c
+--            ON c.object_id = t.object_id
+--    WHERE c.name = 'SFAAClassCode'
+--          AND t.name = 'BondRequestCommercial'
+--)
+--    EXEC sp_rename 'dbo.BondRequestCommercial.SFAAClassCode',
+--                   'SfaaCode',
+--                   'COLUMN';
+--IF EXISTS
+--(
+--    SELECT 1
+--    FROM sys.tables t
+--        INNER JOIN sys.columns c
+--            ON c.object_id = t.object_id
+--    WHERE c.name = 'SaaCode'
+--          AND t.name = 'BondTransaction'
+--          AND SCHEMA_NAME(t.schema_id) = 'deleted'
+--)
+--    EXEC sp_rename 'deleted.BondTransaction.SaaCode', 'SfaaCode', 'COLUMN';";
         internal static string SqlPruneAgentAgency = @"DECLARE @AgenciesToRemove IdTable,
 		@agentsToRemove IdTable,
         @agentsInMultipleAgencies IdTable;
@@ -820,7 +834,8 @@ FROM dbo.Agency ag
     LEFT JOIN dbo.AgentsInAgency aa
         ON aa.AgencyId = ag.Id
 	LEFT JOIN dbo.Bond b ON b.AgencyId = ag.id
-WHERE a.AgencyNumber IS NULL AND b.Id IS NULL AND aa.Id IS NULL
+	LEFT JOIN dbo.BondTransaction bt ON bt.AgencyId = ag.id
+WHERE a.AgencyNumber IS NULL AND b.Id IS NULL AND aa.Id IS NULL AND bt.id IS NULL
 		-- keep agencies with a multiple-agency agent
       AND aa.AgentId NOT IN
           (

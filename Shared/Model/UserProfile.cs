@@ -30,6 +30,16 @@ public partial class UserProfile
 
     public virtual ICollection<Account> AccountHomeOfficeReviewByNavigations { get; set; } = new List<Account>();
 
+    public virtual ICollection<AccountProgramEmailNotificationGroup> AccountProgramEmailNotificationGroups { get; set; } = new List<AccountProgramEmailNotificationGroup>();
+
+    public virtual ICollection<AccountProgramUserAuthority> AccountProgramUserAuthorityCreatedByNavigations { get; set; } = new List<AccountProgramUserAuthority>();
+
+    public virtual ICollection<AccountProgramUserAuthority> AccountProgramUserAuthorityModifiedByNavigations { get; set; } = new List<AccountProgramUserAuthority>();
+
+    public virtual ICollection<AccountProgramUserAuthority> AccountProgramUserAuthorityUsers { get; set; } = new List<AccountProgramUserAuthority>();
+
+    public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
+
     public virtual ICollection<Account> AccountUnderwriterNavigations { get; set; } = new List<Account>();
 
     public virtual ICollection<AgencyCompetition> AgencyCompetitions { get; set; } = new List<AgencyCompetition>();
@@ -38,37 +48,43 @@ public partial class UserProfile
 
     public virtual ICollection<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
 
-    public virtual ICollection<BidRequest> BidRequestCctoNavigations { get; set; } = new List<BidRequest>();
-
-    public virtual ICollection<BidRequestCommercial> BidRequestCommercialCctoNavigations { get; set; } = new List<BidRequestCommercial>();
-
-    public virtual ICollection<BidRequestCommercial> BidRequestCommercialHomeOfficeApprovedByNavigations { get; set; } = new List<BidRequestCommercial>();
-
-    public virtual ICollection<BidRequestCommercial> BidRequestCommercialRecordedByNavigations { get; set; } = new List<BidRequestCommercial>();
-
-    public virtual ICollection<BidRequestCommercial> BidRequestCommercialUnderwriterNavigations { get; set; } = new List<BidRequestCommercial>();
-
-    public virtual ICollection<BidRequest> BidRequestUnderwriterNavigations { get; set; } = new List<BidRequest>();
-
     public virtual ICollection<BondBlock> BondBlocks { get; set; } = new List<BondBlock>();
 
     public virtual ICollection<BondHold> BondHoldHomeOfficeApprovedByNavigations { get; set; } = new List<BondHold>();
 
     public virtual ICollection<BondHold> BondHoldUnderwriterNavigations { get; set; } = new List<BondHold>();
 
+    public virtual ICollection<BondRequest> BondRequestCctoNavigations { get; set; } = new List<BondRequest>();
+
+    public virtual ICollection<BondRequestCommercial> BondRequestCommercialCctoNavigations { get; set; } = new List<BondRequestCommercial>();
+
+    public virtual ICollection<BondRequestCommercial> BondRequestCommercialHomeOfficeApprovedByNavigations { get; set; } = new List<BondRequestCommercial>();
+
+    public virtual ICollection<BondRequestCommercial> BondRequestCommercialRecordedByNavigations { get; set; } = new List<BondRequestCommercial>();
+
+    public virtual ICollection<BondRequestCommercial> BondRequestCommercialUnderwriterNavigations { get; set; } = new List<BondRequestCommercial>();
+
+    public virtual ICollection<BondRequest> BondRequestHomeOfficeApproverNavigations { get; set; } = new List<BondRequest>();
+
+    public virtual ICollection<BondRequest> BondRequestUnderwriterNavigations { get; set; } = new List<BondRequest>();
+
     public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
 
     public virtual ICollection<Bond> Bonds { get; set; } = new List<Bond>();
 
-    public virtual ICollection<LineOauthorityLog> LineOauthorityLogApprovedByNavigations { get; set; } = new List<LineOauthorityLog>();
+    public virtual ICollection<LineOfAuthorityLog> LineOfAuthorityLogApprovedByNavigations { get; set; } = new List<LineOfAuthorityLog>();
 
-    public virtual ICollection<LineOauthorityLog> LineOauthorityLogCreatedByNavigations { get; set; } = new List<LineOauthorityLog>();
+    public virtual ICollection<LineOfAuthorityLog> LineOfAuthorityLogCreatedByNavigations { get; set; } = new List<LineOfAuthorityLog>();
 
     public virtual ICollection<NotebookEntry> NotebookEntries { get; set; } = new List<NotebookEntry>();
+
+    public virtual ICollection<Obligee> Obligees { get; set; } = new List<Obligee>();
 
     public virtual ICollection<ProfitCenter> ProfitCenters { get; set; } = new List<ProfitCenter>();
 
     public virtual ICollection<Surcharge> Surcharges { get; set; } = new List<Surcharge>();
+
+    public virtual ICollection<UnderwriterRecommendation> UnderwriterRecommendations { get; set; } = new List<UnderwriterRecommendation>();
 
     public virtual ICollection<UserLineOfAuthority> UserLineOfAuthorityCreatedByNavigations { get; set; } = new List<UserLineOfAuthority>();
 
@@ -77,6 +93,4 @@ public partial class UserProfile
     public virtual ICollection<UserLineOfAuthority> UserLineOfAuthorityUsers { get; set; } = new List<UserLineOfAuthority>();
 
     public virtual ICollection<VoidedBond> VoidedBonds { get; set; } = new List<VoidedBond>();
-
-    public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; }=new List<AccountStatusLog>();
 }

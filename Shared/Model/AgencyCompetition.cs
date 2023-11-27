@@ -20,7 +20,7 @@ public partial class AgencyCompetition
 
     public int? AnnualCommission { get; set; }
 
-    public string EnteredBy { get; set; } = null!;
+    public Guid EnteredBy { get; set; }
 
     public virtual Account AccountNumNavigation { get; set; } = null!;
 

@@ -16,7 +16,7 @@ public partial class BidStatusDm
 
     public int Order { get; set; }
 
-    public virtual ICollection<BidRequestCommercial> BidRequestCommercials { get; set; } = new List<BidRequestCommercial>();
+    public virtual ICollection<BondRequestCommercial> BondRequestCommercials { get; set; } = new List<BondRequestCommercial>();
 
-    public virtual ICollection<BidRequest> BidRequests { get; set; } = new List<BidRequest>();
+    public virtual ICollection<BondRequest> BondRequests { get; set; } = new List<BondRequest>();
 }

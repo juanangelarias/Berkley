@@ -1,8 +1,9 @@
-using JamesDAL.Server.Model;
+using James.Shared.Model;
 using System;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
 using System.Diagnostics;
+using James.Data.Server.Model;
 using Xunit.Abstractions;
 
 namespace James.Shared.Test
@@ -23,7 +24,6 @@ namespace James.Shared.Test
             var jamesDbContext = new JamesDatabaseContext(randomDbName, true, true);
             //Debug.WriteLine("Creating database: " + randomDbName);
             output.WriteLine("Creating database: " + randomDbName);
-            //await jamesDbContext.Database.MigrateAsync();
             await jamesDbContext.Database.MigrateAsync();
             Assert.NotEqual(0, jamesDbContext.AccountRates.Count());
             await jamesDbContext.Database.EnsureDeletedAsync();

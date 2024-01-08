@@ -8,7 +8,7 @@
 
 
 <table>
-    <tr>
+@*     <tr>
         <td>Username</td>
         <td>@SiteUserInfo?.Username</td>
     </tr>
@@ -43,11 +43,11 @@
     <tr>
         <td>Email</td>
         <td>@SiteUserInfo?.Email</td>
-    </tr>
+    </tr> *@
     <tr>
         <td style="vertical-align: top">AD Groups</td>
         <td>
-            @if (null != SiteUserInfo && SiteUserInfo.ActiveDirectoryGroups.Length > 0)
+            @*@if (null != SiteUserInfo && SiteUserInfo.ActiveDirectoryGroups.Length > 0)
             {
                 <table>
                     @foreach (var group in SiteUserInfo.ActiveDirectoryGroups)
@@ -56,14 +56,14 @@
                     }
                 </table>
             }
-            @*@(null != SiteUserInfo ? string.Join("<br/>", SiteUserInfo.ActiveDirectoryGroups) : "")*@
+            @(null != SiteUserInfo ? string.Join("<br/>", SiteUserInfo.ActiveDirectoryGroups) : "")*@
         </td>
     </tr>
 </table>
 
 
 @code {
-    private SiteUserInfo SiteUserInfo;
+    // private SiteUserInfo SiteUserInfo;
     private string result;
 
     protected override async Task OnInitializedAsync()
@@ -72,8 +72,8 @@
         //Debug.WriteLine(userinfo);
         //var body = await userinfo.Content.ReadAsStringAsync();
         //Debug.WriteLine(body);
-        SiteUserInfo = await Http.GetFromJsonAsync<SiteUserInfo>("/GetCurrentUserInfo");
-        Debug.WriteLine(SiteUserInfo);
+        // SiteUserInfo = await Http.GetFromJsonAsync<SiteUserInfo>("/GetCurrentUserInfo");
+        // Debug.WriteLine(SiteUserInfo);
         //TODO: Error handling
     }
 }

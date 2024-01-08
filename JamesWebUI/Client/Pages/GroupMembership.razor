@@ -8,7 +8,7 @@
 <table>
     <tr><th>Group Name</th>Member</tr>
     <tr>
-        <td>@_membership?.ActiveDirectoryGroup</td>
+@*         <td>@_membership?.ActiveDirectoryGroup</td>
         @if (null == _membership || _membership.Members.Length == 0)
         {
             <td>Group has no members or does not exist.</td>
@@ -21,7 +21,7 @@
                     <tr><td>@member</td></tr>
                 }
             </table>
-        }
+        } *@
     </tr>
     <tr>
         <td><InputText @bind-Value="GroupName"></InputText></td>
@@ -30,7 +30,7 @@
 </table>
 
 @code {
-    private ActiveDirectoryGroupMembership _membership;
+    // private ActiveDirectoryGroupMembership _membership;
     [Parameter]
     public string? GroupName { get; set; }
 
@@ -42,16 +42,16 @@
 
     private async Task GetMembers()
     {
-        if (null != GroupName)
-            _membership =
-                await Http.GetFromJsonAsync<ActiveDirectoryGroupMembership>(
-                    $"GetActiveDirectoryGroupMemebership/{GroupName}");
-        else _membership = new ActiveDirectoryGroupMembership { ActiveDirectoryGroup = "", Members = Array.Empty<string>() };
+        // if (null != GroupName)
+        //     _membership =
+        //         await Http.GetFromJsonAsync<ActiveDirectoryGroupMembership>(
+        //             $"GetActiveDirectoryGroupMemebership/{GroupName}");
+        // else _membership = new ActiveDirectoryGroupMembership { ActiveDirectoryGroup = "", Members = Array.Empty<string>() };
     }
 
     private async Task LookupMembership()
     {
-        if (GroupName == _membership?.ActiveDirectoryGroup) return;
+        // if (GroupName == _membership?.ActiveDirectoryGroup) return;
         await GetMembers();
         Navigation.NavigateTo($"/GroupMembership/{GroupName}");
     }

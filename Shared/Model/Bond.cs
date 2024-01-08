@@ -26,7 +26,7 @@ public partial class Bond
 
     public string Status { get; set; } = null!;
 
-    public Guid Underwriter { get; set; }
+    public Guid UnderWriterId { get; set; }
 
     public Guid? AgentId { get; set; }
 
@@ -164,7 +164,7 @@ public partial class Bond
 
     public virtual State StateNavigation { get; set; } = null!;
 
-    public virtual UserProfile UnderwriterNavigation { get; set; } = null!;
+    public virtual Underwriter UnderWriter { get; set; } = null!;
 
     public virtual ICollection<WorkInProgressJob> WorkInProgressJobs { get; set; } = new List<WorkInProgressJob>();
 }

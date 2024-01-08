@@ -18,7 +18,7 @@ public partial class UserLineOfAuthority
 
     public int Aggregate { get; set; }
 
-    public DateTime Expiration { get; set; }
+    public DateOnly Expiration { get; set; }
 
     public string DivisionCode { get; set; } = null!;
 

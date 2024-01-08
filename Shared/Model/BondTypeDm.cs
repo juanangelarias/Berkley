@@ -20,7 +20,7 @@ public partial class BondTypeDm
 
     public string? Class { get; set; }
 
-    public bool? Active { get; set; }
+    public bool Active { get; set; }
 
     public virtual ICollection<BondHold> BondHolds { get; set; } = new List<BondHold>();
 

@@ -24,7 +24,7 @@ public partial class AgentsInAgency
 
     public string? Comments { get; set; }
 
-    public virtual LegalEntity Agency { get; set; } = null!;
+    public virtual Agency Agency { get; set; } = null!;
 
-    public virtual LegalEntity Agent { get; set; } = null!;
+    public virtual Agent Agent { get; set; } = null!;
 }

@@ -16,7 +16,7 @@ public partial class UnderwriterRecommendation
 
     public Guid PostedBy { get; set; }
 
-    public string Comments { get; set; } = null!;
+    public string? Comments { get; set; }
 
     public string? Description { get; set; }
 

@@ -14,7 +14,7 @@ public partial class CashFlowStatement
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime StatementDate { get; set; }
+    public DateOnly StatementDate { get; set; }
 
     public string Type { get; set; } = null!;
 

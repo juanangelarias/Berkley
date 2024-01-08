@@ -24,15 +24,11 @@ public partial class LegalEntity
 
     public string EntityType { get; set; } = null!;
 
-    public string? EmailAddress { get; set; }
-
     public string? Website { get; set; }
 
     public bool IsIndividual { get; set; }
 
     public string? TaxIdEncrypted { get; set; }
-
-    public virtual ICollection<Account> AccountAgents { get; set; } = new List<Account>();
 
     public virtual ICollection<Account> AccountCpacontacts { get; set; } = new List<Account>();
 
@@ -56,10 +52,6 @@ public partial class LegalEntity
 
     public virtual Agent? Agent { get; set; }
 
-    public virtual AgentsInAgency? AgentsInAgencyAgency { get; set; }
-
-    public virtual ICollection<AgentsInAgency> AgentsInAgencyAgents { get; set; } = new List<AgentsInAgency>();
-
     public virtual ICollection<Bond> BondAgencies { get; set; } = new List<Bond>();
 
     public virtual ICollection<Bond> BondAgents { get; set; } = new List<Bond>();
@@ -77,8 +69,6 @@ public partial class LegalEntity
     public virtual ICollection<BondRequestCommercial> BondRequestCommercials { get; set; } = new List<BondRequestCommercial>();
 
     public virtual ICollection<Bond> BondResponsibleParties { get; set; } = new List<Bond>();
-
-    public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
 
     public virtual LegalEntityTypeDm EntityTypeNavigation { get; set; } = null!;
 

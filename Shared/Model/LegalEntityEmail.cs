@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class CollateralTypeDm
+public partial class LegalEntityEmail
 {
     public Guid Id { get; set; }
 
@@ -12,7 +12,11 @@ public partial class CollateralTypeDm
 
     public DateTime Modified { get; set; }
 
+    public Guid LegalEntityId { get; set; }
+
     public string Type { get; set; } = null!;
 
-    public bool Active { get; set; }
+    public string EmailAddress { get; set; } = null!;
+
+    public virtual EmailTypeDm TypeNavigation { get; set; } = null!;
 }

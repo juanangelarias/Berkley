@@ -20,9 +20,9 @@ public partial class PowerOfAttorney
 
     public int Serial { get; set; }
 
-    public DateTime? FirstIssued { get; set; }
+    public DateOnly? FirstIssued { get; set; }
 
-    public DateTime? CurrentIssued { get; set; }
+    public DateOnly? CurrentIssued { get; set; }
 
     public string? Comments { get; set; }
 

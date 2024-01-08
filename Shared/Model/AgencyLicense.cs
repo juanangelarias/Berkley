@@ -22,15 +22,15 @@ public partial class AgencyLicense
 
     public Guid InsurerId { get; set; }
 
-    public DateTime? Expiration { get; set; }
+    public DateOnly? Expiration { get; set; }
 
     public string? Comments { get; set; }
 
     public string Status { get; set; } = null!;
 
-    public DateTime? Appointment { get; set; }
+    public DateOnly? Appointment { get; set; }
 
-    public DateTime? Termination { get; set; }
+    public DateOnly? Termination { get; set; }
 
     public bool? AppointingState { get; set; }
 

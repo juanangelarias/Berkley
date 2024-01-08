@@ -14,7 +14,7 @@ public partial class FinancialRatio
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime StatementDate { get; set; }
+    public DateOnly StatementDate { get; set; }
 
     public double? CurrentStated { get; set; }
 

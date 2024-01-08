@@ -20,7 +20,7 @@ public partial class BondBlock
 
     public bool Enabled { get; set; }
 
-    public bool? AgencyRestricted { get; set; }
+    public bool AgencyRestricted { get; set; }
 
     public Guid? IssuedBy { get; set; }
 

@@ -46,7 +46,11 @@ public partial class Agency
 
     public virtual ICollection<AgencyInventory> AgencyInventories { get; set; } = new List<AgencyInventory>();
 
+    public virtual ICollection<AgentsInAgency> AgentsInAgencies { get; set; } = new List<AgentsInAgency>();
+
     public virtual LegalEntity? BillingContact { get; set; }
+
+    public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 

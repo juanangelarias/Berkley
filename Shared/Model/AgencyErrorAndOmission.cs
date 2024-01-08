@@ -16,7 +16,7 @@ public partial class AgencyErrorAndOmission
 
     public string Carrier { get; set; } = null!;
 
-    public DateTime Expiration { get; set; }
+    public DateOnly Expiration { get; set; }
 
     public int CoverageLimit { get; set; }
 

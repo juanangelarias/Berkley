@@ -12,19 +12,19 @@ public partial class BondRequestCommercial
 
     public DateTime Modified { get; set; }
 
-    public string BidNumber { get; set; } = null!;
+    public string BondRequestNumber { get; set; } = null!;
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime Requested { get; set; }
+    public DateOnly Requested { get; set; }
 
     public int? LegacyBidNumber { get; set; }
 
     public string Status { get; set; } = null!;
 
-    public DateTime? EstimatedStart { get; set; }
+    public DateOnly? EstimatedStart { get; set; }
 
-    public DateTime? EstimatedFinish { get; set; }
+    public DateOnly? EstimatedFinish { get; set; }
 
     public Guid? ObligeeId { get; set; }
 
@@ -32,7 +32,7 @@ public partial class BondRequestCommercial
 
     public Guid? RecordedBy { get; set; }
 
-    public DateTime? Recorded { get; set; }
+    public DateOnly? Recorded { get; set; }
 
     public DateTime? RecordedMessageSent { get; set; }
 
@@ -48,7 +48,7 @@ public partial class BondRequestCommercial
 
     public string? Description { get; set; }
 
-    public Guid? Underwriter { get; set; }
+    public Guid? UnderWriterId { get; set; }
 
     public int? SfaaCode { get; set; }
 
@@ -58,7 +58,7 @@ public partial class BondRequestCommercial
 
     public int? LineOfCreditAggregate { get; set; }
 
-    public DateTime? LineOfCreditExpiration { get; set; }
+    public DateOnly? LineOfCreditExpiration { get; set; }
 
     public int? Exposure { get; set; }
 
@@ -84,5 +84,5 @@ public partial class BondRequestCommercial
 
     public virtual BidStatusDm StatusNavigation { get; set; } = null!;
 
-    public virtual UserProfile? UnderwriterNavigation { get; set; }
+    public virtual Underwriter? UnderWriter { get; set; }
 }

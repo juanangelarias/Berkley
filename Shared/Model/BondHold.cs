@@ -22,7 +22,7 @@ public partial class BondHold
 
     public string? Branch { get; set; }
 
-    public Guid? Underwriter { get; set; }
+    public Guid? UnderWriterId { get; set; }
 
     public Guid? AgencyId { get; set; }
 
@@ -44,13 +44,13 @@ public partial class BondHold
 
     public DateTime? Expiration { get; set; }
 
-    public DateTime? BillDate { get; set; }
+    public DateOnly? BillDate { get; set; }
 
     public int? Sfaacode { get; set; }
 
     public int? SfaaclassCode { get; set; }
 
-    public DateTime? StatusLetterNext { get; set; }
+    public DateOnly? StatusLetterNext { get; set; }
 
     public int? ContractAmount { get; set; }
 
@@ -84,7 +84,7 @@ public partial class BondHold
 
     public int? CurrentTreatyYear { get; set; }
 
-    public DateTime? AccountingDate { get; set; }
+    public DateOnly? AccountingDate { get; set; }
 
     public string? BidNumber { get; set; }
 
@@ -128,5 +128,5 @@ public partial class BondHold
 
     public virtual State? StateNavigation { get; set; }
 
-    public virtual UserProfile? UnderwriterNavigation { get; set; }
+    public virtual Underwriter? UnderWriter { get; set; }
 }

@@ -54,7 +54,7 @@ public partial class BondTransaction
 
     public string? Comments { get; set; }
 
-    public DateTime AccountingDate { get; set; }
+    public DateOnly AccountingDate { get; set; }
 
     public double PaidToDate { get; set; }
 
@@ -94,7 +94,7 @@ public partial class BondTransaction
 
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
-    public virtual LegalEntity Agency { get; set; } = null!;
+    public virtual Agency Agency { get; set; } = null!;
 
     public virtual Bond BondNumberNavigation { get; set; } = null!;
 
@@ -104,5 +104,5 @@ public partial class BondTransaction
 
     public virtual Sfaa SfaaCodeNavigation { get; set; } = null!;
 
-    public virtual UserProfile Underwriter { get; set; } = null!;
+    public virtual Underwriter Underwriter { get; set; } = null!;
 }

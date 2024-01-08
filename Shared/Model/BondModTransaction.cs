@@ -16,9 +16,9 @@ public partial class BondModTransaction
 
     public int BondMod { get; set; }
 
-    public DateTime Effective { get; set; }
+    public DateOnly Effective { get; set; }
 
-    public DateTime Expiration { get; set; }
+    public DateOnly Expiration { get; set; }
 
     public int ModPremium { get; set; }
 

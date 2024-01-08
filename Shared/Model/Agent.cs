@@ -20,6 +20,10 @@ public partial class Agent
 
     public string? DefaultEmail { get; set; }
 
+    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
+
+    public virtual ICollection<AgentsInAgency> AgentsInAgencies { get; set; } = new List<AgentsInAgency>();
+
     public virtual PhoneNumber? DefaultCellNumberNavigation { get; set; }
 
     public virtual PhoneNumber? DefaultPhoneNumberNavigation { get; set; }

@@ -14,7 +14,7 @@ public partial class Indemnitor
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime AgreementDate { get; set; }
+    public DateOnly AgreementDate { get; set; }
 
     public string? AgreementType { get; set; }
 

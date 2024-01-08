@@ -18,7 +18,7 @@ public partial class DivisionDm
 
     public string LoanotificationGroup { get; set; } = null!;
 
-    public bool? Active { get; set; }
+    public bool Active { get; set; }
 
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 

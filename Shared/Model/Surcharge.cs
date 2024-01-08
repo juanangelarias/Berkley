@@ -16,9 +16,9 @@ public partial class Surcharge
 
     public double Amount { get; set; }
 
-    public DateTime Effective { get; set; }
+    public DateOnly Effective { get; set; }
 
-    public DateTime Expiration { get; set; }
+    public DateOnly Expiration { get; set; }
 
     public bool Exclude { get; set; }
 

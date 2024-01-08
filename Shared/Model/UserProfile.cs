@@ -40,8 +40,6 @@ public partial class UserProfile
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
 
-    public virtual ICollection<Account> AccountUnderwriterNavigations { get; set; } = new List<Account>();
-
     public virtual ICollection<AgencyCompetition> AgencyCompetitions { get; set; } = new List<AgencyCompetition>();
 
     public virtual ICollection<AgencyInventory> AgencyInventories { get; set; } = new List<AgencyInventory>();
@@ -50,9 +48,7 @@ public partial class UserProfile
 
     public virtual ICollection<BondBlock> BondBlocks { get; set; } = new List<BondBlock>();
 
-    public virtual ICollection<BondHold> BondHoldHomeOfficeApprovedByNavigations { get; set; } = new List<BondHold>();
-
-    public virtual ICollection<BondHold> BondHoldUnderwriterNavigations { get; set; } = new List<BondHold>();
+    public virtual ICollection<BondHold> BondHolds { get; set; } = new List<BondHold>();
 
     public virtual ICollection<BondRequest> BondRequestCctoNavigations { get; set; } = new List<BondRequest>();
 
@@ -62,15 +58,7 @@ public partial class UserProfile
 
     public virtual ICollection<BondRequestCommercial> BondRequestCommercialRecordedByNavigations { get; set; } = new List<BondRequestCommercial>();
 
-    public virtual ICollection<BondRequestCommercial> BondRequestCommercialUnderwriterNavigations { get; set; } = new List<BondRequestCommercial>();
-
     public virtual ICollection<BondRequest> BondRequestHomeOfficeApproverNavigations { get; set; } = new List<BondRequest>();
-
-    public virtual ICollection<BondRequest> BondRequestUnderwriterNavigations { get; set; } = new List<BondRequest>();
-
-    public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
-
-    public virtual ICollection<Bond> Bonds { get; set; } = new List<Bond>();
 
     public virtual ICollection<LineOfAuthorityLog> LineOfAuthorityLogApprovedByNavigations { get; set; } = new List<LineOfAuthorityLog>();
 
@@ -79,8 +67,6 @@ public partial class UserProfile
     public virtual ICollection<NotebookEntry> NotebookEntries { get; set; } = new List<NotebookEntry>();
 
     public virtual ICollection<Obligee> Obligees { get; set; } = new List<Obligee>();
-
-    public virtual ICollection<ProfitCenter> ProfitCenters { get; set; } = new List<ProfitCenter>();
 
     public virtual ICollection<Surcharge> Surcharges { get; set; } = new List<Surcharge>();
 

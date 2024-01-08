@@ -16,15 +16,15 @@ public partial class BondRequest
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime Requested { get; set; }
+    public DateOnly Requested { get; set; }
 
-    public DateTime? BidDate { get; set; }
+    public DateOnly? BidDate { get; set; }
 
     public Guid? ObligeeId { get; set; }
 
-    public DateTime? EstimatedStart { get; set; }
+    public DateOnly? EstimatedStart { get; set; }
 
-    public DateTime? EstimatedFinish { get; set; }
+    public DateOnly? EstimatedFinish { get; set; }
 
     public string? ContractNumber { get; set; }
 
@@ -58,7 +58,7 @@ public partial class BondRequest
 
     public long? WipworkOnHand { get; set; }
 
-    public DateTime? Wipdate { get; set; }
+    public DateOnly? Wipdate { get; set; }
 
     public int? NewContractsLowBids { get; set; }
 
@@ -70,7 +70,7 @@ public partial class BondRequest
 
     public int? LineOfCreditAggregate { get; set; }
 
-    public DateTime? LineOfCreditExpiration { get; set; }
+    public DateOnly? LineOfCreditExpiration { get; set; }
 
     public string? RequestedBy { get; set; }
 
@@ -100,7 +100,7 @@ public partial class BondRequest
 
     public string? HomeOfficeAction { get; set; }
 
-    public Guid? Underwriter { get; set; }
+    public Guid? UnderWriterId { get; set; }
 
     public string RequestType { get; set; } = null!;
 
@@ -136,5 +136,5 @@ public partial class BondRequest
 
     public virtual BidStatusDm StatusNavigation { get; set; } = null!;
 
-    public virtual UserProfile? UnderwriterNavigation { get; set; }
+    public virtual Underwriter? UnderWriter { get; set; }
 }

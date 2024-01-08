@@ -14,7 +14,7 @@ public partial class Ratio
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime StatementDate { get; set; }
+    public DateOnly StatementDate { get; set; }
 
     public string? StatementType { get; set; }
 

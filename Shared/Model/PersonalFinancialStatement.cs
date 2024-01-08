@@ -14,7 +14,7 @@ public partial class PersonalFinancialStatement
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime StatementDate { get; set; }
+    public DateOnly StatementDate { get; set; }
 
     public string AccountType { get; set; } = null!;
 

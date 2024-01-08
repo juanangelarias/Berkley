@@ -20,5 +20,5 @@ public partial class AppUser
 
     public string? Email { get; set; }
 
-    public bool? Active { get; set; }
+    public bool Active { get; set; }
 }

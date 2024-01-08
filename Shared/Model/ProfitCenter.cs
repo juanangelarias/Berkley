@@ -24,11 +24,11 @@ public partial class ProfitCenter
 
     public Guid BudgetDefault { get; set; }
 
-    public Guid? Underwriter { get; set; }
+    public Guid? UnderWriterId { get; set; }
 
-    public DateTime Effective { get; set; }
+    public DateOnly Effective { get; set; }
 
-    public DateTime Expiration { get; set; }
+    public DateOnly Expiration { get; set; }
 
     public string? CommercialRegion { get; set; }
 
@@ -42,5 +42,5 @@ public partial class ProfitCenter
 
     public virtual LineOfBusinessDm LineOfBusinessNavigation { get; set; } = null!;
 
-    public virtual UserProfile? UnderwriterNavigation { get; set; }
+    public virtual Underwriter? UnderWriter { get; set; }
 }

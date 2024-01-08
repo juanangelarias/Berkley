@@ -14,7 +14,7 @@ public partial class WorkInProgressSummary
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime Wipdate { get; set; }
+    public DateOnly Wipdate { get; set; }
 
     public long ContractPrice { get; set; }
 

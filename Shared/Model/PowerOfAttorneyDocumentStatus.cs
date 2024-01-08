@@ -14,9 +14,9 @@ public partial class PowerOfAttorneyDocumentStatus
 
     public Guid Poaid { get; set; }
 
-    public DateTime? Requested { get; set; }
+    public DateOnly? Requested { get; set; }
 
-    public DateTime? Received { get; set; }
+    public DateOnly? Received { get; set; }
 
     public string? Name { get; set; }
 

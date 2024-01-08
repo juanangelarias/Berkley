@@ -24,7 +24,7 @@ public partial class Account
 
     public string? DunBradstreetRate { get; set; }
 
-    public DateTime? DunBradstreetDate { get; set; }
+    public DateOnly? DunBradstreetDate { get; set; }
 
     public string? DunBradstreetSic { get; set; }
 
@@ -36,17 +36,17 @@ public partial class Account
 
     public Guid? BankPhoneId { get; set; }
 
-    public DateTime? BankLastContacted { get; set; }
+    public DateOnly? BankLastContacted { get; set; }
 
     public int? BankLoc { get; set; }
 
-    public DateTime? BankLocexpires { get; set; }
+    public DateOnly? BankLocexpires { get; set; }
 
     public int? BankLocused { get; set; }
 
     public int? BankLochigh { get; set; }
 
-    public DateTime? BankLochighDate { get; set; }
+    public DateOnly? BankLochighDate { get; set; }
 
     public string? BankLocsecurity { get; set; }
 
@@ -102,7 +102,7 @@ public partial class Account
 
     public Guid? CpacontactId { get; set; }
 
-    public Guid? Underwriter { get; set; }
+    public Guid? UnderwriterId { get; set; }
 
     public string WatchStatus { get; set; } = null!;
 
@@ -124,7 +124,7 @@ public partial class Account
 
     public string? PolutionLiabilityCarrier { get; set; }
 
-    public DateTime? PolutionLiabilityExpires { get; set; }
+    public DateOnly? PolutionLiabilityExpires { get; set; }
 
     public bool AffiliateCompany { get; set; }
 
@@ -148,7 +148,7 @@ public partial class Account
 
     public virtual Agency? AgencyNumberNavigation { get; set; }
 
-    public virtual LegalEntity? Agent { get; set; }
+    public virtual Agent? Agent { get; set; }
 
     public virtual LawEntity? Attorney { get; set; }
 
@@ -202,7 +202,7 @@ public partial class Account
 
     public virtual TaxBasisDm? TaxBasisNavigation { get; set; }
 
-    public virtual UserProfile? UnderwriterNavigation { get; set; }
+    public virtual Underwriter? Underwriter { get; set; }
 
     public virtual ICollection<UnderwriterRecommendation> UnderwriterRecommendations { get; set; } = new List<UnderwriterRecommendation>();
 

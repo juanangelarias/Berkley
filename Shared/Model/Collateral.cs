@@ -18,7 +18,7 @@ public partial class Collateral
 
     public int? Amount { get; set; }
 
-    public DateTime? Expiration { get; set; }
+    public DateOnly? Expiration { get; set; }
 
     public bool AutoRenew { get; set; }
 

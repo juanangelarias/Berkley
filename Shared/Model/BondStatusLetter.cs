@@ -14,9 +14,9 @@ public partial class BondStatusLetter
 
     public string BondNumber { get; set; } = null!;
 
-    public DateTime Sent { get; set; }
+    public DateOnly Sent { get; set; }
 
-    public DateTime? ReceivedBack { get; set; }
+    public DateOnly? ReceivedBack { get; set; }
 
     public double? PercentComplete { get; set; }
 

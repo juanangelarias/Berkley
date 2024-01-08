@@ -1,4 +1,6 @@
-﻿using James.Shared;
+﻿using System.Diagnostics;
+using System.Reflection;
+using James.Shared;
 using James.Shared.Model;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -113,13 +115,51 @@ namespace James.Data.Server.Model
         //    ORDER BY FixedLevel, tableName;
         public void AddFunctionsForDefaultValues(ModelBuilder modelBuilder)
         {
-            //modelBuilder.
+            //TODO
         }
 
-        public void SeedSnapshotData(ModelBuilder modelBuilder)
+        public async Task SeedSnapshotData(ModelBuilder modelBuilder)
         {
+            //TODO:  Locate InsertData.sql, load and execute.
+            var curDir = Assembly.GetExecutingAssembly().Location;
+            var diCurrent = new DirectoryInfo(curDir);
+            var diMigrations = diCurrent.GetDirectories().First(di =>
+                string.Equals(di.Name, "Migrations", StringComparison.InvariantCultureIgnoreCase));
+            var fiInsertSqlFile = diMigrations.GetFiles("InsertData.sql").First();
+            //NOTE: Must have sqlcmd installed on machine for this to work.
+            var sqlCmdProc = new Process{StartInfo = new ProcessStartInfo("SqlCmd", " -i "+ fiInsertSqlFile.FullName)
+            {
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = true, WindowStyle = ProcessWindowStyle.Hidden
+            }};
+            var srError = sqlCmdProc.StandardError;
+            var srOutput = sqlCmdProc.StandardOutput;
+            if (!sqlCmdProc.Start())
+            {
+                Debug.WriteLine("SqlCmd didn't start.  Probably not installed properly.");
+                throw new Exception("SqlCmd did not start");
+            }
 
-
+            await sqlCmdProc.WaitForExitAsync();
+            var CheckOutputTasks = new Task<string>[]{ srError.ReadToEndAsync(), srOutput.ReadToEndAsync()};
+            Task.WaitAll(CheckOutputTasks);
+            var error = CheckOutputTasks[0].Result;
+            var output = CheckOutputTasks[1].Result;
+            if (Environment.UserInteractive)
+                Console.WriteLine(output);
+            else
+                Debug.WriteLine(output);
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                var forOutput = "SqlCmd returned the following Error:\r\n" + error;
+                if (Environment.UserInteractive)
+                    Console.WriteLine(forOutput);
+                else 
+                    Debug.WriteLine(output);
+                throw new Exception(forOutput);
+            }
+            
         }
         public void SeedTestData(ModelBuilder modelBuilder) 
         {

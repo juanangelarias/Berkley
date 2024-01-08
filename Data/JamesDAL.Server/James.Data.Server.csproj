@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="TempModel\**" />
+    <EmbeddedResource Remove="TempModel\**" />
+    <None Remove="TempModel\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Migrations\JamesDatabaseContextModelSnapshot.orig.cs" />
   </ItemGroup>
 

@@ -14,7 +14,7 @@ public partial class WorkInProgressJob
 
     public string AccountNum { get; set; } = null!;
 
-    public DateTime Wipdate { get; set; }
+    public DateOnly Wipdate { get; set; }
 
     public string JobNumber { get; set; } = null!;
 

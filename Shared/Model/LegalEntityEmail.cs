@@ -18,5 +18,7 @@ public partial class LegalEntityEmail
 
     public string EmailAddress { get; set; } = null!;
 
+    public virtual LegalEntity LegalEntity { get; set; } = null!;
+
     public virtual EmailTypeDm TypeNavigation { get; set; } = null!;
 }

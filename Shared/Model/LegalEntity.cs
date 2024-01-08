@@ -84,6 +84,8 @@ public partial class LegalEntity
 
     public virtual ICollection<LegalEntityAddress> LegalEntityAddresses { get; set; } = new List<LegalEntityAddress>();
 
+    public virtual ICollection<LegalEntityEmail> LegalEntityEmails { get; set; } = new List<LegalEntityEmail>();
+
     public virtual ICollection<LegalEntityPhone> LegalEntityPhones { get; set; } = new List<LegalEntityPhone>();
 
     public virtual Obligee? Obligee { get; set; }

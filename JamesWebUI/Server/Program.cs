@@ -1,10 +1,18 @@
+using James.Data.Server.Model;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
+using Radzen;
 
-var builder = WebApplication.CreateBuilder(args);
+
+var config = new ConfigurationBuilder()
+    .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
+    .Build();
 
 // Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient("Auth0UserInfo",
     client => client.BaseAddress = new Uri("https://apps-sbox.wrberkley.auth0.com/"));
@@ -21,8 +29,34 @@ builder.Services.AddAuthentication(options =>
     options.Audience = builder.Configuration["Auth0:ApiIdentifier"];
 });
 
+builder.Services
+    .AddGraphQLServer()
+    .AddQueryType<Query>()
+    .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled);
+
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+builder.Services
+    .AddPooledDbContextFactory<JamesDatabaseContext>(o =>
+    {
+        o.EnableDetailedErrors();
+        o.UseSqlServer(config.GetConnectionString("James"));
+        //o.UseMemoryCache()
+    });
+builder.Services.AddCors(options =>
+{
+    //options.AddPolicy(name: MyAllowSpecificOrigins,
+    //    policy =>
+    //    {
+    //        policy.AllowAnyOrigin();
+    //        policy.WithOrigins("https://localhost:7265", "http://localhost:5130");
+    //    });
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+        //policy.WithOrigins("https://localhost:7265/");
+    });
+});
 
 var app = builder.Build();
 
@@ -48,8 +82,9 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 
 
+app.UseCors();
 
-
+app.MapGraphQL("/graphql");
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");

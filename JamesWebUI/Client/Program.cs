@@ -1,4 +1,5 @@
 using JamesWebUI.Client;
+using JamesWebUI.Client.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -13,11 +14,17 @@ builder.Services.AddHttpClient("JamesAPI", client => client.BaseAddress = new Ur
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("JamesAPI"));
 
+
+
+builder.Services.AddTransient<ThemeService>();
+
 builder.Services.AddOidcAuthentication(options =>
 {
     builder.Configuration.Bind("Auth0", options.ProviderOptions);
     options.ProviderOptions.ResponseType = "code";
     options.ProviderOptions.AdditionalProviderParameters.Add("audience", builder.Configuration["Auth0:Audience"]);
 });
-    
+
+
+
 await builder.Build().RunAsync();

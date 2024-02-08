@@ -1,9 +1,74 @@
 ﻿@page "/"
+@page "/dashboard"
+
+@using System.Globalization
+
+
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+
+<Theme />
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<RadzenChart>
+    <RadzenColumnSeries Data="@premium" CategoryProperty="Month" ValueProperty="Premium" Title="Actual">
+        <ChildContent>
+            <RadzenSeriesDataLabels Visible="true"/>
+        </ChildContent>
+        <TooltipTemplate Context="data">
+            Premium for <span>@data.Month</span>: <strong>@data.Premium.ToString("C0")</strong>
+        </TooltipTemplate>    
+    </RadzenColumnSeries>
+    <RadzenColumnSeries Data="@budget" CategoryProperty="Month" ValueProperty="Premium" Title="Budget">
+        <ChildContent>
+            <RadzenSeriesDataLabels Visible="true" />
+        </ChildContent>
+        <TooltipTemplate Context="data">
+            Budget for <span>@data.Month</span>: <strong>@data.Premium.ToString("C0")</strong>
+        </TooltipTemplate>
+    </RadzenColumnSeries>
+    <RadzenColumnOptions Margin="0"/>
+    <RadzenValueAxis Formatter="@FormatAsUSD" >
+        <RadzenAxisTitle Text="Premium in USD"/>    
+    </RadzenValueAxis>
+</RadzenChart>
 
-Welcome to your new app.
+@code {
+    class DataItem
+    {
+        public string Month { get; set; }
+        public double Premium { get; set; }
+    }
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    DataItem[] premium = new DataItem[]
+    {
+        new DataItem {Month = "Jan", Premium=1000},
+        new DataItem {Month = "Feb", Premium=900},
+        new DataItem {Month = "Mar", Premium=1500},
+        new DataItem {Month = "Apr", Premium=1600},
+        new DataItem {Month = "May", Premium=1200},
+        new DataItem {Month = "June", Premium=800}
+    };
+    DataItem[] budget = new DataItem[]
+    {
+        new DataItem {Month = "Jan", Premium=950},
+        new DataItem {Month = "Feb", Premium=1000},
+        new DataItem {Month = "Mar", Premium=1475},
+        new DataItem {Month = "Apr", Premium=1740},
+        new DataItem {Month = "May", Premium=1100},
+        new DataItem {Month = "June", Premium=950}
+    };
+
+
+    string FormatAsUSD(object value)
+    {
+        return ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+    }
+    protected override void OnInitialized()
+    {
+        ThemeService.Initialize(NavigationManager);
+    }
+}
+

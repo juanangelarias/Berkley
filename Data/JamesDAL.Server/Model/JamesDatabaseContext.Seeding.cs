@@ -11,21 +11,39 @@ namespace James.Data.Server.Model
     {
         private bool _seedSnapshot = false;
         private bool _seedTestData = false;
-        private string _connectionString 
-            = ConfigurationHelper.ConfigGetConnectionStringByName("James");
-        public JamesDatabaseContext(string testDbName, bool seedSnapshot, bool seedTestData)
-        {
-            this._seedSnapshot = seedSnapshot;
-            this._seedTestData = seedTestData;
-            var scsb = new SqlConnectionStringBuilder
-            {
-                DataSource = "(localdb)\\mssqllocaldb",
-                InitialCatalog = testDbName,
-                IntegratedSecurity = true,
-                MultipleActiveResultSets = true
-            };
-            _connectionString = scsb.ConnectionString;
-        }
+        //private string _connectionString 
+        //    = ConfigurationHelper.ConfigGetConnectionStringByName("James");
+
+        //HACK:  Moving this to private for use in pooled connections
+        //TODO:  Figure out how to use this with unit test.
+        //UNDONE:  Getting connection pooling to work has probably broken this
+        //NOTE:  Commenting this out during POC work 2/1/24, knowing this breaks our plan for unit testing.  DO NOT REMOVE
+        //protected JamesDatabaseContext(string testDbName, bool seedSnapshot, bool seedTestData) :
+        //    this((DbContextOptionsBuilder)( option =>
+        //    {
+        //        option.EnableDetailedErrors();
+        //        option.UseSqlServer(new SqlConnectionStringBuilder
+        //        {
+        //            DataSource = "(localdb)\\mssqllocaldb",
+        //            InitialCatalog = testDbName,
+        //            IntegratedSecurity = true,
+        //            MultipleActiveResultSets = true
+        //        }.ConnectionString);
+        //    }))
+        //{
+        //    this._seedSnapshot = seedSnapshot;
+        //    this._seedTestData = seedTestData;
+        //    ////TODO: Decide if the below is still needed for unit test database generator
+        //    //var scsb = new SqlConnectionStringBuilder
+        //    //{
+        //    //    DataSource = "(localdb)\\mssqllocaldb",
+        //    //    InitialCatalog = testDbName,
+        //    //    IntegratedSecurity = true,
+        //    //    MultipleActiveResultSets = true
+        //    //};
+        //    //_connectionString = scsb.ConnectionString;
+        //}
+        //NOTE:  End of portion commented out 2/1/24
 
         //Order of loading is determined by foreign key constraints
         //It can be queried with the following SQL:
@@ -115,7 +133,7 @@ namespace James.Data.Server.Model
         //    ORDER BY FixedLevel, tableName;
         public void AddFunctionsForDefaultValues(ModelBuilder modelBuilder)
         {
-            //TODO
+            //UNDONE:
         }
 
         public async Task SeedSnapshotData(ModelBuilder modelBuilder)

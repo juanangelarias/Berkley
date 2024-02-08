@@ -336,8 +336,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<WorkInProgressSummary> WorkInProgressSummaries { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(_connectionString);
+    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //    => optionsBuilder.UseSqlServer(_connectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

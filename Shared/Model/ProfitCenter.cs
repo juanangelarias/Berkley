@@ -32,7 +32,7 @@ public partial class ProfitCenter
 
     public string? CommercialRegion { get; set; }
 
-    public virtual ProfitCenter BudgetDefaultNavigation { get; set; } = null!;
+    public virtual ProfitCenter? BudgetDefaultNavigation { get; set; } = null!;
 
     public virtual CommercialRegionDm? CommercialRegionNavigation { get; set; }
 

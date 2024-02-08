@@ -1,0 +1,3 @@
+query GetAccountNumbers($filter:String, $allowSmallFilters: Boolean){
+  filteredAccountNumbers(filter: $filter, allowSmallFilters: $allowSmallFilters)
+}

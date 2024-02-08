@@ -1,0 +1,103 @@
+@page "/AccountEdit"
+@using System.Diagnostics
+@using StrawberryShake
+@using StrawberryShakeWASM.Client.Components
+@inject IAccountClient accountClient;
+@* @RenderMode="@RenderMode.InteractiveWebAssembly" *@
+
+<h1>Account Editor</h1>
+
+
+@if (null != accountNumbers)
+{
+<span>Type an account number:&nbsp;&nbsp;
+    <RadzenAutoComplete Value=@accountNumber
+                        Change=@OnAcctNumChange 
+                        Data=@accountNumbers 
+                        @rendermode="@RenderMode.InteractiveWebAssembly" ></RadzenAutoComplete>
+</span>
+}
+else
+{
+    <p>Loading. . . </p>
+}
+<UseGetAccountByAccountNumber Context="acctDetails" AccountNum=@queryAccountNumber Strategy="ExecutionStrategy.CacheFirst">
+    <ChildContent>
+        <RadzenCard>
+            <RadzenRow>
+                <RadzenColumn>Account Number Sent</RadzenColumn>
+                <RadzenColumn>@accountNumber</RadzenColumn>
+            </RadzenRow>
+            @if (acctDetails?.Account != null)
+            {
+                <RadzenRow>
+                    <RadzenColumn>Account Number Returned</RadzenColumn>
+                    <RadzenColumn>@acctDetails?.Account?.AccountNum</RadzenColumn>
+                    </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn>Bank</RadzenColumn>
+                    <RadzenColumn><RadzenTextBox Value=@acctDetails.Account.Bank></RadzenTextBox></RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn>Division</RadzenColumn>
+                    <RadzenColumn>@acctDetails.Account.Division</RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn>Branch Approved By</RadzenColumn>
+                    <RadzenColumn>@acctDetails.Account.HomeOfficeReviewByNavigation.FullName</RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn>City</RadzenColumn>
+                    <RadzenColumn>@(acctDetails.Account.IdNavigation.LegalEntityAddresses.FirstOrDefault(a=>a.Type=="Main").Address.City??"")</RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn>State</RadzenColumn>
+                    <RadzenColumn>@(acctDetails.Account.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main").Address.StateCode ?? "")</RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn>
+                        <RadzenButton Click=@SaveAccountBank>Save</RadzenButton>
+                    </RadzenColumn>
+                </RadzenRow>
+            }
+        </RadzenCard>
+    </ChildContent>
+    <ErrorContent>
+        Something went wrong ...<br />
+        @acctDetails?.First().Message
+    </ErrorContent>
+    <LoadingContent>
+        Loading ...
+    </LoadingContent>
+</UseGetAccountByAccountNumber>
+
+@code
+{
+    string accountNumber="", queryAccountNumber="";
+    IEnumerable<string> accountNumbers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var result = await accountClient.GetAccountNumbers.ExecuteAsync("", true);
+        accountNumbers = result.Data.FilteredAccountNumbers??Array.Empty<string>();
+    }
+
+    void OnAcctNumChange(dynamic args)
+    {
+        // var enteredValue = args?.ToString() ?? "";
+        //TODO: Requery with filter.
+        queryAccountNumber = accountNumber = args;
+    }
+
+    private void OnAcctDetailsLoaded(EventArgs a)
+    {
+        queryAccountNumber = accountNumber;
+        Debug.WriteLine("acctDetails");
+    }
+
+    private void SaveAccountBank()
+    {
+
+    }
+}

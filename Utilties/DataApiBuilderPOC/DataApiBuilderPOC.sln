@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34309.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataApiBuilderPOC", "DataApiBuilderPOC.csproj", "{505FB81B-1B12-425E-A4F4-05AE6198D54B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{505FB81B-1B12-425E-A4F4-05AE6198D54B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{505FB81B-1B12-425E-A4F4-05AE6198D54B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{505FB81B-1B12-425E-A4F4-05AE6198D54B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{505FB81B-1B12-425E-A4F4-05AE6198D54B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6F0ED9F6-9D20-4C2F-A579-CB83671611CF}
+	EndGlobalSection
+EndGlobal

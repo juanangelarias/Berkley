@@ -1,0 +1,6 @@
+@Entity.GraphQL.POC_HostAddress = http://localhost:5164
+
+GET {{Entity.GraphQL.POC_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

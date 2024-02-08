@@ -1,0 +1,81 @@
+﻿@page "/"
+@* @inject AccountClient acctClient *@
+@using StrawberryShake
+@using StrawberryShakeDemo.Components
+@using System.Diagnostics
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+<br/>
+<br/>
+<UseGetAccountByAccountNumber Context="result1" Strategy="ExecutionStrategy.CacheAndNetwork" AccountNum="1001">
+    <ChildContent>
+        @* <p>At least I'm trying</p>
+        @if (null != result1)
+        {
+            <li>Result 1 type is @result1.GetType()</li>
+            <li>result 1 returned something!</li>
+        } *@
+        @if (null != result1?.Account)
+        {
+            <ul>
+                <li>@result1?.Account?.IdNavigation.FullName (@result1.Account.IdNavigation.LegalEntityAddresses[0].Address.City)</li>
+            </ul>
+        }
+        else
+        {
+            <p>No data found :(</p>
+        }
+    </ChildContent>
+    <ErrorContent>
+        Something went wrong ...<br />
+        <ul>
+            @if (null != webResult?.Errors)
+            {
+                @foreach (var error in @webResult.Errors!)
+                {
+                    <li>@error.Message</li>
+                }
+            }
+            else if (null != _exception)
+            {
+                <li>Exception: @_exception</li>
+            }
+            else
+            {
+                <li>No errors returned</li>
+            }
+        </ul>
+
+    </ErrorContent>
+    <LoadingContent>
+        Loading ...
+    </LoadingContent>
+</UseGetAccountByAccountNumber>
+@code {
+    string accountNumberSelected = "1001";
+    IGetAccountByAccountNumberResult result;
+    IOperationResult<IGetAccountByAccountNumberResult> webResult;
+    Exception? _exception;
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     try
+    //     {
+    //         _exception = null;
+    //         webResult = await acctClient.ColconExample.ExecuteAsync();
+    //         webResult.EnsureNoErrors();
+    //         if (null != webResult.Data)
+    //             result = webResult.Data;
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         _exception = e;
+    //         Debug.WriteLine(e);
+    //     }
+    // }
+
+}

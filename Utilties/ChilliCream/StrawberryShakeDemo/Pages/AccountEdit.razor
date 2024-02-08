@@ -1,0 +1,41 @@
+@page "/AccountEdit"
+@inject IAccountClient accountClient;
+@* @RenderMode="@RenderMode.InteractiveWebAssembly" *@
+
+<h1>Account Editor</h1>
+
+
+@if (null != accountNumbers)
+{
+<span>Type an account number:&nbsp;&nbsp;
+    <RadzenAutoComplete Value="@accountNumber" 
+                        Change=@OnAcctNumChange 
+                        Data=@accountNumbers 
+                        TextProperty="accountNum"
+                        @rendermode="@RenderMode.InteractiveWebAssembly" ></RadzenAutoComplete>
+</span>
+}
+else
+{
+    <p>Loading. . . </p>
+}
+
+
+@code
+{
+    string accountNumber;
+    IEnumerable<string> accountNumbers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        var result = await accountClient.GetAccountNumbers.ExecuteAsync("", true);
+        accountNumbers = result.Data.FilteredAccountNumbers??Array.Empty<string>();
+    }
+
+    void OnAcctNumChange(dynamic args)
+    {
+        // var enteredValue = args?.ToString() ?? "";
+        //TODO: Requery with filter.
+    }
+}

@@ -1,0 +1,80 @@
+﻿query GetAccountByAccountNumber($accountNum: String){
+  account(accountNumber:$accountNum){
+    idNavigation{
+      fullName,
+      legalEntityAddresses {
+        type,
+        address{
+          address1,
+          address2,
+          address3,
+          city,
+          stateCode,
+          stateCodeNavigation{
+            countryCode,
+            countryCodeNavigation{
+              name
+            }     
+          },
+          postalCode
+        
+        }
+      },
+      legalEntityPhones{
+        type,
+        phoneNumber {
+          mainNumber,
+          extension
+        }
+      },
+      legalEntityEmails{
+        type, 
+        emailAddress
+      }
+    }
+    bank,
+    agent {
+      idNavigation{
+        fullName
+      }
+    },
+    agencyNumberNavigation{
+      idNavigation{
+        fullName,
+        legalEntityAddresses{
+          type,
+          address{
+            city,
+            stateCode
+          }
+        }
+      }
+    }
+    accountNum,
+    division,
+    homeOfficeReviewByNavigation{
+      fullName
+    },
+    homeOfficeReviewed,
+    branchReviewByNavigation{
+      fullName
+    },
+    branchReviewed,
+    attorney{
+      idNavigation {
+        fullName
+      },
+      martindaleHubbellRating
+    },
+    underwriter{
+      idNavigation{
+        fullName,
+        initials,
+        title,
+        email
+      },
+      reportsTo
+    }
+  }
+      
+}

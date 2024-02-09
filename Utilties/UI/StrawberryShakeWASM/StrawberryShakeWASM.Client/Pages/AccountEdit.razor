@@ -10,7 +10,7 @@
 
 @if (null != accountNumbers)
 {
-<span>Type an account number:&nbsp;&nbsp;
+<span >Type an account number:&nbsp;&nbsp;
     <RadzenAutoComplete Value=@accountNumber
                         Change=@OnAcctNumChange 
                         Data=@accountNumbers 
@@ -21,7 +21,7 @@ else
 {
     <p>Loading. . . </p>
 }
-<UseGetAccountByAccountNumber Context="acctDetails" AccountNum=@queryAccountNumber Strategy="ExecutionStrategy.CacheFirst">
+<UseGetAccountByAccountNumber id="gaban" Context="acctDetails" AccountNum=@queryAccountNumber Strategy="ExecutionStrategy.CacheFirst">
     <ChildContent>
         <RadzenCard>
             <RadzenRow>
@@ -81,6 +81,7 @@ else
         await base.OnInitializedAsync();
         var result = await accountClient.GetAccountNumbers.ExecuteAsync("", true);
         accountNumbers = result.Data.FilteredAccountNumbers??Array.Empty<string>();
+        var session = accountClient;
     }
 
     void OnAcctNumChange(dynamic args)
@@ -98,6 +99,6 @@ else
 
     private void SaveAccountBank()
     {
-
+        
     }
 }

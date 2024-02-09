@@ -2,7 +2,7 @@
 
 namespace HotChocolatePOC
 {
-    public class Subscription
+    public partial class Subscription
     {
         [Subscribe]
         [Topic(nameof(FirstMutation.AddProgram))]

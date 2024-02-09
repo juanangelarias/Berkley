@@ -10,19 +10,23 @@ namespace HotChocolatePOC
     {
     }
 
-    public class Mutation
+    public partial class Mutation
     {
         public async Task<Account> UpdateBank(UpdateBankInput input,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var account = ctx.Accounts.Include(a=>a.IdNavigation).SingleOrDefault(a => a.AccountNum == input.AccountNum);
+            var account = ctx.Accounts.Include(a => a.IdNavigation).SingleOrDefault(a => a.AccountNum == input.AccountNum);
             if (account == null)
                 throw new GraphQLException("Invalid account number");
-            account.Bank = input.Bank;
-            ctx.Update(account);
-            await ctx.SaveChangesAsync();
-            
+            if (input.Bank != account.Bank)
+            {
+                account.Bank = input.Bank;
+                //TODO:  Figure out if only 1 of the 2 below lines are needed.
+                ctx.Update(account);
+                await ctx.SaveChangesAsync();
+                await eventSender.SendAsync(nameof(Mutation.UpdateBank), account);
+            }
             return account;
         }
     }

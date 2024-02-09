@@ -1,10 +1,11 @@
 schema {
   query: Query
-  mutation: FirstMutation
+  mutation: Mutation
+  subscription: Subscription
 }
 
-type FirstMutation {
-  addProgram(input: AddProgramInput!): AddProgramPayload!
+type Mutation {
+  updateBank(input: UpdateBankInput!): UpdateBankPayload!
 }
 
 type Query {
@@ -12,25 +13,9 @@ type Query {
   filteredAccountNumbers(filter: String allowSmallFilters: Boolean! = false): [String!]!
 }
 
-type AddProgramPayload {
-  account: Account
-  error: ErrorMessage
-}
-
-input AddProgramDataInput {
-  accountNum: String!
-  single: Int!
-  aggregate: Int!
-  effective: DateTime!
-  expiration: DateTime!
-}
-
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
-
-type ErrorMessage {
-  code: String!
-  message: String!
+type Subscription {
+  onProgramAdded: Account!
+  onAccountModified: Account!
 }
 
 type Account {
@@ -138,6 +123,19 @@ type Account {
   workInProgressJobs: [WorkInProgressJob!]!
 }
 
+input UpdateBankInput {
+  accountNum: String!
+  bank: String!
+}
+
+"The `Date` scalar represents an ISO-8601 compliant date type."
+scalar Date
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
+
+scalar UUID
+
 type AccountProgram {
   id: UUID!
   created: DateTime!
@@ -156,11 +154,6 @@ type AccountProgram {
   accountNumNavigation: Account!
   accountProgramStatusHistories: [AccountProgramStatusHistory!]!
 }
-
-"The `Date` scalar represents an ISO-8601 compliant date type."
-scalar Date
-
-scalar UUID
 
 type AdditionalRelatedParty {
   id: UUID!
@@ -1040,6 +1033,49 @@ type WorkInProgressJob {
   workInProgressSummary: WorkInProgressSummary!
 }
 
+type NotebookEntry {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  notebookId: UUID!
+  type: String!
+  createdBy: UUID!
+  category: String
+  note: String!
+  completed: Boolean!
+  completion: DateTime
+  reminderTime: DateTime
+  columnName: Boolean!
+  createdByNavigation: UserProfile!
+  notebook: Notebook!
+  typeNavigation: NotebookEntryTypeDm!
+}
+
+type LineOfAuthorityLog {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  sequenceNumber: Int!
+  effective: DateTime!
+  expiration: DateTime!
+  loasingle: Int!
+  loaaggregate: Int!
+  comments: String
+  status: String
+  approvedBy: UUID
+  approved: DateTime
+  division: String
+  bondType: String
+  conditions: String
+  homeOfficeApproved: Boolean!
+  createdBy: UUID
+  approvedByNavigation: UserProfile
+  createdByNavigation: UserProfile
+  divisionNavigation: DivisionDm
+  statusNavigation: LineOfAuthorityStatusDm
+}
+
 type BondBlock {
   id: UUID!
   created: DateTime!
@@ -1465,49 +1501,6 @@ type AccountProgramStatusHistory {
   accountProgram: AccountProgram!
 }
 
-type LineOfAuthorityLog {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  sequenceNumber: Int!
-  effective: DateTime!
-  expiration: DateTime!
-  loasingle: Int!
-  loaaggregate: Int!
-  comments: String
-  status: String
-  approvedBy: UUID
-  approved: DateTime
-  division: String
-  bondType: String
-  conditions: String
-  homeOfficeApproved: Boolean!
-  createdBy: UUID
-  approvedByNavigation: UserProfile
-  createdByNavigation: UserProfile
-  divisionNavigation: DivisionDm
-  statusNavigation: LineOfAuthorityStatusDm
-}
-
-type NotebookEntry {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  notebookId: UUID!
-  type: String!
-  createdBy: UUID!
-  category: String
-  note: String!
-  completed: Boolean!
-  completion: DateTime
-  reminderTime: DateTime
-  columnName: Boolean!
-  createdByNavigation: UserProfile!
-  notebook: Notebook!
-  typeNavigation: NotebookEntryTypeDm!
-}
-
 type Surcharge {
   id: UUID!
   created: DateTime!
@@ -1837,30 +1830,6 @@ type SurchargeTypeDm {
   surcharges: [Surcharge!]!
 }
 
-type NotebookEntryTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  notebookEntries: [NotebookEntry!]!
-}
-
-type Notebook {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  sourceTable: String!
-  notebookEntries: [NotebookEntry!]!
-}
-
-type LineOfAuthorityStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  status: String!
-  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
-}
-
 type InventoryDocumentDm {
   id: UUID!
   created: DateTime!
@@ -1969,6 +1938,30 @@ type AccountStatusDm {
   accountStatusLogs: [AccountStatusLog!]!
 }
 
+type LineOfAuthorityStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  status: String!
+  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
+}
+
+type NotebookEntryTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  notebookEntries: [NotebookEntry!]!
+}
+
+type Notebook {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  sourceTable: String!
+  notebookEntries: [NotebookEntry!]!
+}
+
 type SicratioTypeDm {
   id: UUID!
   created: DateTime!
@@ -2005,6 +1998,6 @@ type PowerOfAttorneyDocumentNameDm {
   powerOfAttorneyDocumentStatuses: [PowerOfAttorneyDocumentStatus!]!
 }
 
-input AddProgramInput {
-  input: AddProgramDataInput!
+type UpdateBankPayload {
+  account: Account
 }

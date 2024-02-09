@@ -12,9 +12,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGraphQLServer()
     .AddQueryType<Query>()
     .AddMutationType<BankMutationType>()
+    .AddSubscriptionType<Subscription>()
     .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
     .AddMutationConventions()
-    .AddInMemorySubscriptions();
+    .AddInMemorySubscriptions()
+    ;
 builder.Services
     .AddPooledDbContextFactory<JamesDatabaseContext>(o =>
 {
@@ -24,12 +26,6 @@ builder.Services
 });
 builder.Services.AddCors(options =>
 {
-    //options.AddPolicy(name: MyAllowSpecificOrigins,
-    //    policy =>
-    //    {
-    //        policy.AllowAnyOrigin();
-    //        policy.WithOrigins("https://localhost:7265", "http://localhost:5130");
-    //    });
     options.AddDefaultPolicy(policy =>
     {
         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
@@ -48,5 +44,12 @@ app.MapGet("/", req =>
     req.Response.Redirect("/graphql");
     return Task.FromResult("Go to /graphql");
 });
+//For subscriptions
+//app.UseRouting();
+//app.UseWebSockets();
+//app.UseEndpoints(endpoints =>
+//{
+//    _ = endpoints.MapGraphQL();
+//});
 
 app.Run();

@@ -5,6 +5,7 @@
     "strawberryShake": {
       "name": "AccountClient",
       "url": "https://localhost:7039/graphql/",
+      "dependencyInjection": true, 
       "records": {
         "inputs": false,
         "entities": false
@@ -12,6 +13,7 @@
       "transportProfiles": [
         {
           "default": "Http",
+          "mutation": "Http", 
           "subscription": "WebSocket"
         }
       ]

@@ -7,14 +7,14 @@ using Microsoft.EntityFrameworkCore.Internal;
 namespace HotChocolatePOC
 {
     //[QueryType]
-    public  class Query
+    public partial class Query
     {
         public Account? GetAccount(string? accountNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             if (accountNumber == null)
                 return null;
             var ctx = contextFactory.CreateDbContext();
-            return ctx.Accounts.Include(a => a.IdNavigation)
+            var result = ctx.Accounts.Include(a => a.IdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
                 .Include(a => a.IdNavigation.LegalEntityPhones)
@@ -31,6 +31,9 @@ namespace HotChocolatePOC
                 .Include(a => a.HomeOfficeReviewByNavigation)
                 .Include(a => a.BranchReviewByNavigation)
                 .FirstOrDefault(a => a.AccountNum.Trim() == accountNumber.Trim());
+            if (result == null)
+                throw new GraphQLException($"No account exists with accountNumber = '{accountNumber}'");
+            return result;
         }
 
         public string[] GetFilteredAccountNumbers([Service] IDbContextFactory<JamesDatabaseContext> contextFactory, 

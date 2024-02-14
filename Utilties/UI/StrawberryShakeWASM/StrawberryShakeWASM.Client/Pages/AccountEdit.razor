@@ -1,27 +1,32 @@
 @page "/AccountEdit"
 @using System.Diagnostics
+@using AutoMapper
+@using James.Shared.Model
 @using StrawberryShake
-@using StrawberryShakeWASM.Client.Components
+
 @inject IAccountClient accountClient;
-@* @RenderMode="@RenderMode.InteractiveWebAssembly" *@
+@inject IMapper mapper
+@* @inject DialogService dialogService; *@
+@* builder.Services.AddTransient<ThemeService>(); *@
 
 <h1>Account Editor</h1>
 
 
 @if (null != accountNumbers)
 {
-<span >Type an account number:&nbsp;&nbsp;
-    <RadzenAutoComplete Value=@accountNumber
-                        Change=@OnAcctNumChange 
-                        Data=@accountNumbers 
-                        @rendermode="@RenderMode.InteractiveWebAssembly" ></RadzenAutoComplete>
-</span>
+    <span>
+        Type an account number:&nbsp;&nbsp;
+        <RadzenAutoComplete Value=@accountNumber
+                            Change=@OnAcctNumChange
+                            Data=@accountNumbers
+                            @rendermode="@RenderMode.InteractiveWebAssembly"></RadzenAutoComplete>
+    </span>
 }
 else
 {
     <p>Loading. . . </p>
 }
-<UseGetAccountByAccountNumber id="gaban" Context="acctDetails" AccountNum=@queryAccountNumber Strategy="ExecutionStrategy.CacheFirst">
+<UseGetAccountByAccountNumber Context="acctDetails" AccountNum=@queryAccountNumber Strategy="ExecutionStrategy.CacheFirst" >
     <ChildContent>
         <RadzenCard>
             <RadzenRow>
@@ -30,41 +35,59 @@ else
             </RadzenRow>
             @if (acctDetails?.Account != null)
             {
-                <RadzenRow>
+                accountFromServer = acctDetails.Account;
+               account.Value ??= ThisToThat.ToEntityType<Account>(acctDetails.Account);
+@*                 @((accountFromServer = acctDetails.Account) == null ? "" : "")
+                @((account.Value ??= ThisToThat.ToEntityType<Account>(acctDetails.Account)) == null ? "" : "") *@
+            <RadzenRow>
                     <RadzenColumn>Account Number Returned</RadzenColumn>
-                    <RadzenColumn>@acctDetails?.Account?.AccountNum</RadzenColumn>
-                    </RadzenRow>
+                    <RadzenColumn>@account.Value.AccountNum</RadzenColumn>
+                </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn>Bank</RadzenColumn>
-                    <RadzenColumn><RadzenTextBox Value=@acctDetails.Account.Bank></RadzenTextBox></RadzenColumn>
+                    <RadzenColumn><RadzenTextBox @bind-Value=@account.Value.Bank ></RadzenTextBox></RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn>Division</RadzenColumn>
-                    <RadzenColumn>@acctDetails.Account.Division</RadzenColumn>
+                    <RadzenColumn>@account.Value.Division</RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn>Branch Approved By</RadzenColumn>
-                    <RadzenColumn>@acctDetails.Account.HomeOfficeReviewByNavigation.FullName</RadzenColumn>
+                    <RadzenColumn>@account.Value.HomeOfficeReviewByNavigation?.FullName</RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn>City</RadzenColumn>
-                    <RadzenColumn>@(acctDetails.Account.IdNavigation.LegalEntityAddresses.FirstOrDefault(a=>a.Type=="Main").Address.City??"")</RadzenColumn>
+                    <RadzenColumn>@(account.Value.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address.City ?? "")</RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn>State</RadzenColumn>
-                    <RadzenColumn>@(acctDetails.Account.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main").Address.StateCode ?? "")</RadzenColumn>
+                    <RadzenColumn>@(account.Value.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address.StateCode ?? "")</RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn>
-                        <RadzenButton Click=@SaveAccountBank>Save</RadzenButton>
+                        <RadzenButton Click=@(()=>SaveAccountBank(account.Value))>Save</RadzenButton>
                     </RadzenColumn>
                 </RadzenRow>
+            }
+            else
+            {
+                @(account.Value = null)
             }
         </RadzenCard>
     </ChildContent>
     <ErrorContent>
-        Something went wrong ...<br />
-        @acctDetails?.First().Message
+        @{
+            var errorMessage = acctDetails?.First().Message ?? "";
+            if (!errorMessage.Contains("No account exists with accountNumber"))
+            {
+                <text>
+                    <br />
+                    Something went wrong ...
+                    <br />
+                    @errorMessage
+                </text>
+            }
+        }
     </ErrorContent>
     <LoadingContent>
         Loading ...
@@ -73,15 +96,70 @@ else
 
 @code
 {
-    string accountNumber="", queryAccountNumber="";
+    string accountNumber = "", queryAccountNumber = "";//, errorMessage = "";
+    IGetAccountByAccountNumber_Account accountFromServer;
+    DebugViewer<Account> account = new DebugViewer<Account>();
     IEnumerable<string> accountNumbers;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         var result = await accountClient.GetAccountNumbers.ExecuteAsync("", true);
-        accountNumbers = result.Data.FilteredAccountNumbers??Array.Empty<string>();
-        var session = accountClient;
+        accountNumbers = result.Data.FilteredAccountNumbers ?? Array.Empty<string>();
+        var session = accountClient.AccountModified.Watch().Subscribe(a=>AccountModified(a));
+    }
+
+    private async Task AccountModified(IOperationResult<IAccountModifiedResult> operationResult)
+    {
+        if (operationResult.Errors.Any())
+            throw new Exception(operationResult.Errors.First().Message);
+        if (operationResult.Data is null)
+            throw new ArgumentNullException(nameof(operationResult.Data), "No data was returned from the subscription.");
+        if (accountFromServer.AccountNum != account?.Value?.AccountNum) 
+            //Ignore if not related to the account being editted.
+            return;
+        Debug.Assert(null != account);
+        Debug.Assert(null != account.Value);
+        if (account.Value.Bank == operationResult.Data.OnAccountModified.Bank)
+            //Ignore if user's edit value matches the updated value.
+            return;
+        if (accountFromServer.Bank == account.Value.Bank)
+    //If user hasn't changed the value, simply take the new value
+        {
+            account.Value.Bank = operationResult.Data.OnAccountModified.Bank;
+        }
+        else
+        {
+    //Messagebox to ask user which value to keep.
+        //     var result = await dialogService.OpenAsync("Warning Data Has Changed", ds =>
+        //         @<RadzenStack Gap="1.5rem">
+        //             <p>Data that you have editted has changed on the server.</p>
+        //             <RadzenRow>
+        //                 <RadzenColumn>Field changed:</RadzenColumn>
+        //                 <RadzenColumn>Bank</RadzenColumn>
+        //             </RadzenRow>
+        //             <RadzenRow>
+        //                 <RadzenColumn>Original Value:</RadzenColumn>
+        //                 <RadzenColumn>@accountFromServer.Bank</RadzenColumn>
+        //             </RadzenRow>
+        //             <RadzenRow>
+        //                 <RadzenColumn>New Server Value:</RadzenColumn>
+        //                 <RadzenColumn>@operationResult.Data.OnAccountModified.Bank</RadzenColumn>
+        //             </RadzenRow>
+        //             <RadzenRow>
+        //                 <RadzenColumn>Your Edited Value:</RadzenColumn>
+        //                 <RadzenColumn>@account.Value.Bank</RadzenColumn>
+        //             </RadzenRow>
+        //             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+        //                 <RadzenStack Orientation="Orientation.Horizontal">
+        //                     <RadzenButton Text="Keep Server Value" Click="() => ds.Close(true)" Style="width: 80px;"/>
+        //                     <RadzenButton Text="Keep your own edits" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light"/>
+        //                 </RadzenStack>
+        //             </RadzenStack>
+        //         </RadzenStack>);
+        //     if (result == true) 
+        //         account.Value.Bank = operationResult.Data.OnAccountModified.Bank;
+        }
     }
 
     void OnAcctNumChange(dynamic args)
@@ -90,15 +168,15 @@ else
         //TODO: Requery with filter.
         queryAccountNumber = accountNumber = args;
     }
-
-    private void OnAcctDetailsLoaded(EventArgs a)
+    
+    private void SaveAccountBank(Account acct)
     {
-        queryAccountNumber = accountNumber;
-        Debug.WriteLine("acctDetails");
+        // return new EventCallback(
+        //  receiver:null, (async (object s, MouseEventArgs e) =>
+        //  {
+        if (acct.Bank == null)
+            throw new ArgumentNullException("Bank");
+        accountClient.ChangeBank.ExecuteAsync(new UpdateBankInput { AccountNum = accountNumber, Bank = acct.Bank });
     }
 
-    private void SaveAccountBank()
-    {
-        
-    }
 }

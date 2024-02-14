@@ -9,29 +9,34 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <GraphQL Remove="OnAccountUpdated.graphql" />
+    <GraphQL Remove="AccountModifiedSubscription.graphql" />
+    <GraphQL Remove="UpdateBankMutation.graphql" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="AccountNumbersQuery.graphql" />
     <None Remove="GetAccountByAccountNumber.graphql" />
-    <None Remove="schema.extensions.graphql" />
     <None Remove="schema.graphql" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.1" />
-    <PackageReference Include="Radzen.Blazor" Version="4.24.5" />
-    <PackageReference Include="StrawberryShake.Blazor" Version="13.8.1" />
+    <PackageReference Include="Radzen.Blazor" Version="4.24.6" />
+    <PackageReference Include="StrawberryShake.Blazor" Version="14.0.0-p.32" />
   </ItemGroup>
 
   <ItemGroup>
-    <GraphQL Update="AccountNumbersQuery.graphql">
-      <Namespace>StrawberryShakeDemo.GraphQL</Namespace>
+    <ProjectReference Include="..\..\..\..\Shared\James.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GraphQL Update="Graphql\AccountNumbersQuery.graphql">
+      <Namespace>StrawberryShakeWASM.Client.GraphQL</Namespace>
     </GraphQL>
-    <GraphQL Update="GetAccountByAccountNumber.graphql">
-      <Namespace>StrawberryShakeDemo.GraphQL</Namespace>
+    <GraphQL Update="Graphql\GetAccountByAccountNumber.graphql">
+      <Namespace>StrawberryShakeWASM.Client.GraphQL</Namespace>
     </GraphQL>
   </ItemGroup>
 

@@ -18,8 +18,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.1" PrivateAssets="all" />
-    <PackageReference Include="Radzen.Blazor" Version="4.24.5" />
-    <PackageReference Include="strawberryshake.blazor" Version="13.8.1" />
+    <PackageReference Include="Radzen.Blazor" Version="4.24.6" />
+    <PackageReference Include="strawberryshake.blazor" Version="14.0.0-p.32" />
   </ItemGroup>
 
   <ItemGroup>

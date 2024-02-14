@@ -1,0 +1,8 @@
+﻿mutation ChangeBank($input:UpdateBankInput!){
+  updateBank(input: $input){
+    account{
+      accountNum
+      bank
+    }
+  }
+}

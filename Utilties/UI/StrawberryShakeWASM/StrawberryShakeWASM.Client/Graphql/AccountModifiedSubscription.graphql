@@ -1,0 +1,6 @@
+﻿subscription AccountModified{
+  onAccountModified{
+    accountNum,
+    bank
+  }
+}

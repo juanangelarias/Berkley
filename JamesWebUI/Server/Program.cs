@@ -29,10 +29,6 @@ builder.Services.AddAuthentication(options =>
     options.Audience = builder.Configuration["Auth0:ApiIdentifier"];
 });
 
-builder.Services
-    .AddGraphQLServer()
-    .AddQueryType<Query>()
-    .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
@@ -43,6 +39,11 @@ builder.Services
         o.UseSqlServer(config.GetConnectionString("James"));
         //o.UseMemoryCache()
     });
+builder.Services
+    .AddGraphQLServer()
+    .AddQueryType<JamesWebUI.Server.GraphQL.Queries.Query>()
+    .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled);
+
 builder.Services.AddCors(options =>
 {
     //options.AddPolicy(name: MyAllowSpecificOrigins,
@@ -61,16 +62,16 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseWebAssemblyDebugging();
-}
-else
-{
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseWebAssemblyDebugging();
+//}
+//else
+//{
+//    app.UseExceptionHandler("/Error");
+//    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+//    app.UseHsts();
+//}
 
 app.UseHttpsRedirection();
 
@@ -84,9 +85,11 @@ app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after
 
 app.UseCors();
 
-app.MapGraphQL("/graphql");
+
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
+
+app.MapGraphQL("/graphql");
 
 app.Run();

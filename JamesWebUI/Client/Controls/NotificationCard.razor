@@ -1,0 +1,19 @@
+﻿@using JamesWebUI.Client.Services
+@using JamesWebUI.Client.Classes
+@using System.Globalization
+
+<RadzenCard Style="width:250px;max-width: 250px">
+    <RadzenStack Orientation="Orientation.Vertical">
+        <strong>@NotificationToDisplay.Title</strong>
+        <span>@NotificationToDisplay.CreatedDate.ToShortDateString()</span>
+        <div style="max-width: 225px;">
+            <span>@NotificationToDisplay.Content</span>
+        </div>
+    </RadzenStack>
+</RadzenCard>
+
+@code {
+
+    [Parameter] public Notification? NotificationToDisplay { get; set; }
+
+}

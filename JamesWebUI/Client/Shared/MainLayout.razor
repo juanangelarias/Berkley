@@ -1,9 +1,10 @@
-﻿
+﻿@rendermode InteractiveWebAssembly
 
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject ThemeService themeService
+@inject ThemeService ThemeService
 
+<RadzenComponents />
 <Theme/>
 
 <PageTitle>BasisTNG</PageTitle>
@@ -37,14 +38,17 @@
                     </RadzenRow>
                 </RadzenColumn>
                 <RadzenColumn Size="7">
-                    @* <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-                        <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;" TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes" Value="@themeService.CurrentTheme" Change="@ChangeTheme">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">                         
+                        <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;" 
+                        TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes" 
+                        Value="@ThemeService.CurrentTheme" Change="@ChangeTheme"
+                        @rendermode="@InteractiveWebAssembly">
                             <ValueTemplate>
                                 @context.Text Theme
                             </ValueTemplate>
                             <Template>
                                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
-                                     <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; outline: var(--rz-input-border); min-width: 80px;">
+                                    <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; outline: var(--rz-input-border); min-width: 80px;">
                                         <rect width="80" height="60" fill="@context.Base" />
                                         <rect x="0" y="4" width="16" height="56" fill="@context.Sidebar" />
                                         <rect x="24" y="17" width="48" height="32" rx="2" fill="@context.Content" />
@@ -55,12 +59,19 @@
                                         <rect x="28" y="35" width="16" height="2" rx="1" fill="@context.ContentText" />
                                         <rect x="28" y="41" width="12" height="4" rx="1" fill="@context.Primary" />
                                         <rect width="80" height="6" fill="@context.Header" />
-                                    </svg> 
+                                    </svg>
                                     @context.Text
+                                    @if (context.Premium)
+                                    {
+                                        <RadzenBadge title="To use it in your application you need an active Radzen Professional or Enterprise subscription.">PRO</RadzenBadge>
+                                    }
                                 </RadzenStack>
                             </Template>
                         </RadzenDropDown>
-                    </RadzenStack> *@
+                        <RadzenDropDown TValue="string">
+
+                        </RadzenDropDown>
+                    </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
         </ChildContent>
@@ -101,7 +112,8 @@
 
     protected override void OnInitialized()
     {
-        themeService.Initialize(NavigationManager);
+        ThemeService.Initialize(NavigationManager);
+
         notifications = new Notification[]{
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},

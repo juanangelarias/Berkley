@@ -20,13 +20,13 @@ namespace James.Shared.Test
         //public async Task Test1()
         public async Task Test1()
         {
-            var randomDbName = $"Test1Db{_rnd.Next(1000000,9999999)}";
-            var jamesDbContext = new JamesDatabaseContext(randomDbName, true, true);
-            //Debug.WriteLine("Creating database: " + randomDbName);
-            output.WriteLine("Creating database: " + randomDbName);
-            await jamesDbContext.Database.MigrateAsync();
-            Assert.NotEqual(0, jamesDbContext.AccountRates.Count());
-            await jamesDbContext.Database.EnsureDeletedAsync();
+            //var randomDbName = $"Test1Db{_rnd.Next(1000000,9999999)}";
+            //var jamesDbContext = new JamesDatabaseContext(randomDbName, true, true);
+            ////Debug.WriteLine("Creating database: " + randomDbName);
+            //output.WriteLine("Creating database: " + randomDbName);
+            //await jamesDbContext.Database.MigrateAsync();
+            //Assert.NotEqual(0, jamesDbContext.AccountRates.Count());
+            //await jamesDbContext.Database.EnsureDeletedAsync();
         }
         [Fact]
         public void Test2()

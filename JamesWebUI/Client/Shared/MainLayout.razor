@@ -1,11 +1,13 @@
 ﻿@rendermode InteractiveWebAssembly
-
+<Theme />
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
 
 <RadzenComponents />
-<Theme/>
+<RadzenContextMenu/>
+
+
 
 <PageTitle>BasisTNG</PageTitle>
 
@@ -67,9 +69,6 @@
                                     }
                                 </RadzenStack>
                             </Template>
-                        </RadzenDropDown>
-                        <RadzenDropDown TValue="string">
-
                         </RadzenDropDown>
                     </RadzenStack>
                 </RadzenColumn>

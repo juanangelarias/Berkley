@@ -1,20 +1,32 @@
 using JamesWebUI.Client;
+using JamesWebUI.Client.Components;
+using JamesWebUI.Client.GraphQL;
 using JamesWebUI.Client.Services;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
+using StrawberryShake;
+
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddHttpClient("JamesAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
+
+builder.Services.AddAccountClient(ExecutionStrategy.CacheAndNetwork)
+    .ConfigureHttpClient(client =>
+        client.BaseAddress = new Uri("https://localhost:7017/graphql"))
+
+    .ConfigureWebSocketClient(client => client.Uri = new Uri("ws://localhost:7017/graphql"));
+
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("JamesAPI"));
-builder.Services.AddRadzenComponents();
-builder.Services.AddTransient<ThemeService>();
 
+
+builder.Services.AddRadzenComponents();
+builder.Services.AddScoped<ThemeService>();
 
 
 builder.Services.AddOidcAuthentication(options =>

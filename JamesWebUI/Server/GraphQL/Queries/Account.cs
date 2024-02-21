@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace JamesWebUI.Server.GraphQL.Queries
 {
-    public class Query
+    public partial class Query
     {
         public Account? GetAccount(string? accountNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

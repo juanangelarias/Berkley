@@ -16,7 +16,9 @@
 <RadzenChart>
     <RadzenColumnSeries Data="@premium" CategoryProperty="Month" ValueProperty="Premium" Title="Actual">
         <ChildContent>
-            <RadzenSeriesDataLabels Visible="true"/>
+            <RadzenSeriesDataLabels Visible="true" >
+                  
+            </RadzenSeriesDataLabels>
         </ChildContent>
         <TooltipTemplate Context="data">
             Premium for <span>@data.Month</span>: <strong>@data.Premium.ToString("C0")</strong>
@@ -31,7 +33,7 @@
         </TooltipTemplate>
     </RadzenColumnSeries>
     <RadzenColumnOptions Margin="0"/>
-    <RadzenValueAxis Formatter="@FormatAsUSD" >
+    <RadzenValueAxis Formatter="@FormatAsUSD"  >
         <RadzenAxisTitle Text="Premium in USD"/>    
     </RadzenValueAxis>
 </RadzenChart>

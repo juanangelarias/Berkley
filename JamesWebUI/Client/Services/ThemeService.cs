@@ -95,7 +95,7 @@ namespace JamesWebUI.Client.Services
             }
         };
 
-        public const string DefaultTheme = "dark";
+        public const string DefaultTheme = "material";
         public const string QueryParameter = "theme";
 
         public string CurrentTheme { get; set; } = DefaultTheme;

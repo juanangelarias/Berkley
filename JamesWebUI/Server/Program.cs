@@ -37,9 +37,10 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-
+builder.Services.AddRadzenComponents();
 builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents();
+    .AddInteractiveWebAssemblyComponents()
+    .AddInteractiveServerComponents();
 
 builder.Services
     .AddPooledDbContextFactory<JamesDatabaseContext>(o =>
@@ -98,7 +99,8 @@ app.UseCors();
 app.MapRazorPages();
 app.MapControllers();
 app.MapRazorComponents<App>()
-    .AddInteractiveWebAssemblyRenderMode();
+    .AddInteractiveWebAssemblyRenderMode()
+    .AddInteractiveServerRenderMode();
 
 app.MapGraphQL("/graphql");
 

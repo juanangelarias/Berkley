@@ -22,7 +22,6 @@ builder.Services
 {
     o.EnableDetailedErrors();
     o.UseSqlServer(config.GetConnectionString("James"));
-    //o.UseMemoryCache()
 });
 builder.Services.AddCors(options =>
 {

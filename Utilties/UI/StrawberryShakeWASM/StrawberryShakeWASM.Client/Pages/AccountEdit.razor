@@ -3,15 +3,17 @@
 @using AutoMapper
 @using James.Shared.Model
 @using StrawberryShake
+@using Radzen
 
 @inject IAccountClient accountClient;
-@inject IMapper mapper
-@* @inject DialogService dialogService; *@
+@* @inject IMapper mapper *@
+@inject DialogService dialogService;
 @* builder.Services.AddTransient<ThemeService>(); *@
 
 <h1>Account Editor</h1>
 
 
+<RadzenDropDown TValue="string" Data=@dropDownItems />
 @if (null != accountNumbers)
 {
     <span>
@@ -21,6 +23,7 @@
                             Data=@accountNumbers
                             @rendermode="@RenderMode.InteractiveWebAssembly"></RadzenAutoComplete>
     </span>
+    @* <RadzenDropDown TValue="string" Data=@accountNumbers /> *@
 }
 else
 {
@@ -93,20 +96,24 @@ else
         Loading ...
     </LoadingContent>
 </UseGetAccountByAccountNumber>
+<RadzenComponents />
 
 @code
 {
+    string[] dropDownItems = Enumerable.Range(1, 100).Select(n=>n.ToString()).ToArray();
     string accountNumber = "", queryAccountNumber = "";//, errorMessage = "";
     IGetAccountByAccountNumber_Account accountFromServer;
     DebugViewer<Account> account = new DebugViewer<Account>();
     IEnumerable<string> accountNumbers;
+    IDisposable session;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         var result = await accountClient.GetAccountNumbers.ExecuteAsync("", true);
         accountNumbers = result.Data.FilteredAccountNumbers ?? Array.Empty<string>();
-        var session = accountClient.AccountModified.Watch().Subscribe(a=>AccountModified(a));
+        await Task.Delay(3000);
+        session = accountClient.AccountModified.Watch().Subscribe(  a=>  AccountModified(a).RunSynchronously());
     }
 
     private async Task AccountModified(IOperationResult<IAccountModifiedResult> operationResult)
@@ -124,41 +131,41 @@ else
             //Ignore if user's edit value matches the updated value.
             return;
         if (accountFromServer.Bank == account.Value.Bank)
-    //If user hasn't changed the value, simply take the new value
+        //If user hasn't changed the value, simply take the new value
         {
             account.Value.Bank = operationResult.Data.OnAccountModified.Bank;
         }
         else
         {
-    //Messagebox to ask user which value to keep.
-        //     var result = await dialogService.OpenAsync("Warning Data Has Changed", ds =>
-        //         @<RadzenStack Gap="1.5rem">
-        //             <p>Data that you have editted has changed on the server.</p>
-        //             <RadzenRow>
-        //                 <RadzenColumn>Field changed:</RadzenColumn>
-        //                 <RadzenColumn>Bank</RadzenColumn>
-        //             </RadzenRow>
-        //             <RadzenRow>
-        //                 <RadzenColumn>Original Value:</RadzenColumn>
-        //                 <RadzenColumn>@accountFromServer.Bank</RadzenColumn>
-        //             </RadzenRow>
-        //             <RadzenRow>
-        //                 <RadzenColumn>New Server Value:</RadzenColumn>
-        //                 <RadzenColumn>@operationResult.Data.OnAccountModified.Bank</RadzenColumn>
-        //             </RadzenRow>
-        //             <RadzenRow>
-        //                 <RadzenColumn>Your Edited Value:</RadzenColumn>
-        //                 <RadzenColumn>@account.Value.Bank</RadzenColumn>
-        //             </RadzenRow>
-        //             <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
-        //                 <RadzenStack Orientation="Orientation.Horizontal">
-        //                     <RadzenButton Text="Keep Server Value" Click="() => ds.Close(true)" Style="width: 80px;"/>
-        //                     <RadzenButton Text="Keep your own edits" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light"/>
-        //                 </RadzenStack>
-        //             </RadzenStack>
-        //         </RadzenStack>);
-        //     if (result == true) 
-        //         account.Value.Bank = operationResult.Data.OnAccountModified.Bank;
+            //Messagebox to ask user which value to keep.
+            var result = await dialogService.OpenAsync("Warning Data Has Changed", ds =>
+                @<RadzenStack Gap="1.5rem">
+                    <p>Data that you have editted has changed on the server.</p>
+                    <RadzenRow>
+                        <RadzenColumn>Field changed:</RadzenColumn>
+                        <RadzenColumn>Bank</RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenColumn>Original Value:</RadzenColumn>
+                        <RadzenColumn>@accountFromServer.Bank</RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenColumn>New Server Value:</RadzenColumn>
+                        <RadzenColumn>@operationResult.Data.OnAccountModified.Bank</RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenColumn>Your Edited Value:</RadzenColumn>
+                        <RadzenColumn>@account.Value.Bank</RadzenColumn>
+                    </RadzenRow>
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenButton Text="Keep Server Value" Click="() => ds.Close(true)" Style="width: 80px;"/>
+                            <RadzenButton Text="Keep your own edits" Click="() => ds.Close(false)" ButtonStyle="ButtonStyle.Light"/>
+                        </RadzenStack>
+                    </RadzenStack>
+                </RadzenStack>);
+            if (result == true) 
+                account.Value.Bank = operationResult.Data.OnAccountModified.Bank;
         }
     }
 
@@ -167,13 +174,12 @@ else
         // var enteredValue = args?.ToString() ?? "";
         //TODO: Requery with filter.
         queryAccountNumber = accountNumber = args;
+        if (accountNumber != account.Value?.AccountNum)
+            account.Value = null;
     }
     
     private void SaveAccountBank(Account acct)
     {
-        // return new EventCallback(
-        //  receiver:null, (async (object s, MouseEventArgs e) =>
-        //  {
         if (acct.Bank == null)
             throw new ArgumentNullException("Bank");
         accountClient.ChangeBank.ExecuteAsync(new UpdateBankInput { AccountNum = accountNumber, Bank = acct.Bank });

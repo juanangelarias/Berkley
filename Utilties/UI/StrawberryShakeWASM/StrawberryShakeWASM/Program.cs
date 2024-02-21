@@ -1,3 +1,5 @@
+using Radzen;
+using StrawberryShake;
 using StrawberryShakeWASM.Client.Pages;
 using StrawberryShakeWASM.Components;
 
@@ -6,6 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents();
+
+//Radzen Blazor setup
+builder.Services.AddRadzenComponents();
+
+//StrawberryShake
+builder.Services.AddAccountClient(ExecutionStrategy.CacheAndNetwork)
+    .ConfigureHttpClient(client =>
+        client.BaseAddress = new Uri("https://localhost:7039/graphql"))
+    .ConfigureWebSocketClient(client => client.Uri = new Uri("wss://localhost:7039/graphql"));
 
 var app = builder.Build();
 

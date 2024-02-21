@@ -8,7 +8,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\StrawberryShakeWASM.Client\StrawberryShakeWASM.Client.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.2" />
+    <PackageReference Include="Radzen.Blazor" Version="4.25.3" />
+    <PackageReference Include="StrawberryShake.Blazor" Version="14.0.0-p.35" />
   </ItemGroup>
 
 </Project>

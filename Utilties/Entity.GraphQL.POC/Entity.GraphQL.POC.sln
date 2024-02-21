@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrawberryShakeWASM", "..\U
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrawberryShakeWASM.Client", "..\UI\StrawberryShakeWASM\StrawberryShakeWASM.Client\StrawberryShakeWASM.Client.csproj", "{DBA75A32-E685-417D-BA32-F7F7116D1121}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POCTestProject", "POCTestProject\POCTestProject.csproj", "{40616772-CC09-4C4C-8109-8C441E54EFA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{DBA75A32-E685-417D-BA32-F7F7116D1121}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DBA75A32-E685-417D-BA32-F7F7116D1121}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DBA75A32-E685-417D-BA32-F7F7116D1121}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40616772-CC09-4C4C-8109-8C441E54EFA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40616772-CC09-4C4C-8109-8C441E54EFA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40616772-CC09-4C4C-8109-8C441E54EFA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40616772-CC09-4C4C-8109-8C441E54EFA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

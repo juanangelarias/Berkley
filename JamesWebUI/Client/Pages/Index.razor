@@ -37,7 +37,35 @@
         <RadzenAxisTitle Text="Premium in USD"/>    
     </RadzenValueAxis>
 </RadzenChart>
-
+<RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;"
+                TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes"
+                Value="@ThemeService.CurrentTheme" Change="@ChangeTheme"
+                @rendermode="@InteractiveWebAssembly">
+    <ValueTemplate>
+        @context.Text Theme
+    </ValueTemplate>
+    <Template>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+            <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; outline: var(--rz-input-border); min-width: 80px;">
+                <rect width="80" height="60" fill="@context.Base" />
+                <rect x="0" y="4" width="16" height="56" fill="@context.Sidebar" />
+                <rect x="24" y="17" width="48" height="32" rx="2" fill="@context.Content" />
+                <rect x="43" y="41" width="12" height="4" rx="1" fill="@context.Secondary" />
+                <rect x="28" y="21" width="16" height="2" rx="1" fill="@context.TitleText" />
+                <rect x="28" y="27" width="40" height="2" rx="1" fill="@context.ContentText" />
+                <rect x="28" y="31" width="40" height="2" rx="1" fill="@context.ContentText" />
+                <rect x="28" y="35" width="16" height="2" rx="1" fill="@context.ContentText" />
+                <rect x="28" y="41" width="12" height="4" rx="1" fill="@context.Primary" />
+                <rect width="80" height="6" fill="@context.Header" />
+            </svg>
+            @context.Text
+            @if (context.Premium)
+            {
+                <RadzenBadge title="To use it in your application you need an active Radzen Professional or Enterprise subscription.">PRO</RadzenBadge>
+            }
+        </RadzenStack>
+    </Template>
+</RadzenDropDown>
 @code {
     class DataItem
     {
@@ -72,6 +100,12 @@
     protected override void OnInitialized()
     {
         ThemeService.Initialize(NavigationManager);
+    }
+    void ChangeTheme(object value)
+    {
+        var url = NavigationManager.GetUriWithQueryParameter("theme", $"{value}");
+
+        NavigationManager.NavigateTo(url, true);
     }
 }
 

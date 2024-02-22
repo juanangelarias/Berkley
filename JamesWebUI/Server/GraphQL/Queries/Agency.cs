@@ -6,6 +6,16 @@ namespace JamesWebUI.Server.GraphQL.Queries
 {
     public partial class Query
     {
-        
+        public List<Agency> SearchAgencies(string? stringToSearch, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            if (!string.IsNullOrWhiteSpace(stringToSearch))
+                return ctx.Agencies.Include(a => a.IdNavigation)
+                    .Where(a => a.IdNavigation.FullName.ToLower().Contains(stringToSearch.ToLower()))
+                    .ToList();
+            else
+                return ctx.Agencies.Include(a => a.IdNavigation)
+                    .ToList();
+        }
     }
 }

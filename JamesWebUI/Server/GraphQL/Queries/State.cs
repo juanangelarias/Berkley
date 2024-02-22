@@ -1,4 +1,4 @@
-﻿using James.Data.Server.Model;
+﻿ using James.Data.Server.Model;
 using James.Shared.Model;
 using Microsoft.EntityFrameworkCore;
 

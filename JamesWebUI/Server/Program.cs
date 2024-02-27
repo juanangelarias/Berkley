@@ -2,6 +2,7 @@ using James.Data.Server.Model;
 using JamesWebUI.Client;
 using JamesWebUI.Client.Components;
 using JamesWebUI.Client.Services;
+using JamesWebUI.Server.GraphQL.TypeExtensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
@@ -52,7 +53,11 @@ builder.Services
 builder.Services
     .AddGraphQLServer()
     .AddQueryType<JamesWebUI.Server.GraphQL.Queries.Query>()
-    .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled);
+    .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
+    .AddTypeExtension<ILegalEntityCompanyExtensions>()
+    .AddTypeExtension<ILegalEntityIndividualExtensions>()
+    .AddTypeExtension<AgencyExtensions>()
+    .AddTypeExtension<AgentExtensions>();
 
 builder.Services.AddCors(options =>
 {
@@ -72,16 +77,16 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseWebAssemblyDebugging();
-//}
-//else
-//{
-//    app.UseExceptionHandler("/Error");
-//    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-//    app.UseHsts();
-//}
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
+else
+{
+    app.UseExceptionHandler("/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
 

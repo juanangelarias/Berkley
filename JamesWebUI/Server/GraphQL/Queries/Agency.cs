@@ -11,6 +11,8 @@ namespace JamesWebUI.Server.GraphQL.Queries
             var ctx = contextFactory.CreateDbContext();
             if (!string.IsNullOrWhiteSpace(stringToSearch))
                 return ctx.Agencies.Include(a => a.IdNavigation)
+                    .Include(a => a.IdNavigation.LegalEntityAddresses)
+                    .ThenInclude(a => a.Address)
                     .Where(a => a.IdNavigation.FullName.ToLower().Contains(stringToSearch.ToLower()))
                     .ToList();
             else

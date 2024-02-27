@@ -1,4 +1,4 @@
-﻿@page "/Agency"
+﻿@page "/Agency/{Id}"
 
 @using System.Globalization
 @using JamesWebUI.Client.GraphQL;
@@ -13,71 +13,205 @@
 
 <Theme />
 
-
 <PageTitle>Agency Profile</PageTitle>
 
 <RadzenLayout>
-    <RadzenHeader>
 
-    </RadzenHeader>
     <RadzenBody>
-        <RadzenRow Gap="1" RowGap="1" JustifyContent="JustifyContent.Right">
-            <RadzenColumn Style="vertical-align: middle" Size="1">
-                <RadzenLabel Text="Search by:" Component="txtSearch"  ></RadzenLabel>
-            </RadzenColumn>
-            <RadzenColumn Size="3">
-                <RadzenTextBox Placeholder="Agency/Producer No." Name="txtSearch" Style="width: 100%"/>
-            </RadzenColumn>
-            <RadzenColumn Size="4">
-                <RadzenTextBox Placeholder="Name" Style="width: 100%" />
-            </RadzenColumn>
-            <RadzenColumn Style="vertical-align: middle">
-                <RadzenButton Icon="search" Size="ButtonSize.Small" />
-            </RadzenColumn>
-            <RadzenColumn>
-                <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Primary" Text="Create New Agency" />
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow></RadzenRow>
-        <RadzenRow RowGap="1" >
-            <RadzenColumn Size="1"/>
-            <RadzenStack Orientation="Orientation.Horizontal">
-                <UseGetAllStates Context="stateData">
-                    <ChildContent>
-                        <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="States"
-                                        Multiple="true" Chips="true" SelectAllText="Select All"
-                                        TValue="IGetAllStates_AllStates" Data="stateData.AllStates"
-                                        TextProperty="Name" ValueProperty="Code">
-                        </RadzenDropDown>
-                    </ChildContent>
-                    <ErrorContent>
-                        Something went wrong...<br />
-                    </ErrorContent>
-                    <LoadingContent>
-                        <RadzenDropDown Placeholder="Loading..." TValue="IGetAllStates_AllStates"/>
-                    </LoadingContent>
-                </UseGetAllStates>
-                <RadzenDropDown @rendermode="@InteractiveWebAssembly" TValue="string"/>
-                <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="Branch" TValue="string" Data="@dropDownValues" />
-                <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="Status" TValue="string" />
-            </RadzenStack>
-        </RadzenRow>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
+            <RadzenPanel Style="border-radius: 20px">
+                <RadzenRow>
+                    <RadzenText TextStyle="TextStyle.DisplayH4" Text="NFP Property & Casualty Services, Inc." />
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="2">
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenText Text="Agency #: " />
+                            <RadzenText Text="111" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenText Text="Name: " />
+                            <RadzenText Text="NFP Property & Casualty Services, Inc." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow JustifyContent="JustifyContent.End">
+                    <RadzenColumn Size="2">
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenText Text="Parent #: " />
+                            <RadzenText Text="10300" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenText Text="Parent: " />
+                            <RadzenText Text="NFP Property & Casualty Services, Inc." />
+                        </RadzenStack>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6">
+                        <RadzenStack AlignItems="AlignItems.End">
+                            <RadzenButton ButtonStyle="ButtonStyle.Primary" Text="Status Log" />
+                        </RadzenStack>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenPanel>
+            <RadzenPanel Style="border-radius: 20px">
+                <RadzenTabs>
+                    <Tabs>
+                        <RadzenTabsItem Text="General Info">
+                            <RadzenRow>
+                                <RadzenColumn Size="6">
+                                    <RadzenFieldset Text="Address">
+                                        <RadzenStack Orientation="Orientation.Vertical">
+                                            <RadzenRow>
+                                                <RadzenColumn Size="2">
+                                                    <RadzenText Style="font-weight: bold;" Text="Address: " />
+                                                </RadzenColumn>
+                                                <RadzenColumn>
+                                                    <RadzenText Text="500 W Madison Street" />
+                                                </RadzenColumn>
+                                            </RadzenRow>
+                                            <RadzenRow>
+                                                <RadzenColumn Size="2">
+                                                    <RadzenText Style="font-weight: bold;" Text="Address 2: " />
+                                                </RadzenColumn>
+                                                <RadzenColumn>
+                                                    <RadzenText Text="Suite 2700" />
+                                                </RadzenColumn>
+                                            </RadzenRow>
+                                            <RadzenRow>
+                                                <RadzenColumn Size="1">
+                                                    <RadzenText Style="font-weight: bold;" Text="City: " />
+                                                </RadzenColumn>
+                                                <RadzenColumn Size="2">
+                                                    <RadzenText Text="Chicago" />
+                                                </RadzenColumn>
+                                                <RadzenColumn Size="1">
+                                                    <RadzenText Style="font-weight: bold;" Text="State: " />
+                                                </RadzenColumn>
+                                                <RadzenColumn Size="1">
+                                                    <RadzenText Text="IL" />
+                                                </RadzenColumn>
+                                                <RadzenColumn Size="3">
+                                                    <RadzenText Style="font-weight: bold;" Text="Postal Code: " />
+                                                </RadzenColumn>
+                                                <RadzenColumn Size="1">
+                                                    <RadzenText Text="60661" />
+                                                </RadzenColumn>
+                                            </RadzenRow>
+                                            <RadzenRow>
+                                                <RadzenStack Orientation="Orientation.Horizontal">
+                                                    <RadzenPanel Style="border-radius: 10px; background-color: lightgray">
+                                                        <RadzenCheckBox TValue="bool" Name="chkW9" />
+                                                        <RadzenLabel Text="W-9" Component="chkW9" />
+                                                    </RadzenPanel>
+                                                    <RadzenPanel Style="border-radius: 10px; background-color: lightgray">
+                                                        <RadzenCheckBox TValue="bool" Name="chk1099" />
+                                                        <RadzenLabel Text="Need 1099" Component="chk1099" />
+                                                    </RadzenPanel>
+                                                    <RadzenPanel Style="border-radius: 10px; background-color: lightgray">
+                                                        <RadzenCheckBox TValue="bool" Name="chkNASBP" />
+                                                        <RadzenLabel Text="NASBP Member" Component="chkNASBP" />
+                                                    </RadzenPanel>
+                                                </RadzenStack>
+                                            </RadzenRow>
+                                            <RadzenRow>
+                                                <RadzenFieldset Text="Errors & Omissions Coverage">
+                                                    <RadzenStack Orientation="Orientation.Vertical">
+                                                        <RadzenText Text="Carrier: Indian Harbor Insurance Company"/>
+                                                        <RadzenText Text="Expiration Date: 6/1/2024"/>
+                                                        <RadzenText Text="Limit of Coverage: $10,000,000"/>
+                                                    </RadzenStack>
+                                                </RadzenFieldset>
+                                            </RadzenRow>
+
+                                        </RadzenStack>
+                                    </RadzenFieldset>
+                                </RadzenColumn>
+                                <RadzenColumn Size="6">
+                                    <RadzenFieldset Text="Notes" AllowCollapse="true">
+                                        <Notebook></Notebook>
+                                        <RadzenDataList Data="notifications" Density="Density.Compact" WrapItems="true"
+                                                        TItem="Notification" AllowPaging="true" PageSize="4">
+                                            <Template Context="notification">
+                                                <NotificationCard NotificationToDisplay="notification" />
+                                            </Template>
+                                        </RadzenDataList>
+                                    </RadzenFieldset>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow Size="12">
+                                <RadzenFieldset Text="Agency Licenses">
+                                    <RadzenDataGrid TItem="string" Data="@blankList"
+                                                    Style="border-radius: 20px;" EmptyText="No records to display">
+                                        <Columns>
+                                            <RadzenDataGridColumn TItem="string" Title="Status" Width="100px" />
+                                            <RadzenDataGridColumn TItem="string" Title="State" Width="100px" />
+                                            <RadzenDataGridColumn TItem="string" Title="No Aptmt" Width="100px" />
+                                            <RadzenDataGridColumn TItem="string" Title="License" Width="100px" />
+                                            <RadzenDataGridColumn TItem="string" Title="Resident" Width="100px" />
+                                            <RadzenDataGridColumn TItem="string" Title="Insurer" />
+                                        </Columns>
+                                    </RadzenDataGrid>
+                                </RadzenFieldset>
+                            </RadzenRow>
+                            <RadzenRow Size="12">
+                                <RadzenFieldset Text="Agency POAs">
+                                    <RadzenDataGrid TItem="string" Data="@blankList"
+                                                    Style="border-radius: 20px;" EmptyText="No records to display">
+                                        <Columns>
+                                            <RadzenDataGridColumn TItem="string" Title="Insurer" Width="100px" />
+                                            <RadzenDataGridColumn TItem="string" Title="Limit" Width="100px" />
+                                            <RadzenDataGridColumn TItem="string" Title="Reference #" Width="200px" />
+                                            <RadzenDataGridColumn TItem="string" Title="Date of 1st Issue" Width="200px" />
+                                            <RadzenDataGridColumn TItem="string" Title="Current POA Date" Width="200px" />
+                                        </Columns>
+                                    </RadzenDataGrid>
+                                </RadzenFieldset>
+                            </RadzenRow>
+                            <RadzenRow Size="12">
+                                <RadzenFieldset Text="Related Parties">
+                                    <RadzenDataGrid TItem="string" Data="@blankList"
+                                                    Style="border-radius: 20px;" EmptyText="No records to display">
+                                        <Columns>
+                                            <RadzenDataGridColumn TItem="string" Title="Agency #" Width="100px" />
+                                            <RadzenDataGridColumn TItem="string" Title="Agency Name" />
+                                        </Columns>
+                                    </RadzenDataGrid>
+                                </RadzenFieldset>
+                            </RadzenRow>
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="Contacts"></RadzenTabsItem>
+                        <RadzenTabsItem Text="Inventory"></RadzenTabsItem>
+                        <RadzenTabsItem Text="Line Card"></RadzenTabsItem>
+                        <RadzenTabsItem Text="Commission Rates"></RadzenTabsItem>
+                        <RadzenTabsItem Text="Virtual File"></RadzenTabsItem>
+                    </Tabs>
+                </RadzenTabs>
+            </RadzenPanel>
+        </RadzenStack>
     </RadzenBody>
 </RadzenLayout>
 
 
 @code {
-    string[] dropDownValues = { "Test1", "Test2", "Test3" };
-
-    //DropDown Data
-    private IReadOnlyList<IGetAllStates_AllStates> states;
+    [Parameter] public string Id { get; set; }
+    public Notification[] notifications;
+    List<string> blankList = new List<string>();
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         ThemeService.Initialize(NavigationManager);
+
+        notifications = new Notification[]{
+            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
+            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
+            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
+            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
+    };
     }
-
 }
-

@@ -5104,7 +5104,7 @@ namespace James.Data.Server.Migrations
                     b.ToTable("InventoryDocumentDM", (string)null);
                 });
 
-            modelBuilder.Entity("James.Shared.Model.KeyPersonel", b =>
+            modelBuilder.Entity("James.Shared.Model.KeyPersonnel", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uniqueidentifier");
@@ -5172,9 +5172,9 @@ namespace James.Data.Server.Migrations
 
                     b.HasIndex("Responsibility");
 
-                    b.ToTable("KeyPersonel", null, t =>
+                    b.ToTable("KeyPersonnel", null, t =>
                         {
-                            t.HasTrigger("trgKeyPersonelModified");
+                            t.HasTrigger("trgKeyPersonnelModified");
                         });
                 });
 
@@ -10076,24 +10076,24 @@ namespace James.Data.Server.Migrations
                     b.Navigation("StateNavigation");
                 });
 
-            modelBuilder.Entity("James.Shared.Model.KeyPersonel", b =>
+            modelBuilder.Entity("James.Shared.Model.KeyPersonnel", b =>
                 {
                     b.HasOne("James.Shared.Model.Account", "AccountNumNavigation")
-                        .WithMany("KeyPersonels")
+                        .WithMany("KeyPersonnels")
                         .HasForeignKey("AccountNum")
                         .IsRequired()
-                        .HasConstraintName("FK_KeyPersonel_Account");
+                        .HasConstraintName("FK_KeyPersonnel_Account");
 
                     b.HasOne("James.Shared.Model.LegalEntity", "IdNavigation")
-                        .WithOne("KeyPersonel")
-                        .HasForeignKey("James.Shared.Model.KeyPersonel", "Id")
+                        .WithOne("KeyPersonnel")
+                        .HasForeignKey("James.Shared.Model.KeyPersonnel", "Id")
                         .IsRequired()
-                        .HasConstraintName("FK_KeyPersonel_LegalEntity");
+                        .HasConstraintName("FK_KeyPersonnel_LegalEntity");
 
                     b.HasOne("James.Shared.Model.ResponsibilityDm", "ResponsibilityNavigation")
-                        .WithMany("KeyPersonels")
+                        .WithMany("KeyPersonnels")
                         .HasForeignKey("Responsibility")
-                        .HasConstraintName("FK_KeyPersonel_ResponsibilityDM");
+                        .HasConstraintName("FK_KeyPersonnel_ResponsibilityDM");
 
                     b.Navigation("AccountNumNavigation");
 
@@ -10701,7 +10701,7 @@ namespace James.Data.Server.Migrations
 
                     b.Navigation("Indemnitors");
 
-                    b.Navigation("KeyPersonels");
+                    b.Navigation("KeyPersonnels");
 
                     b.Navigation("PersonalFinancialStatements");
 
@@ -10997,7 +10997,7 @@ namespace James.Data.Server.Migrations
 
                     b.Navigation("InverseParentNavigation");
 
-                    b.Navigation("KeyPersonel");
+                    b.Navigation("KeyPersonnel");
 
                     b.Navigation("LawEntity");
 
@@ -11131,7 +11131,7 @@ namespace James.Data.Server.Migrations
 
             modelBuilder.Entity("James.Shared.Model.ResponsibilityDm", b =>
                 {
-                    b.Navigation("KeyPersonels");
+                    b.Navigation("KeyPersonnels");
                 });
 
             modelBuilder.Entity("James.Shared.Model.ResponsiblePartyTypeDm", b =>

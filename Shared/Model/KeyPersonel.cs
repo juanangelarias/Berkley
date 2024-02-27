@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class KeyPersonel
+public partial class KeyPersonnel
 {
     public Guid Id { get; set; }
 

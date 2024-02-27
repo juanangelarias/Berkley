@@ -78,7 +78,7 @@ public partial class LegalEntity
 
     public virtual ICollection<LegalEntity> InverseParentNavigation { get; set; } = new List<LegalEntity>();
 
-    public virtual KeyPersonel? KeyPersonel { get; set; }
+    public virtual KeyPersonnel? KeyPersonnel { get; set; }
 
     public virtual LawEntity? LawEntity { get; set; }
 

@@ -192,7 +192,7 @@ public partial class Account
 
     public virtual ICollection<Indemnitor> Indemnitors { get; set; } = new List<Indemnitor>();
 
-    public virtual ICollection<KeyPersonel> KeyPersonels { get; set; } = new List<KeyPersonel>();
+    public virtual ICollection<KeyPersonnel> KeyPersonnels { get; set; } = new List<KeyPersonnel>();
 
     public virtual LawEntity? LawFirm { get; set; }
 

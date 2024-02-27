@@ -112,7 +112,7 @@ type Account {
   homeOfficeReviewByNavigation: UserProfile
   idNavigation: LegalEntity!
   indemnitors: [Indemnitor!]!
-  keyPersonels: [KeyPersonel!]!
+  keyPersonnels: [KeyPersonnel!]!
   lawFirm: LawEntity
   personalFinancialStatements: [PersonalFinancialStatement!]!
   ratios: [Ratio!]!
@@ -752,7 +752,7 @@ type LegalEntity {
   indemnitor: Indemnitor
   insurer: Insurer
   inverseParentNavigation: [LegalEntity!]!
-  keyPersonel: KeyPersonel
+  keyPersonnel: KeyPersonnel
   lawEntity: LawEntity
   legalEntityAddresses: [LegalEntityAddress!]!
   legalEntityEmails: [LegalEntityEmail!]!
@@ -814,7 +814,7 @@ type Indemnitor {
   idNavigation: LegalEntity!
 }
 
-type KeyPersonel {
+type KeyPersonnel {
   id: UUID!
   created: DateTime!
   modified: DateTime!
@@ -1697,7 +1697,7 @@ type ResponsibilityDm {
   created: DateTime!
   modified: DateTime!
   responsibility: String!
-  keyPersonels: [KeyPersonel!]!
+  keyPersonnels: [KeyPersonnel!]!
 }
 
 type PersonalFinancialSubaccount {

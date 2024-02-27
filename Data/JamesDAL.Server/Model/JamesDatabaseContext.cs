@@ -178,7 +178,7 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<InventoryDocumentDm> InventoryDocumentDms { get; set; }
 
-    public virtual DbSet<KeyPersonel> KeyPersonels { get; set; }
+    public virtual DbSet<KeyPersonnel> KeyPersonnels { get; set; }
 
     public virtual DbSet<LawEntity> LawEntities { get; set; }
 
@@ -2971,11 +2971,11 @@ public partial class JamesDatabaseContext : DbContext
                 .HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<KeyPersonel>(entity =>
+        modelBuilder.Entity<KeyPersonnel>(entity =>
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("KeyPersonel", tb => tb.HasTrigger("trgKeyPersonelModified"));
+            entity.ToTable("KeyPersonnel", tb => tb.HasTrigger("trgKeyPersonnelModified"));
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.AccountNum)
@@ -3003,19 +3003,19 @@ public partial class JamesDatabaseContext : DbContext
                 .IsUnicode(false)
                 .IsFixedLength();
 
-            entity.HasOne(d => d.AccountNumNavigation).WithMany(p => p.KeyPersonels)
+            entity.HasOne(d => d.AccountNumNavigation).WithMany(p => p.KeyPersonnels)
                 .HasForeignKey(d => d.AccountNum)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_KeyPersonel_Account");
+                .HasConstraintName("FK_KeyPersonnel_Account");
 
-            entity.HasOne(d => d.IdNavigation).WithOne(p => p.KeyPersonel)
-                .HasForeignKey<KeyPersonel>(d => d.Id)
+            entity.HasOne(d => d.IdNavigation).WithOne(p => p.KeyPersonnel)
+                .HasForeignKey<KeyPersonnel>(d => d.Id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_KeyPersonel_LegalEntity");
+                .HasConstraintName("FK_KeyPersonnel_LegalEntity");
 
-            entity.HasOne(d => d.ResponsibilityNavigation).WithMany(p => p.KeyPersonels)
+            entity.HasOne(d => d.ResponsibilityNavigation).WithMany(p => p.KeyPersonnels)
                 .HasForeignKey(d => d.Responsibility)
-                .HasConstraintName("FK_KeyPersonel_ResponsibilityDM");
+                .HasConstraintName("FK_KeyPersonnel_ResponsibilityDM");
         });
 
         modelBuilder.Entity<LawEntity>(entity =>

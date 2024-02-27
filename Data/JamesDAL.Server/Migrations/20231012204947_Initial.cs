@@ -3356,7 +3356,7 @@ namespace James.Data.Server.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "KeyPersonel",
+                name: "KeyPersonnel",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -3375,20 +3375,20 @@ namespace James.Data.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_KeyPersonel", x => x.Id)
+                    table.PrimaryKey("PK_KeyPersonnel", x => x.Id)
                         .Annotation("SqlServer:Clustered", false);
                     table.ForeignKey(
-                        name: "FK_KeyPersonel_Account",
+                        name: "FK_KeyPersonnel_Account",
                         column: x => x.AccountNum,
                         principalTable: "Account",
                         principalColumn: "AccountNum");
                     table.ForeignKey(
-                        name: "FK_KeyPersonel_LegalEntity",
+                        name: "FK_KeyPersonnel_LegalEntity",
                         column: x => x.Id,
                         principalTable: "LegalEntity",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_KeyPersonel_ResponsibilityDM",
+                        name: "FK_KeyPersonnel_ResponsibilityDM",
                         column: x => x.Responsibility,
                         principalTable: "ResponsibilityDM",
                         principalColumn: "Responsibility");
@@ -5088,13 +5088,13 @@ namespace James.Data.Server.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_KeyPersonel_AccountNum",
-                table: "KeyPersonel",
+                name: "IX_KeyPersonnel_AccountNum",
+                table: "KeyPersonnel",
                 column: "AccountNum");
 
             migrationBuilder.CreateIndex(
-                name: "IX_KeyPersonel_Responsibility",
-                table: "KeyPersonel",
+                name: "IX_KeyPersonnel_Responsibility",
+                table: "KeyPersonnel",
                 column: "Responsibility");
 
             migrationBuilder.CreateIndex(
@@ -5774,7 +5774,7 @@ namespace James.Data.Server.Migrations
                 name: "InsurerState");
 
             migrationBuilder.DropTable(
-                name: "KeyPersonel");
+                name: "KeyPersonnel");
 
             migrationBuilder.DropTable(
                 name: "LegalEntityAddress");

@@ -1,6 +1,7 @@
 ﻿using James.Data.Server.Model;
 using James.Shared.Model;
 using Microsoft.EntityFrameworkCore;
+// ReSharper disable ConstantConditionalAccessQualifier
 
 namespace JamesWebUI.Server.GraphQL.TypeExtensions
 {
@@ -11,53 +12,105 @@ namespace JamesWebUI.Server.GraphQL.TypeExtensions
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             //TODO: Change to hydrate company if not already hydrated to prevent multiple lookups.
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var existingLe = company.IdNavigation;
-            var le = existingLe ?? await ctx.LegalEntities.SingleAsync(le => le.Id == company.Id);
-            return le.FullName;
+            JamesDatabaseContext ctx;
+            if (string.IsNullOrEmpty(company.IdNavigation?.FullName))
+            {
+                ctx = await contextFactory.CreateDbContextAsync();
+                company.IdNavigation = await ctx.LegalEntities.SingleAsync(le => le.Id == company.Id);
+            }
+            return company.IdNavigation.FullName;
         }
         public async Task<Address?> GetMainAddress([Parent] ILegalEntityCompany company, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var existingLea = company.IdNavigation?.LegalEntityAddresses?.SingleOrDefault(lea => lea.Type == "Main");
-            var lea = existingLea ?? await ctx.LegalEntityAddresses.Include(lea => lea.Address).SingleOrDefaultAsync(lea =>
-                lea.Type == "Main" && lea.LegalEntityId == company.Id);
-            return lea?.Address;
+            await EnsureAddresses(company, contextFactory);
+
+            var existingLea = company.IdNavigation.LegalEntityAddresses.SingleOrDefault(lea => lea.Type == "Main");
+            return existingLea?.Address;
         }
 
         public async Task<LegalEntityAddress[]> GetAddresses([Parent] ILegalEntityCompany company,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var existingLea = company.IdNavigation?.LegalEntityAddresses;
-            var lea = existingLea?.ToArray() ?? await ctx.LegalEntityAddresses.Include(lea => lea.Address).Where(lea => lea.LegalEntityId == company.Id).ToArrayAsync();
-            return lea;
+            await EnsureAddresses(company, contextFactory);
+            return company.IdNavigation.LegalEntityAddresses.ToArray();
         }
         public async Task<PhoneNumber?> GetMainPhoneNumber([Parent] ILegalEntityCompany company, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            return (await ctx.LegalEntityPhones.Include(lep => lep.PhoneNumber).SingleOrDefaultAsync(lep => lep.Type == "Main" && lep.LegalEntityId == company.Id))?.PhoneNumber;
+            await EnsurePhoneNumbers(company, contextFactory);
+            var existingLep = company.IdNavigation.LegalEntityPhones.SingleOrDefault(lea => lea.Type == "Main");
+            return existingLep?.PhoneNumber;
         }
         public async Task<LegalEntityPhone[]> GetPhoneNumbers([Parent] ILegalEntityCompany company,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var existingLep = company.IdNavigation?.LegalEntityPhones;
-            var lep = existingLep?.ToArray() ?? await ctx.LegalEntityPhones.Include(lep => lep.PhoneNumber).Where(legalEntityPhone => legalEntityPhone.LegalEntityId == company.Id).ToArrayAsync();
-            return lep;
+            await EnsurePhoneNumbers(company, contextFactory);
+            return company.IdNavigation.LegalEntityPhones.ToArray();
         }
         public async Task<string?> GetMainEmailAddress([Parent] ILegalEntityCompany company, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            return (await ctx.LegalEntityEmails.SingleOrDefaultAsync(lee => lee.Type == "Main" && lee.LegalEntityId == company.Id))?.EmailAddress;
+            await EnsureEmails(company, contextFactory);
+            var existingLee = company.IdNavigation.LegalEntityEmails.SingleOrDefault(lea => lea.Type == "Main");
+            return existingLee?.EmailAddress;
         }
         public async Task<LegalEntityEmail[]> GetEmailAddresses([Parent] ILegalEntityCompany company,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var existingLee = company.IdNavigation?.LegalEntityEmails;
-            var lee = existingLee?.ToArray() ?? await ctx.LegalEntityEmails.Where(lee => lee.LegalEntityId == company.Id).ToArrayAsync();
-            return lee;
+            await EnsureEmails(company, contextFactory);
+            return company.IdNavigation.LegalEntityEmails.ToArray();
         }
+        private static async Task EnsureAddresses(ILegalEntityCompany company, IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            if (company.IdNavigation?.LegalEntityAddresses.Any() != true)
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                if (null == company.IdNavigation)
+                {
+                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityAddresses)
+                        .SingleAsync(le => le.Id == company.Id);
+                }
+                else if (company.IdNavigation.LegalEntityAddresses.Count == 0)
+                {
+                    company.IdNavigation.LegalEntityAddresses = await ctx.LegalEntityAddresses
+                        .Where(lea => lea.LegalEntityId == company.Id).ToArrayAsync();
+                }
+            }
+        }
+
+        private static async Task EnsurePhoneNumbers(ILegalEntityCompany company, IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            if (company.IdNavigation?.LegalEntityPhones.Any() != true)
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                if (null == company.IdNavigation)
+                {
+                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityPhones)
+                        .SingleAsync(le => le.Id == company.Id);
+                }
+                else if (company.IdNavigation.LegalEntityPhones.Count == 0)
+                {
+                    company.IdNavigation.LegalEntityPhones = await ctx.LegalEntityPhones
+                        .Where(lep => lep.LegalEntityId == company.Id).ToArrayAsync();
+                }
+            }
+        }
+
+        private static async Task EnsureEmails(ILegalEntityCompany company, IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            if (company.IdNavigation?.LegalEntityEmails.Any() != true)
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                if (null == company.IdNavigation)
+                {
+                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityEmails)
+                        .SingleAsync(le => le.Id == company.Id);
+                }
+                else if (company.IdNavigation.LegalEntityEmails.Count == 0)
+                {
+                    company.IdNavigation.LegalEntityEmails = await ctx.LegalEntityEmails
+                        .Where(lee => lee.LegalEntityId == company.Id).ToArrayAsync();
+                }
+            }
+        }
+
     }
 }

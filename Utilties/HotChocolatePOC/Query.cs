@@ -47,5 +47,12 @@ namespace HotChocolatePOC
                 return ctx.Accounts.OrderBy(a=>a.AccountNum).Select(a => a.AccountNum).ToArray();
             return ctx.Accounts.Where(a => a.AccountNum.Contains(filter)).Select(a => a.AccountNum).ToArray();
         }
+
+        public async Task<Agency?> GetAgency(string agencyNumber,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.Agencies.SingleOrDefaultAsync(a => a.AgencyNumber == agencyNumber);
+        }
     }
 }

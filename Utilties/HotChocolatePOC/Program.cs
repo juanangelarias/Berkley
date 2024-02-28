@@ -1,4 +1,5 @@
 using HotChocolatePOC;
+using HotChocolatePOC.TypeExtensions;
 using James.Data.Server.Model;
 using James.Shared.Model;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +17,10 @@ builder.Services.AddGraphQLServer()
     .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
     .AddMutationConventions()
     .AddInMemorySubscriptions()
+    .AddTypeExtension<ILegalEntityCompanyExtensions>()
+    .AddTypeExtension<ILegalEntityIndividualExtensions>()
+    .AddTypeExtension<AgencyExtensions>()
+    .AddTypeExtension<AgentExtensions>()
     ;
 builder.Services
     .AddPooledDbContextFactory<JamesDatabaseContext>(o =>

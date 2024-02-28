@@ -28,6 +28,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Data.Server", "Data\J
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{9D840E97-D1E6-4AA1-BD8F-FCFF04617E3B}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationLog", "..\JApplicationLog\ApplicationLog.csproj", "{E1B4E482-161C-4C82-84FE-EA754A308A6C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{B26FEE6F-95A3-4BBC-BF3D-5BA94FBF2984}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B26FEE6F-95A3-4BBC-BF3D-5BA94FBF2984}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B26FEE6F-95A3-4BBC-BF3D-5BA94FBF2984}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1B4E482-161C-4C82-84FE-EA754A308A6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1B4E482-161C-4C82-84FE-EA754A308A6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1B4E482-161C-4C82-84FE-EA754A308A6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1B4E482-161C-4C82-84FE-EA754A308A6C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +67,7 @@ Global
 		{9018C7BD-D5DA-406C-B01C-75CB4237B41C} = {A6DECE62-8499-4728-A573-7DAB821857D5}
 		{ABD268FB-75F6-46C7-B0A9-69D9F7AE3034} = {69BB7FC5-8EE7-450A-8072-E0A8043515DD}
 		{B26FEE6F-95A3-4BBC-BF3D-5BA94FBF2984} = {C60478F9-28B0-415F-9FC6-39D8506F7B62}
+		{E1B4E482-161C-4C82-84FE-EA754A308A6C} = {9D840E97-D1E6-4AA1-BD8F-FCFF04617E3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C162C589-90F1-41BB-A1C8-5C250EDB98A3}

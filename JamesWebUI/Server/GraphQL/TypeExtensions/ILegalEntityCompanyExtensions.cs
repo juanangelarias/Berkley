@@ -65,12 +65,12 @@ namespace JamesWebUI.Server.GraphQL.TypeExtensions
                 var ctx = await contextFactory.CreateDbContextAsync();
                 if (null == company.IdNavigation)
                 {
-                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityAddresses)
+                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityAddresses).ThenInclude(lea=>lea.Address)
                         .SingleAsync(le => le.Id == company.Id);
                 }
                 else if (company.IdNavigation.LegalEntityAddresses.Count == 0)
                 {
-                    company.IdNavigation.LegalEntityAddresses = await ctx.LegalEntityAddresses
+                    company.IdNavigation.LegalEntityAddresses = await ctx.LegalEntityAddresses.Include(lea => lea.Address)
                         .Where(lea => lea.LegalEntityId == company.Id).ToArrayAsync();
                 }
             }
@@ -83,12 +83,12 @@ namespace JamesWebUI.Server.GraphQL.TypeExtensions
                 var ctx = await contextFactory.CreateDbContextAsync();
                 if (null == company.IdNavigation)
                 {
-                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityPhones)
+                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityPhones).ThenInclude(lep=>lep.PhoneNumber)
                         .SingleAsync(le => le.Id == company.Id);
                 }
                 else if (company.IdNavigation.LegalEntityPhones.Count == 0)
                 {
-                    company.IdNavigation.LegalEntityPhones = await ctx.LegalEntityPhones
+                    company.IdNavigation.LegalEntityPhones = await ctx.LegalEntityPhones.Include(lep => lep.PhoneNumber)
                         .Where(lep => lep.LegalEntityId == company.Id).ToArrayAsync();
                 }
             }

@@ -17,10 +17,10 @@
             }     
           },
           postalCode
-        
         }
       },
       legalEntityPhones{
+        type,
         phoneNumber {
           mainNumber,
           extension

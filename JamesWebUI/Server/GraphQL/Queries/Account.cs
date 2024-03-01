@@ -29,5 +29,14 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .Include(a => a.BranchReviewByNavigation)
                 .FirstOrDefault(a => a.AccountNum.Trim() == accountNumber.Trim());
         }
+
+        public Account? GetAccountOnly(string? accountNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            if (accountNumber == null)
+                return null;
+            var ctx = contextFactory.CreateDbContext();
+            return ctx.Accounts
+                .FirstOrDefault(a => a.AccountNum.Trim() == accountNumber.Trim());
+        }
     }
 }

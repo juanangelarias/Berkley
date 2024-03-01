@@ -11,16 +11,13 @@ var config = new ConfigurationBuilder()
     .Build();
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGraphQLServer()
+    .AddGraphQlTypes()
     .AddQueryType<Query>()
     .AddMutationType<BankMutationType>()
     .AddSubscriptionType<Subscription>()
     .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
     .AddMutationConventions()
     .AddInMemorySubscriptions()
-    .AddTypeExtension<ILegalEntityCompanyExtensions>()
-    .AddTypeExtension<ILegalEntityIndividualExtensions>()
-    .AddTypeExtension<AgencyExtensions>()
-    .AddTypeExtension<AgentExtensions>()
     ;
 builder.Services
     .AddPooledDbContextFactory<JamesDatabaseContext>(o =>

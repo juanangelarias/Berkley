@@ -54,23 +54,15 @@ builder.Services
     .AddGraphQLServer()
     .AddQueryType<JamesWebUI.Server.GraphQL.Queries.Query>()
     .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
-    .AddTypeExtension<ILegalEntityCompanyExtensions>()
-    .AddTypeExtension<ILegalEntityIndividualExtensions>()
-    .AddTypeExtension<AgencyExtensions>()
-    .AddTypeExtension<AgentExtensions>();
+    .AddJamesGraphQlTypes();
 
 builder.Services.AddCors(options =>
 {
-    //options.AddPolicy(name: MyAllowSpecificOrigins,
-    //    policy =>
-    //    {
-    //        policy.AllowAnyOrigin();
-    //        policy.WithOrigins("https://localhost:7265", "http://localhost:5130");
-    //    });
+    //TODO:  Make settings appropriate for production
     options.AddDefaultPolicy(policy =>
     {
+        //HACK:  Not appropriate for production.
         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-        //policy.WithOrigins("https://localhost:7265/");
     });
 });
 

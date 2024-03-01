@@ -1,0 +1,286 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Security.Principal;
+using System.Text;
+using System.Threading.Tasks;
+using James.Shared;
+using James.Shared.Model;
+using JamesWebUI.Client.GraphQL;
+using JamesWebUI.Client.Services;
+
+namespace JamesWebUI.Client.Test
+{
+    public class ThisToThatTests
+    {
+
+        [Fact]
+        public void Test1()
+        {
+            var acct = GetFakeAccount();
+            var gqlAcct = MakeIntoGraphQLObject(acct);
+            var entityForm = ThisToThat.ToEntityType<Account>(gqlAcct);
+
+            Assert.NotNull(entityForm);
+            Assert.Equal(acct.AccountNum, entityForm.AccountNum);
+            Assert.Equal(acct.Bank, entityForm.Bank);
+            Assert.Equal(acct.IdNavigation.FullName, entityForm.IdNavigation.FullName);
+            Assert.Equal(acct.IdNavigation.LegalEntityPhones.Count, entityForm.IdNavigation.LegalEntityPhones.Count);
+            Assert.Equal(acct.IdNavigation.LegalEntityEmails.Count, entityForm.IdNavigation.LegalEntityEmails.Count);
+            MatchLegalAddresses(acct.IdNavigation.LegalEntityAddresses, entityForm.IdNavigation.LegalEntityAddresses);
+            for (var i = 0; i < acct.IdNavigation.LegalEntityPhones.Count; i++)
+            {
+                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].Type, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].Type);
+                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.MainNumber, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.MainNumber);
+                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.Extension, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.Extension);
+                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.CountryCode, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.CountryCode);
+            }
+            for (var i = 0; i < acct.IdNavigation.LegalEntityEmails.Count; i++)
+            {
+                Assert.Equal(acct.IdNavigation.LegalEntityEmails.ToArray()[i].Type, entityForm.IdNavigation.LegalEntityEmails.ToArray()[i].Type);
+                Assert.Equal(acct.IdNavigation.LegalEntityEmails.ToArray()[i].EmailAddress, entityForm.IdNavigation.LegalEntityEmails.ToArray()[i].EmailAddress);
+            }
+
+            Assert.Equal(acct.Agent.IdNavigation.FullName, entityForm.Agent.IdNavigation.FullName);
+            Assert.Equal(acct.AgencyNumberNavigation.IdNavigation.FullName, entityForm.AgencyNumberNavigation.IdNavigation.FullName);
+            MatchLegalAddresses(acct.AgencyNumberNavigation.IdNavigation.LegalEntityAddresses, entityForm.AgencyNumberNavigation.IdNavigation.LegalEntityAddresses, true);
+            Assert.Equal(acct.Division, entityForm.Division);
+            Assert.Equal(acct.HomeOfficeReviewByNavigation.FullName, entityForm.HomeOfficeReviewByNavigation.FullName);
+            Assert.Equal(acct.HomeOfficeReviewed, entityForm.HomeOfficeReviewed);
+            Assert.Equal(acct.BranchReviewByNavigation.FullName, entityForm.BranchReviewByNavigation.FullName);
+            Assert.Equal(acct.BranchReviewed, entityForm.BranchReviewed);
+            Assert.Equal(acct.Attorney.IdNavigation.FullName, acct.Attorney.IdNavigation.FullName);
+            Assert.Equal(acct.Attorney.MartindaleHubbellRating, acct.Attorney.MartindaleHubbellRating);
+            Assert.Equal(acct.Underwriter.IdNavigation.FullName, acct.Underwriter.IdNavigation.FullName);
+            Assert.Equal(acct.Underwriter.IdNavigation.Initials, acct.Underwriter.IdNavigation.Initials);
+            Assert.Equal(acct.Underwriter.IdNavigation.Title, acct.Underwriter.IdNavigation.Title);
+            Assert.Equal(acct.Underwriter.IdNavigation.Email, acct.Underwriter.IdNavigation.Email);
+            Assert.Equal(acct.Underwriter.ReportsTo, acct.Underwriter.ReportsTo);
+        }
+
+        static void MatchLegalAddresses(ICollection<LegalEntityAddress> expected,
+            ICollection<LegalEntityAddress> actual, bool cityStateOnly = false)
+        {
+            Assert.Equal(expected.Count, actual.Count);
+            for (var i = 0; i < expected.Count; i++)
+            {
+                Assert.Equal(expected.ToArray()[i].Address.City, actual.ToArray()[i].Address.City);
+                Assert.Equal(expected.ToArray()[i].Address.StateCode, actual.ToArray()[i].Address.StateCode);
+                if (cityStateOnly == false)
+                {
+                    Assert.Equal(expected.ToArray()[i].Address.Address1, actual.ToArray()[i].Address.Address1);
+                    Assert.Equal(expected.ToArray()[i].Address.Address2, actual.ToArray()[i].Address.Address2);
+                    Assert.Equal(expected.ToArray()[i].Address.Address3, actual.ToArray()[i].Address.Address3);
+                    Assert.Equal(expected.ToArray()[i].Address.StateCodeNavigation.CountryCode, actual.ToArray()[i].Address.StateCodeNavigation.CountryCode);
+                    Assert.Equal(expected.ToArray()[i].Address.StateCodeNavigation.CountryCodeNavigation.Name, actual.ToArray()[i].Address.StateCodeNavigation.CountryCodeNavigation.Name);
+                    Assert.Equal(expected.ToArray()[i].Address.PostalCode, actual.ToArray()[i].Address.PostalCode);
+                }
+            }
+        }
+
+        static Random _rnd = new Random();
+        Account GetFakeAccount()
+        {
+            var id = Guid.NewGuid();
+            var addressId = Guid.NewGuid();
+            var phoneId = Guid.NewGuid();
+            var agentId = Guid.NewGuid();
+            var agencyId = Guid.NewGuid();
+            var agencyNumber = _rnd.Next(1000, 9999).ToString();
+            var accountNumber = _rnd.Next(10000, 99999).ToString();
+            var attorneyId = Guid.NewGuid();
+            var underwriterId = Guid.NewGuid();
+            var acct = new Account
+            {
+                Id = id,
+                Bank = "Fake Bank",
+                IdNavigation = new LegalEntity
+                {
+                    Id = id,
+                    FullName = "Fake TestCompany",
+                    LegalEntityAddresses = new List<LegalEntityAddress>
+                    {
+                        new LegalEntityAddress
+                        {
+                            Type = "Main",
+                            Address = new Address
+                            {
+                                Address1 = "123 Main St",
+                                Address2 = "Suite 200",
+                                City = "Ames",
+                                StateCode = "IA",
+                                StateCodeNavigation = new State
+                                {
+                                    Code = "IA",
+                                    CountryCode = "US",
+                                    CountryCodeNavigation =
+                                        new CountryDm
+                                        {
+                                            Code = "US",
+                                            Name = "United States"
+                                        }
+                                },
+                                PostalCode = "50010"
+                            }
+                        }
+                    },
+                    LegalEntityPhones = new List<LegalEntityPhone>
+                    {
+                        new LegalEntityPhone
+                        {
+                            Type="Main",
+                            PhoneNumber = new PhoneNumber
+                            {
+                                MainNumber = "5155551234",
+                                Extension = "x1"
+                            }
+                        }
+                    },
+                    LegalEntityEmails = new List<LegalEntityEmail>
+                    {
+                        new LegalEntityEmail
+                        {
+                            Type = "Main",
+                            EmailAddress = "Bob@bob.com"
+                        }
+                    }
+                },
+                AgentId = agentId,
+                Agent = new Agent
+                {
+                    Id = agentId,
+                    IdNavigation = new LegalEntity
+                    {
+                        Id = agentId,
+                        FullName = "Allen the Agent"
+                    }
+                },
+                AgencyNumber = agencyNumber,
+                AgencyNumberNavigation = new Agency
+                {
+                    Id = agencyId,
+                    IdNavigation = new LegalEntity
+                    {
+                        Id = agencyId,
+                        FullName = "Agency of Awesome",
+                        LegalEntityAddresses = new List<LegalEntityAddress>
+                        {
+                            new LegalEntityAddress
+                            {
+                                Type = "Main",
+                                Address = new Address
+                                {
+                                    Address1 = "4000 Corporate Way",
+                                    City = "Dallas",
+                                    StateCode = "TX"
+                                }
+                            }
+                        }
+                    }
+                },
+                AccountNum = accountNumber,
+                Division = "Commercial",
+                HomeOfficeReviewed = new DateTime(2020, 2, 2, 2, 2, 2),
+                HomeOfficeReviewByNavigation = new UserProfile
+                {
+                    FullName = "Chuck Schumer"
+                },
+                BranchReviewed = new DateTime(2021, 1, 1, 1, 1, 1),
+                BranchReviewByNavigation = new UserProfile
+                {
+                    FullName = "Joe Branch"
+                },
+                AttorneyId = attorneyId,
+                Attorney = new LawEntity
+                {
+                    Id = attorneyId,
+                    IdNavigation = new LegalEntity
+                    {
+                        Id = attorneyId,
+                        FullName = "Snidely Whiplash"
+                    },
+                    MartindaleHubbellRating = "12"
+                },
+                UnderwriterId = underwriterId,
+                Underwriter = new Underwriter
+                {
+                    Id = underwriterId,
+                    IdNavigation = new Employee
+                    {
+                        FullName = "Ursula Underwriter",
+                        Initials = "UUU",
+                        Title = "Underwriter",
+                        Email = "UUU@berkeysurety.com"
+                    },
+                    ReportsTo = new Guid()
+                }
+            };
+            return acct;
+        }
+
+        GetAccountByAccountNumber_Account_Account MakeIntoGraphQLObject(Account orig)
+        {
+            var legalEntityAddresses = orig.IdNavigation.LegalEntityAddresses.Select(lea =>
+                new GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_LegalEntityAddress(
+                    lea.Type,
+                    new GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_Address_Address(
+                        lea.Address.Address1,
+                        lea.Address.Address2,
+                        lea.Address.Address3,
+                        lea.Address.City,
+                        lea.Address.StateCode,
+                        new
+                            GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_Address_StateCodeNavigation_State(
+                                lea.Address.StateCodeNavigation.CountryCode,
+                                new
+                                    GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_Address_StateCodeNavigation_CountryCodeNavigation_CountryDm(
+                                        lea.Address.StateCodeNavigation.CountryCodeNavigation.Name)
+                            ),
+                        lea.Address.PostalCode))).ToArray();
+            return new GetAccountByAccountNumber_Account_Account(
+                new GetAccountByAccountNumber_Account_IdNavigation_LegalEntity(orig.IdNavigation.FullName,
+                    legalEntityAddresses,
+                    orig.IdNavigation.LegalEntityPhones.Select(lep =>
+                        new GetAccountByAccountNumber_Account_IdNavigation_LegalEntityPhones_LegalEntityPhone(lep.Type,
+                            new
+                                GetAccountByAccountNumber_Account_IdNavigation_LegalEntityPhones_PhoneNumber_PhoneNumber(
+                                    lep.PhoneNumber.MainNumber,
+                                    lep.PhoneNumber.Extension))).ToArray(),
+                    orig.IdNavigation.LegalEntityEmails.Select(lee =>
+                        new GetAccountByAccountNumber_Account_IdNavigation_LegalEntityEmails_LegalEntityEmail(lee.Type,
+                            lee.EmailAddress)).ToArray()),
+                orig.Bank,
+                new GetAccountByAccountNumber_Account_Agent_Agent(
+                    new GetAccountByAccountNumber_Account_Agent_IdNavigation_LegalEntity(orig.Agent.IdNavigation
+                        .FullName)),
+                new GetAccountByAccountNumber_Account_AgencyNumberNavigation_Agency(
+                    new GetAccountByAccountNumber_Account_AgencyNumberNavigation_IdNavigation_LegalEntity(
+                        orig.AgencyNumberNavigation.IdNavigation.FullName,
+                        orig.AgencyNumberNavigation.IdNavigation.LegalEntityAddresses.Select(lea =>
+                            new
+                                GetAccountByAccountNumber_Account_AgencyNumberNavigation_IdNavigation_LegalEntityAddresses_LegalEntityAddress(
+                                    lea.Type,
+                                    new
+                                        GetAccountByAccountNumber_Account_AgencyNumberNavigation_IdNavigation_LegalEntityAddresses_Address_Address(
+                                            lea.Address.City, lea.Address.StateCode))).ToArray())),
+                orig.AccountNum,
+                orig.Division,
+                new GetAccountByAccountNumber_Account_HomeOfficeReviewByNavigation_UserProfile(
+                    orig.HomeOfficeReviewByNavigation.FullName),
+                orig.HomeOfficeReviewed,
+                new GetAccountByAccountNumber_Account_BranchReviewByNavigation_UserProfile(orig.BranchReviewByNavigation
+                    .FullName),
+                orig.BranchReviewed,
+                new GetAccountByAccountNumber_Account_Attorney_LawEntity(
+                    new GetAccountByAccountNumber_Account_Attorney_IdNavigation_LegalEntity(orig.Attorney.IdNavigation
+                        .FullName), orig.Attorney.MartindaleHubbellRating),
+                new GetAccountByAccountNumber_Account_Underwriter_Underwriter(
+                    new GetAccountByAccountNumber_Account_Underwriter_IdNavigation_Employee(
+                        orig.Underwriter.IdNavigation.FullName, orig.Underwriter.IdNavigation.Initials,
+                        orig.Underwriter.IdNavigation.Title, orig.Underwriter.IdNavigation.Email),
+                    orig.Underwriter.ReportsTo)
+            );
+        }
+    }
+}

@@ -111,7 +111,7 @@ else
     {
         await base.OnInitializedAsync();
         var result = await accountClient.GetAccountNumbers.ExecuteAsync("", true);
-        accountNumbers = result.Data.FilteredAccountNumbers ?? Array.Empty<string>();
+        accountNumbers = result.Data?.FilteredAccountNumbers ?? Array.Empty<string>();
         await Task.Delay(3000);
         session = accountClient.AccountModified.Watch().Subscribe(  a=>  AccountModified(a).RunSynchronously());
     }

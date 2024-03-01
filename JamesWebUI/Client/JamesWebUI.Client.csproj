@@ -10,16 +10,21 @@
 
   <ItemGroup>
     <GraphQL Remove="GraphQL\GetAccountByAccountNumber.graphql" />
+    <GraphQL Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
     <GraphQL Remove="GraphQL\GetStates.graphql" />
     <GraphQL Remove="GraphQL\SearchAgencies.graphql" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.1" />
+    <None Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.2" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageReference Include="Radzen.Blazor" Version="4.24.7" />
-    <PackageReference Include="StrawberryShake.Blazor" Version="13.8.1" />
+    <PackageReference Include="Radzen.Blazor" Version="4.25.9" />
+    <PackageReference Include="StrawberryShake.Blazor" Version="13.9.0" />
   </ItemGroup>
 
   <ItemGroup>

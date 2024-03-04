@@ -19,5 +19,22 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 return ctx.Agencies.Include(a => a.IdNavigation)
                     .ToList();
         }
+        public Agency? GetAgencyByAgencyNumber(string agencyNumber, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            return ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
+                .Include(a => a.IdNavigation)
+                .Include(a => a.IdNavigation.LegalEntityAddresses) 
+                .ThenInclude(a => a.Address)
+                .Include(a => a.AgentsInAgencies)
+                .ThenInclude(a => a.Agent)
+                .ThenInclude(a => a.IdNavigation)
+                .FirstOrDefault();
+        }
+        public List<AgencyStatusDm> GetAgencyStatuses([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            return ctx.AgencyStatusDms.ToList();
+        }
     }
 }

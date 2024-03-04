@@ -40,8 +40,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddRadzenComponents();
 builder.Services.AddRazorComponents()
-    .AddInteractiveWebAssemblyComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveWebAssemblyComponents();
 
 builder.Services
     .AddPooledDbContextFactory<JamesDatabaseContext>(o =>
@@ -91,13 +90,22 @@ app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after
 app.UseAntiforgery();
 
 app.UseCors();
-
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
+else
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
 
 app.MapRazorPages();
 app.MapControllers();
 app.MapRazorComponents<App>()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddInteractiveServerRenderMode();
+    .AddInteractiveWebAssemblyRenderMode();
 
 app.MapGraphQL("/graphql");
 

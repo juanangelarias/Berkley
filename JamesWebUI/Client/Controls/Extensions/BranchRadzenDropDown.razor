@@ -1,0 +1,36 @@
+﻿@using System.Globalization
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject AccountClient AccountClient
+
+<UseGetBranches Context="branchData">
+    <ChildContent>
+        <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="Branch"
+                        Multiple="true" Chips="true" SelectAllText="Select All"
+                        AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        TValue="List<IGetBranches_Branches>" Data="branchData.Branches.ToList()"
+                        TextProperty="BranchKey">
+        </RadzenDropDown>
+    </ChildContent>
+    <ErrorContent>
+        Something went wrong...<br />
+    </ErrorContent>
+    <LoadingContent>
+        <RadzenDropDown Placeholder="Loading..." TValue="IGetBranches_Branches" />
+    </LoadingContent>
+</UseGetBranches>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        ThemeService.Initialize(NavigationManager);
+    }
+}

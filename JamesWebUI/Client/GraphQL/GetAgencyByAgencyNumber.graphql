@@ -1,0 +1,41 @@
+﻿query GetAgencyByAgencyNumber($agencyNumber: String!)
+{
+	agencyByAgencyNumber(agencyNumber:$agencyNumber)
+    {
+		agencyNumber,
+        branch,
+        status,
+		agentsInAgencies{
+			agent{
+				idNavigation{
+                    fullName
+                }
+			}
+		}
+		idNavigation
+        {
+			fullName,
+			legalEntityAddresses
+            {
+				type,
+				address
+                {
+                    address1,
+                    address2,
+                    address3,
+                    city,
+                    stateCode,
+                    stateCodeNavigation 
+                    {
+                        countryCode,
+                        countryCodeNavigation 
+                        {
+                            name
+                        }     
+                    },
+                    postalCode
+                }
+			}
+		}
+	}
+}

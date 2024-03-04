@@ -1,0 +1,6 @@
+﻿query GetAgencyStatuses(){
+	agencyStatuses(){
+		id,
+		status
+	}
+}

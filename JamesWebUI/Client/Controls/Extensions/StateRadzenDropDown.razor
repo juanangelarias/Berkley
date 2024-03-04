@@ -1,0 +1,36 @@
+﻿@using System.Globalization
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject AccountClient AccountClient
+
+<UseGetAllStates Context="stateData">
+    <ChildContent>
+        <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="State"
+                        Multiple="true" Chips="true" SelectAllText="Select All"
+                        AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        TValue="List<IGetAllStates_AllStates>" Data="stateData.AllStates.ToList()"
+                        TextProperty="Name">
+        </RadzenDropDown>
+    </ChildContent>
+    <ErrorContent>
+        Something went wrong...<br />
+    </ErrorContent>
+    <LoadingContent>
+        <RadzenDropDown Placeholder="Loading..." TValue="IGetAllStates_AllStates"/>
+    </LoadingContent>
+</UseGetAllStates>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        ThemeService.Initialize(NavigationManager);
+    }
+}

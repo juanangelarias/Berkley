@@ -1,0 +1,7 @@
+﻿query GetBranches(){
+	branches(){
+		id,
+		branchKey,
+		name
+	}
+}

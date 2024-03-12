@@ -1,0 +1,150 @@
+﻿@page "/AgencySearch"
+
+@using System.Globalization
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using JamesWebUI.Client.Controls.Extensions;
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject AccountClient AccountClient
+
+<Theme />
+
+
+<PageTitle>Agency Profile</PageTitle>
+
+<RadzenLayout>
+    <RadzenHeader>
+
+    </RadzenHeader>
+    <RadzenBody>
+        <RadzenRow Gap="2" JustifyContent="JustifyContent.Right">
+            <RadzenColumn Style="vertical-align: middle" Size="1">
+                <RadzenLabel Text="Search by:" Component="txtSearch"></RadzenLabel>
+            </RadzenColumn>
+            <RadzenColumn Size="3">
+                <RadzenTextBox Placeholder="Agency/Producer No." Name="txtSearch" Style="width: 100%" />
+            </RadzenColumn>
+            <RadzenColumn Size="4">
+                <RadzenTextBox Placeholder="Name" Style="width: 100%" @ref="@txtAgencyNameSearch" Change="@OnAgencySearchChange" />
+            </RadzenColumn>
+            <RadzenColumn Style="vertical-align: middle">
+                <RadzenButton Icon="search" Size="ButtonSize.Small" Click="SearchAgencies" />
+            </RadzenColumn>
+            <RadzenColumn>
+                <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Primary" Text="Create New Agency" />
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow RowGap="2" JustifyContent="JustifyContent.Center">
+            @{
+                if (!String.IsNullOrEmpty(txtAgencyNameSearch?.Value))
+                {
+                    <RadzenColumn Size="10">
+                        <UseSearchAgencies SearchString="@AgencySearchString" Context="agencyResults" Strategy="ExecutionStrategy.CacheFirst">
+                            <ChildContent>
+                                <RadzenDataGrid style="border-radius: 20px;" AllowSorting="true" Density="Density.Compact" @ref="AgencyResultsGrid"
+                                                AllowVirtualization="false" AllowPaging="true" PageSize="10" PagerPosition="PagerPosition.Bottom"
+                                                AllowColumnReorder="true" RowDoubleClick="OpenAgency"
+                                                AllowFiltering="true" FilterMode="FilterMode.Simple"
+                                                Data="@agencyResults.SearchAgencies" TItem="ISearchAgencies_SearchAgencies">
+                                    <Columns>
+                                        <RadzenDataGridColumn Width="150px" Filterable="true"
+                                                              TItem="ISearchAgencies_SearchAgencies" Property="AgencyNumber" Title="Agency #" />
+                                        <RadzenDataGridColumn Filterable="true"
+                                                              TItem="ISearchAgencies_SearchAgencies" Property="IdNavigation.FullName" Title="Name" />
+                                        <RadzenDataGridColumn Filterable="true"
+                                                              TItem="ISearchAgencies_SearchAgencies" Title="City">
+                                            <Template Context="agency">
+                                                @(agency?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address.City + ", " + agency?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address.StateCode)
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn Width="150px" Type="typeof(IEnumerable<String>)"
+                                                              Filterable="true" FilterValue="@BranchFilter" FilterProperty="Branch" FilterOperator="FilterOperator.Contains"
+                                                              TItem="ISearchAgencies_SearchAgencies" Property="Branch" Title="Branch">
+                                            <FilterTemplate>
+                                                <RadzenDropDown @bind-Value="@BranchFilter" TValue="List<String>" Change="BranchFilterChange"
+                                                                Multiple="true" Data="@agencyResults.SearchAgencies.OrderBy(a => a.Branch).GroupBy(a => a.Branch).Select(a => a?.FirstOrDefault()?.Branch).ToList()" />
+                                            </FilterTemplate>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn Width="200px" Type="typeof(IEnumerable<String>)"
+                                                              Filterable="true" FilterValue="@StatusFilter" FilterProperty="Status" FilterOperator="FilterOperator.Contains"
+                                                              TItem="ISearchAgencies_SearchAgencies" Property="Status" Title="Status">
+                                            <Template Context="agency">
+                                                @{
+                                                    if (agency.Status == "Active")
+                                                    {
+                                                        <RadzenIcon Icon="check_circle" IconColor="@Colors.Success" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <RadzenIcon Icon="cancel" IconColor="@Colors.Danger" />
+                                                    }
+                                                }
+                                                @agency.Status
+                                            </Template>
+                                            <FilterTemplate>
+                                                <RadzenDropDown @bind-Value="@StatusFilter" TValue="List<String>" Change="StatusFilterChange"
+                                                                Multiple="true" Data="@agencyResults.SearchAgencies.OrderBy(a => a.Status).GroupBy(a => a.Status).Select(a => a?.FirstOrDefault()?.Status).ToList()" />
+                                            </FilterTemplate>
+                                        </RadzenDataGridColumn>
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </ChildContent>
+                            <LoadingContent>
+                                Loading...
+                            </LoadingContent>
+                        </UseSearchAgencies>
+                    </RadzenColumn>
+                }
+            }
+
+        </RadzenRow>
+    </RadzenBody>
+</RadzenLayout>
+
+
+@code {
+    string[] dropDownValues = { "Test1", "Test2", "Test3" };
+
+    //DropDown Data
+    private IReadOnlyList<ISearchAgencies_SearchAgencies> agencyResults;
+    private RadzenTextBox txtAgencyNameSearch;
+    private string AgencySearchString;
+    public ISearchAgencies_SearchAgencies selectedAgency;
+    public List<String> BranchFilter = null;
+    public List<String> StatusFilter = null;
+    public RadzenDataGrid<ISearchAgencies_SearchAgencies> AgencyResultsGrid;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        ThemeService.Initialize(NavigationManager);
+    }
+    async Task SearchAgencies()
+    {
+        var results = await AccountClient.SearchAgencies.ExecuteAsync(txtAgencyNameSearch.Value);
+        agencyResults = results.Data.SearchAgencies;
+    }
+    async Task OpenAgency(DataGridRowMouseEventArgs<ISearchAgencies_SearchAgencies> args)
+    {
+        NavigationManager.NavigateTo("Agency/" + args.Data.AgencyNumber, true);
+    }
+    async Task OnAgencySearchChange(dynamic args)
+    {
+        AgencySearchString = args;
+    }
+    async Task BranchFilterChange()
+    {
+        await AgencyResultsGrid.Reload();
+    }
+    async Task StatusFilterChange()
+    {
+        await AgencyResultsGrid.Reload();
+    }
+}
+

@@ -1,0 +1,50 @@
+﻿@using System.Globalization;
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+
+<Theme />
+
+<RadzenPanel>
+    <RadzenRow>
+        <RadzenSelectBar TValue="int" Value="1" Style="border-radius: 50rem;" Size="ButtonSize.Small" >
+            <Items>
+                <RadzenSelectBarItem Value="1" Text="Note"/>
+                <RadzenSelectBarItem Value="2" Text="Task"/>
+                <RadzenSelectBarItem Value="3" Text="Approval Request" />
+            </Items>
+        </RadzenSelectBar>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenTextBox Placeholder="Title"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <RadzenTextArea Placeholder="New Entry" Cols="50" Rows="5"/>
+            <RadzenButton Text="Create Note"/>
+        </RadzenStack>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenDatePicker Placeholder="Due" TValue="DateTime"/>
+        </RadzenColumn>
+        <RadzenColumn>
+            <RadzenDatePicker Placeholder="Reminder" TValue="DateTime" />
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenPanel>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        ThemeService.Initialize(NavigationManager);
+
+    }
+}

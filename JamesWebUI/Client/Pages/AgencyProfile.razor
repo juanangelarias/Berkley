@@ -22,8 +22,17 @@
             <RadzenBody>
                 <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
                     <RadzenPanel Style="border-radius: 20px">
-                        <RadzenRow>
-                            <RadzenText TextStyle="TextStyle.DisplayH4" Text="@agency?.AgencyByAgencyNumber?.IdNavigation?.FullName" />
+                        <RadzenRow JustifyContent="JustifyContent.End">
+                            <RadzenColumn>
+                                <RadzenText TextStyle="TextStyle.DisplayH4" Text="@agency?.AgencyByAgencyNumber?.IdNavigation?.FullName" />
+                            </RadzenColumn>
+                            <RadzenColumn Size="2">
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <RadzenText Text="Status:" />
+                                    <RadzenText Text="@agency?.AgencyByAgencyNumber?.Status" />
+                                    <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.Small" />
+                                </RadzenStack>
+                            </RadzenColumn>
                         </RadzenRow>
                         <RadzenRow>
                             <RadzenColumn Size="2">
@@ -39,7 +48,7 @@
                                 </RadzenStack>
                             </RadzenColumn>
                         </RadzenRow>
-                        <RadzenRow JustifyContent="JustifyContent.End">
+                        <RadzenRow>
                             <RadzenColumn Size="2">
                                 <RadzenStack Orientation="Orientation.Horizontal">
                                     <RadzenText Text="Parent #: " />
@@ -50,11 +59,6 @@
                                 <RadzenStack Orientation="Orientation.Horizontal">
                                     <RadzenText Text="Parent: " />
                                     <RadzenText Text="NFP Property & Casualty Services, Inc." />
-                                </RadzenStack>
-                            </RadzenColumn>
-                            <RadzenColumn Size="6">
-                                <RadzenStack AlignItems="AlignItems.End">
-                                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Text="Status Log" />
                                 </RadzenStack>
                             </RadzenColumn>
                         </RadzenRow>
@@ -74,8 +78,9 @@
                                                         <RadzenColumn>
                                                             <RadzenText>
                                                                 @{
-                                                                    @agency?.AgencyByAgencyNumber?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address?.Address1;
-                                                                }    
+                                                                    @agency?.AgencyByAgencyNumber?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address?.Address1
+                                                                    ;
+                                                                }
                                                             </RadzenText>
                                                         </RadzenColumn>
                                                     </RadzenRow>
@@ -86,7 +91,8 @@
                                                         <RadzenColumn>
                                                             <RadzenText>
                                                                 @{
-                                                                    @agency?.AgencyByAgencyNumber?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address?.Address2;
+                                                                    @agency?.AgencyByAgencyNumber?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address?.Address2
+                                                                    ;
                                                                 }
                                                             </RadzenText>
                                                         </RadzenColumn>
@@ -98,7 +104,8 @@
                                                         <RadzenColumn Size="2">
                                                             <RadzenText>
                                                                 @{
-                                                                    @agency?.AgencyByAgencyNumber?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address?.City;
+                                                                    @agency?.AgencyByAgencyNumber?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address?.City
+                                                                    ;
                                                                 }
                                                             </RadzenText>
                                                         </RadzenColumn>
@@ -211,23 +218,111 @@
                                     <RadzenPanel>
                                         <HeaderTemplate>
                                             <RadzenStack Orientation="Orientation.Horizontal">
-                                                <RadzenButton Size="ButtonSize.Small" Icon="grid_view" Variant="Variant.Text" />
-                                                <RadzenButton Size="ButtonSize.Small" Icon="list" Variant="Variant.Text" />
-
+                                                <RadzenButton Size="ButtonSize.Small" Icon="grid_view" Variant="Variant.Text" Click="@(() => contactsGridView = true)" />
+                                                <RadzenButton Size="ButtonSize.Small" Icon="list" Variant="Variant.Text" Click="@(() => contactsGridView = false)" />
                                             </RadzenStack>
                                         </HeaderTemplate>
-                                        <ChildContent >
-                                            <RadzenDataList WrapItems="true" TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies" Data="agency?.AgencyByAgencyNumber?.AgentsInAgencies" >
+                                        <ChildContent>
+                                            <RadzenDataList Visible="contactsGridView" WrapItems="true" TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies" Data="agency?.AgencyByAgencyNumber?.AgentsInAgencies">
                                                 <Template Context="agentToDisplay">
                                                     <AgentCard agentToDisplay="agentToDisplay.Agent" />
                                                 </Template>
                                             </RadzenDataList>
+                                            <RadzenDataGrid Visible="!contactsGridView" TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies"
+                                                            Data="agency?.AgencyByAgencyNumber?.AgentsInAgencies"
+                                                            ExpandMode="DataGridExpandMode.Single">
+                                                <Template Context="agent">
+                                                    <RadzenDataGrid TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Data="agent.Agent.IdNavigation.AgencyLicenseAgents">
+                                                        <Columns>
+                                                            <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="Status" Property="Status" />
+                                                            <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="License No." />
+                                                            <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="State" />
+                                                            <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="Resident" />
+                                                            <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="No Aptmt" />
+                                                            <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="Insurer" />
+                                                            <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="Appointment Date" />
+                                                        </Columns>
+                                                    </RadzenDataGrid>
+                                                </Template>
+                                                <Columns>
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies" Property="agentToDisplay.Agent.IdNavigation.GivenName" Title="First Name" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies" Property="agentToDisplay.Agent.IdNavigation.MiddleInitial" Title="MI" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies" Property="agentToDisplay.Agent.IdNavigation.FamilyName" Title="Last Name" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies" Property="agentToDisplay.Agent.MainEmailAddress" Title="Email" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies" Property="agentToDisplay.Agent.NationalProducerNumber" Title="NPN" />
+                                                </Columns>
+                                            </RadzenDataGrid>
                                         </ChildContent>
                                     </RadzenPanel>
                                 </RadzenTabsItem>
                                 <RadzenTabsItem Text="Inventory"></RadzenTabsItem>
-                                <RadzenTabsItem Text="Line Card"></RadzenTabsItem>
-                                <RadzenTabsItem Text="Commission Rates"></RadzenTabsItem>
+                                <RadzenTabsItem Text="Accounts and Bonds">
+                                    <RadzenPanel>
+                                        <RadzenTabs>
+                                            <Tabs>
+                                                <RadzenTabsItem Text="Accounts">
+                                                    <RadzenDataGrid TItem="string" Data="@blankList">
+                                                        <Template>
+                                                            @* Sub-table grid here *@
+                                                        </Template>
+                                                        <Columns>
+                                                            <RadzenDataGridColumn TItem="string" Title="Status" />
+                                                            <RadzenDataGridColumn TItem="string" Title="Account #"/>
+                                                            <RadzenDataGridColumn TItem="string" Title="Account Name"/>
+                                                            <RadzenDataGridColumn TItem="string" Title="City" />
+                                                            <RadzenDataGridColumn TItem="string" Title="State"/>
+                                                            <RadzenDataGridColumn TItem="string" Title="Postal Code" />
+                                                            <RadzenDataGridColumn TItem="string" Title="Branch" />
+                                                        </Columns>
+                                                        <EmptyTemplate>
+                                                            No Records to Display
+                                                        </EmptyTemplate>
+                                                    </RadzenDataGrid>
+                                                </RadzenTabsItem>
+                                                <RadzenTabsItem Text="Bonds">
+
+                                                </RadzenTabsItem>
+                                            </Tabs>
+                                        </RadzenTabs>
+                                    </RadzenPanel>
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Commission Rates">
+                                    @* <RadzenDataList TItem="string">
+                                    <Template>
+
+                                    </Template>
+                                    </RadzenDataList> *@
+                                    <RadzenRow>
+                                        <RadzenColumn Size="2">
+                                            <span>$1 - $2,500,000</span>
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="9">
+                                            <RadzenSlider Range="true" Min="1" Max="100000000"
+                                                TValue="IEnumerable<int>" @bind-Value="@firstRange" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="2">
+                                            <span>$2,500,000 - $5,000,000</span>
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="9">
+                                            <RadzenSlider Range="true" Min="1" Max="100000000"
+                                                TValue="IEnumerable<int>" @bind-Value="@secondRange" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="2">
+                                            <span>$5,000,000 - $7,500,000</span>
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="9">
+                                            <RadzenSlider Range="true" Min="1" Max="100000000"
+                                                TValue="IEnumerable<int>" @bind-Value="@thirdRange" />
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="2">
+                                            <span>$7,500,000 - $100,000,000</span>
+                                        </RadzenColumn>
+                                        <RadzenColumn Size="9">
+                                            <RadzenSlider Range="true" Min="1" Max="100000000"
+                                                TValue="IEnumerable<int>" @bind-Value="@fourthRange" />
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                </RadzenTabsItem>
                                 <RadzenTabsItem Text="Virtual File"></RadzenTabsItem>
                             </Tabs>
                         </RadzenTabs>
@@ -242,7 +337,13 @@
     [Parameter] public string Id { get; set; }
     public Notification[] notifications;
     List<string> blankList = new List<string>();
-    private bool contactsGridView = true;
+    private bool contactsGridView = false;
+
+    //TODO: Remove test code below
+    IEnumerable<int> firstRange = new int[] { 1, 2500000 };
+    IEnumerable<int> secondRange = new int[] { 2500000, 5000000 };
+    IEnumerable<int> thirdRange = new int[] { 5000000, 7500000 };
+    IEnumerable<int> fourthRange = new int[] { 7500000, 100000000 };
 
     protected override async Task OnInitializedAsync()
     {
@@ -260,6 +361,7 @@
     }
     async Task SearchAgents()
     {
-
+        // IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies agent = new IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies();
+        // agent.Agent.IdNavigation.AgencyLicenseAgents.First().S
     }
 }

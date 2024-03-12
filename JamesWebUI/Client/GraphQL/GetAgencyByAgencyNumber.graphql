@@ -7,8 +7,21 @@
         status,
 		agentsInAgencies{
 			agent{
-				idNavigation{
-                    fullName
+				mainEmailAddress,
+                nationalProducerNumber,
+                idNavigation{
+                    fullName,
+                    givenName,
+                    middleInitial,
+                    familyName,
+                    agencyLicenseAgents{
+                        status,
+                        licenseNumber,
+                        state,
+                        isResident,
+                        appointingState,
+                        appointment
+                    }
                 }
 			}
 		}

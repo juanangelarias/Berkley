@@ -11,12 +11,27 @@
 
 <UseGetBranches Context="branchData">
     <ChildContent>
-        <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="Branch"
-                        Multiple="true" Chips="true" SelectAllText="Select All"
-                        AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        TValue="List<IGetBranches_Branches>" Data="branchData.Branches.ToList()"
-                        TextProperty="BranchKey">
-        </RadzenDropDown>
+        @{
+            if (MultiSelect)
+            {
+                <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="Branch"
+                                Multiple="true" Chips="true" SelectAllText="Select All"
+                                AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                TValue="List<IGetBranches_Branches>" Data="branchData.Branches.ToList()"
+                                TextProperty="BranchKey">
+                </RadzenDropDown>
+            }
+            else
+            {
+                <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="Branch"
+                                Multiple="false"
+                                AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                TValue="IGetBranches_Branches" Data="branchData.Branches.ToList()"
+                                TextProperty="BranchKey">
+                </RadzenDropDown>
+            }
+        }
+        
     </ChildContent>
     <ErrorContent>
         Something went wrong...<br />
@@ -27,6 +42,8 @@
 </UseGetBranches>
 
 @code {
+    [Parameter] public bool MultiSelect { get; set; } = true;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();

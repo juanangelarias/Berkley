@@ -14,5 +14,5 @@ public partial class ResponsibilityDm
 
     public string Responsibility { get; set; } = null!;
 
-    public virtual ICollection<KeyPersonnel> KeyPersonnels { get; set; } = new List<KeyPersonnel>();
+    public virtual ICollection<KeyPersonnel> KeyPersonnel { get; set; } = new List<KeyPersonnel>();
 }

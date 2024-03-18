@@ -1,15 +1,10 @@
+using ApplicationLog;
 using James.Data.Server.Model;
-using JamesWebUI.Client;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Client.Services;
-using JamesWebUI.Server.GraphQL.TypeExtensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
-using Microsoft.AspNetCore.Hosting.StaticWebAssets;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
-
+using Serilog;
 
 
 var config = new ConfigurationBuilder()
@@ -64,6 +59,18 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
     });
 });
+
+//Set up logging
+builder.Logging
+    .AddConsole()
+#if DEBUG
+    .AddDebug()
+#endif
+    .AddEventLog(elSettings => elSettings.SourceName = "James")
+    .AddSerilog(new LoggerConfiguration()
+        .Enrich.WithApplicationInfo(config["ApplicationId"], "James")
+        .ReadFrom.Configuration(config)
+        .CreateLogger());
 
 var app = builder.Build();
 

@@ -18,4 +18,12 @@ public class AgentExtensions
         }
         return agent.Accounts.ToArray();
     }
+    //public async Task<AgencyLicense[]> Licenses([Parent] Agent agent, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    //{
+    //    if (agent.IdNavigation.AgencyLicenseAgents.Count == 0)
+    //    {
+    //        var ctx = await contextFactory.CreateDbContextAsync();
+
+    //    }
+    //}
 }

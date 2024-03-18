@@ -26,10 +26,6 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .Include(a => a.IdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses) 
                 .ThenInclude(a => a.Address)
-                .Include(a => a.AgentsInAgencies)
-                .ThenInclude(a => a.Agent)
-                .ThenInclude(a => a.IdNavigation)
-                .ThenInclude(a => a.AgencyLicenseAgents)
                 .Include(a => a.AgencyInventories)
                 .FirstOrDefault();
         }

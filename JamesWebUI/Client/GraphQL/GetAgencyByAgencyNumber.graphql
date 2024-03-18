@@ -5,26 +5,16 @@
 		agencyNumber,
         branch,
         status,
-		agentsInAgencies{
-			agent{
-				mainEmailAddress,
-                nationalProducerNumber,
-                idNavigation{
-                    fullName,
-                    givenName,
-                    middleInitial,
-                    familyName,
-                    agencyLicenseAgents{
-                        status,
-                        licenseNumber,
-                        state,
-                        isResident,
-                        appointingState,
-                        appointment
-                    }
-                }
-			}
-		}
+        w9,
+        nasbp,
+        agents{
+            fullName,
+            givenName,
+            middleInitial,
+            familyName,
+            mainEmailAddress,
+            nationalProducerNumber
+        }
 		idNavigation
         {
 			fullName,

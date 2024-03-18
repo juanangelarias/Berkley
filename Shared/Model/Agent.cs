@@ -25,9 +25,9 @@ public partial class Agent
 
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
-    public virtual ICollection<AgentsInAgency> AgentsInAgencies { get; set; } = new List<AgentsInAgency>();
+    public virtual ICollection<AgencyLicense> AgencyLicenses { get; set; } = new List<AgencyLicense>();
 
-    public virtual ICollection<AgencyLicense> AgentLicenses { get; set; } = new List<AgencyLicense>();
+    public virtual ICollection<AgentsInAgency> AgentsInAgencies { get; set; } = new List<AgentsInAgency>();
 
     public virtual PhoneNumber? DefaultCellNumberNavigation { get; set; }
 

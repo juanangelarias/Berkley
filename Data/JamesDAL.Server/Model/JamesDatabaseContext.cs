@@ -933,6 +933,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -1037,7 +1038,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("AgencyLicense", tb => tb.HasTrigger("trgAgencyLicenseModified"));
+            entity.ToTable("AgencyLicense");
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Created)
@@ -1063,7 +1064,9 @@ public partial class JamesDatabaseContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AgencyLicense_Agency");
 
-            entity.HasOne(d => d.Agent).WithMany(p => p.AgencyLicenses).HasForeignKey(d => d.AgentId);
+            entity.HasOne(d => d.Agent).WithMany(p => p.AgencyLicenses)
+                .HasForeignKey(d => d.AgentId)
+                .HasConstraintName("FK_AgencyLicense_Agent");
 
             entity.HasOne(d => d.Insurer).WithMany(p => p.AgencyLicenses)
                 .HasForeignKey(d => d.InsurerId)
@@ -4156,6 +4159,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.PendingRenewalNotificationSent).HasColumnType("datetime");
             entity.Property(e => e.RenewalCompleted).HasColumnType("datetime");
             entity.Property(e => e.RenewalRequestSourceId).HasColumnName("RenewalRequestSourceID");
             entity.Property(e => e.RenewalStarted).HasColumnType("datetime");

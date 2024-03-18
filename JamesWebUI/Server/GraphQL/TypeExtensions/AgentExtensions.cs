@@ -18,12 +18,13 @@ public class AgentExtensions
         }
         return agent.Accounts.ToArray();
     }
-    //public async Task<AgencyLicense[]> Licenses([Parent] Agent agent, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-    //{
-    //    if (agent.IdNavigation.AgencyLicenseAgents.Count == 0)
-    //    {
-    //        var ctx = await contextFactory.CreateDbContextAsync();
-
-    //    }
-    //}
+    public async Task<AgencyLicense[]> Licenses([Parent] Agent agent, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        if (agent.AgentLicenses.Count == 0)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            agent.AgentLicenses = await ctx.AgencyLicenses.Where(a => a.AgentId == agent.Id).ToArrayAsync();
+        }
+        return agent.AgentLicenses.ToArray();
+    }
 }

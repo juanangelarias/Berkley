@@ -37,10 +37,12 @@ type Agent {
   defaultCellNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
   defaultEmail: String @deprecated(reason: "Use standard email lookup instead.")
   agentsInAgencies: [AgentsInAgency!]!
+  agentLicenses: [AgencyLicense!]!
   defaultCellNumberNavigation: PhoneNumber
   defaultPhoneNumberNavigation: PhoneNumber
   idNavigation: LegalEntity!
   accounts: [Account!]!
+  licenses: [AgencyLicense!]!
   fullName: String!
   mainAddress: Address
   addresses: [LegalEntityAddress!]!
@@ -355,6 +357,28 @@ type AgencyCompetition {
   enteredByNavigation: UserProfile!
 }
 
+type AgencyLicense {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  agencyId: UUID!
+  agentId: UUID
+  state: String!
+  licenseNumber: String
+  isResident: Boolean!
+  insurerId: UUID!
+  expiration: Date
+  comments: String
+  status: String!
+  appointment: Date
+  termination: Date
+  appointingState: Boolean
+  agent: LegalEntity
+  idNavigation: LegalEntity!
+  insurer: Insurer!
+  stateNavigation: State!
+}
+
 type BondTypeDm {
   id: UUID!
   created: DateTime!
@@ -428,6 +452,25 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type InsurerState {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  insurerId: UUID!
+  state: String!
+  insurer: Insurer!
+  stateNavigation: State!
+}
+
+type CountryDm {
+  code: String!
+  created: DateTime!
+  modified: DateTime!
+  name: String!
+  insurers: [Insurer!]!
+  states: [State!]!
 }
 
 type PersonalFinancialHeader {
@@ -759,27 +802,6 @@ type Bond {
   responsibleParty: LegalEntity
 }
 
-type AgencyLicense {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  agentId: UUID
-  state: String!
-  licenseNumber: String
-  isResident: Boolean!
-  insurerId: UUID!
-  expiration: Date
-  comments: String
-  status: String!
-  appointment: Date
-  termination: Date
-  appointingState: Boolean
-  agent: LegalEntity
-  idNavigation: LegalEntity!
-  insurer: Insurer!
-  stateNavigation: State!
-}
-
 type AdditionalRelatedParty {
   id: UUID!
   created: DateTime!
@@ -871,25 +893,6 @@ type Insurer {
 scalar DateTime
 
 scalar UUID
-
-type CountryDm {
-  code: String!
-  created: DateTime!
-  modified: DateTime!
-  name: String!
-  insurers: [Insurer!]!
-  states: [State!]!
-}
-
-type InsurerState {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  insurerId: UUID!
-  state: String!
-  insurer: Insurer!
-  stateNavigation: State!
-}
 
 type Surcharge {
   id: UUID!

@@ -13,7 +13,25 @@
             middleInitial,
             familyName,
             mainEmailAddress,
-            nationalProducerNumber
+            nationalProducerNumber,
+            licenses{
+                agencyId,
+                state,
+                licenseNumber,
+                isResident,
+                expiration,
+                comments,
+                status,
+                appointment,
+                termination,
+                appointingState,
+                insurer{
+                    idNavigation{
+                        fullName
+                    }
+                }
+            }
+
         }
 		idNavigation
         {

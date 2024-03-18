@@ -222,19 +222,19 @@
                                     <RadzenDataGrid Visible="!contactsGridView" TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents"
                                                     Data="agency?.AgencyByAgencyNumber?.Agents"
                                                     ExpandMode="DataGridExpandMode.Single">
-                                        @*                                                 <Template Context="agent">
-                                        <RadzenDataGrid TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Data="agent.Agent.IdNavigation.AgencyLicenseAgents">
-                                        <Columns>
-                                        <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="Status" Property="Status" />
-                                        <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="License No." />
-                                        <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="State" />
-                                        <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="Resident" />
-                                        <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="No Aptmt" />
-                                        <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="Insurer" />
-                                        <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies_Agent_IdNavigation_AgencyLicenseAgents" Title="Appointment Date" />
-                                        </Columns>
-                                        </RadzenDataGrid>
-                                        </Template> *@
+                                        <Template Context="agent">
+                                            <RadzenDataGrid TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Data="agent.Licenses">
+                                                <Columns>
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Title="Status" Property="Status" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Title="License No." />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Title="State" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Title="Resident" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Title="No Aptmt" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Title="Insurer" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Title="Appointment Date" />
+                                                </Columns>
+                                            </RadzenDataGrid>
+                                        </Template>
                                         <Columns>
                                             <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents" Property="GivenName" Title="First Name" />
                                             <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents" Property="MiddleInitial" Title="MI" />

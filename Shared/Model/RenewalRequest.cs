@@ -45,4 +45,6 @@ public partial class RenewalRequest
     public string? BondChangeReportToEmail { get; set; }
 
     public string? AccountName { get; set; }
+
+    public DateTime? PendingRenewalNotificationSent { get; set; }
 }

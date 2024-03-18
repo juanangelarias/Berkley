@@ -35,7 +35,7 @@ namespace JamesWebUI.Server.GraphQL.Queries
             
             return ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
                 .Include(a => a.IdNavigation)
-                .ThenInclude(a => a.AgencyLicenseIdNavigation)
+                .ThenInclude(a => a.AgencyLicenses)
                 .FirstOrDefault();
         }
         public List<AgencyStatusDm> GetAgencyStatuses([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)

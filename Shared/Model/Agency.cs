@@ -38,6 +38,8 @@ public partial class Agency
 
     public int? ErrorsAndOmmissionsCoverage { get; set; }
 
+    public bool Need1099 { get; set; }
+
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
     public virtual ICollection<AgencyCompetition> AgencyCompetitions { get; set; } = new List<AgencyCompetition>();
@@ -45,6 +47,8 @@ public partial class Agency
     public virtual ICollection<AgencyErrorAndOmission> AgencyErrorAndOmissions { get; set; } = new List<AgencyErrorAndOmission>();
 
     public virtual ICollection<AgencyInventory> AgencyInventories { get; set; } = new List<AgencyInventory>();
+
+    public virtual ICollection<AgencyLicense> AgencyLicenses { get; set; } = new List<AgencyLicense>();
 
     public virtual ICollection<AgentsInAgency> AgentsInAgencies { get; set; } = new List<AgentsInAgency>();
 

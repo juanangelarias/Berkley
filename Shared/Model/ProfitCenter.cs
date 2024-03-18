@@ -22,7 +22,7 @@ public partial class ProfitCenter
 
     public string LocationOverview { get; set; } = null!;
 
-    public Guid BudgetDefault { get; set; }
+    public Guid? BudgetDefault { get; set; }
 
     public Guid? UnderWriterId { get; set; }
 
@@ -32,7 +32,7 @@ public partial class ProfitCenter
 
     public string? CommercialRegion { get; set; }
 
-    public virtual ProfitCenter? BudgetDefaultNavigation { get; set; } = null!;
+    public virtual ProfitCenter? BudgetDefaultNavigation { get; set; }
 
     public virtual CommercialRegionDm? CommercialRegionNavigation { get; set; }
 

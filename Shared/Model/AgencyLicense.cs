@@ -12,6 +12,8 @@ public partial class AgencyLicense
 
     public DateTime Modified { get; set; }
 
+    public Guid AgencyId { get; set; }
+
     public Guid? AgentId { get; set; }
 
     public string State { get; set; } = null!;
@@ -34,9 +36,9 @@ public partial class AgencyLicense
 
     public bool? AppointingState { get; set; }
 
-    public virtual LegalEntity? Agent { get; set; }
+    public virtual Agency Agency { get; set; } = null!;
 
-    public virtual LegalEntity IdNavigation { get; set; } = null!;
+    public virtual LegalEntity? Agent { get; set; }
 
     public virtual Insurer Insurer { get; set; } = null!;
 

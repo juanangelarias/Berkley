@@ -14,8 +14,12 @@
 <Theme />
 
 <PageTitle>Agency Profile</PageTitle>
-
 <UseGetAgencyByAgencyNumber AgencyNumber="@Id">
+    <ChildContent Context="agency">
+        @agency?.AgencyByAgencyNumber?.AgencyNumber
+    </ChildContent>    
+</UseGetAgencyByAgencyNumber>
+@* <UseGetAgencyByAgencyNumber AgencyNumber="@Id">
     <ChildContent Context="agency">
         <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
             <RadzenPanel Style="border-radius: 20px">
@@ -214,7 +218,7 @@
                                     </RadzenStack>
                                 </HeaderTemplate>
                                 <ChildContent>
-                                    <RadzenDataList Visible="contactsGridView" WrapItems="true" TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents" Data="agency?.AgencyByAgencyNumber?.Agents">
+                                    @* <RadzenDataList Visible="contactsGridView" WrapItems="true" TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents" Data="agency?.AgencyByAgencyNumber?.Agents">
                                         <Template Context="agentToDisplay">
                                             <AgentCard agentToDisplay="agentToDisplay" />
                                         </Template>
@@ -222,7 +226,7 @@
                                     <RadzenDataGrid Visible="!contactsGridView" TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents"
                                                     Data="agency?.AgencyByAgencyNumber?.Agents"
                                                     ExpandMode="DataGridExpandMode.Single">
-                                        <Template Context="agent">
+@*                                         <Template Context="agent">
                                             <RadzenDataGrid TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Data="agent.Licenses">
                                                 <Columns>
                                                     <RadzenDataGridColumn TItem="IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents_Licenses" Title="Status" Property="Status" />
@@ -254,7 +258,6 @@
                                         <RadzenTabsItem Text="Accounts">
                                             <RadzenDataGrid TItem="string" Data="@blankList">
                                                 <Template>
-                                                    @* Sub-table grid here *@
                                                 </Template>
                                                 <Columns>
                                                     <RadzenDataGridColumn TItem="string" Title="Status" />
@@ -349,7 +352,7 @@
             </RadzenPanel>
         </RadzenStack>
     </ChildContent>
-</UseGetAgencyByAgencyNumber>
+</UseGetAgencyByAgencyNumber> *@
 
 @code {
     [Parameter] public string Id { get; set; }

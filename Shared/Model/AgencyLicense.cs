@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace James.Shared.Model;
 //Generated for DB
@@ -38,7 +39,7 @@ public partial class AgencyLicense
 
     public virtual Agency Agency { get; set; } = null!;
 
-    public virtual LegalEntity? Agent { get; set; }
+    public virtual Agent? Agent { get; set; }
 
     public virtual Insurer Insurer { get; set; } = null!;
 

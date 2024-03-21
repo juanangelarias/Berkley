@@ -15,7 +15,7 @@ builder.Services.AddHttpClient("JamesAPI", client => client.BaseAddress = new Ur
     .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
 
-builder.Services.AddAccountClient(ExecutionStrategy.CacheAndNetwork)
+builder.Services.AddJamesClient(ExecutionStrategy.CacheAndNetwork)
     .ConfigureHttpClient(client =>
         client.BaseAddress = new Uri("https://localhost:7017/graphql"))
 

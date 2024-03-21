@@ -26,9 +26,7 @@
                 termination,
                 appointingState,
                 insurer{
-                    idNavigation{
-                        fullName
-                    }
+                    fullName
                 }
             }
 

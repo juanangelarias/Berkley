@@ -14,10 +14,30 @@
 <Theme />
 
 <PageTitle>Agency Profile</PageTitle>
-<UseGetAgencyByAgencyNumber AgencyNumber="@Id">
-    <ChildContent Context="agency">
+<UseGetAgencyByAgencyNumber AgencyNumber="@Id" Context="agency">
+    <ChildContent>
         @agency?.AgencyByAgencyNumber?.AgencyNumber
-    </ChildContent>    
+        @{//put a breakpoint below
+            var result = agency;
+            if (null == agency) throw new ArgumentNullException("agency");
+            var nextResult = agency.AgencyByAgencyNumber;
+            if (null == agency.AgencyByAgencyNumber) throw new ArgumentNullException("agency.AgencyByAgencyNumber");
+        }
+    </ChildContent>   
+    <ErrorContent>
+        @{
+            var errorMessage = agency?.First().Message ?? "";
+            if (!errorMessage.Contains("No agency exists with agencyNumber"))
+            {
+                <text>
+                    <br />
+                    Something went wrong ...
+                    <br />
+                    @errorMessage
+                </text>
+            }
+        }
+    </ErrorContent>
 </UseGetAgencyByAgencyNumber>
 @* <UseGetAgencyByAgencyNumber AgencyNumber="@Id">
     <ChildContent Context="agency">

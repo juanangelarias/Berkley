@@ -1,1 +1,6 @@
-﻿
+﻿mutation LogMessage($input :LogInput! ){
+  logInformation(input: $input)
+ }
+ mutation LogException($input :LogExceptionInput! ){
+  logException(input: $input)
+}

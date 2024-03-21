@@ -26,9 +26,8 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .Include(a => a.IdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
-                .Include(a => a.AgencyInventories)
                 .FirstOrDefault();
-            return result;
+            return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
         public Agency? GetAgencyLicenses(string agencyNumber, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

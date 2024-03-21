@@ -1,9 +1,12 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using System.Text;
 
 namespace James.Shared
 {
-    public static class ThisToThat
+    public static partial class ThisToThat
     {
 
         public static TDest ToEntityType<TDest>(object source) where TDest : new()
@@ -11,7 +14,7 @@ namespace James.Shared
             return (TDest)ToEntityType(source, typeof(TDest));
         }
 
-        public static Object ToEntityType(object source, Type destinationType)
+        public static object ToEntityType(object source, Type destinationType)
         {
             if (null == source) 
                 return null;
@@ -89,5 +92,74 @@ namespace James.Shared
             }
             return result;
         }
+
+        /// <summary>
+        /// Converts an <paramref name="exception"/> details to text
+        /// </summary>
+        /// <param name="exception">exception</param>
+        /// <returns>Mulit-lined text with details about the exception</returns>
+        public static string ToText(this Exception exception)
+        {
+            var sb = new StringBuilder();
+            var current = exception;
+            var level = 0;
+            while (null != current)
+            {
+                if (level > 0)
+                {
+                    sb.Append(new string('\t', level - 1));
+                    sb.AppendLine("Inner Exception:");
+                }
+                sb.Append(new string('\t', level));
+                sb.Append(current.GetType());
+                sb.Append(": ");
+                sb.AppendLine(current.Message);
+                if (current.Data.Count > 0)
+                {
+                    sb.Append(new string('\t', level));
+                    sb.AppendLine("Data:");
+                    var dataKeys = current.Data.Keys.OfType<object>().Select(k => k.ToString()).ToArray();
+                    var dataValues = current.Data.Values.OfType<object>().Select(v => v.ToString()).ToArray();
+                    for (var i = 0; i < current.Data.Count; i++)
+                    {
+                        sb.Append(new string('\t', level + 1));
+                        sb.Append("Key: ");
+                        sb.Append(i);
+                        sb.Append(":\t");
+                        sb.Append(dataKeys[i]);
+                        sb.Append("\t\tValue: ");
+                        sb.Append(i);
+                        sb.Append(":\t");
+                        sb.Append(current.Data[i]);
+                        sb.AppendLine(dataValues[i]);
+                    }
+                }
+                if (null != exception.StackTrace)  //Is null during unit test
+                    using (var sr = new StringReader(exception.StackTrace))
+                        while (sr.Peek() > -1)
+                        {
+                            sb.Append(new string('\t', level));
+                            sb.AppendLine(sr.ReadLine());
+                        }
+                level++;
+                current = current.InnerException;
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Converts an <paramref name="exception"/> details to text
+        /// </summary>
+        /// <param name="exception">exception</param>
+        /// <returns>Mulit-lined text with details about the exception</returns>
+        public static string ToHtml(this Exception exception)
+        {
+            var detailText = exception.ToText();
+            detailText = LineBreakRegex().Replace(detailText.Replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;"), "<br />");
+            return detailText;
+        }
+
+        [GeneratedRegex("[\r\n]+")]
+        private static partial Regex LineBreakRegex();
     }
 }

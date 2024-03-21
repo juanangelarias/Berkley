@@ -1,62 +1,50 @@
-﻿query GetAgencyByAgencyNumber($agencyNumber: String!)
-{
-	agencyByAgencyNumber(agencyNumber:$agencyNumber)
-    {
-		agencyNumber,
-        branch,
-        status,
-        w9,
-        nasbp,
-        agents{
-            fullName,
-            givenName,
-            middleInitial,
-            familyName,
-            mainEmailAddress,
-            nationalProducerNumber,
-            licenses{
-                agencyId,
-                state,
-                licenseNumber,
-                isResident,
-                expiration,
-                comments,
-                status,
-                appointment,
-                termination,
-                appointingState,
-                insurer{
-                    idNavigation{
-                        fullName
-                    }
-                }
-            }
-
+﻿query GetAgencyByAgencyNumber($agencyNumber: String!) {
+  agencyByAgencyNumber(agencyNumber: $agencyNumber) {
+    agencyNumber
+    branch
+    status
+    w9
+    nasbp
+    agents {
+      fullName
+      givenName
+      middleInitial
+      familyName
+      mainEmailAddress
+      nationalProducerNumber
+      licenses {
+        agencyId
+        state
+        licenseNumber
+        isResident
+        expiration
+        comments
+        status
+        appointment
+        termination
+        appointingState
+        insurer {
+          fullName
         }
-		idNavigation
-        {
-			fullName,
-			legalEntityAddresses
-            {
-				type,
-				address
-                {
-                    address1,
-                    address2,
-                    address3,
-                    city,
-                    stateCode,
-                    stateCodeNavigation 
-                    {
-                        countryCode,
-                        countryCodeNavigation 
-                        {
-                            name
-                        }     
-                    },
-                    postalCode
-                }
-			}
-		}
-	}
+      }
+    }
+    fullName
+    addresses {
+      type
+      address {
+        address1
+        address2
+        address3
+        city
+        stateCode
+        stateCodeNavigation {
+          countryCode
+          countryCodeNavigation {
+            name
+          }
+        }
+        postalCode
+      }
+    }
+  }
 }

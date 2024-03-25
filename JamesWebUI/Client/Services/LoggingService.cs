@@ -1,36 +1,93 @@
-﻿using System.Runtime.CompilerServices;
-using James.Shared.Model;
+﻿using James.Shared;
+using JamesWebUI.Client.GraphQL;
+using Severity = James.Shared.Model.Severity;
 
 namespace JamesWebUI.Client.Services
 {
     public class LoggingService
     {
-        private readonly ILogger _logger;
+        private readonly JamesClient _jamesClient;
+        public readonly EventId MessageEventId = new(12341, "Log Message from Blazor client");
+        public readonly EventId ExceptionEventId = new(12342, "Exception Logged from Blazor client");
+        public readonly EventId PerformanceEventId = new(12343, "Performance Message from Blazor client");
+        public readonly EventId UILoggingEventId = new(12344, "UI action from Blazor client");
 
-        public LoggingService(ILogger<LoggingService> logger)
+        public LoggingService(JamesClient jamesClient)
         {
-            _logger = logger;
+            _jamesClient = jamesClient;
         }
 
-        public async Task Log(EventId eventId, string message, string details, Severity severity,
-            string category = "General", string? ExceptionMessage = null, string? ExceptionDetails = null)
+        public void Log(EventId eventId, string message, string details, Severity severity,
+            string category = "General", string? exceptionMessage = null, string? exceptionDetails = null, 
+            Dictionary<string, string>? data = null)
         {
-//#pragma warning disable CS4014
-//            Task.Factory.StartNew(() =>
-//#pragma warning restore CS4014
-//            {
-//                var extraInfo = new Dictionary<string, object>()
-//                {
-//                    ["Category"] = category,
-//                    ["Details"] = details
-//                };
-//                if (ExceptionMessage != null)
-//                    extraInfo.Add(nameof(ExceptionMessage), ExceptionMessage);
-//                if (ExceptionDetails != null)
-//                    extraInfo.Add(nameof(ExceptionDetails), ExceptionDetails);
-//                using (_logger.BeginScope(extraInfo))
-//                    _logger.Log(GetLogLevel(severity), eventId, message: message);
-//            });
+#pragma warning disable CS4014
+            Task.Factory.StartNew(() =>
+#pragma warning restore CS4014
+            {
+                var graphQlData = ToGraphQlType(data);
+                if (string.IsNullOrEmpty(exceptionMessage) && string.IsNullOrEmpty(exceptionDetails))
+                {
+                    var callData = new LogExceptionInput
+                    {
+                        Message = message,
+                        Details = details,
+                        Category = category,
+                        //NOTE:  The below relies on the GraphQL type to be generated from the Model.Severity on the server
+                        Severity = (GraphQL.Severity)Enum.Parse(typeof(GraphQL.Severity), Enum.GetName(severity)!, true),
+                        Data = graphQlData
+                    };
+                    _jamesClient.LogException.ExecuteAsync(callData);
+                }
+                else
+                {
+                    var callData = new LogExceptionInput
+                    {
+                        Message = message,
+                        Details = details,
+                        Category = category,
+                        //NOTE:  The below relies on the GraphQL type to be generated from the Model.Severity on the server
+                        Severity = (GraphQL.Severity)Enum.Parse(typeof(GraphQL.Severity), Enum.GetName(severity)!, true),
+                        Data = graphQlData,
+                        ExceptionMessage = exceptionMessage ?? "Exception thrown",
+                        ExceptionDetail = exceptionDetails ?? exceptionMessage ?? ""
+                    };
+                    _jamesClient.LogException.ExecuteAsync(callData);
+                }
+            });
+        }
+
+        public void LogVerbose(string message, string details, string category = "General", Dictionary<string, string>? data = null)
+        {
+            Log(MessageEventId, message, details, Severity.Verbose, category, data: data);
+        }
+        public void LogDebug(string message, string details, string category = "General", Dictionary<string, string>? data = null)
+        {
+            Log(MessageEventId, message, details, Severity.Debug, category, data: data);
+        }
+        public void LogInformation(string message, string details, string category = "General", Dictionary<string, string>? data = null)
+        {
+            Log(MessageEventId, message, details, Severity.Information, category, data: data);
+        }
+        public void LogWarning(string message, string details, string category = "General", Dictionary<string, string>? data = null)
+        {
+            Log(MessageEventId, message, details, Severity.Information, category, data: data);
+        }
+
+        public void LogException(Exception exception, string message, string details, Severity severity = Severity.Error, string category = "General",
+            Dictionary<string, string>? data = null)
+        {
+            //TODO: Figure out a way to not log full details when not neccessary.
+            Log(severity >= Severity.Warning ? ExceptionEventId : MessageEventId, message, details, severity, category,
+                exception.Message, exception.ToText(), data);
+        }
+
+        static IReadOnlyList<KeyValuePairOfStringAndStringInput>? ToGraphQlType(Dictionary<string, string>? data)
+        {
+            if (data == null) return null;
+            var ret = new List<KeyValuePairOfStringAndStringInput>();
+            ret.AddRange(data.Select(kvp => new KeyValuePairOfStringAndStringInput { Key = kvp.Key, Value = kvp.Value }));
+            return ret;
         }
     }
 }

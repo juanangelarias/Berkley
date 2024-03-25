@@ -100,7 +100,7 @@ namespace James.Shared
         /// <returns>Mulit-lined text with details about the exception</returns>
         public static string ToText(this Exception exception)
         {
-            var sb = new StringBuilder();
+            var sb = new StringBuilder(100);
             var current = exception;
             var level = 0;
             while (null != current)

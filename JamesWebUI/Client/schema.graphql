@@ -114,6 +114,7 @@ input LogExceptionInput {
   details: String!
   category: String
   severity: Severity!
+  data: [KeyValuePairOfStringAndStringInput!]
 }
 
 input LogInput {
@@ -122,6 +123,7 @@ input LogInput {
   details: String!
   category: String
   severity: Severity!
+  data: [KeyValuePairOfStringAndStringInput!]
 }
 
 type State {
@@ -503,18 +505,6 @@ type LegalEntityEmail {
   typeNavigation: EmailTypeDm!
 }
 
-type ImagingCategoryTabDivision {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  category: String!
-  tabName: String!
-  divisionCode: String!
-  categoryNavigation: ImagingCategory!
-  divisionCodeNavigation: DivisionDm!
-  tabNameNavigation: ImagingTab!
-}
-
 type Surcharge {
   id: UUID!
   created: DateTime!
@@ -548,6 +538,11 @@ type CountryDm {
   name: String!
   insurers: [Insurer!]!
   states: [State!]!
+}
+
+input KeyValuePairOfStringAndStringInput {
+  key: String!
+  value: String!
 }
 
 enum Severity {
@@ -955,6 +950,18 @@ type PowerOfAttorney {
 scalar DateTime
 
 scalar UUID
+
+type ImagingCategoryTabDivision {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  category: String!
+  tabName: String!
+  divisionCode: String!
+  categoryNavigation: ImagingCategory!
+  divisionCodeNavigation: DivisionDm!
+  tabNameNavigation: ImagingTab!
+}
 
 type LineOfAuthorityLog {
   id: UUID!
@@ -1821,6 +1828,23 @@ type LineOfAuthorityStatusDm {
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
 }
 
+type ImagingTab {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  tabName: String!
+  description: String!
+  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
+}
+
+type ImagingCategory {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  category: String!
+  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
+}
+
 type PowerOfAttorneyStatusDm {
   id: UUID!
   created: DateTime!
@@ -2017,23 +2041,6 @@ type SurchargeTypeDm {
   modified: DateTime!
   type: String!
   surcharges: [Surcharge!]!
-}
-
-type ImagingTab {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  tabName: String!
-  description: String!
-  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
-}
-
-type ImagingCategory {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  category: String!
-  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
 }
 
 type Sicratio {

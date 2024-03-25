@@ -30,7 +30,7 @@ namespace JamesWebUI.Server.GraphQL.Mutations
                 {
                     var extraInfo = new Dictionary<string, object>()
                     {
-                        ["Category"] = input.Category??"General",
+                        ["Category"] = input.Category ?? "General",
                         ["Details"] = input.Details
                     };
                     if (input is LogExceptionInput lei)
@@ -40,6 +40,9 @@ namespace JamesWebUI.Server.GraphQL.Mutations
                         if (lei.ExceptionDetail != null)
                             extraInfo.Add(nameof(lei.ExceptionDetail), lei.ExceptionDetail);
                     }
+                    if (input.Data != null)
+                        foreach (var datum in input.Data)
+                            extraInfo.Add(datum.Key, datum.Value);
                     using (_logger.BeginScope(extraInfo))
                         _logger.Log(GetLogLevel(input.Severity), input.EventId, message: input.Message);
                 });
@@ -86,6 +89,7 @@ namespace JamesWebUI.Server.GraphQL.Mutations
         public string Details { get; set; }
         public string? Category { get; set; }
         public Severity Severity { get; set; } = Severity.Error;
+        public Dictionary<string, string>? Data { get; set; }
     }
 
     public class LogExceptionInput : LogInput

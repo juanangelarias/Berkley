@@ -27,6 +27,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<ThemeService>();
+builder.Services.AddSingleton<LoggingService>();
 
 
 builder.Services.AddOidcAuthentication(options =>

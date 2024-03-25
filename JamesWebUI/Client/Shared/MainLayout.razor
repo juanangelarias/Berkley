@@ -83,7 +83,17 @@
             <RadzenPanelMenuItem Text="Agencies" Icon="store" Path="AgencySearch" />
             <RadzenPanelMenuItem Text="Obligees" Icon="person" Path="Obligees" />
             <RadzenPanelMenuItem Text="Finances" Icon="request_quote" Path="Finances" />
-            <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl" />
+            @if (Environment.MachineName.Equals("localhost", StringComparison.InvariantCultureIgnoreCase) ||
+                Environment.MachineName.StartsWith("USUBL", StringComparison.InvariantCultureIgnoreCase))
+            {
+                //Show up only on developer machines
+                <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl" />
+            }
+            else
+            {
+                //TODO: Remove this when confirmed that it doesn't show up on servers.
+                <RadzenPanelMenuItem Text="@Environment.MachineName" Icon="build" Path="GraphQl" />
+            }
         </RadzenPanelMenu>
     </RadzenSidebar>
     <RadzenBody>

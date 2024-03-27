@@ -1,0 +1,13 @@
+﻿query GetAgencyAgents($agencyId: UUID!){
+	agencyAgents(agencyId: $agencyId){
+        agentId,
+        agent{
+            fullName,
+            givenName,
+            middleInitial,
+            familyName,
+            mainEmailAddress,
+            nationalProducerNumber
+        }
+    }
+}

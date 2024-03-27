@@ -22,16 +22,12 @@ namespace JamesWebUI.Server.GraphQL.Queries
         public Agency? GetAgencyByAgencyNumber(string agencyNumber, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = contextFactory.CreateDbContext();
-            return ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
+            var result = ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
                 .Include(a => a.IdNavigation)
-                .Include(a => a.IdNavigation.LegalEntityAddresses) 
+                .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
-                .Include(a => a.AgentsInAgencies)
-                .ThenInclude(a => a.Agent)
-                .ThenInclude(a => a.IdNavigation)
-                .ThenInclude(a => a.AgencyLicenses)
-                .Include(a => a.AgencyInventories)
                 .FirstOrDefault();
+            return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
         public Agency? GetAgencyLicenses(string agencyNumber, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -39,7 +35,7 @@ namespace JamesWebUI.Server.GraphQL.Queries
             
             return ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
                 .Include(a => a.IdNavigation)
-                .ThenInclude(a => a.AgencyLicenses)
+                .Include(a => a.AgencyLicenses)
                 .FirstOrDefault();
         }
         public List<AgencyStatusDm> GetAgencyStatuses([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)

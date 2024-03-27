@@ -10,7 +10,7 @@
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject AccountClient AccountClient
+@inject JamesClient JamesClient
 
 <Theme />
 
@@ -127,7 +127,7 @@
     }
     async Task SearchAgencies()
     {
-        var results = await AccountClient.SearchAgencies.ExecuteAsync(txtAgencyNameSearch.Value);
+        var results = await JamesClient.SearchAgencies.ExecuteAsync(txtAgencyNameSearch.Value);
         agencyResults = results.Data.SearchAgencies;
     }
     async Task OpenAgency(DataGridRowMouseEventArgs<ISearchAgencies_SearchAgencies> args)

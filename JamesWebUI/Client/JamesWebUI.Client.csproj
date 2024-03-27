@@ -11,6 +11,9 @@
   <ItemGroup>
     <GraphQL Remove="GraphQL\GetAccountByAccountNumber.graphql" />
     <GraphQL Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
+    <GraphQL Remove="GraphQL\GetAgencyAgents.graphql" />
+    <GraphQL Remove="GraphQL\GetAgencyBonds.graphql" />
+    <GraphQL Remove="GraphQL\GetAgencyLicenses.graphql" />
     <GraphQL Remove="GraphQL\GetStates.graphql" />
     <GraphQL Remove="GraphQL\SearchAgencies.graphql" />
   </ItemGroup>

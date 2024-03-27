@@ -2,11 +2,24 @@
 {
 	agencyByAgencyNumber(agencyNumber:$agencyNumber)
     {
+        id,
 		agencyNumber,
         branch,
         status,
         w9,
         nasbp,
+        accounts{
+            fullName,
+            accountNum,
+            branch,
+            mainAddress{
+                address1,
+                city,
+                state,
+                postalCode
+
+            }
+        }
         agents{
             fullName,
             givenName,
@@ -29,7 +42,6 @@
                     fullName
                 }
             }
-
         }
 		idNavigation
         {

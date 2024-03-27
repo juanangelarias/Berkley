@@ -19,12 +19,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="GraphQL\ApplicationLogging.graphql" />
     <None Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.3" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="4.25.9" />
     <PackageReference Include="StrawberryShake.Blazor" Version="13.9.0" />
@@ -32,6 +33,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GenerateGraphQLCodeItems Remove="GraphQL\ApplicationLogging.graphql" />
   </ItemGroup>
 
 </Project>

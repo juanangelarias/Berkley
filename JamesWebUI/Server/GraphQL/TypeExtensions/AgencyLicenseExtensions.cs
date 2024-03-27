@@ -14,7 +14,7 @@ namespace JamesWebUI.Server.GraphQL.TypeExtensions
             if (license.Insurer == null)
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
-                var insurer = (await ctx.Insurers.SingleOrDefaultAsync(i => i.Id == license.InsurerId));
+                var insurer = (await ctx.Insurers.Include(i=>i.IdNavigation).SingleOrDefaultAsync(i => i.Id == license.InsurerId));
                 if (insurer == null)
                     throw new GraphQLException(
                         $"AgencyLicense Id {license.Id} has an InsurerId of {license.InsurerId}, which has no corresponding insurer");

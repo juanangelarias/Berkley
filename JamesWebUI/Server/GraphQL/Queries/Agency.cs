@@ -30,7 +30,7 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .Include(a => a.Accounts)
                 .Include(a => a.AgentsInAgencies)
                 .FirstOrDefault();
-            return result;
+            return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
         public List<AgentsInAgency> GetAgencyAgents(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

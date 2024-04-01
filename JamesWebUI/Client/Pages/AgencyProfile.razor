@@ -16,7 +16,6 @@
 
 <PageTitle>Agency Profile</PageTitle>
 
-
 <UseGetAgencyByAgencyNumber AgencyNumber="@Id">
     <ChildContent Context="agencyFromServer">
         @if (agencyFromServer.AgencyByAgencyNumber != null)
@@ -69,6 +68,46 @@
             <RadzenPanel Style="border-radius: 20px">
                 <RadzenTabs>
                     <Tabs>
+                        @* <RadzenTabsItem Text="Mutations Test">
+                            <RadzenButton Click="ToggleGenInfoEdit" />
+                            <RadzenFieldset Text="Address Uneditable" Visible="!editMode">
+                                <RadzenRow>
+                                    <RadzenColumn Size="2">
+                                        <RadzenText Text="Address 1" />
+                                    </RadzenColumn>
+                                    <RadzenColumn>
+                                        <RadzenTextBox @bind-Value="@agency.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main").Address.Address1" />
+                                    </RadzenColumn>
+                                </RadzenRow>
+                            </RadzenFieldset>
+                            <RadzenFieldset Text="Address Editable" Visible="editMode">
+                                <RadzenTemplateForm Data="this.agency" Submit="@((Agency args) => {SubmitAddressChange(args);})">
+                                    <RadzenRow>
+                                        <RadzenButton ButtonType="ButtonType.Submit" Size="ButtonSize.Large" Icon="save" Text="Save" />
+                                    </RadzenRow>
+                                    <RadzenRow>
+                                        <RadzenColumn Size="2">
+                                            <RadzenText Text="Address 1" />
+                                        </RadzenColumn>
+                                        <RadzenColumn>
+                                            <RadzenFormField Text="Address 1" Variant="Variant.Text">
+                                                <RadzenTextBox  @bind-Value="@agency.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main").Address.Address1" />
+                                            </RadzenFormField>
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                    <RadzenRow>
+                                        <RadzenColumn Size="2">
+                                            <RadzenText Text="Address 2" />
+                                        </RadzenColumn>
+                                        <RadzenColumn>
+                                            <RadzenFormField Text="Address 2" Variant="Variant.Text">
+                                                <RadzenTextBox @bind-Value="@agency.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main").Address.Address2" />
+                                            </RadzenFormField>
+                                        </RadzenColumn>
+                                    </RadzenRow>
+                                </RadzenTemplateForm>
+                            </RadzenFieldset>
+                        </RadzenTabsItem> *@
                         <RadzenTabsItem Text="General Info">
                             <RadzenRow>
                                 <RadzenColumn Size="6">
@@ -76,35 +115,41 @@
                                         <RadzenColumn Size="12">
                                             <RadzenFieldset Text="Address">
                                                 <HeaderTemplate>
-                                                    <RadzenButton Icon="edit" Size="ButtonSize.ExtraSmall" Click="ToggleGenInfoEdit" Visible=!genInfoEditMode />
-                                                    <RadzenButton Icon="save" Size="ButtonSize.ExtraSmall" Click="ToggleGenInfoEdit" Visible=genInfoEditMode />
+                                                    <RadzenButton Icon="edit" Size="ButtonSize.ExtraSmall" Click="ToggleGenInfoEdit" Visible="!editMode" />
+                                                    <RadzenButton Icon="save" Size="ButtonSize.ExtraSmall" Click="ToggleGenInfoEdit" Visible="editMode" />
                                                 </HeaderTemplate>
                                                 <ChildContent>
                                                     <RadzenStack Orientation="Orientation.Vertical">
-                                                        <RadzenRow>
+                                                        <RadzenRow AlignItems="AlignItems.End">
                                                             <RadzenColumn Size="2">
                                                                 <RadzenText Style="font-weight: bold;" Text="Address: " />
                                                             </RadzenColumn>
                                                             <RadzenColumn>
-                                                                <RadzenText>
+                                                                <RadzenText Visible="!editMode">
                                                                     @{
                                                                         @agency?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address?.Address1
                                                                         ;
                                                                     }
                                                                 </RadzenText>
+                                                                <RadzenFormField Variant="Variant.Text" Visible="editMode" Text="Address 1">
+                                                                    <RadzenTextBox @bind-Value="@agency.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main").Address.Address1" />
+                                                                </RadzenFormField>
                                                             </RadzenColumn>
                                                         </RadzenRow>
-                                                        <RadzenRow>
+                                                        <RadzenRow AlignItems="AlignItems.End">
                                                             <RadzenColumn Size="2">
                                                                 <RadzenText Style="font-weight: bold;" Text="Address 2: " />
                                                             </RadzenColumn>
                                                             <RadzenColumn>
-                                                                <RadzenText>
+                                                                <RadzenText Visible="!editMode">
                                                                     @{
                                                                         @agency.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main").Address?.Address2
                                                                         ;
                                                                     }
                                                                 </RadzenText>
+                                                                <RadzenFormField Variant="Variant.Text" Visible="editMode" Text="Address 2">
+                                                                    <RadzenTextBox @bind-Value="@agency.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main").Address.Address2" />
+                                                                </RadzenFormField>
                                                             </RadzenColumn>
                                                         </RadzenRow>
                                                         <RadzenRow>
@@ -198,9 +243,11 @@
                                             <RadzenDataGrid TItem="IGetAgencyLicenses_AgencyLicenses" Data="licenseResult.AgencyLicenses"
                                                             Style="border-radius: 20px;" EmptyText="No records to display"
                                                             AllowPaging="true" PageSize="10" AllowSorting="true"
+                                                            AllowFiltering="true" FilterMode="FilterMode.Simple"
                                                             AllowGrouping="true" AllowColumnPicking="true">
                                                 <Columns>
-                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" Title="Status" Property="Status" Width="100px">
+                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" Filterable="false"
+                                                        Title="Status" Property="Status" Width="100px">
                                                         <Template Context="license">
                                                             @{
                                                                 if (license.Status == "Active")
@@ -214,19 +261,24 @@
                                                             }
                                                         </Template>
                                                     </RadzenDataGridColumn>
-                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" Title="State" Property="State" Width="100px" SortOrder="SortOrder.Ascending" />
-                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" Title="No Aptmt" Width="100px">
+                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" 
+                                                        Title="State" Property="State" Width="100px" SortOrder="SortOrder.Ascending" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" 
+                                                        Title="No Aptmt" Width="100px">
                                                         <Template Context="license">
                                                             <RadzenCheckBox TValue="bool?" Value="license.AppointingState" />
                                                         </Template>
                                                     </RadzenDataGridColumn>
-                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" Title="License" Property="LicenseNumber" Width="100px" />
-                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" Title="Resident" Width="100px">
+                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" 
+                                                        Title="License" Property="LicenseNumber" Width="100px" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" 
+                                                        Title="Resident" Width="100px">
                                                         <Template Context="license">
                                                             <RadzenCheckBox TValue="bool?" Value="license.IsResident" />
                                                         </Template>
                                                     </RadzenDataGridColumn>
-                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" Title="Insurer" Property="Insurer.FullName" />
+                                                    <RadzenDataGridColumn TItem="IGetAgencyLicenses_AgencyLicenses" Filterable="false"
+                                                        Title="Insurer" Property="Insurer.FullName" />
                                                 </Columns>
                                             </RadzenDataGrid>
                                         </ChildContent>
@@ -402,7 +454,7 @@
     private Agency agency = new Agency();
     private List<AgencyLicense> agencyLicenses = new List<AgencyLicense>();
 
-    private bool genInfoEditMode { get; set; } = false;
+    private bool editMode { get; set; } = false;
 
     //TODO: Remove test code below
     IEnumerable<int> firstRange = new int[] { 1, 2500000 };
@@ -431,7 +483,10 @@
     }
     private void ToggleGenInfoEdit()
     {
-        genInfoEditMode = !genInfoEditMode;
+        editMode = !editMode;
     }
+    private void SubmitAddressChange(Agency changedAgency)
+    {
 
+    }
 }

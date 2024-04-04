@@ -57,20 +57,24 @@ namespace JamesWebUI.Client.Services
             });
         }
 
-        public void LogVerbose(string message, string details, string category = "General", Dictionary<string, string>? data = null)
+        public void LogVerbose(string message, string details = "", string category = "General", Dictionary<string, string>? data = null)
         {
+            details = string.IsNullOrEmpty(details) ? message : details;
             Log(MessageEventId, message, details, Severity.Verbose, category, data: data);
         }
-        public void LogDebug(string message, string details, string category = "General", Dictionary<string, string>? data = null)
+        public void LogDebug(string message, string details = "", string category = "General", Dictionary<string, string>? data = null)
         {
+            details = string.IsNullOrEmpty(details) ? message : details;
             Log(MessageEventId, message, details, Severity.Debug, category, data: data);
         }
-        public void LogInformation(string message, string details, string category = "General", Dictionary<string, string>? data = null)
+        public void LogInformation(string message, string details = "", string category = "General", Dictionary<string, string>? data = null)
         {
+            details = string.IsNullOrEmpty(details) ? message : details;
             Log(MessageEventId, message, details, Severity.Information, category, data: data);
         }
-        public void LogWarning(string message, string details, string category = "General", Dictionary<string, string>? data = null)
+        public void LogWarning(string message, string details = "", string category = "General", Dictionary<string, string>? data = null)
         {
+            details = string.IsNullOrEmpty(details) ? message : details;
             Log(MessageEventId, message, details, Severity.Information, category, data: data);
         }
 
@@ -78,6 +82,7 @@ namespace JamesWebUI.Client.Services
             Dictionary<string, string>? data = null)
         {
             //TODO: Figure out a way to not log full details when not neccessary.
+            details = string.IsNullOrEmpty(details) ? "See exception details" : details;
             Log(severity >= Severity.Warning ? ExceptionEventId : MessageEventId, message, details, severity, category,
                 exception.Message, exception.ToText(), data);
         }

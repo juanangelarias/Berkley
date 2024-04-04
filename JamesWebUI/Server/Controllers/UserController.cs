@@ -19,44 +19,42 @@ namespace JamesWebUI.Server.Controllers
     {
         private IHttpClientFactory _httpClientFactory;
         private static HttpClient? _httpClient;
+        private  ILogger<UserController> _logger;
 
         private HttpClient UserInfoClient => _httpClient ??= _httpClientFactory.CreateClient("Auth0UserInfo");
 
-        public UserController(IHttpClientFactory httpClientFactory)
+        public UserController(IHttpClientFactory httpClientFactory, ILogger<UserController> logger)
         {
             _httpClientFactory = httpClientFactory;
             _httpClient ??= httpClientFactory.CreateClient("Auth0UserInfo");
-            //CachedAuth0 ??= new UserInformationCache<IAuth0UserInfo> { LookupTask = GetAuth0UserInfo };
-            //CachedActiveDirectory ??= new UserInformationCache<IActiveDirectoryUserInfo>
-            //{ LookupTask = GetActiveDirectoryUserInfoAsync };
-            //CachedApplication ??= new UserInformationCache<IApplicationUserInfo>
-            //{ LookupTask = GetApplicationUserInfoAsync };
-            //CachedActiveDirectoryGroupMembership ??= new UserInformationCache<IActiveDirectoryGroupMembership>
-            //{ LookupTask = GetActiveDirectoryGroupMembers };
+            _logger = logger;
+            CachedAuth0 ??= new UserInformationCache<IAuth0UserInfo> { LookupTask = GetAuth0UserInfo };
+            CachedActiveDirectory ??= new UserInformationCache<IActiveDirectoryUserInfo>
+            { LookupTask = GetActiveDirectoryUserInfoAsync };
         }
 
         private static UserInformationCache<IAuth0UserInfo>? CachedAuth0;
         private static UserInformationCache<IActiveDirectoryUserInfo>? CachedActiveDirectory;
-        private static UserInformationCache<IApplicationUserInfo>? CachedApplication;
+        //private static UserInformationCache<IApplicationUserInfo>? CachedApplication;
         private static UserInformationCache<IActiveDirectoryGroupMembership>? CachedActiveDirectoryGroupMembership;
         private static readonly JwtSecurityTokenHandler _handler = new();
 
-        //[HttpGet("/GetCurrentUserInfo")]
-        //public JsonResult GetCurrentUserInfo()
-        //{
-        //    try
-        //    {
-        //        var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
-        //        var userInfo = GetUserInfoAsync(token).Result;
-        //        Debug.WriteLine($"User info returned: {userInfo}");
-        //        return new JsonResult(userInfo);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Debug.WriteLine(e);
-        //        return new JsonResult(e.ToString()) { StatusCode = 500 };
-        //    }
-        //}
+        [HttpGet("/GetCurrentUserInfo")]
+        public JsonResult GetCurrentUserInfo()
+        {
+            try
+            {
+                var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
+                var userInfo = GetUserInfoAsync(token).Result;
+                Debug.WriteLine($"User info returned: {userInfo}");
+                return new JsonResult(userInfo);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return new JsonResult(e.ToString()) { StatusCode = 500 };
+            }
+        }
 
         [HttpGet("/GetActiveDirectoryGroupMemebership/{groupName}")]
         public JsonResult GetActiveDirectoryGroupMemebership(string groupName)
@@ -77,102 +75,125 @@ namespace JamesWebUI.Server.Controllers
             }
         }
 
-        //public async Task<IAuth0UserInfo> GetAuth0UserInfo(string token)
-        //{
-        //    var jwtSecurityToken = _handler.ReadJwtToken(token);
-        //    var userInfoEndpoint = jwtSecurityToken.Audiences.First(a => a.StartsWith("http"));
-        //    if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
-        //        UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
-        //    UserInfoClient.DefaultRequestHeaders.Add("Authorization",
-        //        Request.Headers[HeaderNames.Authorization].ToString());
-        //    var userInfo = await UserInfoClient.GetFromJsonAsync<Auth0UserInfo>(userInfoEndpoint);
-        //    Debug.WriteLine("Returning Auth0 data");
-        //    return userInfo;
-        //}
+        public async Task<IAuth0UserInfo> GetAuth0UserInfo(string token)
+        {
+            try
+            {
+                var jwtSecurityToken = _handler.ReadJwtToken(token);
+                var userInfoEndpoint = jwtSecurityToken.Audiences.First(a => a.StartsWith("http"));
+                if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
+                    UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
+                var reqHeaderAuthorization = "bearer " + token;//Request.Headers[HeaderNames.Authorization].ToString();
+                UserInfoClient.DefaultRequestHeaders.Add("Authorization", reqHeaderAuthorization);
+                var userInfo = await UserInfoClient.GetFromJsonAsync<Auth0UserInfo>(userInfoEndpoint);
+                Debug.WriteLine("Returning Auth0 data");
+                return userInfo;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(new EventId(13321, "GetUserInfoError"), ex, "Exception thrown while getting Auth0 user information.");
+                throw;
+            }
+        }
 
-        //public async Task<SiteUserInfo> GetUserInfoAsync(string JWT)
-        //{
-        //    //Get Email from JWT
-        //    var jwtSecurityToken = _handler.ReadJwtToken(JWT);
-        //    //var userInfoEndpoint = jwtSecurityToken.Audiences.First(a => a.StartsWith("http"));
+        public async Task<SiteUserInfo> GetUserInfoAsync(string JWT)
+        {
+            //Get Email from JWT
+            JwtSecurityToken jwtSecurityToken;
+            SiteUserInfo siteUserInfo;
+            try
+            {
+                jwtSecurityToken = _handler.ReadJwtToken(JWT);
+                //var userInfoEndpoint = jwtSecurityToken.Audiences.First(a => a.StartsWith("http"));
 
-        //    var siteUserInfo = new SiteUserInfo
-        //    { JWT = JWT, Email = jwtSecurityToken.Claims.FirstOrDefault(c => c.Type == "http://schemas.wrberkley.com/identity/application/claims/email")?.Value ?? "" };
-        //    //Call Auth0's 
-        //    //if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
-        //    //    UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
-        //    //UserInfoClient.DefaultRequestHeaders.Add("Authorization", "bearer " + JWT);
-        //    Debug.Assert(CachedAuth0 != null, nameof(CachedAuth0) + " != null");
-        //    var auth0Info = await CachedAuth0.GetAsync(JWT);
+                siteUserInfo = new SiteUserInfo
+                {
+                    JWT = JWT,
+                    Email = jwtSecurityToken.Claims.FirstOrDefault(c =>
+                        c.Type == "http://schemas.wrberkley.com/identity/application/claims/email")?.Value ?? ""
+                };
+                //Call Auth0's 
+                if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
+                    UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
+                UserInfoClient.DefaultRequestHeaders.Add("Authorization", "bearer " + JWT);
+                Debug.Assert(CachedAuth0 != null, nameof(CachedAuth0) + " != null");
+                var auth0Info = await CachedAuth0.GetAsync(JWT);
 
-        //    //TODO: Do error handling
-        //    siteUserInfo.FirstName = auth0Info.FirstName;
-        //    siteUserInfo.LastName = auth0Info.LastName;
-        //    siteUserInfo.FullName = auth0Info.FullName;
-        //    siteUserInfo.Username = auth0Info.Username;
+                //TODO: Do error handling
+                siteUserInfo.FirstName = auth0Info.FirstName;
+                siteUserInfo.LastName = auth0Info.LastName;
+                siteUserInfo.FullName = auth0Info.FullName;
+                siteUserInfo.Username = auth0Info.Username;
 
-        //    //Query Active Directory and application database (if needed)
-        //    var adLookup = CachedActiveDirectory.GetAsync(siteUserInfo.Username);
-        //    var appLookup = GetApplicationUserInfoAsync(siteUserInfo.Username);
-        //    var lookupTasks = new Task[]
-        //    {
-        //        adLookup
-        //            , appLookup
-        //    };
-        //    Task.WaitAll(lookupTasks);
-        //    var activeDirectoryUserInformation = adLookup.Result;
-        //    siteUserInfo.ActiveDirectoryGroups = activeDirectoryUserInformation.ActiveDirectoryGroups;
-        //    var applicationUserInformation = appLookup.Result;
-        //    siteUserInfo.Initials = applicationUserInformation.Initials;
-        //    siteUserInfo.IsHomeOfficeApprover = applicationUserInformation.IsHomeOfficeApprover;
-        //    siteUserInfo.IsUnderwriter = applicationUserInformation.IsUnderwriter;
-        //    siteUserInfo.Title = applicationUserInformation.Title;
-        //    //TODO: If your application database keeps a different fullname than what is in Auth0, below is where you would update it
-        //    //siteUserInfo.FullName = applicationUserInformation.FullName?? siteUserInfo.FullName;
-        //    return siteUserInfo;
-        //}
+                //Query Active Directory and application database (if needed)
+                var adLookup = CachedActiveDirectory.GetAsync(siteUserInfo.Username);
+                //var appLookup = GetApplicationUserInfoAsync(siteUserInfo.Username);
+                var lookupTasks = new Task[]
+                {
+                    adLookup
+                };
+                Task.WaitAll(lookupTasks);
+                var activeDirectoryUserInformation = adLookup.Result;
+                siteUserInfo.ActiveDirectoryGroups = activeDirectoryUserInformation.ActiveDirectoryGroups;
+                //var applicationUserInformation = appLookup.Result;
+                //siteUserInfo.Initials = applicationUserInformation.Initials;
+                //siteUserInfo.IsHomeOfficeApprover = applicationUserInformation.IsHomeOfficeApprover;
+                //siteUserInfo.IsUnderwriter = applicationUserInformation.IsUnderwriter;
+                //siteUserInfo.Title = applicationUserInformation.Title;
+                //TODO: If your application database keeps a different fullname than what is in Auth0, below is where you would update it
+                //siteUserInfo.FullName = applicationUserInformation.FullName?? siteUserInfo.FullName;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(new EventId(13321, "GetUserInfoError"), e,
+                    "Exception thrown while getting user information.");
+                throw;
+            }
 
-        ///// <summary>
-        ///// Retrieves group information from Active Directory
-        ///// </summary>
-        ///// <param name="username">User to get group information for</param>
-        ///// <returns>A list of all active directory groups the user is a memeber of</returns>
-        ///// <remarks>Getting all groups is hideously slow.  It would be much better to either check membership for a specific set of Groups,
-        /////             or to get and cache a list of all members of the relevant groups.</remarks>
+            return siteUserInfo;
+        }
 
-        //[SupportedOSPlatform("windows")]
-        //public static async Task<IActiveDirectoryUserInfo> GetActiveDirectoryUserInfoAsync(string username)
-        //{
-        //    var result = new List<GroupPrincipal>();
+        /// <summary>
+        /// Retrieves group information from Active Directory
+        /// </summary>
+        /// <param name="username">User to get group information for</param>
+        /// <returns>A list of all active directory groups the user is a member of</returns>
+        /// <remarks>Getting all groups is hideously slow.  It would be much better to either check membership for a specific set of Groups,
+        ///             or to get and cache a list of all members of the relevant groups.</remarks>
 
-        //    await Task.Run(() =>
-        //    {
-        //        // establish domain context
-        //        var yourDomain = new PrincipalContext(ContextType.Domain);
+        [SupportedOSPlatform("windows")]
+        public static async Task<IActiveDirectoryUserInfo> GetActiveDirectoryUserInfoAsync(string username)
+        {
+            var result = new List<GroupPrincipal>();
 
-        //        // find your user
-        //        var user = UserPrincipal.FindByIdentity(yourDomain, username);
+            await Task.Run(() =>
+            {
+                // establish domain context
+                var yourDomain = new PrincipalContext(ContextType.Domain);
 
-        //        // if found - grab its groups
-        //        if (user != null)
-        //        {
-        //            var groups = user.GetAuthorizationGroups();
+                // find your user
+                var user = UserPrincipal.FindByIdentity(yourDomain, username);
 
-        //            // iterate over all groups
-        //            foreach (var p in groups)
-        //            {
-        //                // make sure to add only group principals
-        //                if (p is GroupPrincipal)
-        //                {
-        //                    result.Add((GroupPrincipal)p);
-        //                }
-        //            }
-        //        }
-        //    });
-        //    Debug.WriteLine("Returning AD info");
-        //    return new ActiveDirectoryUserInformation
-        //    { Username = username, ActiveDirectoryGroups = result.Select(gp => gp.Name).ToArray() };
-        //}
+                // if found - grab its groups
+                if (user != null)
+                {
+                    var groups = user.GetAuthorizationGroups();
+
+                    // iterate over all groups
+                    foreach (var p in groups)
+                    {
+                        // make sure to add only group principals
+                        if (p is GroupPrincipal)
+                        {
+                            result.Add((GroupPrincipal)p);
+                        }
+                    }
+                }
+            });
+            Debug.WriteLine("Returning AD info");
+            return new ActiveDirectoryUserInformation
+            { Username = username, ActiveDirectoryGroups = result.Select(gp => gp.Name).ToArray() };
+        }
 
         //public static async Task<IApplicationUserInfo> GetApplicationUserInfoAsync(string username)
         //{

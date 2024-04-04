@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace James.Shared.Model;
 //Generated for DB
@@ -29,13 +28,13 @@ public partial class AgencyLicense
 
     public string? Comments { get; set; }
 
-    public string Status { get; set; } = null!;
-
     public DateOnly? Appointment { get; set; }
 
     public DateOnly? Termination { get; set; }
 
     public bool? AppointingState { get; set; }
+
+    public bool IsActive { get; set; }
 
     public virtual Agency Agency { get; set; } = null!;
 

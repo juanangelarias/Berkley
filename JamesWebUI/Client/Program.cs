@@ -19,7 +19,7 @@ builder.Services.AddJamesClient(ExecutionStrategy.CacheAndNetwork)
     .ConfigureHttpClient(client =>
         client.BaseAddress = new Uri("https://localhost:7017/graphql"))
 
-    .ConfigureWebSocketClient(client => client.Uri = new Uri("ws://localhost:7017/graphql"));
+    .ConfigureWebSocketClient(client => client.Uri = new Uri("wss://localhost:7017/graphql"));
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("JamesAPI"));
@@ -27,7 +27,8 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<ThemeService>();
-builder.Services.AddSingleton<LoggingService>();
+
+//builder.Services.AddSingleton<LoggingService>();
 
 
 builder.Services.AddOidcAuthentication(options =>

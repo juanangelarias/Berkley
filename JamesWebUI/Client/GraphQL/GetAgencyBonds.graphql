@@ -1,0 +1,15 @@
+﻿query GetAgencyBonds($agencyId: UUID!)
+{
+    agencyBonds(agencyId: $agencyId){
+        bondNumber,
+        accountNum,
+        effective,
+        expiration,
+        bondType{
+            bondType
+        }
+        siccode,
+        municipality,
+        bondClass
+    }
+}

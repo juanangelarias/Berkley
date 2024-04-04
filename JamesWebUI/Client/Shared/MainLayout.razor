@@ -25,6 +25,7 @@
                             <ChildContent>
                                 <RadzenProfileMenuItem Text="My Profile" Path="profile" Icon="account_circle" />
                                 <RadzenProfileMenuItem Text="My Dashboard" Path="" Icon="home" />
+                                <RadzenProfileMenuItem Text="Logout" />
                             </ChildContent>
                         </RadzenProfileMenu>
                     </RadzenRow>
@@ -128,8 +129,8 @@
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-        };
-        
+    };
+
     }
 
     void ChangeTheme(object value)
@@ -138,4 +139,5 @@
 
         NavigationManager.NavigateTo(url, true);
     }
+
 }

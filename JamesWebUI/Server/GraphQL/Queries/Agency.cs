@@ -26,18 +26,40 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .Include(a => a.IdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
+                .Include(a => a.AgencyInventories)
+                .Include(a => a.Accounts)
+                .Include(a => a.AgentsInAgencies)
                 .FirstOrDefault();
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
-        public Agency? GetAgencyLicenses(string agencyNumber, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public List<AgentsInAgency> GetAgencyAgents(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = contextFactory.CreateDbContext();
-            
-            return ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
-                .Include(a => a.IdNavigation)
-                .Include(a => a.AgencyLicenses)
-                .FirstOrDefault();
+
+            return ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
+                .Include(ag => ag.Agent)
+                .ThenInclude(ag => ag.IdNavigation)
+                .Include(ag => ag.Agent)
+                .ThenInclude(ag => ag.AgencyLicenses)
+                .ToList();
         }
+        public List<Bond> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+
+            return ctx.Bonds.Where(b => b.AgencyId == agencyId).ToList();
+        }
+        public Task<List<AgencyLicense>>? GetAgencyLicenses(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            var result =  ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
+                .Include(lic => lic.Insurer)
+                .ThenInclude(lic => lic.IdNavigation)
+                .ToListAsync();
+
+            return result;
+        }
+
         public List<AgencyStatusDm> GetAgencyStatuses([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = contextFactory.CreateDbContext();

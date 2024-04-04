@@ -15,7 +15,11 @@
     <GraphQL Remove="GraphQL\GetAgencyBonds.graphql" />
     <GraphQL Remove="GraphQL\GetAgencyLicenses.graphql" />
     <GraphQL Remove="GraphQL\GetStates.graphql" />
+    <GraphQL Remove="GraphQL\Mutations\SetAddress.graphql" />
+    <GraphQL Remove="GraphQL\Mutations\SetLicense.graphql" />
+    <GraphQL Remove="GraphQL\Queries\GetInsurers.graphql" />
     <GraphQL Remove="GraphQL\SearchAgencies.graphql" />
+    <GraphQL Remove="GraphQL\Subscriptions\AddressSubs.graphql" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +33,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Radzen.Blazor" Version="4.25.9" />
     <PackageReference Include="StrawberryShake.Blazor" Version="13.9.0" />
+    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="13.9.0" />
   </ItemGroup>
 
   <ItemGroup>

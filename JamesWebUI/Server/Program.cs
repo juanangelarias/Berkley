@@ -101,6 +101,8 @@ app.UseAuthentication();
 app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 
 app.UseAntiforgery();
 
+app.UseWebSockets();
+
 app.UseCors();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -119,6 +121,9 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode();
 
-app.MapGraphQL("/graphql");
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapGraphQL();
+});
 
 app.Run();

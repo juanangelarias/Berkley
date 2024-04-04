@@ -38,6 +38,8 @@ namespace JamesWebUI.Server.GraphQL.Queries
 
             return ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
                 .Include(ag => ag.Agent)
+                .ThenInclude(ag => ag.IdNavigation)
+                .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.AgencyLicenses)
                 .ToList();
         }
@@ -50,8 +52,12 @@ namespace JamesWebUI.Server.GraphQL.Queries
         public Task<List<AgencyLicense>>? GetAgencyLicenses(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = contextFactory.CreateDbContext();
+            var result =  ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
+                .Include(lic => lic.Insurer)
+                .ThenInclude(lic => lic.IdNavigation)
+                .ToListAsync();
 
-            return ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null).ToListAsync();
+            return result;
         }
 
         public List<AgencyStatusDm> GetAgencyStatuses([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)

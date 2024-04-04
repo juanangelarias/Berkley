@@ -7,7 +7,13 @@
             middleInitial,
             familyName,
             mainEmailAddress,
-            nationalProducerNumber
+            nationalProducerNumber,
+            idNavigation{
+                givenName,
+                middleInitial,
+                familyName,
+                fullName
+            }
         }
     }
 }

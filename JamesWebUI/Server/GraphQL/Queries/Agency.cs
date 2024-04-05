@@ -41,6 +41,9 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .ThenInclude(ag => ag.IdNavigation)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.AgencyLicenses)
+                .ThenInclude(ag => ag.Insurer)
+                .ThenInclude(ag => ag.IdNavigation)
+                .Where(ag => ag.AgencyId == agencyId)
                 .ToList();
         }
         public List<Bond> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

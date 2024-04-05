@@ -158,10 +158,10 @@ type AgencyLicense {
   insurerId: UUID!
   expiration: Date
   comments: String
-  status: String!
   appointment: Date
   termination: Date
   appointingState: Boolean
+  isActive: Boolean!
   agency: Agency!
   agent: Agent
   stateNavigation: State!
@@ -435,7 +435,7 @@ input SetLicenseInput {
   isResident: Boolean!
   licenseNumber: String
   state: String!
-  status: String!
+  isActive: Boolean!
   termination: Date
 }
 

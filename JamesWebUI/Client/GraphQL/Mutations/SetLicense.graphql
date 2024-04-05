@@ -11,7 +11,7 @@
       isResident,
       licenseNumber,
       state,
-      status,
+      isActive,
       termination
     }
   }

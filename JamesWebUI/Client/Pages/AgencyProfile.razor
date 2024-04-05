@@ -85,11 +85,6 @@
                             <RadzenRow>
                                 <RadzenColumn Size="12">
                                     <RadzenFieldset Text="Agency Info">
-                                        <RadzenRow>
-                                            <RadzenColumn>
-
-                                            </RadzenColumn>
-                                        </RadzenRow>
                                         <RadzenFieldset Text="Addresses">
                                             <RadzenTabs>
                                                 <Tabs>
@@ -349,7 +344,7 @@
                     </RadzenRow>
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Contacts">
-                    <AgencyContactsGrid AgencyId="@agencyToDisplay.Id" />
+                    <AgencyContactsGrid AgencyId="agencyToDisplay.Id" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Inventory"></RadzenTabsItem>
                 <RadzenTabsItem Text="Accounts and Bonds">

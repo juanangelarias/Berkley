@@ -34,7 +34,7 @@
                 isResident,
                 expiration,
                 comments,
-                status,
+                isActive,
                 appointment,
                 termination,
                 appointingState,

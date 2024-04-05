@@ -14,6 +14,23 @@
                 familyName,
                 fullName
             }
+            agencyLicenses{
+                id,
+                licenseNumber,
+                comments,
+                appointment,
+                termination,
+                appointingState,
+                state,
+                isActive,
+                created,
+                insurer{
+                    id,
+                    idNavigation{
+                        fullName
+                    }
+                }
+            }
         }
     }
 }

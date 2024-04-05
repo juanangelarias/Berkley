@@ -11,47 +11,91 @@
 
 <Theme />
 
-<RadzenPanel>
-    <HeaderTemplate>
-        <RadzenStack Orientation="Orientation.Horizontal">
-@*             <RadzenButton Size="ButtonSize.Small" Icon="grid_view" Variant="Variant.Text" Click="@(() => contactsGridView = true)" />
-            <RadzenButton Size="ButtonSize.Small" Icon="list" Variant="Variant.Text" Click="@(() => contactsGridView = false)" /> *@
-        </RadzenStack>
-    </HeaderTemplate>
-    <ChildContent>
-        <RadzenDataGrid TItem="Agent" Data="@agents" @ref="@agentsGrid"
-                        Style="border-radius: 20px;" EmptyText="No records to display"
-                        AllowPaging="true" PageSize="10" AllowSorting="true">
-            <Columns >
-                <RadzenDataGridColumn TItem="Agent" Title="First Name">
-                    <Template Context="agent">
-                        <RadzenText Text="@agent.IdNavigation.GivenName"/>
-                    </Template>    
-                </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="Agent" Property="IdNavigation.MiddleInitial" Title="MI">
-                                        <Template Context="agent">
-                        <RadzenText Text="@agent.IdNavigation.MiddleInitial"/>
-                    </Template>  
-                    </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="Agent" Property="IdNavigation.FamilyName" Title="Last Name">
-                    <Template Context="agent">
-                        <RadzenText Text="@agent.IdNavigation.FamilyName" />
+
+<RadzenDataGrid TItem="Agent" Data="@agents" @ref="@agentsGrid" Density="Density.Compact"
+                Style="border-radius: 20px;" EmptyText="No records to display" 
+                SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
+                AllowPaging="true" PageSize="10" AllowSorting="true">
+    <Template Context="agent">
+        <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense"
+                        Style="height:300px;" AllowVirtualization="true"
+                        AllowFiltering="true">
+            <HeaderTemplate>
+                <RadzenPanel Style="width: 100%">
+                    <RadzenRow>
+                        <RadzenColumn>
+                            <RadzenText Text="Name" />
+                        </RadzenColumn>
+                        <RadzenColumn>
+                            <RadzenText Text="@(agent.IdNavigation.GivenName + " " + agent.IdNavigation.MiddleInitial + " " + agent.IdNavigation.FamilyName )" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenPanel>
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Width="125px">
+                    <Template Context="license">
+                        <RadzenText Text="@license.LicenseNumber" />
                     </Template>
                 </RadzenDataGridColumn>
-                @* <RadzenDataGridColumn TItem="Agent" Property="MainEmailAddress" Title="Email" /> *@
-                @* <RadzenDataGridColumn TItem="Agent" Property="NationalProducerNumber" Title="NPN" /> *@
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Width="100px">
+                    <Template Context="license">
+                        <RadzenText Text="@license.State" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Resident" Width="125px">
+                    <Template Context="license">
+                        <RadzenCheckBox Value="@license.IsResident" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="125px">
+                    <Template Context="license">
+                        <RadzenCheckBox Value="@license.AppointingState" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Insurer">
+                    <Template Context="license">
+                        <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
+                    </Template>
+                </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
-    </ChildContent>
-</RadzenPanel>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn TItem="Agent" Title="First Name" Property="IdNavigation.GivenName" Width="200px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.GivenName" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="MI" Property="IdNavigation.MiddleInitial" Width="75px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.MiddleInitial" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Last Name" Property="IdNavigation.FamilyName" Width="200px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.FamilyName" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="NPN" Property="NationalProducerNumber">
+            <Template Context="agent">
+                <RadzenText Text="@agent.NationalProducerNumber" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
 
 @code {
     [Parameter] public Guid AgencyId { get; set; }
     private List<Agent> agents { get; set; }
     private RadzenDataGrid<Agent> agentsGrid { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+
+        LoadAgents();
     }
     protected override async Task OnParametersSetAsync()
     {
@@ -73,7 +117,9 @@
             }
 
             agents = agentList;
+            agentsGrid.Data = agents;
+            agentsGrid.Reload();
         }
-        
     }
+   
 }

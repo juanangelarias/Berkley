@@ -1,33 +1,47 @@
-﻿query GetAgencyByAgencyNumber($agencyNumber: String!) {
-  agencyByAgencyNumber(agencyNumber: $agencyNumber) {
-    agencyNumber
-    branch
-    status
-    w9
-    nasbp
-    agents {
-      fullName
-      givenName
-      middleInitial
-      familyName
-      mainEmailAddress
-      nationalProducerNumber
-      licenses {
-        agencyId
-        state
-        licenseNumber
-        isResident
-        expiration
-        comments
-        status
-        appointment
-        termination
-        appointingState
-        insurer {
+﻿query GetAgencyByAgencyNumber($agencyNumber: String!)
+{
+	agencyByAgencyNumber(agencyNumber:$agencyNumber)
+    {
+        id,
+		agencyNumber,
+        branch,
+        status,
+        w9,
+        nasbp,
+        accounts{
+            fullName,
+            accountNum,
+            branch,
+            mainAddress{
+                address1,
+                city,
+                state,
+                postalCode
+
+            }
+        }
+        agents{
+            fullName,
+            givenName,
+            middleInitial,
+            familyName,
+            mainEmailAddress,
+            nationalProducerNumber,
+            licenses{
+                agencyId,
+                state,
+                licenseNumber,
+                isResident,
+                expiration,
+                comments,
+                status,
+                appointment,
+                termination,
+                appointingState,
+                insurer{
                     fullName
                 }
             }
-
         }
 		idNavigation
         {

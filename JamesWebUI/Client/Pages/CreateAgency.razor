@@ -1,0 +1,133 @@
+﻿@page "/CreateAgency"
+
+@using System.Globalization
+@using JamesWebUI.Client.Controls.Extensions;
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject JamesClient JamesClient
+
+<Theme />
+
+<RadzenPanel>
+    <HeaderTemplate>
+        <h4>Create New Agency</h4>
+    </HeaderTemplate>
+    <ChildContent>
+        <RadzenRow>
+            <RadzenColumn Size="7">
+                <RadzenFieldset>
+                    <HeaderTemplate>
+                        <b>General Info</b>
+                    </HeaderTemplate>
+                    <ChildContent>
+                        <RadzenStack Orientation="Orientation.Vertical">
+                            <RadzenRow>
+                                <RadzenColumn>
+                                    <RadzenFormField Text="Name" Variant="Variant.Filled" Style="width:100%">
+                                        <RadzenTextBox Placeholder="Name" />
+                                    </RadzenFormField>
+                                </RadzenColumn>
+                                <RadzenColumn Size="3">
+                                    <RadzenFormField Text="Branch" Variant="Variant.Filled">
+                                        <BranchRadzenDropDown MultiSelect="false" />
+                                    </RadzenFormField>
+                                </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenFormField Text="Address" Variant="Variant.Filled">
+                                <RadzenTextBox Placeholder="Address" />
+                            </RadzenFormField>
+                            <RadzenFormField Text="Address 2" Variant="Variant.Filled">
+                                <RadzenTextBox />
+                            </RadzenFormField>
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <RadzenFormField Text="City" Variant="Variant.Filled">
+                                    <RadzenTextBox />
+                                </RadzenFormField>
+                                <RadzenFormField Text="State" Variant="Variant.Filled">
+                                    <StateRadzenDropDown MultiSelect="false" />
+                                </RadzenFormField>
+                                <RadzenFormField Text="Postal Code" Variant="Variant.Filled">
+                                    <RadzenTextBox />
+                                </RadzenFormField>
+                            </RadzenStack>
+                            <RadzenFormField Text="Phone" Variant="Variant.Filled">
+                                <RadzenTextBox />
+                            </RadzenFormField>
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <RadzenFormField Text="Tax ID" Variant="Variant.Filled">
+                                    <RadzenTextBox />
+                                </RadzenFormField>
+                                <RadzenFormField Text="Parent No." Variant="Variant.Filled">
+                                    <RadzenTextBox />
+                                </RadzenFormField>
+                            </RadzenStack>
+                        </RadzenStack>
+                    </ChildContent>
+                </RadzenFieldset>
+                <RadzenFieldset>
+                    <HeaderTemplate>
+                        <b>Invoice Address</b>
+                    </HeaderTemplate>
+                    <ChildContent>
+                        <RadzenStack Orientation="Orientation.Vertical">
+                            <RadzenFormField Text="Address 1" Variant="Variant.Filled">
+                                <RadzenTextBox />
+                            </RadzenFormField>
+                            <RadzenFormField Text="Address 2" Variant="Variant.Filled">
+                                <RadzenTextBox />
+                            </RadzenFormField>
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <RadzenFormField Text="City" Variant="Variant.Filled">
+                                    <RadzenTextBox />
+                                </RadzenFormField>
+                                <RadzenFormField Text="State" Variant="Variant.Filled">
+                                    <StateRadzenDropDown MultiSelect="false" />
+                                </RadzenFormField>
+                                <RadzenFormField Text="Postal Code" Variant="Variant.Filled">
+                                    <RadzenTextBox />
+                                </RadzenFormField>
+                            </RadzenStack>
+                            <RadzenFormField Text="Email" Variant="Variant.Filled">
+                                <RadzenTextBox />
+                            </RadzenFormField>
+                        </RadzenStack>
+                    </ChildContent>
+                </RadzenFieldset>
+                <RadzenFieldset>
+                    <HeaderTemplate>
+                        <b>Errors & Omissions Coverage</b>
+                    </HeaderTemplate>
+                    <ChildContent>
+                        <RadzenStack Orientation="Orientation.Vertical">
+                            <RadzenStack Orientation="Orientation.Horizontal">
+                                <RadzenFormField Text="Carrier" Variant="Variant.Filled">
+                                    <RadzenTextBox />
+                                </RadzenFormField>
+                                <RadzenFormField Text="Exp Date" Variant="Variant.Filled">
+                                    <RadzenDatePicker TValue="System.DateOnly" />
+                                </RadzenFormField>
+                            </RadzenStack>
+                            <RadzenFormField Text="Limit of Coverage" Variant="Variant.Filled">
+                                <RadzenNumeric TValue="int" />
+                            </RadzenFormField>
+                        </RadzenStack>
+                    </ChildContent>
+                </RadzenFieldset>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Cancel" />
+            <RadzenButton Text="Create Agency" />
+        </RadzenRow>
+    </ChildContent>
+</RadzenPanel>
+
+@code {
+
+}

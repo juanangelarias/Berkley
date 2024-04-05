@@ -1,6 +1,8 @@
 using ApplicationLog;
 using James.Data.Server.Model;
 using JamesWebUI.Client.Components;
+using JamesWebUI.Server.GraphQL;
+using JamesWebUI.Server.GraphQL.Mutations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
@@ -49,7 +51,10 @@ builder.Services
     .AddGraphQLServer()
     .AddQueryType<JamesWebUI.Server.GraphQL.Queries.Query>()
     .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
-    .AddJamesGraphQlTypes();
+    .AddSubscriptionType<Subscription>()
+    .AddJamesGraphQlTypes()
+    .AddMutationConventions()
+    .AddInMemorySubscriptions();
 
 builder.Services.AddCors(options =>
 {
@@ -97,6 +102,8 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 
 
+app.UseWebSockets();
+
 app.UseCors();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -115,6 +122,9 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode();
 
-app.MapGraphQL("/graphql");
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapGraphQL();
+});
 
 app.Run();

@@ -46,7 +46,6 @@ public partial class LegalEntity
 
     public virtual ICollection<AgencyInventory> AgencyInventories { get; set; } = new List<AgencyInventory>();
 
-
     public virtual Agent? Agent { get; set; }
 
     public virtual ICollection<Bond> BondAgencies { get; set; } = new List<Bond>();

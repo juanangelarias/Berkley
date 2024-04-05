@@ -37,6 +37,19 @@ namespace JamesWebUI.Server.GraphQL.TypeExtensions
             return agency.AgentsInAgencies.Select(aia => aia.Agent).ToArray();
         }
 
+        public async Task<Account[]> Accounts([Parent] Agency agency, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            if (null == agency.Accounts)
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                if (!agency.Accounts.Any())
+                {
+                    agency.Accounts = await ctx.Accounts.Where(ac => ac.AgencyNumber == agency.AgencyNumber).ToArrayAsync();
+                    
+                }
+            }
+            return agency.Accounts.ToArray();
+        }
         public async Task<OnlineBondSystem[]> OnlineBondSystems([Parent] Agency agency,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

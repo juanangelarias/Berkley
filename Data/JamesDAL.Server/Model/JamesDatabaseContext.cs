@@ -1044,6 +1044,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.LicenseNumber)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -1054,9 +1055,6 @@ public partial class JamesDatabaseContext : DbContext
                 .HasMaxLength(2)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.Status)
-                .HasMaxLength(15)
-                .IsUnicode(false);
 
             entity.HasOne(d => d.Agency).WithMany(p => p.AgencyLicenses)
                 .HasPrincipalKey(p => p.Id)

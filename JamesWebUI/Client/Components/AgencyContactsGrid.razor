@@ -57,6 +57,10 @@
                     <Template Context="license">
                         <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
                     </Template>
+                    <EditTemplate Context="license">
+                        <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" LoadData="LoadSelectInsurerDropDown" Style="width:95%"
+                                        TextProperty="IdNavigation.FullName" ValueProperty="Id" @bind-Value="@license.InsurerId" />
+                    </EditTemplate>
                 </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
@@ -90,6 +94,7 @@
     [Parameter] public Guid AgencyId { get; set; }
     private List<Agent> agents { get; set; }
     private RadzenDataGrid<Agent> agentsGrid { get; set; }
+    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,5 +126,20 @@
             agentsGrid.Reload();
         }
     }
-   
+    private async Task LoadSelectInsurerDropDown()
+    {
+        dropSelectInsurer.Data = await GetInsurers();
+    }
+    private async Task<List<Insurer>> GetInsurers()
+    {
+        var result = await JamesClient.AllInsurers.ExecuteAsync();
+
+        var insurerList = new List<Insurer>();
+
+        foreach (var insurer in result.Data.AllInsurers)
+        {
+            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
+        }
+        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
+    }
 }

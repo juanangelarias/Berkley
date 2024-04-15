@@ -17,6 +17,7 @@
     <GraphQL Remove="GraphQL\GetStates.graphql" />
     <GraphQL Remove="GraphQL\Mutations\SetAddress.graphql" />
     <GraphQL Remove="GraphQL\Mutations\SetLicense.graphql" />
+    <GraphQL Remove="GraphQL\Queries\GetAgentByAgentId.graphql" />
     <GraphQL Remove="GraphQL\Queries\GetInsurers.graphql" />
     <GraphQL Remove="GraphQL\SearchAgencies.graphql" />
     <GraphQL Remove="GraphQL\Subscriptions\AddressSubs.graphql" />

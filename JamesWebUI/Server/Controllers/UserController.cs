@@ -30,7 +30,10 @@ namespace JamesWebUI.Server.Controllers
             _logger = logger;
             CachedAuth0 ??= new UserInformationCache<IAuth0UserInfo> { LookupTask = GetAuth0UserInfo };
             CachedActiveDirectory ??= new UserInformationCache<IActiveDirectoryUserInfo>
-            { LookupTask = GetActiveDirectoryUserInfoAsync };
+            {
+                LookupTask = GetActiveDirectoryUserInfoAsync,
+                CacheDuration = TimeSpan.FromHours(9)
+            };
         }
 
         private static UserInformationCache<IAuth0UserInfo>? CachedAuth0;
@@ -98,6 +101,8 @@ namespace JamesWebUI.Server.Controllers
 
         public async Task<SiteUserInfo> GetUserInfoAsync(string JWT)
         {
+            _logger.LogDebug("UserInfo request received.");
+            
             //Get Email from JWT
             JwtSecurityToken jwtSecurityToken;
             SiteUserInfo siteUserInfo;

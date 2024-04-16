@@ -16,6 +16,7 @@ type Query {
   accountOnly(accountNumber: String): Account
   searchAgencies(stringToSearch: String): [Agency!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
+  agencyAccounts(agencyNumber: String!): [Account!]!
   agencyAgents(agencyId: UUID!): [AgentsInAgency!]!
   agencyBonds(agencyId: UUID!): [Bond!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
@@ -433,9 +434,9 @@ type Account {
   underwriterRecommendations: [UnderwriterRecommendation!]!
   watchStatusNavigation: WatchStatusDm!
   workInProgressJobs: [WorkInProgressJob!]!
+  mainAddress: Address
   agency: Agency
   fullName: String!
-  mainAddress: Address
   addresses: [LegalEntityAddress!]!
   mainPhoneNumber: PhoneNumber
   phoneNumbers: [LegalEntityPhone!]!

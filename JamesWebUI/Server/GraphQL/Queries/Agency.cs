@@ -28,9 +28,22 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .ThenInclude(a => a.Address)
                 .Include(a => a.AgencyInventories)
                 .Include(a => a.Accounts)
+                .ThenInclude(a => a.IdNavigation)
                 .Include(a => a.AgentsInAgencies)
                 .FirstOrDefault();
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
+        }
+        public List<Account> GetAgencyAccounts(string agencyNumber, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            var result = ctx.Accounts.Where(a => a.AgencyNumber == agencyNumber)
+                .Include(a => a.IdNavigation)
+                .ThenInclude(a => a.LegalEntityAddresses.Where(lea => lea.Type == "Main"))
+                .ThenInclude(a => a.Address)
+                .Include(a => a.Bonds)
+                .ToList();
+            return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
+                
         }
         public List<AgentsInAgency> GetAgencyAgents(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

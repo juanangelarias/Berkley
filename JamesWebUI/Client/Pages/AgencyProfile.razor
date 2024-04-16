@@ -4,6 +4,7 @@
 @using System.Globalization
 @using JamesWebUI.Client.GraphQL;
 @using JamesWebUI.Client.GraphQL.Components;
+@using James.Shared;
 @using StrawberryShake;
 
 @inherits LayoutComponentBase
@@ -353,28 +354,9 @@
                             <Tabs>
                                 <RadzenTabsItem Text="Accounts">
 
-                                    <RadzenDataGrid TItem="Account" Data="agencyToDisplay?.Accounts"
-                                                    AllowPaging="true" PageSize="15"
-                                                    AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
-                                        <Columns>
-                                            <RadzenDataGridColumn TItem="Account" Title="Account #" Property="AccountNum" />
-                                            <RadzenDataGridColumn TItem="Account" Title="Account Name" Property="IdNavigation.FullName" />
-                                            <RadzenDataGridColumn TItem="Account" Title="City" Property="MainAddress.City" />
-                                            <RadzenDataGridColumn TItem="Account" Title="State" Property="MainAddress.State" />
-                                            <RadzenDataGridColumn TItem="Account" Title="Postal Code" Property="MainAddress.PostalCode" />
-                                            <RadzenDataGridColumn TItem="Account" Title="Branch" Property="Branch" />
-                                            <RadzenDataGridColumn TItem="Account" Title="Status" />
-
-                                        </Columns>
-                                        <EmptyTemplate>
-                                            No Records to Display
-                                        </EmptyTemplate>
-                                    </RadzenDataGrid>
+                                    <AgencyAccountsGrid AgencyNumber="@agencyToDisplay.AgencyNumber"/>
                                 </RadzenTabsItem>
                                 <RadzenTabsItem Text="Bonds">
-                                    @* <UseGetAgencyBonds AgencyId="agency.Id">
-
-                                    </UseGetAgencyBonds> *@
                                 </RadzenTabsItem>
                             </Tabs>
                         </RadzenTabs>
@@ -463,6 +445,7 @@
 
     IDisposable session;
     RadzenDataGrid<AgencyLicense> licenseGrid;
+
     private bool mainAddressEditMode { get; set; } = false;
     private bool billingAddressEditMode { get; set; } = false;
 
@@ -501,16 +484,21 @@
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-    };
-
+        };
+        
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        // await LoadAgencyAccounts();
+    }
 
     async Task SearchAgents()
     {
         // IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies agent = new IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies();
         // agent.Agent.IdNavigation.AgencyLicenseAgents.First().S
     }
+
     private void ToggleMainAddressEditMode()
     {
         mainAddressEditMode = !mainAddressEditMode;

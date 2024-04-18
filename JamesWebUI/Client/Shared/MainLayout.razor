@@ -1,7 +1,9 @@
 ﻿<Theme />
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
+@attribute [Authorize]
 
 <RadzenComponents />
 <RadzenContextMenu/>
@@ -16,17 +18,7 @@
             <RadzenRow>
                 <RadzenColumn Size="5">
                     <RadzenRow>
-                        <RadzenProfileMenu>
-                            <Template>
-                                <RadzenGravatar Email="TUser1@BerkleySurety.com">
-
-                                </RadzenGravatar>
-                            </Template>
-                            <ChildContent>
-                                <RadzenProfileMenuItem Text="My Profile" Path="profile" Icon="account_circle" />
-                                <RadzenProfileMenuItem Text="My Dashboard" Path="" Icon="home" />
-                            </ChildContent>
-                        </RadzenProfileMenu>
+                        <AccessControl />
                     </RadzenRow>
                     <RadzenRow>
                         <RadzenStack Orientation="Orientation.Horizontal">
@@ -137,5 +129,10 @@
         var url = NavigationManager.GetUriWithQueryParameter("theme", $"{value}");
 
         NavigationManager.NavigateTo(url, true);
+    }
+
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        NavigationManager.NavigateToLogout("authentication/logout");
     }
 }

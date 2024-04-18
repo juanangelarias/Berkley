@@ -1,0 +1,233 @@
+﻿@using System.Globalization;
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject JamesClient JamesClient
+
+<Theme />
+
+<RadzenDataGrid TItem="AgencyLicense" Data="@agencyLicenses" @ref="@licenseGrid"
+                Style="border-radius: 10px; height: 300px;" EmptyText="No records to display"
+                AllowSorting="true" Density="Density.Compact" AllowVirtualization="true"
+                AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
+                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single">
+    <Columns>
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false"
+                              Title="Active" Property="IsActive" Width="50px">
+            <Template Context="license">
+                @{
+                    if (license.IsActive)
+                    {
+                        <RadzenIcon Icon="check_circle" IconColor="@Colors.Success" />
+                    }
+                    else
+                    {
+                        <RadzenIcon Icon="cancel" IconColor="@Colors.Danger" />
+                    }
+                }
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenCheckBox @bind-Value="@license.IsActive" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Type="typeof(IEnumerable<String>)"
+                              Filterable="true" FilterValue="@StateFilter" FilterProperty="State" FilterOperator="FilterOperator.Contains"
+                              Title="State" Property="State" Width="100px" SortOrder="SortOrder.Ascending">
+            <Template Context="license">
+                <RadzenText Text="@license.State" />
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenDropDown TValue="string" @ref="stateDropDown" LoadData="LoadStateDropDown" @bind-Value="license.State"
+                                TextProperty="Name" ValueProperty="Code" Style="width:95%" />
+            </EditTemplate>
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@StateFilter" Change="StateFilterChange" 
+                                Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<String>"
+                                Data="@agencyLicenses?.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a?.FirstOrDefault()?.State).ToList()" />
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense"
+                              Title="No Aptmt" Width="100px">
+            <Template Context="license">
+                <RadzenCheckBox Value="license.AppointingState" />
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenCheckBox @bind-Value="license.AppointingState" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Property="LicenseNumber" Width="100px">
+            <Template Context="license">
+                <RadzenText Text="@license.LicenseNumber" />
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenTextBox @bind-Value="license.LicenseNumber" Style="width:95%" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense"
+                              Title="Resident" Width="75px">
+            <Template Context="license">
+                <RadzenCheckBox TValue="bool" Value="license.IsResident" />
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenCheckBox TValue="bool" @bind-Value="license.IsResident" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false"
+                              Title="Insurer" Property="InsurerId" Width="200px">
+            <Template Context="license">
+                <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" LoadData="LoadSelectInsurerDropDown" Style="width:95%"
+                                TextProperty="IdNavigation.FullName" ValueProperty="Id" @bind-Value="@license.InsurerId" />
+            </EditTemplate>
+            <FilterTemplate>
+                <RadzenDropDown @ref="filterInsurerDropDown" TValue="Guid" LoadData="LoadSelectInsurerDropDown" TextProperty="IdNavigation.FullName" ValueProperty="Id" />
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+            <Template Context="license">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(args => EditLicenseRow(license))" @onclick:stopPropagation="true">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(args => DeleteLicenseRow(license))" @onclick:stopPropagation="true">
+                </RadzenButton>
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@((args) => SaveLicenseRow(license))">
+                </RadzenButton>
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" class="my-1 ms-1" Click="@((args) => CancelLicenseEdit(license))">
+                </RadzenButton>
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(args => DeleteLicenseRow(license))">
+                </RadzenButton>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public Guid AgencyId { get; set; }
+
+    private RadzenDataGrid<AgencyLicense> licenseGrid { get; set; }
+    private List<AgencyLicense> agencyLicenses { get; set; }
+    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
+    private RadzenDropDown<Guid> filterInsurerDropDown { get; set; }
+    private RadzenDropDown<string> stateDropDown { get; set; }
+    private RadzenDropDown<string> stateFilterDropDown { get; set; }
+
+    private List<String> StateFilter = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        ThemeService.Initialize(NavigationManager);
+
+        await LoadLicenses();
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadLicenses();
+    }
+    private async Task LoadLicenses()
+    {
+        var result = await JamesClient.GetAgencyLicenses.ExecuteAsync(AgencyId);
+
+        var licensesList = new List<AgencyLicense>();
+        if (result.Data != null)
+        {
+            foreach (var license in result.Data.AgencyLicenses)
+            {
+                licensesList.Add(James.Shared.ThisToThat.ToEntityType<AgencyLicense>(license));
+            }
+            agencyLicenses = licensesList;
+        }
+
+    }
+    private async Task LoadStateDropDown()
+    {
+        var result = await JamesClient.GetAllStates.ExecuteAsync();
+
+        var stateList = new List<State>();
+
+        foreach (var state in result.Data.AllStates)
+        {
+            stateList.Add(James.Shared.ThisToThat.ToEntityType<State>(state));
+        }
+
+        stateDropDown.Data = stateList;
+    }
+    private async Task<List<Insurer>> GetInsurers()
+    {
+        var result = await JamesClient.AllInsurers.ExecuteAsync();
+
+        var insurerList = new List<Insurer>();
+
+        foreach (var insurer in result.Data.AllInsurers)
+        {
+            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
+        }
+        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
+    }
+
+    private async Task LoadSelectInsurerDropDown()
+    {
+        dropSelectInsurer.Data = await GetInsurers();
+    }
+    private async Task LoadInsurerFilterDropDown()
+    {
+        filterInsurerDropDown.Data = await GetInsurers();
+    }
+    async Task EditLicenseRow(AgencyLicense license)
+    {
+        await licenseGrid.EditRow(license);
+    }
+    async Task DeleteLicenseRow(AgencyLicense license)
+    {
+
+    }
+    async Task SaveLicenseRow(AgencyLicense license)
+    {
+        var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
+            {
+                LicenseId = license.Id,
+                AppointingState = license.AppointingState,
+                Appointment = license?.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                Comments = license?.Comments,
+                Expiration = license?.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                InsurerId = license.InsurerId,
+                IsResident = license.IsResident,
+                LicenseNumber = license.LicenseNumber,
+                State = license.State,
+                IsActive = license.IsActive,
+                Termination = license?.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
+            });
+
+        await licenseGrid.UpdateRow(license);
+        await LoadLicenses();
+    }
+    async void CancelLicenseEdit(AgencyLicense license)
+    {
+        licenseGrid.CancelEditRow(license);
+        await LoadLicenses();
+    }
+    void UpdateLicenseRow(AgencyLicense license)
+    {
+        agencyLicenses = agencyLicenses;
+    }
+    async Task StateFilterChange()
+    {
+        if (StateFilter != null && !StateFilter.Any())
+        {
+            StateFilter = null;
+        }
+        await licenseGrid.Reload();
+    }
+
+}

@@ -1,0 +1,145 @@
+﻿@using System.Globalization;
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+@using James.Shared;
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject JamesClient JamesClient
+
+<Theme />
+
+
+<RadzenDataGrid TItem="Agent" Data="@agents" @ref="@agentsGrid" Density="Density.Compact"
+                Style="border-radius: 20px;" EmptyText="No records to display" 
+                SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
+                AllowPaging="true" PageSize="10" AllowSorting="true">
+    <Template Context="agent">
+        <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense"
+                        Style="height:300px;" AllowVirtualization="true"
+                        AllowFiltering="true">
+            <HeaderTemplate>
+                <RadzenPanel Style="width: 100%">
+                    <RadzenRow>
+                        <RadzenColumn>
+                            <RadzenText Text="Name" />
+                        </RadzenColumn>
+                        <RadzenColumn>
+                            <RadzenText Text="@(agent.IdNavigation.GivenName + " " + agent.IdNavigation.MiddleInitial + " " + agent.IdNavigation.FamilyName )" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenPanel>
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Width="125px">
+                    <Template Context="license">
+                        <RadzenText Text="@license.LicenseNumber" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Width="100px">
+                    <Template Context="license">
+                        <RadzenText Text="@license.State" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Resident" Width="125px">
+                    <Template Context="license">
+                        <RadzenCheckBox Value="@license.IsResident" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="125px">
+                    <Template Context="license">
+                        <RadzenCheckBox Value="@license.AppointingState" />
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Insurer">
+                    <Template Context="license">
+                        <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
+                    </Template>
+                    <EditTemplate Context="license">
+                        <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" LoadData="LoadSelectInsurerDropDown" Style="width:95%"
+                                        TextProperty="IdNavigation.FullName" ValueProperty="Id" @bind-Value="@license.InsurerId" />
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn TItem="Agent" Title="First Name" Property="IdNavigation.GivenName" Width="200px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.GivenName" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="MI" Property="IdNavigation.MiddleInitial" Width="75px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.MiddleInitial" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Last Name" Property="IdNavigation.FamilyName" Width="200px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.FamilyName" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="NPN" Property="NationalProducerNumber">
+            <Template Context="agent">
+                <RadzenText Text="@agent.NationalProducerNumber" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+
+@code {
+    [Parameter] public Guid AgencyId { get; set; }
+    private List<Agent> agents { get; set; }
+    private RadzenDataGrid<Agent> agentsGrid { get; set; }
+    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        LoadAgents();
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        LoadAgents();
+    }
+    private async Task LoadAgents()
+    {
+        var result = await JamesClient.GetAgencyAgents.ExecuteAsync(AgencyId);
+
+        if (result.Data.AgencyAgents.Count > 0)
+        {
+            var agentList = new List<Agent>();
+
+            foreach (var agentInAgency in result.Data.AgencyAgents)
+            {
+                agentList.Add(ThisToThat.ToEntityType<Agent>(agentInAgency.Agent));
+            }
+
+            agents = agentList;
+            agentsGrid.Data = agents;
+            agentsGrid.Reload();
+        }
+    }
+    private async Task LoadSelectInsurerDropDown()
+    {
+        dropSelectInsurer.Data = await GetInsurers();
+    }
+    private async Task<List<Insurer>> GetInsurers()
+    {
+        var result = await JamesClient.AllInsurers.ExecuteAsync();
+
+        var insurerList = new List<Insurer>();
+
+        foreach (var insurer in result.Data.AllInsurers)
+        {
+            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
+        }
+        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
+    }
+}

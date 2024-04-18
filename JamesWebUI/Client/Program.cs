@@ -17,9 +17,9 @@ builder.Services.AddHttpClient("JamesAPI", client => client.BaseAddress = new Ur
 
 builder.Services.AddJamesClient(ExecutionStrategy.CacheAndNetwork)
     .ConfigureHttpClient(client =>
-        client.BaseAddress = new Uri("https://localhost:7017/graphql"))
+        client.BaseAddress = new Uri("https://localhost:7017/graphql"))//0
 
-    .ConfigureWebSocketClient(client => client.Uri = new Uri("ws://localhost:7017/graphql"));
+    .ConfigureWebSocketClient(client => client.Uri = new Uri("wss://localhost:7017/graphql"));
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("JamesAPI"));

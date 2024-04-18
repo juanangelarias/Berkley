@@ -1,6 +1,8 @@
 using ApplicationLog;
 using James.Data.Server.Model;
 using JamesWebUI.Client.Components;
+using JamesWebUI.Server.GraphQL;
+using JamesWebUI.Server.GraphQL.Mutations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
@@ -18,8 +20,9 @@ try
     // Add services to the container.
     var builder = WebApplication.CreateBuilder(args);
 
+var auth0Authority = config["Auth0:Authority"]?? "https://dev-auth.wrberkley.auth0.com";
     builder.Services.AddHttpClient("Auth0UserInfo",
-        client => client.BaseAddress = new Uri("https://apps-sbox.wrberkley.auth0.com/"));
+    client => client.BaseAddress = new Uri(auth0Authority));
     builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
         .CreateClient("Auth0UserInfo"));
 
@@ -51,7 +54,10 @@ try
         .AddGraphQLServer()
         .AddQueryType<JamesWebUI.Server.GraphQL.Queries.Query>()
         .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
-        .AddJamesGraphQlTypes();
+    .AddSubscriptionType<Subscription>()
+    .AddJamesGraphQlTypes()
+    .AddMutationConventions()
+    .AddInMemorySubscriptions();
 
     builder.Services.AddCors(options =>
     {
@@ -96,10 +102,12 @@ try
     app.UseStaticFiles();
 
     app.UseRouting();
+app.UseAntiforgery();
 
     app.UseAuthentication();
     app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 
-    app.UseAntiforgery();
+
+app.UseWebSockets();
 
     app.UseCors();
     // Configure the HTTP request pipeline.

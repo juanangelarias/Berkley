@@ -3,12 +3,13 @@
 @using James.Shared.Model
 @using System.Diagnostics
 @inject HttpClient Http
-@attribute [Authorize]
+@* @attribute [Authorize] *@
+@inject LoggingService _logging;
 <h3>User Info</h3>
 
 
 <table>
-@*     <tr>
+    <tr>
         <td>Username</td>
         <td>@SiteUserInfo?.Username</td>
     </tr>
@@ -43,11 +44,11 @@
     <tr>
         <td>Email</td>
         <td>@SiteUserInfo?.Email</td>
-    </tr> *@
+    </tr> 
     <tr>
         <td style="vertical-align: top">AD Groups</td>
         <td>
-            @*@if (null != SiteUserInfo && SiteUserInfo.ActiveDirectoryGroups.Length > 0)
+            @if (null != SiteUserInfo && SiteUserInfo.ActiveDirectoryGroups.Length > 0)
             {
                 <table>
                     @foreach (var group in SiteUserInfo.ActiveDirectoryGroups)
@@ -56,23 +57,45 @@
                     }
                 </table>
             }
-            @(null != SiteUserInfo ? string.Join("<br/>", SiteUserInfo.ActiveDirectoryGroups) : "")*@
+        </td>
+    </tr>
+    //TODO:Remove after testing
+    <tr>
+        <td>
+            <RadzenButton Text="Send Debug Message" Click='() => _logging.LogDebug("Sent by button")'></RadzenButton>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <RadzenButton Text="Send Information Message" Click='() => _logging.LogInformation("Sent by button2")'></RadzenButton>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <RadzenButton Text="Send Warning Message" Click='() => _logging.LogWarning("Sent by button3")'></RadzenButton>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <RadzenButton Text="Send Error Message" Click='() => _logging.LogError("Sent by button4")'></RadzenButton>
         </td>
     </tr>
 </table>
 
 
 @code {
-    // private SiteUserInfo SiteUserInfo;
+    private SiteUserInfo SiteUserInfo;
     private string result;
 
     protected override async Task OnInitializedAsync()
     {
-        //var userinfo = await Http.GetAsync("GetCurrentUserInfo");
-        //Debug.WriteLine(userinfo);
-        //var body = await userinfo.Content.ReadAsStringAsync();
-        //Debug.WriteLine(body);
-        // SiteUserInfo = await Http.GetFromJsonAsync<SiteUserInfo>("/GetCurrentUserInfo");
+        // var userinfo = await Http.GetAsync("GetCurrentUserInfo");
+        // Debug.WriteLine(userinfo);
+        // var body = await userinfo.Content.ReadAsStringAsync();
+        // Debug.WriteLine(body);
+        _logging.LogInformation("Calling /GetCurrentUserInfo from UserInfo.razor");
+
+        SiteUserInfo = await Http.GetFromJsonAsync<SiteUserInfo>("/GetCurrentUserInfo");
         // Debug.WriteLine(SiteUserInfo);
         //TODO: Error handling
     }

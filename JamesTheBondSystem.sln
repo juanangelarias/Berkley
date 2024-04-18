@@ -32,6 +32,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationLog", "..\JAppli
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JamesWebUI.Client.Test", "Tests\JamesWebUI.Client.Test\JamesWebUI.Client.Test.csproj", "{B6DFFAA5-460B-4100-AF21-8FD4BB6316F5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{128D8D2D-3939-43BB-9A8C-72662F2F9338}"
+	ProjectSection(SolutionItems) = preProject
+		DeployDev.cmd = DeployDev.cmd
+		DeployInt.cmd = DeployInt.cmd
+		DeployProd.cmd = DeployProd.cmd
+		DeployTst.cmd = DeployTst.cmd
+		XCopyDeployTemplate.cmd = XCopyDeployTemplate.cmd
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

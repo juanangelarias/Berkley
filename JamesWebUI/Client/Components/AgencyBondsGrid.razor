@@ -1,0 +1,136 @@
+﻿@using System.Globalization;
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+@using James.Shared;
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject JamesClient JamesClient
+
+<Theme />
+
+<RadzenDataGrid TItem="Bond" @ref="@agencyBondGrid" AllowGrouping="true" AllowSorting="true"
+                Style="height: 750px; border-radius: 20px;" AllowColumnResize="true" AllowColumnPicking="true"
+                AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+    <Columns>
+        <RadzenDataGridColumn TItem="Bond" Filterable="true" FilterValue="@StatusFilter" FilterProperty="Status" FilterOperator="FilterOperator.Contains"
+            Title="Status" Property="Status" Width="100px" Type="typeof(IEnumerable<String>)">
+            <Template Context="bond">
+                @{
+                    if (bond.Status.Trim() == "Open")
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenIcon Icon="check_circle" IconColor="@Colors.Success" />
+                            <RadzenText Text="@bond.Status" />
+                        </RadzenStack>
+
+                    }
+                    else
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenIcon Icon="cancel" IconColor="@Colors.Danger" />
+                            <RadzenText Text="@bond.Status" />
+                        </RadzenStack>
+                    }
+                }
+            </Template>
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@StatusFilter" @ref="statusFilterDropDown" Change="StatusFilterChange"
+                                TValue="List<String>" Multiple="true" AllowClear="true"
+                                Data="@agencyBonds.Select(b => b.Status).Distinct().ToList()">
+                    
+                </RadzenDropDown>
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Bond" Title="Bond No." Property="BondNumber" Width="100px" />
+        <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" Width="200px" />
+        <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" Width="200px" SortOrder="SortOrder.Descending" />
+        <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="75px" />
+        <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" FormatString="{0:d}" Width="200px" />
+        <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass" 
+            Filterable="true" FilterValue="@ClassFilter" FilterProperty="BondClass" FilterOperator="FilterOperator.Contains" Type="typeof(IEnumerable<String>)"
+            FormatString="{0:d}" Width="200px">
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@ClassFilter" @ref="classFilterDropDown" Change="ClassFilterChange"
+                                TValue="List<String>" Multiple="true" AllowClear="true"
+                                Data="@agencyBonds.OrderBy(b =>b.BondClass).Select(b => b.BondClass).Distinct().ToList()">
+
+                </RadzenDropDown>
+            </FilterTemplate>    
+        </RadzenDataGridColumn>
+
+
+    </Columns>    
+</RadzenDataGrid>
+
+
+@code {
+    [Parameter] public Guid AgencyId { get; set; }
+
+    private List<Bond> agencyBonds = new List<Bond>();
+    private RadzenDataGrid<Bond> agencyBondGrid;
+    private bool isLoading = false;
+    private List<String> StatusFilter = null;
+    private List<String> ClassFilter = null;
+    private RadzenDropDown<List<String>> statusFilterDropDown { get; set; }
+    private RadzenDropDown<List<String>> classFilterDropDown { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+
+        await LoadAgencyBonds();
+    }
+    private async Task LoadAgencyBonds()
+    {
+        var result = await JamesClient.GetAgencyBonds.ExecuteAsync(AgencyId);
+
+        if (result.Data.AgencyBonds.Count > 0)
+        {
+            var bondList = new List<Bond>();
+            foreach (var bond in result.Data.AgencyBonds)
+            {
+                bondList.Add(ThisToThat.ToEntityType<Bond>(bond));
+            }
+
+            agencyBonds = bondList;
+            agencyBondGrid.Data = bondList;
+            agencyBondGrid.Reload();
+
+
+        }
+    }
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
+    }
+    async Task StatusFilterChange()
+    {
+        if (StatusFilter != null && !StatusFilter.Any())
+        {
+            StatusFilter = null;
+        }
+        await agencyBondGrid.Reload();
+    }
+    async Task ClassFilterChange()
+    {
+        if (ClassFilter != null && !ClassFilter.Any())
+        {
+            ClassFilter = null;
+        }
+        await agencyBondGrid.Reload();
+    }
+}

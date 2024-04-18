@@ -2,26 +2,26 @@
   agencyAccounts(agencyNumber: $agencyNumber){
     accountNum,
     branch,
+    idNavigation{
+      fullName
+    }
     bonds{
       bondNumber,
       bondType{
         bondType
-      },
+      }
       effective,
-      expiration
+      expiration,
+      status
     }
-    idNavigation{
-      fullName,
-      legalEntityAddresses{
-        type,
-        address{
-          address1,
-          city,
-          postalCode,
-          stateCode
-        }
-      }
-      }
+    mainAddress{
+      id,
+      address1,
+      address2,
+      city,
+      stateCode,
+      postalCode
     }
+  }
 
 }

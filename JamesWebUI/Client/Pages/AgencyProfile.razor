@@ -23,12 +23,11 @@
         <RadzenTabs>
             <Tabs>
                 <RadzenTabsItem Text="General Info">
-                    <RadzenPanel AllowCollapse="true">
+                    <RadzenPanel Style="border-radius: 20px;" Collapsed="SummaryView">
                         <FooterTemplate>
-                            <RadzenStack JustifyContent="JustifyContent.Center">
-                                <RadzenButton Icon="arrow" Variant="Variant.Text" />   
+                            <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="width: 100%">
+                                <RadzenButton Icon="expand_less" Variant="Variant.Text" Click="@(() => SummaryView = !SummaryView)" />
                             </RadzenStack>
-
                         </FooterTemplate>
                         <SummaryTemplate>
                             <RadzenRow JustifyContent="JustifyContent.End">
@@ -54,6 +53,11 @@
                                         <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.FullName" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
+                            </RadzenRow>
+                            <RadzenRow>
+                                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="width: 100%">
+                                    <RadzenButton Icon="expand_more" Variant="Variant.Text" Click="@(() => SummaryView = !SummaryView)" />
+                                </RadzenStack>
                             </RadzenRow>
                         </SummaryTemplate>
                         <ChildContent>
@@ -121,13 +125,13 @@
                                             </RadzenRow>
                                             <RadzenRow Gap="2">
                                                 <RadzenColumn Size="12">
-                                                    <RadzenStack Orientation="Orientation.Horizontal">
+                                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
                                                         <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" Value="@agencyToDisplay.W9"
-                                                                            Text="W-9" Style="height: 25px; border-radius: 10px" />
+                                                                            Text="W-9" Style="border-radius: 10px; width: 90px;" Size="ButtonSize.Small" />
                                                         <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success"
-                                                                            Text="Need 1099" Style="height: 25px; border-radius: 10px" />
+                                                                            Text="Need 1099" Style="border-radius: 10px; width: 90px;" Size="ButtonSize.Small" />
                                                         <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" Value="@agencyToDisplay.Nasbp"
-                                                                            Text="NASBP" Style="height: 25px; border-radius: 10px" />
+                                                                            Text="NASBP" Style="border-radius: 10px; width: 90px;" Size="ButtonSize.Small" />
                                                     </RadzenStack>
                                                 </RadzenColumn>
                                             </RadzenRow>
@@ -372,10 +376,10 @@
                         <RadzenTabs>
                             <Tabs>
                                 <RadzenTabsItem Text="Accounts">
-
                                     <AgencyAccountsGrid AgencyNumber="@agencyToDisplay.AgencyNumber" />
                                 </RadzenTabsItem>
                                 <RadzenTabsItem Text="Bonds">
+                                    <AgencyBondsGrid AgencyId="@agencyToDisplay.Id" />
                                 </RadzenTabsItem>
                             </Tabs>
                         </RadzenTabs>
@@ -462,7 +466,7 @@
     private Agency agencyToDisplay = new Agency();
     private Address mainAddress = new Address();
     private Address billingAddress = new Address();
-
+    private bool SummaryView = false;
     IDisposable session;
     RadzenDataGrid<AgencyLicense> licenseGrid;
 

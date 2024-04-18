@@ -11,7 +11,7 @@
 
 <Theme />
 
-<RadzenDataGrid TItem="AgencyLicense" Data="@agencyLicenses" @ref="@licenseGrid"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid"
                 Style="border-radius: 10px; height: 300px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
@@ -91,6 +91,8 @@
                 <RadzenDropDown @ref="filterInsurerDropDown" TValue="Guid" LoadData="LoadSelectInsurerDropDown" TextProperty="IdNavigation.FullName" ValueProperty="Id" />
             </FilterTemplate>
         </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}"/>
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}" />
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="license">
                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(args => EditLicenseRow(license))" @onclick:stopPropagation="true">
@@ -132,14 +134,16 @@
         await base.OnInitializedAsync();
 
         ThemeService.Initialize(NavigationManager);
-        
-        await LoadLicenses();
+
     }
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        await ShowLoading();
-        await LoadLicenses();
+        if (AgencyId != null)
+        {
+            await ShowLoading();
+            await LoadLicenses();
+        }
     }
     private async Task LoadLicenses()
     {
@@ -154,7 +158,8 @@
             }
             agencyLicenses = licensesList;
         }
-
+        licenseGrid.Data = agencyLicenses;
+        await licenseGrid.Reload();
     }
     private async Task LoadStateDropDown()
     {

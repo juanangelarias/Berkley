@@ -7,6 +7,9 @@
     licenseNumber,
     isResident,
     insurerId,
+    appointment,
+    expiration,
+    termination,
     insurer {
       id,
       idNavigation{

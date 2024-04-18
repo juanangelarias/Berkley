@@ -8,18 +8,6 @@
         status,
         w9,
         nasbp,
-        accounts{
-            fullName,
-            accountNum,
-            branch,
-            mainAddress{
-                address1,
-                city,
-                state,
-                postalCode
-
-            }
-        }
         agents{
             fullName,
             givenName,

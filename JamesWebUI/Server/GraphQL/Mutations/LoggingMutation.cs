@@ -1,5 +1,4 @@
 ﻿using James.Shared.Model;
-using Microsoft.Data.SqlClient;
 
 namespace JamesWebUI.Server.GraphQL.Mutations
 {
@@ -13,7 +12,17 @@ namespace JamesWebUI.Server.GraphQL.Mutations
         {
             _logger = logger;
         }
-        public async Task<bool> LogInformation(LogInput input)
+
+        public async Task<bool> LogInformation(int eventId, string message, string details, Severity severity,
+            string category = "General",
+            Dictionary<string, string>? data = null)
+        {
+            return await Log(eventId, message, details, severity, category, null, data);
+        }
+
+        private async Task<bool> Log(int eventId, string message, string details, Severity severity,
+                string category = "General", string? exceptionDetail = null,
+                Dictionary<string, string>? data = null)
         {
             try
             {
@@ -25,26 +34,21 @@ namespace JamesWebUI.Server.GraphQL.Mutations
                 //else
                 //    _logger.Log(LogLevel.Information, new EventId(input.EventId), input.Message);
 #pragma warning disable CS4014
-                Task.Factory.StartNew(() =>
+                await Task.Factory.StartNew(() =>
 #pragma warning restore CS4014
                 {
                     var extraInfo = new Dictionary<string, object>()
                     {
-                        ["Category"] = input.Category ?? "General",
-                        ["Details"] = input.Details
+                        ["Category"] = category,
+                        ["Details"] = details
                     };
-                    if (input is LogExceptionInput lei)
-                    {
-                        if (lei.ExceptionMessage != null)
-                            extraInfo.Add(nameof(lei.ExceptionMessage), lei.ExceptionMessage);
-                        if (lei.ExceptionDetail != null)
-                            extraInfo.Add(nameof(lei.ExceptionDetail), lei.ExceptionDetail);
-                    }
-                    if (input.Data != null)
-                        foreach (var datum in input.Data)
+                    if (!string.IsNullOrEmpty(exceptionDetail))
+                        extraInfo.Add(nameof(exceptionDetail), exceptionDetail);
+                    if (data != null)
+                        foreach (var datum in data)
                             extraInfo.Add(datum.Key, datum.Value);
                     using (_logger.BeginScope(extraInfo))
-                        _logger.Log(GetLogLevel(input.Severity), input.EventId, message: input.Message);
+                        _logger.Log(GetLogLevel(severity), eventId, message: message);
                 });
                 return true;
             }
@@ -53,6 +57,13 @@ namespace JamesWebUI.Server.GraphQL.Mutations
                 _logger.LogError(new EventId(12345, "LoggingFailure"), e, "Exception thrown while logging");
                 return false;
             }
+        }
+
+        public async Task<bool> LogException(int eventId, string message, string exception, Severity severity,
+            string category = "General",
+            Dictionary<string, string>? data = null)
+        {
+            return await Log(eventId, message, exception, severity,exception, category, data);
         }
 
         private static LogLevel GetLogLevel(Severity severity)
@@ -75,26 +86,5 @@ namespace JamesWebUI.Server.GraphQL.Mutations
                     return LogLevel.None;
             }
         }
-
-        public async Task<bool> LogException(LogExceptionInput input)
-        {
-            return await LogInformation(input);
-        }
-    }
-
-    public class LogInput
-    {
-        public int EventId { get; set; }
-        public string Message { get; set; }
-        public string Details { get; set; }
-        public string? Category { get; set; }
-        public Severity Severity { get; set; } = Severity.Error;
-        public Dictionary<string, string>? Data { get; set; }
-    }
-
-    public class LogExceptionInput : LogInput
-    {
-        public string ExceptionMessage { get; set; }
-        public string ExceptionDetail { get; set; }
     }
 }

@@ -62,7 +62,7 @@ namespace JamesWebUI.Server.GraphQL.Mutations
             oldLicense.IsResident = license.IsResident;
             oldLicense.LicenseNumber = license.LicenseNumber;
             oldLicense.State = license.State;
-            oldLicense.Status = license.Status;
+            oldLicense.IsActive = license.IsActive;
             oldLicense.Termination = license.Termination;
 
             ctx.Update(oldLicense);
@@ -94,7 +94,7 @@ namespace JamesWebUI.Server.GraphQL.Mutations
         public bool IsResident { get; set; }
         public string? LicenseNumber { get; set; }
         public string State { get; set; }
-        public string Status { get; set; }
+        public bool IsActive { get; set; }
         public DateOnly? Termination { get; set; }
     }
     

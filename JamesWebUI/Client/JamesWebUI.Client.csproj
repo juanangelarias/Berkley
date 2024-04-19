@@ -17,13 +17,13 @@
     <GraphQL Remove="GraphQL\GetStates.graphql" />
     <GraphQL Remove="GraphQL\Mutations\SetAddress.graphql" />
     <GraphQL Remove="GraphQL\Mutations\SetLicense.graphql" />
+    <GraphQL Remove="GraphQL\Queries\GetAgentByAgentId.graphql" />
     <GraphQL Remove="GraphQL\Queries\GetInsurers.graphql" />
     <GraphQL Remove="GraphQL\SearchAgencies.graphql" />
     <GraphQL Remove="GraphQL\Subscriptions\AddressSubs.graphql" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="GraphQL\ApplicationLogging.graphql" />
     <None Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
   </ItemGroup>
 
@@ -38,10 +38,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <GenerateGraphQLCodeItems Remove="GraphQL\ApplicationLogging.graphql" />
   </ItemGroup>
 
 </Project>

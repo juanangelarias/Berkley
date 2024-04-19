@@ -17,8 +17,9 @@ var config = new ConfigurationBuilder()
 // Add services to the container.
 var builder = WebApplication.CreateBuilder(args);
 
+var auth0Authority = config["Auth0:Authority"]?? "https://dev-auth.wrberkley.auth0.com";
 builder.Services.AddHttpClient("Auth0UserInfo",
-    client => client.BaseAddress = new Uri("https://apps-sbox.wrberkley.auth0.com/"));
+    client => client.BaseAddress = new Uri(auth0Authority));
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("Auth0UserInfo"));
 
@@ -96,10 +97,10 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseAntiforgery();
 
 app.UseAuthentication();
 app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 
-app.UseAntiforgery();
 
 app.UseWebSockets();
 

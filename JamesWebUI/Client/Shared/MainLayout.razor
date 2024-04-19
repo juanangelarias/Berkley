@@ -1,7 +1,9 @@
 ﻿<Theme />
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
+@attribute [Authorize]
 
 <RadzenComponents />
 <RadzenContextMenu/>
@@ -16,18 +18,7 @@
             <RadzenRow>
                 <RadzenColumn Size="5">
                     <RadzenRow>
-                        <RadzenProfileMenu>
-                            <Template>
-                                <RadzenGravatar Email="TUser1@BerkleySurety.com">
-
-                                </RadzenGravatar>
-                            </Template>
-                            <ChildContent>
-                                <RadzenProfileMenuItem Text="My Profile" Path="profile" Icon="account_circle" />
-                                <RadzenProfileMenuItem Text="My Dashboard" Path="" Icon="home" />
-                                <RadzenProfileMenuItem Text="Logout" />
-                            </ChildContent>
-                        </RadzenProfileMenu>
+                        <AccessControl />
                     </RadzenRow>
                     <RadzenRow>
                         <RadzenStack Orientation="Orientation.Horizontal">
@@ -129,8 +120,8 @@
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-    };
-
+        };
+        
     }
 
     void ChangeTheme(object value)
@@ -140,4 +131,8 @@
         NavigationManager.NavigateTo(url, true);
     }
 
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        NavigationManager.NavigateToLogout("authentication/logout");
+    }
 }

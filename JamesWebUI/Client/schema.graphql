@@ -468,24 +468,19 @@ input SetLicenseInput {
   termination: Date
 }
 
-input LogInput {
-  eventId: Int!
-  message: String!
-  details: String!
-  category: String
-  severity: Severity!
-  data: [KeyValuePairOfStringAndStringInput!]
+enum Severity {
+  UNSET
+  VERBOSE
+  DEBUG
+  INFORMATION
+  WARNING
+  ERROR
+  FATAL
 }
 
-input LogExceptionInput {
-  exceptionMessage: String!
-  exceptionDetail: String!
-  eventId: Int!
-  message: String!
-  details: String!
-  category: String
-  severity: Severity!
-  data: [KeyValuePairOfStringAndStringInput!]
+input KeyValuePairOfStringAndStringInput {
+  key: String!
+  value: String!
 }
 
 type LegalEntity {
@@ -642,6 +637,55 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type VoidedBond {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  bondNumber: String!
+  agencyId: UUID!
+  comments: String
+  voidedBy: UUID!
+  agency: Agency!
+  voidedByNavigation: UserProfile!
+}
+
+type WorkInProgressJob {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  wipdate: Date!
+  jobNumber: String!
+  description: String!
+  bondNumber: String
+  contractPrice: Long!
+  estimatedCost: Long!
+  estimatedGrossProfit: Long!
+  percentComplete: Float!
+  earnedRevenue: Long!
+  costToDate: Long!
+  grossProfit: Long!
+  grossProfitPercent: Decimal
+  progressBillings: Long
+  underBillings: Long!
+  overBillings: Long!
+  revenueRemaining: Long!
+  costToComplete: Long!
+  totalEstimatedGrossProfit: Long!
+  jobStatus: String!
+  enteredContractPrice: Long
+  enteredEstimatedCost: Long
+  enteredCostToDate: Long
+  enteredProgressBillings: Long
+  otherJobsContractPrice: Long
+  otherJobsEstimatedCost: Long
+  otherJobsCostToDate: Long
+  otherJobsProgressBillings: Long
+  accountNumNavigation: Account!
+  bondNumberNavigation: Bond
+  workInProgressSummary: WorkInProgressSummary!
 }
 
 type Underwriter {
@@ -1159,55 +1203,6 @@ type BondHold {
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
-type WorkInProgressJob {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  wipdate: Date!
-  jobNumber: String!
-  description: String!
-  bondNumber: String
-  contractPrice: Long!
-  estimatedCost: Long!
-  estimatedGrossProfit: Long!
-  percentComplete: Float!
-  earnedRevenue: Long!
-  costToDate: Long!
-  grossProfit: Long!
-  grossProfitPercent: Decimal
-  progressBillings: Long
-  underBillings: Long!
-  overBillings: Long!
-  revenueRemaining: Long!
-  costToComplete: Long!
-  totalEstimatedGrossProfit: Long!
-  jobStatus: String!
-  enteredContractPrice: Long
-  enteredEstimatedCost: Long
-  enteredCostToDate: Long
-  enteredProgressBillings: Long
-  otherJobsContractPrice: Long
-  otherJobsEstimatedCost: Long
-  otherJobsCostToDate: Long
-  otherJobsProgressBillings: Long
-  accountNumNavigation: Account!
-  bondNumberNavigation: Bond
-  workInProgressSummary: WorkInProgressSummary!
-}
-
-type VoidedBond {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  bondNumber: String!
-  agencyId: UUID!
-  comments: String
-  voidedBy: UUID!
-  agency: Agency!
-  voidedByNavigation: UserProfile!
-}
-
 type AccountProgram {
   id: UUID!
   created: DateTime!
@@ -1556,21 +1551,6 @@ type WatchStatusDm {
   accounts: [Account!]!
 }
 
-enum Severity {
-  UNSET
-  VERBOSE
-  DEBUG
-  INFORMATION
-  WARNING
-  ERROR
-  FATAL
-}
-
-input KeyValuePairOfStringAndStringInput {
-  key: String!
-  value: String!
-}
-
 type AccountReference {
   id: UUID!
   created: DateTime!
@@ -1890,29 +1870,6 @@ type AccountProgramStatusHistory {
   accountProgram: AccountProgram!
 }
 
-type WorkInProgressSummary {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  wipdate: Date!
-  contractPrice: Long!
-  estimatedCost: Long!
-  estimatedGrossProfit: Long!
-  percentComplete: Float!
-  earnedRevenue: Long!
-  costToDate: Long!
-  grossProfit: Long!
-  grossProfitPercent: Decimal
-  progressBillings: Long
-  underBillings: Long!
-  overBillings: Long!
-  revenueRemaining: Long!
-  costToComplete: Long!
-  totalEstimatedGrossProfit: Long!
-  workInProgressJobs: [WorkInProgressJob!]!
-}
-
 type SurchargeTypeDm {
   id: UUID!
   created: DateTime!
@@ -2023,9 +1980,6 @@ type BidResultDm {
   bondRequests: [BondRequest!]!
 }
 
-"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
-scalar Long
-
 type Sfaa {
   id: UUID!
   created: DateTime!
@@ -2062,9 +2016,6 @@ type EmailActionDm {
   emailHistories: [EmailHistory!]!
 }
 
-"The built-in `Decimal` scalar type."
-scalar Decimal
-
 type Sicratio {
   id: UUID!
   created: DateTime!
@@ -2098,6 +2049,35 @@ type Employee {
   underwriterIdNavigation: Underwriter
   underwriterReportsToNavigations: [Underwriter!]!
 }
+
+type WorkInProgressSummary {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  wipdate: Date!
+  contractPrice: Long!
+  estimatedCost: Long!
+  estimatedGrossProfit: Long!
+  percentComplete: Float!
+  earnedRevenue: Long!
+  costToDate: Long!
+  grossProfit: Long!
+  grossProfitPercent: Decimal
+  progressBillings: Long
+  underBillings: Long!
+  overBillings: Long!
+  revenueRemaining: Long!
+  costToComplete: Long!
+  totalEstimatedGrossProfit: Long!
+  workInProgressJobs: [WorkInProgressJob!]!
+}
+
+"The built-in `Decimal` scalar type."
+scalar Decimal
+
+"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
+scalar Long
 
 type SicratioTypeDm {
   id: UUID!
@@ -2160,11 +2140,25 @@ type SetLicensePayload {
 }
 
 input LogInformationInput {
-  input: LogInput!
+  eventId: Int!
+  message: String!
+  details: String!
+  severity: Severity!
+  category: String! = "General"
+  data: [KeyValuePairOfStringAndStringInput!]
 }
 
 type LogInformationPayload {
   boolean: Boolean
+}
+
+input LogExceptionInput {
+  eventId: Int!
+  message: String!
+  exception: String!
+  severity: Severity!
+  category: String! = "General"
+  data: [KeyValuePairOfStringAndStringInput!]
 }
 
 type LogExceptionPayload {

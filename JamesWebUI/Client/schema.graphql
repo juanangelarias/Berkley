@@ -16,8 +16,9 @@ type Query {
   accountOnly(accountNumber: String): Account
   searchAgencies(stringToSearch: String): [Agency!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
-  agencyAgents(agencyId: UUID!): [AgentsInAgency!]!
+  agencyAccounts(agencyNumber: String!): [Account!]!
   agencyBonds(agencyId: UUID!): [Bond!]!
+  agencyAgents(agencyId: UUID!): [AgentsInAgency!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
   agentByAgentId(agentId: UUID!): Agent!
@@ -186,6 +187,22 @@ type AgencyLicense {
   insurer: Insurer!
 }
 
+type AgentsInAgency {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  agentId: UUID!
+  agencyId: UUID!
+  attorneyInFact: Boolean!
+  portalUser: Boolean!
+  active: Boolean!
+  comments: String
+  agency: Agency!
+  agent: Agent!
+}
+
+scalar UUID
+
 type Bond {
   id: UUID!
   created: DateTime!
@@ -269,22 +286,6 @@ type Bond {
   agency: LegalEntity!
   obligee: LegalEntity
   responsibleParty: LegalEntity
-}
-
-scalar UUID
-
-type AgentsInAgency {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  agentId: UUID!
-  agencyId: UUID!
-  attorneyInFact: Boolean!
-  portalUser: Boolean!
-  active: Boolean!
-  comments: String
-  agency: Agency!
-  agent: Agent!
 }
 
 type Agency {
@@ -433,9 +434,9 @@ type Account {
   underwriterRecommendations: [UnderwriterRecommendation!]!
   watchStatusNavigation: WatchStatusDm!
   workInProgressJobs: [WorkInProgressJob!]!
+  mainAddress: Address
   agency: Agency
   fullName: String!
-  mainAddress: Address
   addresses: [LegalEntityAddress!]!
   mainPhoneNumber: PhoneNumber
   phoneNumbers: [LegalEntityPhone!]!

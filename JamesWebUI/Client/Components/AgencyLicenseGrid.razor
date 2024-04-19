@@ -11,11 +11,19 @@
 
 <Theme />
 
-<RadzenDataGrid TItem="AgencyLicense" Data="@agencyLicenses" @ref="@licenseGrid"
-                Style="border-radius: 10px; height: 300px;" EmptyText="No records to display"
-                AllowSorting="true" Density="Density.Compact" AllowVirtualization="true"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" RowRender="OnRowRender"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
+                AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
-                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single">
+                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single"
+                IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <RadzenButton Icon="delete" Size="ButtonSize.Small" Variant="Variant.Text"/>
+            <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" />
+            
+        </RadzenStack>
+    </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false"
                               Title="Active" Property="IsActive" Width="50px">
@@ -23,7 +31,7 @@
                 @{
                     if (license.IsActive)
                     {
-                        <RadzenIcon Icon="check_circle" IconColor="@Colors.Success" />
+                        <RadzenIcon Icon="check_circle" IconColor="@Colors.Success"  />
                     }
                     else
                     {
@@ -46,7 +54,7 @@
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%" />
             </EditTemplate>
             <FilterTemplate>
-                <RadzenDropDown @bind-Value="@StateFilter" Change="StateFilterChange" 
+                <RadzenDropDown @bind-Value="@StateFilter" Change="StateFilterChange"
                                 Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<String>"
                                 Data="@agencyLicenses?.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a?.FirstOrDefault()?.State).ToList()" />
             </FilterTemplate>
@@ -90,6 +98,8 @@
                 <RadzenDropDown @ref="filterInsurerDropDown" TValue="Guid" LoadData="LoadSelectInsurerDropDown" TextProperty="IdNavigation.FullName" ValueProperty="Id" />
             </FilterTemplate>
         </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}" />
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}" />
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="license">
                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(args => EditLicenseRow(license))" @onclick:stopPropagation="true">
@@ -107,6 +117,9 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </LoadingTemplate>
 </RadzenDataGrid>
 
 @code {
@@ -121,19 +134,23 @@
 
     private List<String> StateFilter = null;
 
+    private bool isLoading = false;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         ThemeService.Initialize(NavigationManager);
 
-        await LoadLicenses();
     }
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
-        await LoadLicenses();
+        if (AgencyId != null)
+        {
+            await ShowLoading();
+            await LoadLicenses();
+        }
     }
     private async Task LoadLicenses()
     {
@@ -148,7 +165,8 @@
             }
             agencyLicenses = licensesList;
         }
-
+        licenseGrid.Data = agencyLicenses;
+        await licenseGrid.Reload();
     }
     private async Task LoadStateDropDown()
     {
@@ -229,5 +247,17 @@
         }
         await licenseGrid.Reload();
     }
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
 
+        await Task.Yield();
+
+        isLoading = false;
+    }
+
+    void OnRowRender(RowRenderEventArgs<AgencyLicense> args)
+    {
+        args.Attributes.Add("style", $"background-color: {(args.Data.IsActive ? "red" : "green")};");
+    }
 }

@@ -10,6 +10,7 @@
         }
         siccode,
         municipality,
-        bondClass
+        bondClass,
+        status
     }
 }

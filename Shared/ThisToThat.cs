@@ -85,6 +85,21 @@ namespace James.Shared
                             $"Destination cannot accept a null value for property {propmatch.dProp.Name}");
                     propmatch.dProp.SetValue(result, dtVal);
                 }
+                else if (new Type[] { typeof(DateTime?), typeof(DateTime) }.Contains(propmatch.sProp.PropertyType)
+                    && new Type[] { typeof(DateOnly?), typeof(DateOnly) }.Contains(propmatch.dProp.PropertyType))
+                {
+                    //Convert DateTime to DateOnly
+                    var val = propmatch.sProp.GetValue(source);
+                    if (null != val)
+                    {
+                        var dateOnlyProperty = DateOnly.FromDateTime((DateTime)val);
+                        
+                        if (null == dateOnlyProperty && propmatch.dProp.PropertyType == typeof(DateOnly))
+                            throw new ArgumentNullException($"{nameof(source)}.{propmatch.sProp.Name}",
+                                $"Destination cannot accept a null value for property {propmatch.dProp.Name}");
+                        propmatch.dProp.SetValue(result, dateOnlyProperty);
+                    }
+                }
                 else
                 {
                     Debug.WriteLine($"Property {propmatch.sProp.Name} skipped because source type was {propmatch.sProp.PropertyType} and destination type was {propmatch.dProp.PropertyType}");

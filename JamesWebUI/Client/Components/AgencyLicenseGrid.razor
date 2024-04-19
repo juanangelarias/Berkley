@@ -11,12 +11,19 @@
 
 <Theme />
 
-<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid"
-                Style="border-radius: 10px; height: 300px;" EmptyText="No records to display"
-                AllowSorting="true" Density="Density.Compact"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" RowRender="OnRowRender"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
+                AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
                 AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single"
                 IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <RadzenButton Icon="delete" Size="ButtonSize.Small" Variant="Variant.Text"/>
+            <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" />
+            
+        </RadzenStack>
+    </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false"
                               Title="Active" Property="IsActive" Width="50px">
@@ -24,7 +31,7 @@
                 @{
                     if (license.IsActive)
                     {
-                        <RadzenIcon Icon="check_circle" IconColor="@Colors.Success" />
+                        <RadzenIcon Icon="check_circle" IconColor="@Colors.Success"  />
                     }
                     else
                     {
@@ -47,7 +54,7 @@
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%" />
             </EditTemplate>
             <FilterTemplate>
-                <RadzenDropDown @bind-Value="@StateFilter" Change="StateFilterChange" 
+                <RadzenDropDown @bind-Value="@StateFilter" Change="StateFilterChange"
                                 Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<String>"
                                 Data="@agencyLicenses?.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a?.FirstOrDefault()?.State).ToList()" />
             </FilterTemplate>
@@ -91,7 +98,7 @@
                 <RadzenDropDown @ref="filterInsurerDropDown" TValue="Guid" LoadData="LoadSelectInsurerDropDown" TextProperty="IdNavigation.FullName" ValueProperty="Id" />
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}"/>
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}" />
         <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}" />
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="license">
@@ -247,5 +254,10 @@
         await Task.Yield();
 
         isLoading = false;
+    }
+
+    void OnRowRender(RowRenderEventArgs<AgencyLicense> args)
+    {
+        args.Attributes.Add("style", $"background-color: {(args.Data.IsActive ? "red" : "green")};");
     }
 }

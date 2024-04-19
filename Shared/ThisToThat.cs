@@ -90,12 +90,15 @@ namespace James.Shared
                 {
                     //Convert DateTime to DateOnly
                     var val = propmatch.sProp.GetValue(source);
-                    var dateOnlyProperty = val?.GetType().GetProperty("DateOnly?");
-                    var doVal = (DateOnly?)dateOnlyProperty?.GetValue(val);
-                    if (null == doVal && propmatch.dProp.PropertyType == typeof(DateOnly))
-                        throw new ArgumentNullException($"{nameof(source)}.{propmatch.sProp.Name}",
-                            $"Destination cannot accept a null value for property {propmatch.dProp.Name}");
-                    propmatch.dProp.SetValue(result, doVal);
+                    if (null != val)
+                    {
+                        var dateOnlyProperty = DateOnly.FromDateTime((DateTime)val);
+                        
+                        if (null == dateOnlyProperty && propmatch.dProp.PropertyType == typeof(DateOnly))
+                            throw new ArgumentNullException($"{nameof(source)}.{propmatch.sProp.Name}",
+                                $"Destination cannot accept a null value for property {propmatch.dProp.Name}");
+                        propmatch.dProp.SetValue(result, dateOnlyProperty);
+                    }
                 }
                 else
                 {

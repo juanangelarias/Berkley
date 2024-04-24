@@ -23,7 +23,7 @@
                     if (bond.Status.Trim() == "Open")
                     {
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenIcon Icon="check_circle" IconColor="@Colors.Success" />
+                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success" />
                             <RadzenText Text="@bond.Status" />
                         </RadzenStack>
 
@@ -31,7 +31,7 @@
                     else
                     {
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenIcon Icon="cancel" IconColor="@Colors.Danger" />
+                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger" />
                             <RadzenText Text="@bond.Status" />
                         </RadzenStack>
                     }
@@ -104,7 +104,7 @@
 
             agencyBonds = bondList;
             agencyBondGrid.Data = bondList;
-            agencyBondGrid.Reload();
+            await agencyBondGrid.Reload();
         }
     }
     protected async Task ShowLoading()

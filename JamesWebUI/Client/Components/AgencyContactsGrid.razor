@@ -100,13 +100,13 @@
     {
         await base.OnInitializedAsync();
 
-        LoadAgents();
+        await LoadAgents();
     }
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        LoadAgents();
+        await LoadAgents();
     }
     private async Task LoadAgents()
     {

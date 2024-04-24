@@ -106,7 +106,7 @@
 
             agencyAccounts = accountList;
             agencyAccountGrid.Data = accountList;
-            agencyAccountGrid.Reload();
+            await agencyAccountGrid.Reload();
         }
     }
     protected async Task ShowLoading()

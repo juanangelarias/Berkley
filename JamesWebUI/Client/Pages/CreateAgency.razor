@@ -4,130 +4,219 @@
 @using JamesWebUI.Client.Controls.Extensions;
 @using JamesWebUI.Client.GraphQL;
 @using JamesWebUI.Client.GraphQL.Components;
+@using James.Shared;
 @using StrawberryShake;
 
 @inherits LayoutComponentBase
 
+@inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
 @inject JamesClient JamesClient
 
 <Theme />
-
+<PageTitle>Create Agency</PageTitle>
 <RadzenPanel>
     <HeaderTemplate>
         <h4>Create New Agency</h4>
     </HeaderTemplate>
     <ChildContent>
-        <RadzenRow>
-            <RadzenColumn Size="7">
-                <RadzenFieldset>
-                    <HeaderTemplate>
-                        <b>General Info</b>
-                    </HeaderTemplate>
-                    <ChildContent>
-                        <RadzenStack Orientation="Orientation.Vertical">
-                            <RadzenRow>
-                                <RadzenColumn>
-                                    <RadzenFormField Text="Name" Variant="Variant.Filled" Style="width:100%">
-                                        <RadzenTextBox Placeholder="Name" />
+        <RadzenTemplateForm TItem="NewAgency" Data="@newAgency" Submit="@(async (NewAgency args) => { await OnSubmit(args);})" InvalidSubmit="InvalidSubmit">
+            <RadzenRow>
+                <RadzenColumn Size="7">
+                    <RadzenFieldset>
+                        <HeaderTemplate>
+                            <b>General Info</b>
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <RadzenStack Orientation="Orientation.Vertical">
+                                <RadzenRow>
+                                    <RadzenColumn>
+                                        <RadzenFormField Text="Agency Name" Variant="Variant.Outlined" Style="width:100%" AllowFloatingLabel="false">
+                                            <ChildContent>
+                                                <RadzenTextBox @bind-Value="@newAgency.AgencyName" Name="AgencyName" />
+                                            </ChildContent>
+                                            <Helper>
+                                                <RadzenRequiredValidator Component="AgencyName" Text="Agency Name is required." Style="position:absolute;" />
+                                            </Helper>
+                                        </RadzenFormField>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="3">
+                                        <RadzenFormField Text="Branch" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                            <ChildContent>
+                                                <RadzenDropDown Data="@allBranches" Name="NewAgencyBranch" @bind-Value="@newAgency.Branch" />
+                                            </ChildContent>
+                                            <Helper>
+                                                <RadzenRequiredValidator Component="NewAgencyBranch" Text="Branch is required." />
+                                            </Helper>
+                                        </RadzenFormField>
+                                    </RadzenColumn>
+                                </RadzenRow>
+                                <RadzenFormField Text="Address" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                    <ChildContent>
+                                        <RadzenTextBox Name="MainAddress1" @bind-Value="@newAgency.MainAddress.Address1" />
+                                    </ChildContent>
+                                    <Helper>
+                                        <RadzenRequiredValidator Component="MainAddress1" Text="Address is required." />
+                                    </Helper>
+                                </RadzenFormField>
+                                <RadzenFormField Text="Address 2" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                    <ChildContent>
+                                        <RadzenTextBox Name="MainAddress2" @bind-Value="@newAgency.MainAddress.Address2" />
+                                    </ChildContent>
+                                </RadzenFormField>
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <RadzenFormField Text="City" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <ChildContent>
+                                            <RadzenTextBox Name="MainAddressCity" @bind-Value="@newAgency.MainAddress.City" />
+                                        </ChildContent>
+                                        <Helper>
+                                            <RadzenRequiredValidator Component="MainAddressCity" Text="City is required." />
+                                        </Helper>
                                     </RadzenFormField>
-                                </RadzenColumn>
-                                <RadzenColumn Size="3">
-                                    <RadzenFormField Text="Branch" Variant="Variant.Filled">
-                                        <BranchRadzenDropDown MultiSelect="false" />
+                                    <RadzenFormField Text="State" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <ChildContent>
+                                        <RadzenDropDown Name="MainAddressState" @bind-Value="@newAgency.MainAddress.StateCode" />
+                                        </ChildContent>
+                                        <Helper>
+                                            <RadzenRequiredValidator Component="MainAddressState" Text="State is required." />
+                                        </Helper>
                                     </RadzenFormField>
-                                </RadzenColumn>
-                            </RadzenRow>
-                            <RadzenFormField Text="Address" Variant="Variant.Filled">
-                                <RadzenTextBox Placeholder="Address" />
-                            </RadzenFormField>
-                            <RadzenFormField Text="Address 2" Variant="Variant.Filled">
-                                <RadzenTextBox />
-                            </RadzenFormField>
-                            <RadzenStack Orientation="Orientation.Horizontal">
-                                <RadzenFormField Text="City" Variant="Variant.Filled">
+                                    <RadzenFormField Text="Postal Code" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <ChildContent>
+                                            <RadzenTextBox Name="MainAddressPostalCode" @bind-Value="@newAgency.MainAddress.PostalCode" />
+                                        </ChildContent>
+                                        <Helper>
+                                            <RadzenRequiredValidator Component="MainAddressPostalCode" Text="Postal Code is required." />
+                                        </Helper>
+                                    </RadzenFormField>
+                                </RadzenStack>
+                                <RadzenFormField Text="Phone" Variant="Variant.Outlined" AllowFloatingLabel="false">
                                     <RadzenTextBox />
                                 </RadzenFormField>
-                                <RadzenFormField Text="State" Variant="Variant.Filled">
-                                    <StateRadzenDropDown MultiSelect="false" />
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <RadzenFormField Text="Tax ID" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <RadzenTextBox />
+                                    </RadzenFormField>
+                                    <RadzenFormField Text="Parent No." Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <RadzenTextBox />
+                                    </RadzenFormField>
+                                </RadzenStack>
+                            </RadzenStack>
+                        </ChildContent>
+                    </RadzenFieldset>
+                    <RadzenFieldset>
+                        <HeaderTemplate>
+                            <b>Billing Address</b>
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <RadzenStack Orientation="Orientation.Vertical">
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <RadzenCheckBox Name="chkUseStreetAddress" @bind-Value="@sameAddress" />
+                                    <RadzenLabel Text="Billing Address is the same as Agency Address." Component="chkUseStreetAddress" />
+                                </RadzenStack>
+                                <RadzenFormField Text="Address 1" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                    <RadzenTextBox Disabled="@sameAddress" />
                                 </RadzenFormField>
-                                <RadzenFormField Text="Postal Code" Variant="Variant.Filled">
-                                    <RadzenTextBox />
+                                <RadzenFormField Text="Address 2" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                    <RadzenTextBox Disabled="@sameAddress" />
+                                </RadzenFormField>
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <RadzenFormField Text="City" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <RadzenTextBox Disabled="@sameAddress" />
+                                    </RadzenFormField>
+                                    <RadzenFormField Text="State" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <StateRadzenDropDown MultiSelect="false" Disabled="@sameAddress" />
+                                    </RadzenFormField>
+                                    <RadzenFormField Text="Postal Code" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <RadzenTextBox Disabled="@sameAddress" />
+                                    </RadzenFormField>
+                                </RadzenStack>
+                                <RadzenFormField Text="Email" Variant="Variant.Outlined" AllowFloatingLabel="false" @bind-Value="@newAgency.Email">
+                                    <RadzenTextBox Name="Email" />
+                                    <RadzenRequiredValidator Component="Email" Text="Email is required." />
+                                    <RadzenEmailValidator Component="Email" Text="Provide a valid email address." Style="position:absolute" />
                                 </RadzenFormField>
                             </RadzenStack>
-                            <RadzenFormField Text="Phone" Variant="Variant.Filled">
-                                <RadzenTextBox />
-                            </RadzenFormField>
-                            <RadzenStack Orientation="Orientation.Horizontal">
-                                <RadzenFormField Text="Tax ID" Variant="Variant.Filled">
-                                    <RadzenTextBox />
-                                </RadzenFormField>
-                                <RadzenFormField Text="Parent No." Variant="Variant.Filled">
-                                    <RadzenTextBox />
-                                </RadzenFormField>
-                            </RadzenStack>
-                        </RadzenStack>
-                    </ChildContent>
-                </RadzenFieldset>
-                <RadzenFieldset>
-                    <HeaderTemplate>
-                        <b>Invoice Address</b>
-                    </HeaderTemplate>
-                    <ChildContent>
-                        <RadzenStack Orientation="Orientation.Vertical">
-                            <RadzenFormField Text="Address 1" Variant="Variant.Filled">
-                                <RadzenTextBox />
-                            </RadzenFormField>
-                            <RadzenFormField Text="Address 2" Variant="Variant.Filled">
-                                <RadzenTextBox />
-                            </RadzenFormField>
-                            <RadzenStack Orientation="Orientation.Horizontal">
-                                <RadzenFormField Text="City" Variant="Variant.Filled">
-                                    <RadzenTextBox />
-                                </RadzenFormField>
-                                <RadzenFormField Text="State" Variant="Variant.Filled">
-                                    <StateRadzenDropDown MultiSelect="false" />
-                                </RadzenFormField>
-                                <RadzenFormField Text="Postal Code" Variant="Variant.Filled">
-                                    <RadzenTextBox />
+                        </ChildContent>
+                    </RadzenFieldset>
+                    <RadzenFieldset>
+                        <HeaderTemplate>
+                            <b>Errors & Omissions Coverage</b>
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <RadzenStack Orientation="Orientation.Vertical">
+                                <RadzenStack Orientation="Orientation.Horizontal">
+                                    <RadzenFormField Text="Carrier" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <ChildContent>
+                                            <RadzenDropDown Name="EandOCarrier" @bind-Value="@newAgency.EandOCarrier" />
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                    <RadzenFormField Text="Exp Date" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                        <RadzenDatePicker TValue="System.DateOnly?" @bind-Value="@newAgency.EandOExpirationDate" />
+                                    </RadzenFormField>
+                                </RadzenStack>
+                                <RadzenFormField Text="Limit of Coverage" Variant="Variant.Outlined" AllowFloatingLabel="false">
+                                    <RadzenNumeric TValue="int?" @bind-Value="@newAgency.EandOLimitOfCoverage" />
                                 </RadzenFormField>
                             </RadzenStack>
-                            <RadzenFormField Text="Email" Variant="Variant.Filled">
-                                <RadzenTextBox />
-                            </RadzenFormField>
-                        </RadzenStack>
-                    </ChildContent>
-                </RadzenFieldset>
-                <RadzenFieldset>
-                    <HeaderTemplate>
-                        <b>Errors & Omissions Coverage</b>
-                    </HeaderTemplate>
-                    <ChildContent>
-                        <RadzenStack Orientation="Orientation.Vertical">
-                            <RadzenStack Orientation="Orientation.Horizontal">
-                                <RadzenFormField Text="Carrier" Variant="Variant.Filled">
-                                    <RadzenTextBox />
-                                </RadzenFormField>
-                                <RadzenFormField Text="Exp Date" Variant="Variant.Filled">
-                                    <RadzenDatePicker TValue="System.DateOnly" />
-                                </RadzenFormField>
-                            </RadzenStack>
-                            <RadzenFormField Text="Limit of Coverage" Variant="Variant.Filled">
-                                <RadzenNumeric TValue="int" />
-                            </RadzenFormField>
-                        </RadzenStack>
-                    </ChildContent>
-                </RadzenFieldset>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow JustifyContent="JustifyContent.End">
-            <RadzenButton Text="Cancel" />
-            <RadzenButton Text="Create Agency" />
-        </RadzenRow>
+                        </ChildContent>
+                    </RadzenFieldset>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenButton Text="Cancel" />
+                <RadzenButton Text="Create Agency" ButtonType="ButtonType.Submit" />
+            </RadzenRow>
+        </RadzenTemplateForm>
     </ChildContent>
 </RadzenPanel>
 
 @code {
+    private bool sameAddress { get; set; } = false;
+    private List<Branch> allBranches { get; set; } = new List<Branch>();
+    private NewAgency newAgency { get; set; } = new NewAgency();
 
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        //TODO: Load Drop Downs
+        await LoadBranches();
+    }
+    async Task OnSubmit(NewAgency newAgency)
+    {
+        //TODO: Validate
+    }
+    async Task InvalidSubmit()
+    {
+
+    }
+    async Task LoadBranches()
+    {
+        if (allBranches.Count == 0)
+        {
+            var result = await JamesClient.GetBranches.ExecuteAsync();
+
+            foreach (var branch in result?.Data?.Branches)
+            {
+                allBranches.Add(ThisToThat.ToEntityType<Branch>(branch));
+            }
+        }
+    }
+    public class NewAgency
+    {
+        public string? AgencyName { get; set; }
+        public string? Branch { get; set; }
+        public Address? MainAddress { get; set; } = new Address();
+        public Address? BillingAddress { get; set; } = new Address();
+        public string? Email { get; set; }
+        public PhoneNumber MainPhoneNumber { get; set; } = new PhoneNumber();
+        public string? TaxId { get; set; }
+        public string? ParentNumber { get; set; }
+        public string? EandOCarrier { get; set; }
+        public DateOnly? EandOExpirationDate { get; set; }
+        public int? EandOLimitOfCoverage { get; set; }
+
+    }
 }

@@ -71,8 +71,6 @@
 
     private async Task LoadLicenses()
     {
-        
-
         var result = await JamesClient.AgentByAgentId.ExecuteAsync(Guid.Parse(agentId));
 
         foreach (var license in result.Data.AgentByAgentId.AgencyLicenses)

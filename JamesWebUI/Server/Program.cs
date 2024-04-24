@@ -2,7 +2,6 @@ using ApplicationLog;
 using James.Data.Server.Model;
 using JamesWebUI.Client.Components;
 using JamesWebUI.Server.GraphQL;
-using JamesWebUI.Server.GraphQL.Mutations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
@@ -20,7 +19,7 @@ try
     // Add services to the container.
     var builder = WebApplication.CreateBuilder(args);
 
-var auth0Authority = config["Auth0:Authority"]?? "https://dev-auth.wrberkley.auth0.com";
+    var auth0Authority = config["Auth0:Authority"] ?? "https://dev-auth.wrberkley.auth0.com";
     builder.Services.AddHttpClient("Auth0UserInfo",
     client => client.BaseAddress = new Uri(auth0Authority));
     builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
@@ -52,12 +51,14 @@ var auth0Authority = config["Auth0:Authority"]?? "https://dev-auth.wrberkley.aut
         });
     builder.Services
         .AddGraphQLServer()
+        .AddAuthorization()
         .AddQueryType<JamesWebUI.Server.GraphQL.Queries.Query>()
         .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
-    .AddSubscriptionType<Subscription>()
-    .AddJamesGraphQlTypes()
-    .AddMutationConventions()
-    .AddInMemorySubscriptions();
+        .AddSubscriptionType<Subscription>()
+        .AddJamesGraphQlTypes()
+        .AddMutationConventions()
+        .AddInMemorySubscriptions()
+        ;
 
     builder.Services.AddCors(options =>
     {
@@ -70,16 +71,20 @@ var auth0Authority = config["Auth0:Authority"]?? "https://dev-auth.wrberkley.aut
     });
 
     //Set up logging
-    builder.Logging
+    var loggerBuilder = builder.Logging
+    //builder.Logging
     .AddConsole()
 #if DEBUG
     .AddDebug()
 #endif
-    .AddEventLog(elSettings => elSettings.SourceName = "James")
     .AddSerilog(new LoggerConfiguration()
         .Enrich.WithApplicationInfo(config["ApplicationId"]!, "James")
         .ReadFrom.Configuration(config)
         .CreateLogger());
+    if (OperatingSystem.IsWindows())
+#pragma warning disable CA1416 // Validate platform compatibility
+        loggerBuilder.AddEventLog(elSettings => elSettings.SourceName = "James");
+#pragma warning restore CA1416 // Validate platform compatibility
     builder.Host.UseWindowsService();
 
     var app = builder.Build();
@@ -102,14 +107,16 @@ var auth0Authority = config["Auth0:Authority"]?? "https://dev-auth.wrberkley.aut
     app.UseStaticFiles();
 
     app.UseRouting();
-app.UseAntiforgery();
+    app.UseAntiforgery();
 
     app.UseAuthentication();
     app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 
 
-app.UseWebSockets();
+    app.UseWebSockets();
 
-    app.UseCors();
+    //TODO: Move CORS config to either config file or environment variable
+    app.UseCors(cors => cors.WithOrigins(new[]{"localhost", "usilg01-isd076", "usig01-isd076.wrbts.ads.wrberkley.com" +
+                                                                               ""}));
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {

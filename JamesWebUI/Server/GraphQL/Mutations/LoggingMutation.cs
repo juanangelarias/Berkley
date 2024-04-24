@@ -1,4 +1,7 @@
-﻿using James.Shared.Model;
+﻿using System.Security.Claims;
+using HotChocolate.Authorization;
+using James.Shared.Model;
+using JamesWebUI.Client.Services;
 
 namespace JamesWebUI.Server.GraphQL.Mutations
 {
@@ -64,6 +67,15 @@ namespace JamesWebUI.Server.GraphQL.Mutations
             Dictionary<string, string>? data = null)
         {
             return await Log(eventId, message, exception, severity,exception, category, data);
+        }
+
+        //TODO:Get rid of this after testing
+        [Authorize]
+        public async Task<string> LogUser(ClaimsPrincipal claimsPrincipal)
+        {
+            await LogInformation(LoggingService.MessageEventId.Id, "Logging authenticated user",
+                claimsPrincipal.Identity?.Name ?? "", Severity.Information);
+            return claimsPrincipal.Identity?.Name;
         }
 
         private static LogLevel GetLogLevel(Severity severity)

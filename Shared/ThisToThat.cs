@@ -17,7 +17,7 @@ namespace James.Shared
         public static object ToEntityType(object source, Type destinationType)
         {
             if (null == source) 
-                return null;
+                return null!;
             var dConstructor = destinationType.GetConstructor(Array.Empty<Type>());
             if (dConstructor == null)
                 throw new Exception("Destination type must have a no argument constructor");
@@ -39,7 +39,7 @@ namespace James.Shared
                 {
                     //Object to Object: Try to convert recursively
                     propmatch.dProp.SetValue(result,
-                        ToEntityType(propmatch.sProp.GetValue(source), propmatch.dProp.PropertyType));
+                        ToEntityType(propmatch.sProp.GetValue(source)!, propmatch.dProp.PropertyType));
                 }
                 else if (propmatch.sProp.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
                 {
@@ -48,7 +48,7 @@ namespace James.Shared
                     //HACK: Will fail on multi-argument generic list.  I don't believe they will be encountered in these conversions.
                     var listType = propmatch.sProp.PropertyType.GenericTypeArguments.Single();
                     var dListType = propmatch.dProp.PropertyType.GenericTypeArguments.Single();
-                    var sList = (IEnumerable)propmatch.sProp.GetValue(source);
+                    var sList = (IEnumerable)propmatch.sProp.GetValue(source)!;
                     foreach (var listItem in sList)
                     {
                         list.Add(ToEntityType(listItem, dListType));
@@ -59,15 +59,15 @@ namespace James.Shared
                         var genListType = typeof(List<>);
                         var makeme = genListType.MakeGenericType(propmatch.dProp.PropertyType.GenericTypeArguments);
                         var genList = Activator.CreateInstance(makeme);
-                        var addMethod = genList.GetType().GetMethod("Add");
+                        var addMethod = genList!.GetType().GetMethod("Add");
                         foreach(var item in list)
-                            addMethod.Invoke(genList, new object?[] {item});
+                            addMethod?.Invoke(genList, new object?[] {item});
                         propmatch.dProp.SetValue(result, genList);
                     } else
                     {
                         //HACK: Assumes there will be a constructor that will take an IEnumerable of values.
                         var dListConstructor = propmatch.dProp.PropertyType.GetConstructor(new Type[] {list.GetType()});
-                        var dList = dListConstructor.Invoke(new object?[] { list });
+                        var dList = dListConstructor?.Invoke(new object?[] { list });
                         propmatch.dProp.SetValue(result, dList);
                     }
                 }

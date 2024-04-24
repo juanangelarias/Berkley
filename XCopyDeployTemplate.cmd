@@ -39,18 +39,20 @@ if "%server:~0,5%" neq "wrbts" (
 	ECHO ON
 	sc \\%server:"=% stop JamesTheBondSystem
 
-	ECHO Backing up appsettings.json to "\\%DestPath%%DestinationSubFolder%\appsettings.json"
-	robocopy "\\%DestPath%%DestinationSubFolder%\appsettings.json" \\%DestPath% /w:5 /r:100000
+	ECHO Backing up appsettings.json files to "\\%DestPath%%DestinationSubFolder%\appsettings.json" and "\\%DestPath%%DestinationSubFolder%\client.appsettings.json"
+	robocopy "\\%DestPath%%DestinationSubFolder%\" \\%DestPath%\. appsettings.json /w:5 /r:100000
+	copy /Y "\\%DestPath%%DestinationSubFolder%\wwwroot\appsettings.json" /A \\$DestPath\client.appsettings.json /A
 )
 
 ECHO Copying program files
-robocopy Bin\Debug\%NetVersion%\win-x64\publish "\\%DestPath:"=%%DestinationSubFolder%" /S /ETA /w:5 /r:7 /XO /xf *.vshost.* appsettings.json appsettings.Development.json /xd Migrations
+robocopy Bin\Debug\%NetVersion%\win-x64\publish "\\%DestPath:"=%%DestinationSubFolder%" /MIR /ETA /w:5 /r:7 /XO /xf *.vshost.* appsettings.json appsettings.Development.json /xd Migrations
 REM robocopy wwwroot "\\%DestPath:"=%JamesWebUI.Server\\wwwroot" /S /w:5 /r:7 
 popd
 
 if /I "%server:~0,5%" neq "wrbts" (
-	ECHO Restoring appsettings.json
-	robocopy "\\%DestPath%\appsettings.json" "\\%DestPath%%DestinationSubFolder%" /w:5 /r:100000
+	ECHO Restoring appsettings.json files
+	robocopy "\\%DestPath%\." "\\%DestPath%%DestinationSubFolder%" appsettings.json /w:5 /r:100000
+	copy /Y \\$DestPath\client.appsettings.json /A "\\%DestPath%%DestinationSubFolder%\wwwroot\appsettings.json" /A
 
 	ECHO Restarting Services
 	ECHO Off

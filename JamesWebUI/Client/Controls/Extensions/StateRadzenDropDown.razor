@@ -14,8 +14,8 @@
         @{
             if (MultiSelect)
             {
-                <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="State"
-                        Multiple="true" Chips="true" SelectAllText="Select All"
+                <RadzenDropDown @rendermode="@InteractiveWebAssembly"
+                                Multiple="true" Chips="true" SelectAllText="Select All" Disabled="@Disabled"
                         AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                         TValue="List<IGetAllStates_AllStates>" Data="stateData.AllStates.ToList()"
                         TextProperty="Name">
@@ -23,8 +23,8 @@
             }
             else
             {
-                <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="State"
-                                Multiple="false"
+                <RadzenDropDown @rendermode="@InteractiveWebAssembly"
+                                Multiple="false" Disabled="@Disabled"
                                 AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 TValue="IGetAllStates_AllStates" Data="stateData.AllStates.ToList()"
                                 TextProperty="Name">
@@ -43,6 +43,7 @@
 
 @code {
     [Parameter] public bool MultiSelect { get; set; } = true;
+    [Parameter] public bool Disabled { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {

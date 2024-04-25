@@ -1,0 +1,25 @@
+﻿query agentByAgentId($agentId: UUID!){
+  agentByAgentId(agentId: $agentId){
+    id,
+    givenName,
+    middleInitial,
+    familyName,
+    agencyLicenses{
+      id,
+      appointment,
+      appointingState,
+      comments,
+      termination,
+      isActive,
+      state,
+      created,
+      insurerId,
+      insurer{
+        id,
+        idNavigation{
+          fullName
+        }
+      }
+    }
+  }
+}

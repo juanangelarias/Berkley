@@ -1,0 +1,120 @@
+﻿@using System.Globalization;
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+@using James.Shared;
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject JamesClient JamesClient
+
+<Theme />
+
+
+<RadzenDataGrid TItem="Account" @ref="@agencyAccountGrid" Data="@agencyAccounts" AllowGrouping="true" AllowSorting="true"
+                Style="height: 750px; border-radius: 20px;" AllowColumnResize="true" AllowColumnPicking="true"
+                AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+    <Template Context="account">
+        <RadzenDataGrid Data="account.Bonds" TItem="Bond" Style="height: 300px; border-radius: 15px;">
+            <Columns>
+                <RadzenDataGridColumn TItem="Bond" Title="Bond #" Property="BondNumber" />
+                <RadzenDataGridColumn TItem="Bond" Title="Type" Property="BondType.BondType" />
+                <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" />
+                <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" />
+            </Columns>
+        </RadzenDataGrid>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn TItem="Account" Title="Status" Frozen="true" Width="75px"/>
+        <RadzenDataGridColumn TItem="Account" Title="Account #" Property="AccountNum" Frozen="true" Width="100px"/>
+        <RadzenDataGridColumn TItem="Account" Title="Name" Property="IdNavigation.FullName" Frozen="true" Width="250px" />
+        <RadzenDataGridColumn TItem="Account" Title="Address" Width="250px" Property="MainAddress.Address1">
+            <Template Context="account">
+                <RadzenText Text="@account?.MainAddress?.Address1" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Account" Title="City">
+            <Template Context="account">
+                <RadzenText Text="@account?.MainAddress?.City" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Account" Title="State" Width="100px" Property="MainAddress.StateCode">
+            <Template Context="account">
+                <RadzenText Text="@account?.MainAddress?.StateCode" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Account" Title="Postal Code">
+            <Template Context="account">
+                <RadzenText Text="@account?.MainAddress?.PostalCode" />
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Account" Title="Branch" Property="Branch" Width="125px" />
+        <RadzenDataGridColumn TItem="Account" Title="Bond Count" Width="100px">
+            <Template Context="account">
+                <RadzenText Text="@account.Bonds.Count().ToString()"/>
+            </Template>
+        </RadzenDataGridColumn>
+
+    </Columns>
+    <EmptyTemplate>
+        No Records to Display
+    </EmptyTemplate>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </LoadingTemplate>
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public string AgencyNumber { get; set; }
+
+    private List<Account> agencyAccounts = new List<Account>();
+    private RadzenDataGrid<Account> agencyAccountGrid;
+    private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await ShowLoading();
+
+        await LoadAgencyAccounts();
+
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+
+        await LoadAgencyAccounts();
+
+    }
+
+    private async Task LoadAgencyAccounts()
+    {
+        var result = await JamesClient.AgencyAccounts.ExecuteAsync(AgencyNumber);
+
+        if (result.Data.AgencyAccounts.Count > 0)
+        {
+            var accountList = new List<Account>();
+            foreach (var account in result.Data.AgencyAccounts)
+            {
+                accountList.Add(ThisToThat.ToEntityType<Account>(account));
+            }
+
+            agencyAccounts = accountList;
+            agencyAccountGrid.Data = accountList;
+            await agencyAccountGrid.Reload();
+        }
+    }
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
+    }
+}

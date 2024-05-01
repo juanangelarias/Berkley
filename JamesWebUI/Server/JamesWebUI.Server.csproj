@@ -43,9 +43,5 @@
     <ProjectReference Include="..\Client\JamesWebUI.Client.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 
 </Project>

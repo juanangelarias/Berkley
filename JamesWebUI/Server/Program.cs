@@ -1,7 +1,9 @@
 using ApplicationLog;
 using James.Data.Server.Model;
 using JamesWebUI.Client.Components;
+using JamesWebUI.Server.Controllers;
 using JamesWebUI.Server.GraphQL;
+using JamesWebUI.Server.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
@@ -59,7 +61,8 @@ try
         .AddMutationConventions()
         .AddInMemorySubscriptions()
         ;
-
+    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddHttpContextAccessor();
     builder.Services.AddCors(options =>
     {
         //TODO:  Make settings appropriate for production

@@ -487,12 +487,17 @@
         ThemeService.Initialize(NavigationManager);
 
         notifications = new Notification[]{
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-    };
-
+                        new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
+                        new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
+                        new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
+                        new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
+                };
+        //TODO:Remove after testing
+        var username = await JamesClient.LogUser.ExecuteAsync(new LogUserInput{Message = "From Agency Profile OnInitialized"});
+        Debug.WriteLine("Current user is "+ username.Data?.LogUser.String);
+        //mutation LogUser($input:string){
+        // logUser(input: $input){string}
+        //                }
     }
 
     private static string ErrorToString(IClientError error)

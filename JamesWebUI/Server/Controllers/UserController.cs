@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
-using JamesWebUI.Server.Services;
+using JamesWebUI.Server.SharedServices;
 
 namespace JamesWebUI.Server.Controllers
 {
@@ -12,12 +12,12 @@ namespace JamesWebUI.Server.Controllers
     public class UserController : Controller
     {
         private  ILogger<UserController> _logger;
-        private readonly IUserService _userService;
+        private readonly IUserShared _userShared;
 
-        public UserController(ILogger<UserController> logger, IUserService userService)
+        public UserController(ILogger<UserController> logger, IUserShared userShared)
         {
             _logger = logger;
-            _userService = userService;
+            _userShared = userShared;
         }
 
         [HttpGet("/GetCurrentUserInfo")]
@@ -26,7 +26,7 @@ namespace JamesWebUI.Server.Controllers
             try
             {
                 var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
-                var userInfo = _userService.GetUserInfoAsync(token).Result;
+                var userInfo = _userShared.GetUserInfoAsync(token).Result;
                 Debug.WriteLine($"User info returned: {userInfo}");
                 return new JsonResult(userInfo);
             }

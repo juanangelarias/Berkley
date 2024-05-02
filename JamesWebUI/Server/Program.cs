@@ -61,7 +61,7 @@ try
         .AddMutationConventions()
         .AddInMemorySubscriptions()
         ;
-    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddScoped<IUserShared, UserShared>();
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddCors(options =>
     {

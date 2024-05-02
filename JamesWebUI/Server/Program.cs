@@ -3,7 +3,7 @@ using James.Data.Server.Model;
 using JamesWebUI.Client.Components;
 using JamesWebUI.Server.Controllers;
 using JamesWebUI.Server.GraphQL;
-using JamesWebUI.Server.Services;
+using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Radzen;

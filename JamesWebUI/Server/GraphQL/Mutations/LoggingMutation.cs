@@ -1,7 +1,7 @@
 ﻿using HotChocolate.Authorization;
 using James.Shared.Model;
 using JamesWebUI.Client.Services;
-using JamesWebUI.Server.Services;
+using JamesWebUI.Server.SharedServices;
 
 namespace JamesWebUI.Server.GraphQL.Mutations
 {
@@ -10,12 +10,12 @@ namespace JamesWebUI.Server.GraphQL.Mutations
     public class LoggingMutation
     {
         private readonly ILogger<LoggingMutation> _logger;
-        private readonly IUserService _userService;
+        private readonly IUserShared _userShared;
 
-        public LoggingMutation(ILogger<LoggingMutation> logger, IUserService userService)
+        public LoggingMutation(ILogger<LoggingMutation> logger, IUserShared userShared)
         {
             _logger = logger;
-            _userService = userService;
+            _userShared = userShared;
         }
 
         public async Task<bool> LogInformation(int eventId, string message, string details, Severity severity,
@@ -31,7 +31,7 @@ namespace JamesWebUI.Server.GraphQL.Mutations
         {
             try
             {
-                var username = (await _userService.GetCurrentUser()).Username;
+                var username = (await _userShared.GetCurrentUser()).Username;
 #pragma warning disable CS4014
                 await Task.Factory.StartNew(() =>
 #pragma warning restore CS4014
@@ -70,7 +70,7 @@ namespace JamesWebUI.Server.GraphQL.Mutations
         [Authorize]
         public async Task<string> LogUser(string message = "")
         {
-            var userInfo = await _userService.GetCurrentUser();
+            var userInfo = await _userShared.GetCurrentUser();
             await LogInformation(LoggingService.MessageEventId.Id, string.IsNullOrWhiteSpace(message) ? "Logging authenticated user" : "Logging authenticated user with message " + message,
                 userInfo.Username ?? "", Severity.Information);
             return userInfo.Username ?? "Unknown user" + (string.IsNullOrWhiteSpace(message) ? "" : " " + message);

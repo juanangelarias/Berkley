@@ -5,9 +5,9 @@ using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace JamesWebUI.Server.Services
+namespace JamesWebUI.Server.SharedServices
 {
-    public class UserService : IUserService
+    public class UserShared : IUserShared
     {
         private IHttpClientFactory _httpClientFactory;
         private static HttpClient? _httpClient;
@@ -15,7 +15,7 @@ namespace JamesWebUI.Server.Services
         private IHttpContextAccessor _httpContextAccessor;
         private HttpClient UserInfoClient => _httpClient ??= _httpClientFactory.CreateClient("Auth0UserInfo");
 
-        public UserService(IHttpClientFactory httpClientFactory, ILogger<UserController> logger, IHttpContextAccessor contextAccessor)
+        public UserShared(IHttpClientFactory httpClientFactory, ILogger<UserController> logger, IHttpContextAccessor contextAccessor)
         {
             _httpClientFactory = httpClientFactory;
             _httpClient ??= httpClientFactory.CreateClient("Auth0UserInfo");
@@ -97,7 +97,7 @@ namespace JamesWebUI.Server.Services
         }
     }
 
-    public interface IUserService
+    public interface IUserShared
     {
         //public Task<IAuth0UserInfo> GetAuth0UserInfo(string jwtToken);
         public Task<SiteUserInfo> GetCurrentUser();

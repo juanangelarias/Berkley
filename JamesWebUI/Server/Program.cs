@@ -23,7 +23,7 @@ try
 
     var auth0Authority = config["Auth0:Authority"] ?? "https://dev-auth.wrberkley.auth0.com";
     builder.Services.AddHttpClient("Auth0UserInfo",
-        client => client.BaseAddress = new Uri("https://apps-sbox.wrberkley.auth0.com/"));
+    client => client.BaseAddress = new Uri(auth0Authority));
     builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
         .CreateClient("Auth0UserInfo"));
 
@@ -109,13 +109,13 @@ try
 
     app.UseStaticFiles();
 
-    app.UseRouting();
+app.UseRouting();
 app.UseAntiforgery();
 
     app.UseAuthentication();
     app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 
 
-app.UseWebSockets();
+    app.UseWebSockets();
 
     //TODO: Move CORS config to either config file or environment variable
     app.UseCors(cors => cors.WithOrigins(new[]{"localhost", "usilg01-isd076", "usig01-isd076.wrbts.ads.wrberkley.com" +

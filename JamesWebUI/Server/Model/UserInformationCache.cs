@@ -5,6 +5,16 @@ namespace JamesWebUI.Server.Model
     public class UserInformationCache<T>
     {
         private Dictionary<string, CacheEntry<T>> _cache = new();
+
+        public UserInformationCache()
+        {
+        }
+
+        public UserInformationCache(Func<string, Task<T>>? lookupTask)
+        {
+            LookupTask = lookupTask;
+        }
+
         public TimeSpan CacheDuration { get; set; } = TimeSpan.FromMinutes(20);
         public Func<string, Task<T>>? LookupTask { get; init; }
         public async Task<T?> GetAsync(string key)

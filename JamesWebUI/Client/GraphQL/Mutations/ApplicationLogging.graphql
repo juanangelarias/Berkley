@@ -4,3 +4,6 @@
 mutation LogException($input :LogExceptionInput! ){
   logException(input: $input){boolean}
 }
+mutation LogUser($input:LogUserInput!){
+  logUser(input:$input)  {string}
+}

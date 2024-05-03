@@ -9,7 +9,7 @@ type Mutation {
   setLicense(license: SetLicenseInput!): SetLicensePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
-  logUser: LogUserPayload!
+  logUser(input: LogUserInput!): LogUserPayload!
 }
 
 enum ApplyPolicy {
@@ -2172,6 +2172,10 @@ input LogExceptionInput {
 
 type LogExceptionPayload {
   boolean: Boolean
+}
+
+input LogUserInput {
+  message: String! = ""
 }
 
 type LogUserPayload {

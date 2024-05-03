@@ -100,6 +100,3 @@ a, .btn-link {
         content: var(--blazor-load-percentage-text, "Loading");
     }
 
-.rz-steps-number {
-    display: none !important;
-}

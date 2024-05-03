@@ -3843,8 +3843,8 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Serial)
-                .HasMaxLength(200)
+            entity.Property(e => e.Status)
+                .HasMaxLength(15)
                 .IsUnicode(false);
 
             entity.HasOne(d => d.Insurer).WithMany(p => p.PowerOfAttorneys)
@@ -3853,7 +3853,6 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_PowerOfAttorney_Insurer");
 
             entity.HasOne(d => d.StatusNavigation).WithMany(p => p.PowerOfAttorneys)
-                .HasPrincipalKey(p => p.Id)
                 .HasForeignKey(d => d.Status)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_PowerOfAttorney_PowerOfAttorneyStatusDM");
@@ -3889,16 +3888,16 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.DocumentTypeId).HasColumnName("DocumentTypeID");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Name)
+                .HasMaxLength(30)
+                .IsUnicode(false);
             entity.Property(e => e.Poaid).HasColumnName("POAId");
 
-            entity.HasOne(d => d.DocumentType).WithMany(p => p.PowerOfAttorneyDocumentStatuses)
-                .HasPrincipalKey(p => p.Id)
-                .HasForeignKey(d => d.DocumentTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+            entity.HasOne(d => d.NameNavigation).WithMany(p => p.PowerOfAttorneyDocumentStatuses)
+                .HasForeignKey(d => d.Name)
                 .HasConstraintName("FK_PowerOfAttorneyDocumentStatus_PowerOfAttorneyDocumentNameDM");
 
             entity.HasOne(d => d.Poa).WithMany(p => p.PowerOfAttorneyDocumentStatuses)

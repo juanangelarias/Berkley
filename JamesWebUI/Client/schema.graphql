@@ -21,6 +21,7 @@ type Query {
   agencyAgents(agencyId: UUID!): [AgentsInAgency!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
+  agencyPOAs(agencyId: UUID!): [PowerOfAttorney!]!
   agentByAgentId(agentId: UUID!): Agent!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
   branches: [Branch!]!
@@ -32,25 +33,6 @@ type Query {
 type Subscription {
   onAddressModified: Address!
   onLicenseModified: AgencyLicense!
-}
-
-type Address {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  address1: String!
-  address2: String
-  address3: String
-  city: String!
-  stateCode: String
-  postalCode: String
-  bonds: [Bond!]!
-  branches: [Branch!]!
-  legalEntityAddress: LegalEntityAddress
-  stateCodeNavigation: State
-  state: String!
-  country: String!
-  countryCode: String!
 }
 
 type State {
@@ -155,6 +137,24 @@ type Agent {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type PowerOfAttorney {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  insurerId: UUID!
+  agencyId: UUID!
+  limit: Int
+  serial: String
+  firstIssued: Date
+  currentIssued: Date
+  comments: String
+  status: UUID!
+  insurer: Insurer!
+  onlineBondSystems: [OnlineBondSystem!]!
+  powerOfAttorneyDocumentStatuses: [PowerOfAttorneyDocumentStatus!]!
+  statusNavigation: PowerOfAttorneyStatusDm!
 }
 
 type AgencyStatusDm {
@@ -442,6 +442,25 @@ type Account {
   phoneNumbers: [LegalEntityPhone!]!
   mainEmailAddress: String
   emailAddresses: [LegalEntityEmail!]!
+}
+
+type Address {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  address1: String!
+  address2: String
+  address3: String
+  city: String!
+  stateCode: String
+  postalCode: String
+  bonds: [Bond!]!
+  branches: [Branch!]!
+  legalEntityAddress: LegalEntityAddress
+  stateCodeNavigation: State
+  state: String!
+  country: String!
+  countryCode: String!
 }
 
 input SetAddressInput {
@@ -1011,6 +1030,27 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
+type PowerOfAttorneyStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  status: String!
+  powerOfAttorneys: [PowerOfAttorney!]!
+}
+
+type PowerOfAttorneyDocumentStatus {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  poaid: UUID!
+  requested: Date
+  received: Date
+  documentTypeId: UUID!
+  comments: String
+  documentType: PowerOfAttorneyDocumentNameDm!
+  poa: PowerOfAttorney!
+}
+
 "The `Date` scalar represents an ISO-8601 compliant date type."
 scalar Date
 
@@ -1080,24 +1120,6 @@ type ImagingCategoryTabDivision {
   categoryNavigation: ImagingCategory!
   divisionCodeNavigation: DivisionDm!
   tabNameNavigation: ImagingTab!
-}
-
-type PowerOfAttorney {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  insurerId: UUID!
-  agencyId: UUID!
-  limit: Int!
-  serial: Int!
-  firstIssued: Date
-  currentIssued: Date
-  comments: String
-  status: String!
-  insurer: Insurer!
-  onlineBondSystems: [OnlineBondSystem!]!
-  powerOfAttorneyDocumentStatuses: [PowerOfAttorneyDocumentStatus!]!
-  statusNavigation: PowerOfAttorneyStatusDm!
 }
 
 type Surcharge {
@@ -1878,26 +1900,6 @@ type SurchargeTypeDm {
   surcharges: [Surcharge!]!
 }
 
-type PowerOfAttorneyStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  status: String!
-  powerOfAttorneys: [PowerOfAttorney!]!
-}
-
-type PowerOfAttorneyDocumentStatus {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  poaid: UUID!
-  requested: Date
-  received: Date
-  name: String
-  nameNavigation: PowerOfAttorneyDocumentNameDm
-  poa: PowerOfAttorney!
-}
-
 type ImagingTab {
   id: UUID!
   created: DateTime!
@@ -1937,6 +1939,14 @@ type CommercialRegionDm {
   modified: DateTime!
   region: String!
   profitCenters: [ProfitCenter!]!
+}
+
+type PowerOfAttorneyDocumentNameDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  name: String!
+  powerOfAttorneyDocumentStatuses: [PowerOfAttorneyDocumentStatus!]!
 }
 
 type BidStatusDm {
@@ -2096,14 +2106,6 @@ type DefaultGeneralLedgerAccount {
   accountType: String!
   fundedDebt: Boolean!
   accountClassNavigation: AccountClassDm!
-}
-
-type PowerOfAttorneyDocumentNameDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  name: String!
-  powerOfAttorneyDocumentStatuses: [PowerOfAttorneyDocumentStatus!]!
 }
 
 type AccountStatusDm {

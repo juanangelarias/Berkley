@@ -1,0 +1,84 @@
+﻿@using System.Globalization;
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+@using James.Shared;
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject JamesClient JamesClient
+
+<Theme />
+
+<RadzenDataGrid @ref="poaGrid" TItem="PowerOfAttorney" Data="powerOfAttorneys" 
+    AllowFiltering="true" FilterMode="FilterMode.Simple" Style="height: 500px;"
+AllowSorting="true">
+    <Columns>
+        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Insurer" Property="Insurer.IdNavigation.FullName" Width="300px" >
+            <FilterTemplate>
+                <RadzenDropDown Change="InsurerFilterChange" @bind-Value="@InsurerFilter" AllowClear="true"
+                    Multiple="true" TValue="List<string>" Data="@powerOfAttorneys?.OrderBy(p => p.Insurer.IdNavigation.FullName).GroupBy(p => p.InsurerId).Select(p => p?.FirstOrDefault()?.Insurer.IdNavigation.FullName).ToList()" />
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px"/>
+        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Ref #" Property="Serial" />
+        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" />
+        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}" SortOrder="SortOrder.Descending" />
+    </Columns>    
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public Guid AgencyID { get; set; }
+    private List<PowerOfAttorney> powerOfAttorneys { get; set; }
+    private RadzenDataGrid<PowerOfAttorney> poaGrid { get; set; }
+    private RadzenDropDown<Guid> filterInsurerDropDown { get; set; }
+    private List<String> InsurerFilter = null;
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadPOAs();
+    }
+    private async Task LoadPOAs()
+    {
+        var result = await JamesClient.GetAgencyPOAs.ExecuteAsync(AgencyID);
+
+        if (result.Data.AgencyPOAs.Count > 0)
+        {
+            var poaList = new List<PowerOfAttorney>();
+
+            foreach (var poa in result.Data.AgencyPOAs)
+            {
+                poaList.Add(ThisToThat.ToEntityType<PowerOfAttorney>(poa));
+            }
+
+            powerOfAttorneys = poaList;
+            await poaGrid.Reload();
+        }
+    }
+    private async Task<List<Insurer>> GetInsurers()
+    {
+        var result = await JamesClient.AllInsurers.ExecuteAsync();
+
+        var insurerList = new List<Insurer>();
+
+        foreach (var insurer in result.Data.AllInsurers)
+        {
+            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
+        }
+        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
+    }
+    private async Task LoadInsurerFilterDropDown()
+    {
+        filterInsurerDropDown.Data = await GetInsurers();
+    }
+    async Task InsurerFilterChange()
+    {
+        if (InsurerFilter != null && !InsurerFilter.Any())
+        {
+            InsurerFilter = null;
+        }
+        await poaGrid.Reload();
+    }
+}

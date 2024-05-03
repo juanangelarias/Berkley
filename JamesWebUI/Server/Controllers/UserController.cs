@@ -1,14 +1,10 @@
-﻿using System.Collections;
-using System.Diagnostics;
-using System.DirectoryServices.AccountManagement;
-using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.Versioning;
-using James.Shared.Model;
+﻿using James.Shared.Model;
 using JamesWebUI.Server.Model;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace JamesWebUI.Server.Controllers
 {
@@ -28,18 +24,10 @@ namespace JamesWebUI.Server.Controllers
             _httpClientFactory = httpClientFactory;
             _httpClient ??= httpClientFactory.CreateClient("Auth0UserInfo");
             _logger = logger;
-            CachedAuth0 ??= new UserInformationCache<IAuth0UserInfo> { LookupTask = GetAuth0UserInfo };
-            CachedActiveDirectory ??= new UserInformationCache<IActiveDirectoryUserInfo>
-            {
-                LookupTask = GetActiveDirectoryUserInfoAsync,
-                CacheDuration = TimeSpan.FromHours(9)
-            };
+            _cachedAuth0 ??= new UserInformationCache<IAuth0UserInfo> { LookupTask = GetAuth0UserInfo };
         }
 
-        private static UserInformationCache<IAuth0UserInfo>? CachedAuth0;
-        private static UserInformationCache<IActiveDirectoryUserInfo>? CachedActiveDirectory;
-        //private static UserInformationCache<IApplicationUserInfo>? CachedApplication;
-        private static UserInformationCache<IActiveDirectoryGroupMembership>? CachedActiveDirectoryGroupMembership;
+        private static UserInformationCache<IAuth0UserInfo> _cachedAuth0 = null!;
         private static readonly JwtSecurityTokenHandler _handler = new();
 
         [HttpGet("/GetCurrentUserInfo")]
@@ -51,25 +39,6 @@ namespace JamesWebUI.Server.Controllers
                 var userInfo = GetUserInfoAsync(token).Result;
                 Debug.WriteLine($"User info returned: {userInfo}");
                 return new JsonResult(userInfo);
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine(e);
-                return new JsonResult(e.ToString()) { StatusCode = 500 };
-            }
-        }
-
-        [HttpGet("/GetActiveDirectoryGroupMemebership/{groupName}")]
-        public JsonResult GetActiveDirectoryGroupMemebership(string groupName)
-        {
-            try
-            {
-                //var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
-                //var userInfo = GetUserInfoAsync(token).Result;
-                var groupMembership = CachedActiveDirectoryGroupMembership.GetAsync(groupName).Result;
-                Debug.WriteLine(
-                    $"AD Group Membership returned for {groupMembership.ActiveDirectoryGroup}:\r\n{string.Join("\r\n", groupMembership.Members)}");
-                return new JsonResult(groupMembership);
             }
             catch (Exception e)
             {
@@ -90,7 +59,7 @@ namespace JamesWebUI.Server.Controllers
                 UserInfoClient.DefaultRequestHeaders.Add("Authorization", reqHeaderAuthorization);
                 var userInfo = await UserInfoClient.GetFromJsonAsync<Auth0UserInfo>(userInfoEndpoint);
                 Debug.WriteLine("Returning Auth0 data");
-                return userInfo;
+                return userInfo!;
             }
             catch (Exception ex)
             {
@@ -99,7 +68,7 @@ namespace JamesWebUI.Server.Controllers
             }
         }
 
-        public async Task<SiteUserInfo> GetUserInfoAsync(string JWT)
+        public async Task<SiteUserInfo> GetUserInfoAsync(string jwt)
         {
             _logger.LogDebug("UserInfo request received.");
             
@@ -108,45 +77,27 @@ namespace JamesWebUI.Server.Controllers
             SiteUserInfo siteUserInfo;
             try
             {
-                jwtSecurityToken = _handler.ReadJwtToken(JWT);
+                jwtSecurityToken = _handler.ReadJwtToken(jwt);
                 //var userInfoEndpoint = jwtSecurityToken.Audiences.First(a => a.StartsWith("http"));
 
                 siteUserInfo = new SiteUserInfo
                 {
-                    JWT = JWT,
+                    JWT = jwt,
                     Email = jwtSecurityToken.Claims.FirstOrDefault(c =>
                         c.Type == "http://schemas.wrberkley.com/identity/application/claims/email")?.Value ?? ""
                 };
                 //Call Auth0's 
                 if (UserInfoClient.DefaultRequestHeaders.Authorization != null)
                     UserInfoClient.DefaultRequestHeaders.Remove("Authorization");
-                UserInfoClient.DefaultRequestHeaders.Add("Authorization", "bearer " + JWT);
-                Debug.Assert(CachedAuth0 != null, nameof(CachedAuth0) + " != null");
-                var auth0Info = await CachedAuth0.GetAsync(JWT);
+                UserInfoClient.DefaultRequestHeaders.Add("Authorization", "bearer " + jwt);
+                Debug.Assert(_cachedAuth0 != null, nameof(_cachedAuth0) + " != null");
+                var auth0Info = await _cachedAuth0.GetAsync(jwt);
 
                 //TODO: Do error handling
-                siteUserInfo.FirstName = auth0Info.FirstName;
-                siteUserInfo.LastName = auth0Info.LastName;
-                siteUserInfo.FullName = auth0Info.FullName;
-                siteUserInfo.Username = auth0Info.Username;
-
-                //Query Active Directory and application database (if needed)
-                var adLookup = CachedActiveDirectory.GetAsync(siteUserInfo.Username);
-                //var appLookup = GetApplicationUserInfoAsync(siteUserInfo.Username);
-                var lookupTasks = new Task[]
-                {
-                    adLookup
-                };
-                Task.WaitAll(lookupTasks);
-                var activeDirectoryUserInformation = adLookup.Result;
-                siteUserInfo.ActiveDirectoryGroups = activeDirectoryUserInformation.ActiveDirectoryGroups;
-                //var applicationUserInformation = appLookup.Result;
-                //siteUserInfo.Initials = applicationUserInformation.Initials;
-                //siteUserInfo.IsHomeOfficeApprover = applicationUserInformation.IsHomeOfficeApprover;
-                //siteUserInfo.IsUnderwriter = applicationUserInformation.IsUnderwriter;
-                //siteUserInfo.Title = applicationUserInformation.Title;
-                //TODO: If your application database keeps a different fullname than what is in Auth0, below is where you would update it
-                //siteUserInfo.FullName = applicationUserInformation.FullName?? siteUserInfo.FullName;
+                siteUserInfo.FirstName = auth0Info?.FirstName;
+                siteUserInfo.LastName = auth0Info?.LastName;
+                siteUserInfo.FullName = auth0Info?.FullName;
+                siteUserInfo.Username = auth0Info?.Username;
             }
             catch (Exception e)
             {
@@ -157,95 +108,5 @@ namespace JamesWebUI.Server.Controllers
 
             return siteUserInfo;
         }
-
-        /// <summary>
-        /// Retrieves group information from Active Directory
-        /// </summary>
-        /// <param name="username">User to get group information for</param>
-        /// <returns>A list of all active directory groups the user is a member of</returns>
-        /// <remarks>Getting all groups is hideously slow.  It would be much better to either check membership for a specific set of Groups,
-        ///             or to get and cache a list of all members of the relevant groups.</remarks>
-
-        [SupportedOSPlatform("windows")]
-        public static async Task<IActiveDirectoryUserInfo> GetActiveDirectoryUserInfoAsync(string username)
-        {
-            var result = new List<GroupPrincipal>();
-
-            await Task.Run(() =>
-            {
-                // establish domain context
-                var yourDomain = new PrincipalContext(ContextType.Domain);
-
-                // find your user
-                var user = UserPrincipal.FindByIdentity(yourDomain, username);
-
-                // if found - grab its groups
-                if (user != null)
-                {
-                    var groups = user.GetAuthorizationGroups();
-
-                    // iterate over all groups
-                    foreach (var p in groups)
-                    {
-                        // make sure to add only group principals
-                        if (p is GroupPrincipal)
-                        {
-                            result.Add((GroupPrincipal)p);
-                        }
-                    }
-                }
-            });
-            Debug.WriteLine("Returning AD info");
-            return new ActiveDirectoryUserInformation
-            { Username = username, ActiveDirectoryGroups = result.Select(gp => gp.Name).ToArray() };
-        }
-
-        //public static async Task<IApplicationUserInfo> GetApplicationUserInfoAsync(string username)
-        //{
-        //    //TODO:This should come from the application database.  Simplified mockup for the demo
-        //    await Task.Delay(1);
-        //    return new ApplicationUserInformation
-        //    {
-        //        FullName = "Public, John Q.",
-        //        Initials = "JQP",
-        //        IsHomeOfficeApprover = false,
-        //        IsUnderwriter = true,
-        //        Title = "Example Underwriter",
-        //        Username = username
-        //    };
-        //}
-
-
-        //[SupportedOSPlatform("windows")]
-        //public async Task<IActiveDirectoryGroupMembership> GetActiveDirectoryGroupMembers(string groupName)
-        //{
-        //    var yourDomain = new PrincipalContext(ContextType.Domain);
-        //    GroupPrincipal group;
-        //    var memberList = new List<string>();
-        //    await Task.Run(() =>
-        //    {
-        //        group = GroupPrincipal.FindByIdentity(yourDomain, groupName);
-        //        if (group != null)
-        //        {
-        //            var groupQueue = new Queue<GroupPrincipal>();
-        //            groupQueue.Enqueue(group);
-        //            while (groupQueue.Count > 0)
-        //            {
-        //                var grp = groupQueue.Dequeue();
-        //                foreach (var member in grp.GetMembers())
-        //                {
-        //                    if (member is GroupPrincipal gp)
-        //                        groupQueue.Enqueue(gp);
-        //                    else if (member is UserPrincipal user)
-        //                        memberList.Add(user.UserPrincipalName.Split("@").First());
-        //                    else
-        //                        Debug.WriteLine("Was not expecting type " + member.GetType());
-        //                }
-        //            }
-        //        }
-        //    });
-        //    return new ActiveDirectoryGroupMembership
-        //    { ActiveDirectoryGroup = groupName, Members = memberList.ToArray() };
-        //}
     }
 }

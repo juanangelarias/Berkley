@@ -1,4 +1,7 @@
-﻿using James.Shared.Model;
+﻿using HotChocolate.Authorization;
+using James.Shared.Model;
+using JamesWebUI.Client.Services;
+using JamesWebUI.Server.SharedServices;
 
 namespace JamesWebUI.Server.GraphQL.Mutations
 {
@@ -7,10 +10,12 @@ namespace JamesWebUI.Server.GraphQL.Mutations
     public class LoggingMutation
     {
         private readonly ILogger<LoggingMutation> _logger;
+        private readonly IUserShared _userShared;
 
-        public LoggingMutation(ILogger<LoggingMutation> logger)
+        public LoggingMutation(ILogger<LoggingMutation> logger, IUserShared userShared)
         {
             _logger = logger;
+            _userShared = userShared;
         }
 
         public async Task<bool> LogInformation(int eventId, string message, string details, Severity severity,
@@ -26,13 +31,7 @@ namespace JamesWebUI.Server.GraphQL.Mutations
         {
             try
             {
-
-                //TODO:  Figure out if  User can be gotten and included in log
-                //if (input is LogExceptionInput lei)
-                //    //TODO:  Keep list of event ids?
-                //    _logger.Log(LogLevel.Information, new EventId(input.EventId), input.Message, new Exception(message:lei.ExceptionMessage));
-                //else
-                //    _logger.Log(LogLevel.Information, new EventId(input.EventId), input.Message);
+                var username = (await _userShared.GetCurrentUser()).Username;
 #pragma warning disable CS4014
                 await Task.Factory.StartNew(() =>
 #pragma warning restore CS4014
@@ -42,6 +41,7 @@ namespace JamesWebUI.Server.GraphQL.Mutations
                         ["Category"] = category,
                         ["Details"] = details
                     };
+                    if (null != username) extraInfo.Add("User", username);
                     if (!string.IsNullOrEmpty(exceptionDetail))
                         extraInfo.Add(nameof(exceptionDetail), exceptionDetail);
                     if (data != null)
@@ -63,7 +63,17 @@ namespace JamesWebUI.Server.GraphQL.Mutations
             string category = "General",
             Dictionary<string, string>? data = null)
         {
-            return await Log(eventId, message, exception, severity,exception, category, data);
+            return await Log(eventId, message, exception, severity, exception, category, data);
+        }
+
+        //TODO:Get rid of this after testing
+        [Authorize]
+        public async Task<string> LogUser(string message = "")
+        {
+            var userInfo = await _userShared.GetCurrentUser();
+            await LogInformation(LoggingService.MessageEventId.Id, string.IsNullOrWhiteSpace(message) ? "Logging authenticated user" : "Logging authenticated user with message " + message,
+                userInfo.Username ?? "", Severity.Information);
+            return userInfo.Username ?? "Unknown user" + (string.IsNullOrWhiteSpace(message) ? "" : " " + message);
         }
 
         private static LogLevel GetLogLevel(Severity severity)

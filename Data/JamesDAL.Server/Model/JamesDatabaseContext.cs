@@ -5010,7 +5010,9 @@ public partial class JamesDatabaseContext : DbContext
         OnModelCreatingPartial(modelBuilder); 
         
         if (this._seedSnapshot)
+#pragma warning disable CS4014
             SeedSnapshotData(modelBuilder);
+#pragma warning restore CS4014
         if (this._seedTestData)
             SeedTestData(modelBuilder);
     }

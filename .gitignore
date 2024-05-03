@@ -397,3 +397,5 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /Data/JamesDAL.Server/TempModel
+/.graphqlrc.json
+/schema.graphql

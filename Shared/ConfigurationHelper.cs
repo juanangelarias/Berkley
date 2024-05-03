@@ -1,17 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace James.Shared
 {
     public static class ConfigurationHelper
     {
-        private static IConfigurationRoot _root;
+        private static IConfigurationRoot? _root;
 
         private static IConfigurationRoot GetConfigRoot()
         {
@@ -27,7 +21,7 @@ namespace James.Shared
                 var directoryPaths = assemblyLocations.Select(al=> Path.GetDirectoryName(al)).Where(loc => loc != null).ToArray();
     
                 //Debug.Assert(directoryPath != null);
-                var confileFilePaths = directoryPaths.Select(dp => Path.Combine(dp, "appsettings.json")).ToArray();
+                var confileFilePaths = directoryPaths.Select(dp => Path.Combine(dp!, "appsettings.json")).ToArray();
                 var configFilePath = confileFilePaths.FirstOrDefault(cfp=>File.Exists(cfp));
 
                 if (configFilePath == null)

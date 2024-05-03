@@ -9,6 +9,13 @@ type Mutation {
   setLicense(license: SetLicenseInput!): SetLicensePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
+  logUser(input: LogUserInput!): LogUserPayload!
+}
+
+enum ApplyPolicy {
+  BEFORE_RESOLVER
+  AFTER_RESOLVER
+  VALIDATION
 }
 
 type Query {
@@ -2163,4 +2170,12 @@ input LogExceptionInput {
 
 type LogExceptionPayload {
   boolean: Boolean
+}
+
+input LogUserInput {
+  message: String! = ""
+}
+
+type LogUserPayload {
+  string: String
 }

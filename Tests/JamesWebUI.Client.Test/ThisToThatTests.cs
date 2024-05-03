@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using James.Shared;
+﻿using James.Shared;
 using James.Shared.Model;
 using JamesWebUI.Client.GraphQL;
-using JamesWebUI.Client.Services;
 
 namespace JamesWebUI.Client.Test
 {
@@ -42,21 +34,21 @@ namespace JamesWebUI.Client.Test
                 Assert.Equal(acct.IdNavigation.LegalEntityEmails.ToArray()[i].EmailAddress, entityForm.IdNavigation.LegalEntityEmails.ToArray()[i].EmailAddress);
             }
 
-            Assert.Equal(acct.Agent.IdNavigation.FullName, entityForm.Agent.IdNavigation.FullName);
-            Assert.Equal(acct.AgencyNumberNavigation.IdNavigation.FullName, entityForm.AgencyNumberNavigation.IdNavigation.FullName);
-            MatchLegalAddresses(acct.AgencyNumberNavigation.IdNavigation.LegalEntityAddresses, entityForm.AgencyNumberNavigation.IdNavigation.LegalEntityAddresses, true);
+            Assert.Equal(acct.Agent?.IdNavigation.FullName, entityForm.Agent?.IdNavigation.FullName);
+            Assert.Equal(acct.AgencyNumberNavigation?.IdNavigation.FullName, entityForm.AgencyNumberNavigation?.IdNavigation.FullName);
+            MatchLegalAddresses(acct.AgencyNumberNavigation!.IdNavigation.LegalEntityAddresses, entityForm.AgencyNumberNavigation!.IdNavigation.LegalEntityAddresses, true);
             Assert.Equal(acct.Division, entityForm.Division);
-            Assert.Equal(acct.HomeOfficeReviewByNavigation.FullName, entityForm.HomeOfficeReviewByNavigation.FullName);
+            Assert.Equal(acct.HomeOfficeReviewByNavigation?.FullName, entityForm.HomeOfficeReviewByNavigation?.FullName);
             Assert.Equal(acct.HomeOfficeReviewed, entityForm.HomeOfficeReviewed);
-            Assert.Equal(acct.BranchReviewByNavigation.FullName, entityForm.BranchReviewByNavigation.FullName);
+            Assert.Equal(acct.BranchReviewByNavigation?.FullName, entityForm.BranchReviewByNavigation?.FullName);
             Assert.Equal(acct.BranchReviewed, entityForm.BranchReviewed);
-            Assert.Equal(acct.Attorney.IdNavigation.FullName, acct.Attorney.IdNavigation.FullName);
-            Assert.Equal(acct.Attorney.MartindaleHubbellRating, acct.Attorney.MartindaleHubbellRating);
-            Assert.Equal(acct.Underwriter.IdNavigation.FullName, acct.Underwriter.IdNavigation.FullName);
-            Assert.Equal(acct.Underwriter.IdNavigation.Initials, acct.Underwriter.IdNavigation.Initials);
-            Assert.Equal(acct.Underwriter.IdNavigation.Title, acct.Underwriter.IdNavigation.Title);
-            Assert.Equal(acct.Underwriter.IdNavigation.Email, acct.Underwriter.IdNavigation.Email);
-            Assert.Equal(acct.Underwriter.ReportsTo, acct.Underwriter.ReportsTo);
+            Assert.Equal(acct.Attorney?.IdNavigation.FullName, acct.Attorney?.IdNavigation.FullName);
+            Assert.Equal(acct.Attorney?.MartindaleHubbellRating, acct.Attorney?.MartindaleHubbellRating);
+            Assert.Equal(acct.Underwriter?.IdNavigation.FullName, acct.Underwriter?.IdNavigation.FullName);
+            Assert.Equal(acct.Underwriter?.IdNavigation.Initials, acct.Underwriter?.IdNavigation.Initials);
+            Assert.Equal(acct.Underwriter?.IdNavigation.Title, acct.Underwriter?.IdNavigation.Title);
+            Assert.Equal(acct.Underwriter?.IdNavigation.Email, acct.Underwriter?.IdNavigation.Email);
+            Assert.Equal(acct.Underwriter?.ReportsTo, acct.Underwriter?.ReportsTo);
         }
 
         static void MatchLegalAddresses(ICollection<LegalEntityAddress> expected,
@@ -72,8 +64,8 @@ namespace JamesWebUI.Client.Test
                     Assert.Equal(expected.ToArray()[i].Address.Address1, actual.ToArray()[i].Address.Address1);
                     Assert.Equal(expected.ToArray()[i].Address.Address2, actual.ToArray()[i].Address.Address2);
                     Assert.Equal(expected.ToArray()[i].Address.Address3, actual.ToArray()[i].Address.Address3);
-                    Assert.Equal(expected.ToArray()[i].Address.StateCodeNavigation.CountryCode, actual.ToArray()[i].Address.StateCodeNavigation.CountryCode);
-                    Assert.Equal(expected.ToArray()[i].Address.StateCodeNavigation.CountryCodeNavigation.Name, actual.ToArray()[i].Address.StateCodeNavigation.CountryCodeNavigation.Name);
+                    Assert.Equal(expected.ToArray()[i].Address.StateCodeNavigation?.CountryCode, actual.ToArray()[i].Address.StateCodeNavigation?.CountryCode);
+                    Assert.Equal(expected.ToArray()[i].Address.StateCodeNavigation?.CountryCodeNavigation?.Name, actual.ToArray()[i].Address.StateCodeNavigation?.CountryCodeNavigation?.Name);
                     Assert.Equal(expected.ToArray()[i].Address.PostalCode, actual.ToArray()[i].Address.PostalCode);
                 }
             }
@@ -104,8 +96,10 @@ namespace JamesWebUI.Client.Test
                         new LegalEntityAddress
                         {
                             Type = "Main",
+                            AddressId = addressId,
                             Address = new Address
                             {
+                                Id=addressId,
                                 Address1 = "123 Main St",
                                 Address2 = "Suite 200",
                                 City = "Ames",
@@ -130,8 +124,10 @@ namespace JamesWebUI.Client.Test
                         new LegalEntityPhone
                         {
                             Type="Main",
+                            PhoneNumberId = phoneId,
                             PhoneNumber = new PhoneNumber
                             {
+                                Id = phoneId,
                                 MainNumber = "5155551234",
                                 Extension = "x1"
                             }
@@ -232,10 +228,10 @@ namespace JamesWebUI.Client.Test
                         lea.Address.StateCode,
                         new
                             GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_Address_StateCodeNavigation_State(
-                                lea.Address.StateCodeNavigation.CountryCode,
+                                lea.Address.StateCodeNavigation?.CountryCode,
                                 new
                                     GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_Address_StateCodeNavigation_CountryCodeNavigation_CountryDm(
-                                        lea.Address.StateCodeNavigation.CountryCodeNavigation.Name)
+                                        lea.Address.StateCodeNavigation!.CountryCodeNavigation!.Name)
                             ),
                         lea.Address.PostalCode))).ToArray();
             return new GetAccountByAccountNumber_Account_Account(
@@ -252,11 +248,11 @@ namespace JamesWebUI.Client.Test
                             lee.EmailAddress)).ToArray()),
                 orig.Bank,
                 new GetAccountByAccountNumber_Account_Agent_Agent(
-                    new GetAccountByAccountNumber_Account_Agent_IdNavigation_LegalEntity(orig.Agent.IdNavigation
+                    new GetAccountByAccountNumber_Account_Agent_IdNavigation_LegalEntity(orig.Agent!.IdNavigation
                         .FullName)),
                 new GetAccountByAccountNumber_Account_AgencyNumberNavigation_Agency(
                     new GetAccountByAccountNumber_Account_AgencyNumberNavigation_IdNavigation_LegalEntity(
-                        orig.AgencyNumberNavigation.IdNavigation.FullName,
+                        orig.AgencyNumberNavigation!.IdNavigation.FullName,
                         orig.AgencyNumberNavigation.IdNavigation.LegalEntityAddresses.Select(lea =>
                             new
                                 GetAccountByAccountNumber_Account_AgencyNumberNavigation_IdNavigation_LegalEntityAddresses_LegalEntityAddress(
@@ -267,17 +263,17 @@ namespace JamesWebUI.Client.Test
                 orig.AccountNum,
                 orig.Division,
                 new GetAccountByAccountNumber_Account_HomeOfficeReviewByNavigation_UserProfile(
-                    orig.HomeOfficeReviewByNavigation.FullName),
+                    orig.HomeOfficeReviewByNavigation!.FullName),
                 orig.HomeOfficeReviewed,
-                new GetAccountByAccountNumber_Account_BranchReviewByNavigation_UserProfile(orig.BranchReviewByNavigation
+                new GetAccountByAccountNumber_Account_BranchReviewByNavigation_UserProfile(orig.BranchReviewByNavigation!
                     .FullName),
                 orig.BranchReviewed,
                 new GetAccountByAccountNumber_Account_Attorney_LawEntity(
-                    new GetAccountByAccountNumber_Account_Attorney_IdNavigation_LegalEntity(orig.Attorney.IdNavigation
+                    new GetAccountByAccountNumber_Account_Attorney_IdNavigation_LegalEntity(orig.Attorney!.IdNavigation
                         .FullName), orig.Attorney.MartindaleHubbellRating),
                 new GetAccountByAccountNumber_Account_Underwriter_Underwriter(
                     new GetAccountByAccountNumber_Account_Underwriter_IdNavigation_Employee(
-                        orig.Underwriter.IdNavigation.FullName, orig.Underwriter.IdNavigation.Initials,
+                        orig.Underwriter!.IdNavigation.FullName, orig.Underwriter.IdNavigation.Initials,
                         orig.Underwriter.IdNavigation.Title, orig.Underwriter.IdNavigation.Email),
                     orig.Underwriter.ReportsTo)
             );

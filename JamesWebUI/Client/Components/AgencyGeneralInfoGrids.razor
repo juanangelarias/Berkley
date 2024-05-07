@@ -12,42 +12,27 @@
 
 <Theme />
 
-<RadzenTabs Change="@HandleChangeDirection" TabPosition="TabPosition.Left">
+<RadzenTabs Change="@HandleChangeDirection" TabPosition="TabPosition.Left" >
     <Tabs>
         <RadzenTabsItem Text="Licenses">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <RadzenFieldset Text="Agency Licenses">
-                    <AgencyLicenseGrid AgencyId="agencyToDisplay.Id" />
-                </RadzenFieldset>
+                <AgencyLicenseGrid AgencyId="agencyToDisplay.Id" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="POAs">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <RadzenFieldset Text="Agency POAs">
-                    <RadzenDataGrid TItem="string" Data="@blankList"
-                                    Style="border-radius: 20px;" EmptyText="No records to display">
-                        <Columns>
-                            <RadzenDataGridColumn TItem="string" Title="Insurer" Width="100px" />
-                            <RadzenDataGridColumn TItem="string" Title="Limit" Width="100px" />
-                            <RadzenDataGridColumn TItem="string" Title="Reference #" Width="200px" />
-                            <RadzenDataGridColumn TItem="string" Title="Date of 1st Issue" Width="200px" />
-                            <RadzenDataGridColumn TItem="string" Title="Current POA Date" Width="200px" />
-                        </Columns>
-                    </RadzenDataGrid>
-                </RadzenFieldset>
+                <AgencyPOAGrid AgencyID="agencyToDisplay.Id"/>
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Related Parties">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <RadzenFieldset Text="Related Parties">
-                    <RadzenDataGrid TItem="string" Data="@blankList"
-                                    Style="border-radius: 20px;" EmptyText="No records to display">
-                        <Columns>
-                            <RadzenDataGridColumn TItem="string" Title="Agency #" Width="100px" />
-                            <RadzenDataGridColumn TItem="string" Title="Agency Name" />
-                        </Columns>
-                    </RadzenDataGrid>
-                </RadzenFieldset>
+                <RadzenDataGrid TItem="string" Data="@blankList"
+                                Style="border-radius: 20px;" EmptyText="No records to display">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="string" Title="Agency #" Width="100px" />
+                        <RadzenDataGridColumn TItem="string" Title="Agency Name" />
+                    </Columns>
+                </RadzenDataGrid>
             </Animate>
         </RadzenTabsItem>
     </Tabs>

@@ -87,5 +87,17 @@ namespace JamesWebUI.Server.GraphQL.Queries
             var ctx = contextFactory.CreateDbContext();
             return ctx.AgencyStatusDms.ToList();
         }
+
+        public List<PowerOfAttorney> GetAgencyPOAs(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            return ctx.PowerOfAttorneys
+                .Where(p => p.AgencyId.Equals(agencyId))
+                .Include(p=>p.Insurer)
+                .ThenInclude(i => i.IdNavigation)
+                .Include(p => p.PowerOfAttorneyDocumentStatuses)
+                .ThenInclude(p => p.DocumentType)
+                .ToList();
+        }
     }
 }

@@ -338,27 +338,14 @@
         <RadzenTabs>
             <Tabs>
                 <RadzenTabsItem Text="General Info">
-                    <RadzenFieldset Text="Sliding Steps Test">
-                        <AgencyGeneralInfoGrids agencyToDisplay="@agencyToDisplay" />
-                    </RadzenFieldset>
+                    <AgencyGeneralInfoGrids agencyToDisplay="@agencyToDisplay" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Contacts">
                     <AgencyContactsGrid AgencyId="agencyToDisplay.Id" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Inventory"></RadzenTabsItem>
                 <RadzenTabsItem Text="Accounts and Bonds">
-                    <RadzenPanel>
-                        <RadzenTabs TabPosition="TabPosition.Left">
-                            <Tabs>
-                                <RadzenTabsItem Text="Accounts">
-                                    <AgencyAccountsGrid AgencyNumber="@agencyToDisplay.AgencyNumber" />
-                                </RadzenTabsItem>
-                                <RadzenTabsItem Text="Bonds">
-                                    <AgencyBondsGrid AgencyId="@agencyToDisplay.Id" />
-                                </RadzenTabsItem>
-                            </Tabs>
-                        </RadzenTabs>
-                    </RadzenPanel>
+                    <AgencyAccountsAndBonds agencyToDisplay="@agencyToDisplay" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Commission Rates">
                     <RadzenRow>

@@ -10,17 +10,20 @@
 @inject JamesClient JamesClient
 
 <Theme />
-
+<style>
+    .rz-grid-row{
+        row-gap: 2px;
+    }
+</style>
 <RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" RowRender="OnRowRender"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
-                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single"
+                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single" RowCreate="OnLicenseCreate"
                 IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenButton Icon="delete" Size="ButtonSize.Small" Variant="Variant.Text"/>
-            <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" />
+            <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow" />
             
         </RadzenStack>
     </HeaderTemplate>
@@ -98,8 +101,22 @@
                 <RadzenDropDown @ref="filterInsurerDropDown" TValue="Guid" LoadData="LoadSelectInsurerDropDown" TextProperty="IdNavigation.FullName" ValueProperty="Id" />
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}" />
-        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}" />
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}">
+            <Template Context="license">
+                <RadzenText Text="@license.Appointment.ToString()" />
+            </Template>    
+            <EditTemplate Context="license">
+                <RadzenDatePicker TValue="DateOnly?" Value="@license.Appointment" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}">
+            <Template Context="license">
+                <RadzenText Text="@license.Termination.ToString()" />
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenDatePicker TValue="DateOnly?" Value="@license.Termination" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="license">
                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(args => EditLicenseRow(license))" @onclick:stopPropagation="true">
@@ -127,6 +144,7 @@
 
     private RadzenDataGrid<AgencyLicense> licenseGrid { get; set; }
     private List<AgencyLicense> agencyLicenses { get; set; }
+    private List<AgencyLicense> licensesToInsert = new List<AgencyLicense>();
     private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
     private RadzenDropDown<Guid> filterInsurerDropDown { get; set; }
     private RadzenDropDown<string> stateDropDown { get; set; }
@@ -202,6 +220,12 @@
     {
         filterInsurerDropDown.Data = await GetInsurers();
     }
+    async Task InsertLicenseRow()
+    {
+        var newLicense = new AgencyLicense();
+        licensesToInsert.Add(newLicense);
+        await licenseGrid.InsertRow(newLicense);
+    }
     async Task EditLicenseRow(AgencyLicense license)
     {
         await licenseGrid.EditRow(license);
@@ -212,23 +236,28 @@
     }
     async Task SaveLicenseRow(AgencyLicense license)
     {
-        var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
-            {
-                LicenseId = license.Id,
-                AppointingState = license.AppointingState,
-                Appointment = license?.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                Comments = license?.Comments,
-                Expiration = license?.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                InsurerId = license.InsurerId,
-                IsResident = license.IsResident,
-                LicenseNumber = license.LicenseNumber,
-                State = license.State,
-                IsActive = license.IsActive,
-                Termination = license?.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
-            });
-
+        // var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
+        //     {
+        //         LicenseId = Guid.NewGuid(),
+        //         AppointingState = license.AppointingState,
+        //         Appointment = license?.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+        //         Comments = license?.Comments,
+        //         Expiration = license?.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+        //         InsurerId = license.InsurerId,
+        //         IsResident = license.IsResident,
+        //         LicenseNumber = license.LicenseNumber,
+        //         State = license.State,
+        //         IsActive = license.IsActive,
+        //         Termination = license?.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
+        //     });
+        //TODO: Actually insert the license into the DB. 
         await licenseGrid.UpdateRow(license);
         await LoadLicenses();
+    }
+    void OnLicenseCreate(AgencyLicense license)
+    {
+        //TODO: Insert the row. 
+        licensesToInsert.Remove(license);
     }
     async void CancelLicenseEdit(AgencyLicense license)
     {

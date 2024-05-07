@@ -16,9 +16,9 @@ public partial class PowerOfAttorney
 
     public Guid AgencyId { get; set; }
 
-    public int Limit { get; set; }
+    public int? Limit { get; set; }
 
-    public int Serial { get; set; }
+    public string? Serial { get; set; }
 
     public DateOnly? FirstIssued { get; set; }
 
@@ -26,7 +26,7 @@ public partial class PowerOfAttorney
 
     public string? Comments { get; set; }
 
-    public string Status { get; set; } = null!;
+    public Guid Status { get; set; }
 
     public virtual Insurer Insurer { get; set; } = null!;
 

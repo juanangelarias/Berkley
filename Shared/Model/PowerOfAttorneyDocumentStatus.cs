@@ -18,9 +18,11 @@ public partial class PowerOfAttorneyDocumentStatus
 
     public DateOnly? Received { get; set; }
 
-    public string? Name { get; set; }
+    public Guid DocumentTypeId { get; set; }
 
-    public virtual PowerOfAttorneyDocumentNameDm? NameNavigation { get; set; }
+    public string? Comments { get; set; }
+
+    public virtual PowerOfAttorneyDocumentNameDm DocumentType { get; set; } = null!;
 
     public virtual PowerOfAttorney Poa { get; set; } = null!;
 }

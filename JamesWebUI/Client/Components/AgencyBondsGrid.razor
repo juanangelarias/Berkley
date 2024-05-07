@@ -11,13 +11,13 @@
 
 <Theme />
 
-<RadzenDataGrid TItem="Bond" @ref="@agencyBondGrid" AllowGrouping="true" AllowSorting="true"
-                Style="height: 750px; border-radius: 20px;" AllowColumnResize="true" AllowColumnPicking="true"
+<RadzenDataGrid TItem="Bond" @ref="@agencyBondGrid" AllowGrouping="true" AllowSorting="true" Density="Density.Compact"
+                Style="height: 500px; border-radius: 20px;" AllowColumnResize="true" AllowColumnPicking="true"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <Columns>
         <RadzenDataGridColumn TItem="Bond" Filterable="true" FilterValue="@StatusFilter" FilterProperty="Status" FilterOperator="FilterOperator.Contains"
-            Title="Status" Property="Status" Width="100px" Type="typeof(IEnumerable<String>)">
+            Title="Status" Property="Status" Width="125px" Type="typeof(IEnumerable<String>)">
             <Template Context="bond">
                 @{
                     if (bond.Status.Trim() == "Open")
@@ -46,6 +46,7 @@
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Bond" Title="Bond No." Property="BondNumber" Width="100px" />
+        <RadzenDataGridColumn TItem="Bond" Title="Account No." Property="AccountNum" Width="100px" />
         <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" Width="200px" />
         <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" Width="200px" SortOrder="SortOrder.Descending" />
         <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="75px" />

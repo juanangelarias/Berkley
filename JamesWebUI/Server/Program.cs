@@ -109,8 +109,8 @@ try
 
     app.UseStaticFiles();
 
-    app.UseRouting();
-    app.UseAntiforgery();
+app.UseRouting();
+app.UseAntiforgery();
 
     app.UseAuthentication();
     app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 

@@ -15,7 +15,7 @@
         row-gap: 2px;
     }
 </style>
-<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" RowRender="OnRowRender"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" RowRender="OnRowRender" Data="@agencyLicenses"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
@@ -101,7 +101,7 @@
                 <RadzenDropDown @ref="filterInsurerDropDown" TValue="Guid" LoadData="LoadSelectInsurerDropDown" TextProperty="IdNavigation.FullName" ValueProperty="Id" />
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}">
             <Template Context="license">
                 <RadzenText Text="@license.Appointment.ToString()" />
             </Template>    
@@ -109,7 +109,7 @@
                 <RadzenDatePicker TValue="DateOnly?" Value="@license.Appointment" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}">
             <Template Context="license">
                 <RadzenText Text="@license.Termination.ToString()" />
             </Template>
@@ -154,17 +154,11 @@
 
     private bool isLoading = false;
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        ThemeService.Initialize(NavigationManager);
-
-    }
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        if (AgencyId != null)
+
+        if (AgencyId != Guid.Empty)
         {
             await ShowLoading();
             await LoadLicenses();
@@ -183,7 +177,7 @@
             }
             agencyLicenses = licensesList;
         }
-        licenseGrid.Data = agencyLicenses;
+
         await licenseGrid.Reload();
     }
     private async Task LoadStateDropDown()

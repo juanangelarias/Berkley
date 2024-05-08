@@ -338,7 +338,7 @@
         <RadzenTabs>
             <Tabs>
                 <RadzenTabsItem Text="General Info">
-                    <AgencyGeneralInfoGrids agencyToDisplay="@agencyToDisplay" />
+                    <AgencyGeneralInfoGrids agencyId="@agencyToDisplay.Id" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Contacts">
                     <AgencyContactsGrid AgencyId="agencyToDisplay.Id" />
@@ -494,13 +494,7 @@
     }
     protected override async Task OnParametersSetAsync()
     {
-        // await LoadAgencyAccounts();
-    }
-
-    async Task SearchAgents()
-    {
-        // IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies agent = new IGetAgencyByAgencyNumber_AgencyByAgencyNumber_AgentsInAgencies();
-        // agent.Agent.IdNavigation.AgencyLicenseAgents.First().S
+        
     }
 
     private void ToggleMainAddressEditMode()

@@ -16,12 +16,12 @@
     <Tabs>
         <RadzenTabsItem Text="Licenses">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyLicenseGrid AgencyId="agencyToDisplay.Id" />
+                <AgencyLicenseGrid AgencyId="agencyId" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="POAs">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyPOAGrid AgencyID="agencyToDisplay.Id"/>
+                <AgencyPOAGrid AgencyID="agencyId" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Related Parties">
@@ -39,7 +39,7 @@
 </RadzenTabs>
 
 @code {
-    [Parameter] public Agency agencyToDisplay { get; set; } = new Agency();
+    [Parameter] public Guid agencyId { get; set; }
     List<string> blankList = new List<string>();
 
 }

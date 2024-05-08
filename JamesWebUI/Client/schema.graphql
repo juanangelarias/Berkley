@@ -24,6 +24,7 @@ type Query {
   searchAgencies(stringToSearch: String): [Agency!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
   agencyAccounts(agencyNumber: String!): [Account!]!
+  agencyParent(agencyId: UUID!): Agency!
   agencyBonds(agencyId: UUID!): [Bond!]!
   agencyAgents(agencyId: UUID!): [AgentsInAgency!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
@@ -208,8 +209,6 @@ type AgentsInAgency {
   agent: Agent!
 }
 
-scalar UUID
-
 type Bond {
   id: UUID!
   created: DateTime!
@@ -294,6 +293,8 @@ type Bond {
   obligee: LegalEntity
   responsibleParty: LegalEntity
 }
+
+scalar UUID
 
 type Agency {
   id: UUID!

@@ -1,0 +1,60 @@
+﻿@using System.Globalization;
+@using JamesWebUI.Client.GraphQL;
+@using JamesWebUI.Client.GraphQL.Components;
+@using StrawberryShake;
+@using James.Shared;
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject JamesClient JamesClient
+
+<Theme />
+
+<RadzenCard Style="width: 100%; padding: 5px" Variant="Variant.Text">
+    <RadzenRow Style="background: lightgrey;">
+        <RadzenColumn Size="4">
+            <RadzenText Text="Document Name" />
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="Date Requested" />
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="Date Received" />
+        </RadzenColumn>
+        <RadzenColumn>
+            <RadzenButton Variant="Variant.Text" Icon="edit" Click="ToggleEditMode"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <RadzenText Text="@poaDocumentStatus.DocumentType.Name" />
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@poaDocumentStatus.Requested.ToString()" Visible="!editMode" />
+            <RadzenDatePicker TValue="DateOnly" Value="@poaDocumentStatus.Requested" Visible="editMode" />
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@poaDocumentStatus.Received.ToString()" />
+        </RadzenColumn>
+        <RadzenColumn>
+            <RadzenButton Variant="Variant.Text" Icon="attach_file_add" Size="ButtonSize.ExtraSmall" />
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+        <RadzenColumn>
+            <RadzenFieldset Text="Comments" Style="width:90%">
+                <RadzenText Text="@poaDocumentStatus.Comments" />
+            </RadzenFieldset>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenCard>
+@code {
+    [Parameter] public PowerOfAttorneyDocumentStatus poaDocumentStatus { get; set; }
+    private bool editMode { get; set; } = false;
+
+    private void ToggleEditMode()
+    {
+        editMode = !editMode;
+    }
+}

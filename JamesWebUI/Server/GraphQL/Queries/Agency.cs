@@ -24,12 +24,10 @@ namespace JamesWebUI.Server.GraphQL.Queries
             var ctx = contextFactory.CreateDbContext();
             var result = ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
                 .Include(a => a.IdNavigation)
+                .ThenInclude(a => a.ParentNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
-                .Include(a => a.AgencyInventories)
-                .Include(a => a.Accounts)
-                .ThenInclude(a => a.IdNavigation)
-                .Include(a => a.AgentsInAgencies)
+
                 .FirstOrDefault();
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
@@ -45,6 +43,16 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .ToList();
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
                 
+        }
+        public Agency GetAgencyParent(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            var result = ctx.Agencies.Where(a => a.Id == agencyId)
+                .Include(a => a.IdNavigation)
+                .ThenInclude(a => a.ParentNavigation)
+                .FirstOrDefault();
+
+            return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
         }
         public List<Bond> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -97,6 +105,7 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .ThenInclude(i => i.IdNavigation)
                 .Include(p => p.PowerOfAttorneyDocumentStatuses)
                 .ThenInclude(p => p.DocumentType)
+                .Include(p => p.StatusNavigation)
                 .ToList();
         }
     }

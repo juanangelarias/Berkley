@@ -3,6 +3,7 @@
 @using JamesWebUI.Client.GraphQL.Components;
 @using StrawberryShake;
 @using James.Shared;
+
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
@@ -11,21 +12,36 @@
 
 <Theme />
 
-<RadzenDataGrid @ref="poaGrid" TItem="PowerOfAttorney" Data="powerOfAttorneys" 
-    AllowFiltering="true" FilterMode="FilterMode.Simple" Style="height: 500px;"
-AllowSorting="true">
+<RadzenDataGrid @ref="poaGrid" TItem="PowerOfAttorney" Data="powerOfAttorneys"
+                AllowFiltering="true" FilterMode="FilterMode.Simple" Style="height: 500px;" Filter="@ShowLoading"
+                AllowSorting="true">
+    <Template Context="poa">
+        <RadzenDataList TItem="PowerOfAttorneyDocumentStatus" Data="poa.PowerOfAttorneyDocumentStatuses"
+        Style="max-height:400px; overflow:auto; width:100%" AllowVirtualization="true" WrapItems="false" AllowPaging="false">
+            <Template Context="poaDocStatus">
+                <PowerOfAttorneyDocumentStatusCard poaDocumentStatus="poaDocStatus" />
+            </Template>
+        </RadzenDataList>
+    </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Insurer" Property="Insurer.IdNavigation.FullName" Width="300px" >
+        <RadzenDataGridColumn Title="Status" Property="StatusNavigation.Status" />
+        <RadzenDataGridColumn Title="Insurer" Property="Insurer.IdNavigation.FullName" Width="300px" Type="typeof(IEnumerable<String>)"
+                              FilterValue="@InsurerFilter" FilterProperty="Insurer.IdNavigation.FullName" FilterOperator="FilterOperator.Contains">
             <FilterTemplate>
                 <RadzenDropDown Change="InsurerFilterChange" @bind-Value="@InsurerFilter" AllowClear="true"
-                    Multiple="true" TValue="List<string>" Data="@powerOfAttorneys?.OrderBy(p => p.Insurer.IdNavigation.FullName).GroupBy(p => p.InsurerId).Select(p => p?.FirstOrDefault()?.Insurer.IdNavigation.FullName).ToList()" />
+                                Multiple="true" TValue="List<String>" Data="@powerOfAttorneys?.OrderBy(p => p.Insurer.IdNavigation.FullName).GroupBy(p => p.Insurer.Id).Select(p => p?.FirstOrDefault()?.Insurer.IdNavigation.FullName).ToList()" />
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px"/>
-        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Ref #" Property="Serial" />
-        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" />
-        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}" SortOrder="SortOrder.Descending" />
-    </Columns>    
+        <RadzenDataGridColumn Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px" />
+        <RadzenDataGridColumn Title="Ref #" Property="Serial" />
+        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" />
+        <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}" SortOrder="SortOrder.Descending" />
+        <RadzenDataGridColumn Title="POA">
+            <Template>
+                <RadzenButton Variant="Variant.Text" Icon="picture_as_pdf" Size="ButtonSize.ExtraSmall" />
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
 </RadzenDataGrid>
 
 @code {
@@ -34,10 +50,13 @@ AllowSorting="true">
     private RadzenDataGrid<PowerOfAttorney> poaGrid { get; set; }
     private RadzenDropDown<Guid> filterInsurerDropDown { get; set; }
     private List<String> InsurerFilter = null;
+    private bool isLoading = false;
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
+        await ShowLoading();
         await LoadPOAs();
     }
     private async Task LoadPOAs()
@@ -80,5 +99,13 @@ AllowSorting="true">
             InsurerFilter = null;
         }
         await poaGrid.Reload();
+    }
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
     }
 }

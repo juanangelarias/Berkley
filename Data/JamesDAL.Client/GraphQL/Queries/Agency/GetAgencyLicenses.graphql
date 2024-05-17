@@ -1,0 +1,20 @@
+﻿query GetAgencyLicenses($agencyId: UUID!) {
+  agencyLicenses(agencyId: $agencyId) {
+    id,
+    isActive,
+    state,
+    appointingState,
+    licenseNumber,
+    isResident,
+    insurerId,
+    appointment,
+    expiration,
+    termination,
+    insurer {
+      id,
+      idNavigation{
+        fullName
+      }
+    }
+  }
+}

@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Auth0.AspNetCore.Authentication" Version="1.4.1" />
     <PackageReference Include="Azure.Identity" Version="1.11.1" />
+    <PackageReference Include="Blazorise.Animate" Version="1.5.2" />
     <PackageReference Include="HotChocolate.AspNetCore" Version="13.9.0" />
     <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="13.9.0" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="13.9.0" />
@@ -39,8 +41,16 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\JApplicationLog\ApplicationLog.csproj" />
     <ProjectReference Include="..\..\Data\JamesDAL.Server\James.Data.Server.csproj" />
+    <ProjectReference Include="..\..\James.Shared.Server\James.Shared.Server.csproj" />
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
     <ProjectReference Include="..\Client\JamesWebUI.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="GraphQL\Mutations\" />
+    <Folder Include="GraphQL\Queries\" />
+    <Folder Include="GraphQL\Subscriptions\" />
+    <Folder Include="GraphQL\TypeExtensions\" />
   </ItemGroup>
 
 

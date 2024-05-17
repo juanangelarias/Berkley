@@ -1,0 +1,34 @@
+﻿query SearchAgencies($searchString: String)
+{
+	searchAgencies(stringToSearch:$searchString)
+    {
+		agencyNumber,
+        branch,
+        status,
+		idNavigation
+        {
+			fullName,
+			legalEntityAddresses
+            {
+				type,
+				address
+                {
+                    address1,
+                    address2,
+                    address3,
+                    city,
+                    stateCode,
+                    stateCodeNavigation 
+                    {
+                        countryCode,
+                        countryCodeNavigation 
+                        {
+                            name
+                        }     
+                    },
+                    postalCode
+                }
+			}
+		}
+	}
+}

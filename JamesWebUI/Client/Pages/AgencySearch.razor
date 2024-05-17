@@ -1,8 +1,9 @@
 ﻿@page "/AgencySearch"
 
 @using System.Globalization
-@using JamesWebUI.Client.GraphQL;
-@using JamesWebUI.Client.GraphQL.Components;
+@using James.Data.Client.GraphQL;
+@using James.Data.Client.GraphQL.Components;
+@using James.Shared
 @using JamesWebUI.Client.Controls.Extensions;
 @using StrawberryShake;
 
@@ -11,7 +12,7 @@
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
 @inject JamesClient JamesClient
-@inject LoggingService _logging;
+@inject ILoggingService _logging;
 @inject AuthenticationStateProvider _context;
 @* @attribute [Authorize] *@
 

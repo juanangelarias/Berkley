@@ -1,0 +1,6 @@
+﻿query GetAllStates{
+	allStates{
+		code,
+		name
+	}
+}

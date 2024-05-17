@@ -1,4 +1,5 @@
-using JamesWebUI.Client.GraphQL;
+using James.Data.Client.GraphQL;
+using James.Shared;
 using JamesWebUI.Client.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -17,7 +18,7 @@ builder.Services.AddHttpClient(JamesClient.ClientName, client => client.BaseAddr
 var graphqlHttpUrl = builder.HostEnvironment.BaseAddress + "graphql";
 var graphqlWebSocketUrl = graphqlHttpUrl.Replace("http", "ws", StringComparison.InvariantCultureIgnoreCase);
 builder.Services.AddJamesClient(ExecutionStrategy.CacheAndNetwork)
-    .ConfigureHttpClient(client =>client.BaseAddress = new Uri(graphqlHttpUrl))
+    .ConfigureHttpClient(client => client.BaseAddress = new Uri(graphqlHttpUrl))
     .ConfigureWebSocketClient(client => client.Uri = new Uri(graphqlWebSocketUrl));
 
 builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
@@ -26,7 +27,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 
 builder.Services.AddRadzenComponents();
 builder.Services.AddScoped<ThemeService>();
-builder.Services.AddSingleton<LoggingService>();
+builder.Services.AddSingleton<ILoggingService, LoggingService>();
 
 
 builder.Services.AddOidcAuthentication(options =>

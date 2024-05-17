@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using JamesWebUI.Client.Controls.Extensions
 
 @inject NavigationManager Navigation
 
@@ -18,7 +19,7 @@
         </RadzenProfileMenu>
     </Authorized>
     <NotAuthorized>
-        <a href="authentication/login">Log in</a>
+        <a href="user/login?redirectUri=@Navigation.Page()">Log in</a>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -26,7 +27,7 @@
     private async Task ProfileItemClicked(RadzenProfileMenuItem item)
     {
         if (item.Text == "Logout")
-            Navigation.NavigateToLogout("authentication/logout");
+            Navigation.NavigateToLogout("user/logout");
     }
     
 }

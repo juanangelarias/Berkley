@@ -1,0 +1,18 @@
+﻿mutation SetAgencyLicense ($input: SetLicenseInput!)
+{
+  setLicense(license: $input){
+    agencyLicense{
+      id,
+      appointingState,
+      appointment,
+      comments,
+      expiration,
+      insurerId,
+      isResident,
+      licenseNumber,
+      state,
+      isActive,
+      termination
+    }
+  }
+}

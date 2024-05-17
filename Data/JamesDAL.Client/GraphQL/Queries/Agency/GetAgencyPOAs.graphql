@@ -1,0 +1,27 @@
+﻿query GetAgencyPOAs($agencyId: UUID!){
+    agencyPOAs(agencyId: $agencyId){
+        id,
+        comments,
+        status,
+        limit,
+        serial,
+        currentIssued,
+        firstIssued,
+        insurer{
+            id,
+            fullName,
+            idNavigation{
+              fullName
+            }
+        }
+        powerOfAttorneyDocumentStatuses{
+            id,
+            requested,
+            received,
+            comments,
+            documentType{
+                name
+            }
+        }
+    }
+}

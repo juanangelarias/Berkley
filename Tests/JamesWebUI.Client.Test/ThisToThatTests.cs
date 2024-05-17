@@ -1,6 +1,6 @@
-﻿using James.Shared;
+﻿using James.Data.Client.GraphQL;
+using James.Shared;
 using James.Shared.Model;
-using JamesWebUI.Client.GraphQL;
 
 namespace JamesWebUI.Client.Test
 {

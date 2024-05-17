@@ -1,0 +1,27 @@
+﻿query agencyAccounts($agencyNumber: String!){
+  agencyAccounts(agencyNumber: $agencyNumber){
+    accountNum,
+    branch,
+    idNavigation{
+      fullName
+    }
+    bonds{
+      bondNumber,
+      bondType{
+        bondType
+      }
+      effective,
+      expiration,
+      status
+    }
+    mainAddress{
+      id,
+      address1,
+      address2,
+      city,
+      stateCode,
+      postalCode
+    }
+  }
+
+}

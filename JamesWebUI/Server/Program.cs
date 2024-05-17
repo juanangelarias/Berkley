@@ -1,15 +1,27 @@
+using System.Diagnostics;
 using ApplicationLog;
+using Auth0.AspNetCore.Authentication;
+using James.Data.Server.GraphQL;
 using James.Data.Server.Model;
+using James.Shared;
+using James.Shared.Server;
 using JamesWebUI.Client.Components;
+using JamesWebUI.Client.GraphQL;
+using JamesWebUI.Client.Services;
+using JamesWebUI.Server.AuthenticationStateSyncer;
 using JamesWebUI.Server.Controllers;
-using JamesWebUI.Server.GraphQL;
 using JamesWebUI.Server.SharedServices;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Serilog;
+using StrawberryShake;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
+using Query = James.Data.Server.GraphQL.Queries.Query;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -21,28 +33,22 @@ try
     // Add services to the container.
     var builder = WebApplication.CreateBuilder(args);
 
+    builder.Services.AddCascadingAuthenticationState();
+    builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+
     var auth0Authority = config["Auth0:Authority"] ?? "https://dev-auth.wrberkley.auth0.com";
     builder.Services.AddHttpClient("Auth0UserInfo",
     client => client.BaseAddress = new Uri(auth0Authority));
     builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
         .CreateClient("Auth0UserInfo"));
 
-
-    builder.Services.AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    }).AddJwtBearer(options =>
-    {
-        options.Authority = builder.Configuration["Auth0:Authority"];
-        options.Audience = builder.Configuration["Auth0:ApiIdentifier"];
-    });
-
-    builder.Services.AddControllersWithViews();
-    builder.Services.AddRazorPages();
-    builder.Services.AddRadzenComponents();
-    builder.Services.AddRazorComponents()
-        .AddInteractiveWebAssemblyComponents();
+    var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
+    builder.Services
+        .AddAuth0WebAppAuthentication(options =>
+        {
+            options.Domain = domain;
+            options.ClientId = builder.Configuration["Auth0:ClientId"];
+        });
 
     builder.Services
         .AddPooledDbContextFactory<JamesDatabaseContext>(o =>
@@ -54,14 +60,34 @@ try
     builder.Services
         .AddGraphQLServer()
         .AddAuthorization()
-        .AddQueryType<JamesWebUI.Server.GraphQL.Queries.Query>()
+        .AddQueryType<Query>()
         .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
         .AddSubscriptionType<Subscription>()
         .AddJamesGraphQlTypes()
         .AddMutationConventions()
         .AddInMemorySubscriptions()
         ;
+    builder.Services.AddControllersWithViews();
+    builder.Services.AddRazorPages();
+    builder.Services.AddRadzenComponents();
+    builder.Services.AddScoped<ThemeService>();
     builder.Services.AddScoped<IUserShared, UserShared>();
+    builder.Services.AddScoped<ILoggingShared, LoggingShared>();
+    builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
+    var baseAddressHttp = config["Kestrel:Endpoints:Https:Url"];
+    var baseAddressHttps = config["Kestrel:Endpoints:Http:Url"];
+    var baseAddress = string.IsNullOrWhiteSpace(baseAddressHttps) ? baseAddressHttp! : baseAddressHttps;
+    if (!baseAddress.EndsWith('/'))
+        baseAddress = baseAddress + "/";
+    var graphqlHttpUrl = baseAddress + "graphql";
+    var graphqlWebSocketUrl = graphqlHttpUrl.Replace("http", "ws", StringComparison.InvariantCultureIgnoreCase);
+    builder.Services.AddJamesClient(ExecutionStrategy.CacheAndNetwork)
+        .ConfigureHttpClient(client => client.BaseAddress = new Uri(graphqlHttpUrl))
+        .ConfigureWebSocketClient(client => client.Uri = new Uri(graphqlWebSocketUrl));
+    builder.Services.AddRazorComponents()
+        .AddInteractiveServerComponents()
+        .AddInteractiveWebAssemblyComponents();
+
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddCors(options =>
     {
@@ -109,17 +135,34 @@ try
 
     app.UseStaticFiles();
 
-app.UseRouting();
-app.UseAntiforgery();
+    app.UseRouting();
+    app.UseAntiforgery();
 
     app.UseAuthentication();
     app.UseAuthorization(); // Authorization ALWAYS after Authentication, both after UseRouting(); 
 
     app.UseWebSockets();
 
+    app.MapGet("/User/Login", async (HttpContext httpContext, string redirectUri = "/") =>
+    {
+        var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
+            .WithRedirectUri(redirectUri)
+            .Build();
+
+        await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+    });
+
+    app.MapGet("/User/Logout", async (HttpContext httpContext, string redirectUri = "/") =>
+    {
+        var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
+            .WithRedirectUri(redirectUri)
+            .Build();
+
+        await httpContext.SignOutAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+        await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+    });
     //TODO: Move CORS config to either config file or environment variable
-    app.UseCors(cors => cors.WithOrigins(new[]{"localhost", "usilg01-isd076", "usig01-isd076.wrbts.ads.wrberkley.com" +
-                                                                               ""}));
+    app.UseCors(cors => cors.WithOrigins(new[] { "localhost", "usilg01-isd076", "usig01-isd076.wrbts.ads.wrberkley.com" }));
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
@@ -135,7 +178,9 @@ app.UseAntiforgery();
     app.MapRazorPages();
     app.MapControllers();
     app.MapRazorComponents<App>()
+        .AddInteractiveServerRenderMode()
         .AddInteractiveWebAssemblyRenderMode();
+    //.AddAdditionalAssemblies(typeof(App).Assembly)
 
     app.MapGraphQL("/graphql");
 
@@ -146,6 +191,7 @@ catch (Exception ex)
     var logFile = config["Serilog:WriteTo:0:Args:path"];
     var msg = "Exception starting service:\r\n" + ex;
     Console.WriteLine(msg);
+    Debug.WriteLine(msg);
     if (!string.IsNullOrWhiteSpace(logFile))
     {
         var logDir = new FileInfo(logFile).DirectoryName;

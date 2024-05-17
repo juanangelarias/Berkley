@@ -9,23 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <GraphQL Remove="GraphQL\GetAccountByAccountNumber.graphql" />
-    <GraphQL Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
-    <GraphQL Remove="GraphQL\GetAgencyAgents.graphql" />
-    <GraphQL Remove="GraphQL\GetAgencyBonds.graphql" />
-    <GraphQL Remove="GraphQL\GetAgencyLicenses.graphql" />
-    <GraphQL Remove="GraphQL\GetStates.graphql" />
-    <GraphQL Remove="GraphQL\Mutations\SetAddress.graphql" />
-    <GraphQL Remove="GraphQL\Mutations\SetLicense.graphql" />
-    <GraphQL Remove="GraphQL\Queries\Agency\GetAgencyAccounts.graphql" />
-    <GraphQL Remove="GraphQL\Queries\GetAgentByAgentId.graphql" />
-    <GraphQL Remove="GraphQL\Queries\GetInsurers.graphql" />
-    <GraphQL Remove="GraphQL\SearchAgencies.graphql" />
-    <GraphQL Remove="GraphQL\Subscriptions\AddressSubs.graphql" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
+    <Compile Remove="GraphQL\**" />
+    <Content Remove="GraphQL\**" />
+    <EmbeddedResource Remove="GraphQL\**" />
+    <GraphQL Remove="GraphQL\**" />
+    <None Remove="GraphQL\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Data\JamesDAL.Client\James.Data.Client.csproj" />
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
   </ItemGroup>
 

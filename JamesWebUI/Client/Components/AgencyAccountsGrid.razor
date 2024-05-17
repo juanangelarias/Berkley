@@ -1,13 +1,14 @@
 ﻿@using System.Globalization;
-@using JamesWebUI.Client.GraphQL;
-@using JamesWebUI.Client.GraphQL.Components;
+@using James.Data.Client.GraphQL;
+@using James.Data.Client.GraphQL.Components;
 @using StrawberryShake;
 @using James.Shared;
+@using James.Shared.Data
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess _dataAccess
 
 <Theme />
 
@@ -90,20 +91,9 @@
 
     private async Task LoadAgencyAccounts()
     {
-        var result = await JamesClient.AgencyAccounts.ExecuteAsync(AgencyNumber);
-
-        if (result.Data.AgencyAccounts.Count > 0)
-        {
-            var accountList = new List<Account>();
-            foreach (var account in result.Data.AgencyAccounts)
-            {
-                accountList.Add(ThisToThat.ToEntityType<Account>(account));
-            }
-
-            agencyAccounts = accountList;
-            agencyAccountGrid.Data = accountList;
+        var result = await _dataAccess.GetAgencyAccounts(AgencyNumber);
+        agencyAccountGrid.Data = agencyAccounts = result;
             await agencyAccountGrid.Reload();
-        }
     }
     protected async Task ShowLoading()
     {

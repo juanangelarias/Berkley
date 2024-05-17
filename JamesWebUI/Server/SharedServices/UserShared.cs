@@ -4,6 +4,7 @@ using JamesWebUI.Server.Model;
 using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
+using James.Shared.Server;
 
 namespace JamesWebUI.Server.SharedServices
 {
@@ -95,12 +96,5 @@ namespace JamesWebUI.Server.SharedServices
 
             return siteUserInfo;
         }
-    }
-
-    public interface IUserShared
-    {
-        //public Task<IAuth0UserInfo> GetAuth0UserInfo(string jwtToken);
-        public Task<SiteUserInfo> GetCurrentUser();
-        public Task<SiteUserInfo> GetUserInfoAsync(string jwtToken);
     }
 }

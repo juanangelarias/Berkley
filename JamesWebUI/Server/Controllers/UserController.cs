@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
+using James.Shared.Server;
 using JamesWebUI.Server.SharedServices;
 
 namespace JamesWebUI.Server.Controllers

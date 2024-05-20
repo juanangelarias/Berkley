@@ -1,27 +1,38 @@
-﻿query agencyAccounts($agencyNumber: String!){
-  agencyAccounts(agencyNumber: $agencyNumber){
-    accountNum,
-    branch,
-    idNavigation{
+﻿query agencyAccounts($agencyNumber: String!) {
+  agencyAccounts(agencyNumber: $agencyNumber) {
+    accountNum
+    branch
+    idNavigation {
       fullName
     }
-    bonds{
-      bondNumber,
-      bondType{
+    bonds {
+      bondNumber
+      accountNum
+      effective
+      expiration
+      underWriter {
+        idNavigation{
+          fullName
+        }
+      }
+      obligee {
+        fullName
+      }
+      bondType {
         bondType
       }
-      effective,
-      expiration,
+      siccode
+      municipality
+      bondClass
       status
     }
-    mainAddress{
-      id,
-      address1,
-      address2,
-      city,
-      stateCode,
+    mainAddress {
+      id
+      address1
+      address2
+      city
+      stateCode
       postalCode
     }
   }
-
 }

@@ -71,6 +71,73 @@ namespace JamesWebUI.Server.GraphQL.Mutations
 
             return oldLicense;
         }
+        public async Task<AgencyLicense> CreateLicense(SetLicenseInput license, [Service] ITopicEventSender sender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var newLicense = new AgencyLicense()
+            {
+                AppointingState = license.AppointingState,
+                Appointment = license.Appointment,
+                Comments = license.Comments,
+                Expiration = license.Expiration,
+                InsurerId = license.InsurerId,
+                IsResident = license.IsResident,
+                LicenseNumber = license.LicenseNumber,
+                State = license.State,
+                IsActive = license.IsActive,
+                Termination = license.Termination
+            };
+            ctx.Add(newLicense);
+            ctx.SaveChanges();
+            //TODO: Subscription
+
+            return newLicense;
+        }
+        public async Task<PowerOfAttorney> SetPowerOfAttorney(SetPowerOfAttorneyInput updatedPowerOfAttorney,
+            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var oldPowerOfAttorney = ctx.PowerOfAttorneys.FirstOrDefault(poa => poa.Id == updatedPowerOfAttorney.Id);
+
+            if (oldPowerOfAttorney != null)
+            {
+                //TODO: Implement update/save
+                oldPowerOfAttorney.Comments = updatedPowerOfAttorney.Comments;
+                oldPowerOfAttorney.InsurerId = updatedPowerOfAttorney.InsurerId;
+                oldPowerOfAttorney.Limit = updatedPowerOfAttorney.Limit;
+                oldPowerOfAttorney.FirstIssued = updatedPowerOfAttorney.FirstIssued;
+                oldPowerOfAttorney.CurrentIssued = updatedPowerOfAttorney.CurrentIssued;
+                oldPowerOfAttorney.Comments = updatedPowerOfAttorney.Comments;
+                oldPowerOfAttorney.Status = updatedPowerOfAttorney.Status;
+
+                ctx.Update(oldPowerOfAttorney);
+                await ctx.SaveChangesAsync();
+                return oldPowerOfAttorney;
+            }
+            return new PowerOfAttorney();
+        }
+        public async Task<PowerOfAttorneyDocumentStatus> SetPowerOfAttorneyDocumentStatus(SetPowerOfAttorneyDocumentStatusInput updatedDocStatus, 
+            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var oldDocStatus = ctx.PowerOfAttorneyDocumentStatuses.FirstOrDefault(p => p.Id == updatedDocStatus.Id);
+
+            if (oldDocStatus != null)
+            {
+                if (updatedDocStatus.Received != null)
+                    oldDocStatus.Received = DateOnly.FromDateTime((DateTime)updatedDocStatus.Received);
+                if (updatedDocStatus.Requested != null)
+                    oldDocStatus.Requested = DateOnly.FromDateTime((DateTime)updatedDocStatus.Requested);
+                oldDocStatus.Comments = updatedDocStatus.Comments;
+                oldDocStatus.DocumentTypeId = updatedDocStatus.DocumentTypeId;
+
+                ctx.Update(oldDocStatus);
+                ctx.SaveChanges();
+                return oldDocStatus;
+            }
+            return new PowerOfAttorneyDocumentStatus();
+        }
     }
 
     public class SetAddressInput
@@ -86,6 +153,8 @@ namespace JamesWebUI.Server.GraphQL.Mutations
     public class SetLicenseInput
     {
         public Guid LicenseId { get; set; }
+        public Guid AgencyId { get; set; }
+        public Guid? AgentId { get; set; }
         public bool? AppointingState { get; set; }
         public DateOnly? Appointment { get; set; }
         public string? Comments { get; set; }
@@ -97,5 +166,23 @@ namespace JamesWebUI.Server.GraphQL.Mutations
         public bool IsActive { get; set; }
         public DateOnly? Termination { get; set; }
     }
-    
+    public class SetPowerOfAttorneyInput
+    {
+        public Guid Id { get; set; }
+        public Guid InsurerId { get; set; }
+        public int? Limit { get; set; }
+        public string? Serial { get; set; }
+        public DateOnly? FirstIssued { get; set; }
+        public DateOnly? CurrentIssued { get; set; }
+        public string? Comments { get; set; }
+        public Guid Status { get; set; }
+    }
+    public class SetPowerOfAttorneyDocumentStatusInput
+    {
+        public Guid Id { get; set; }
+        public DateTime? Requested { get; set; }
+        public DateTime? Received { get; set; }
+        public Guid DocumentTypeId { get; set; }
+        public string? Comments { get; set; }
+    }
 }

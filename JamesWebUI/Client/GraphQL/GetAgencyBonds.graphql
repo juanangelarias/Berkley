@@ -1,16 +1,23 @@
-﻿query GetAgencyBonds($agencyId: UUID!)
-{
-    agencyBonds(agencyId: $agencyId){
-        bondNumber,
-        accountNum,
-        effective,
-        expiration,
-        bondType{
-            bondType
-        }
-        siccode,
-        municipality,
-        bondClass,
-        status
+﻿query GetAgencyBonds($agencyId: UUID!) {
+  agencyBonds(agencyId: $agencyId) {
+    bondNumber
+    accountNum
+    effective
+    expiration
+    underWriter{
+      idNavigation{
+        fullName
+      }
     }
+    obligee{
+      fullName
+    }
+    bondType {
+      bondType
+    }
+    siccode
+    municipality
+    bondClass
+    status
+  }
 }

@@ -29,7 +29,7 @@
     </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false"
-                              Title="Active" Property="IsActive" Width="50px">
+                              Title="Status" Property="IsActive" Width="90px">
             <Template Context="license">
                 @{
                     if (license.IsActive)
@@ -63,9 +63,9 @@
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense"
-                              Title="No Aptmt" Width="100px">
+                              Title="No Aptmt" Width="75px">
             <Template Context="license">
-                <RadzenCheckBox Value="license.AppointingState" />
+                <RadzenCheckBox Value="license.AppointingState" ReadOnly="true" />
             </Template>
             <EditTemplate Context="license">
                 <RadzenCheckBox @bind-Value="license.AppointingState" />
@@ -82,7 +82,7 @@
         <RadzenDataGridColumn TItem="AgencyLicense"
                               Title="Resident" Width="75px">
             <Template Context="license">
-                <RadzenCheckBox TValue="bool" Value="license.IsResident" />
+                <RadzenCheckBox TValue="bool" Value="license.IsResident" ReadOnly="true" />
             </Template>
             <EditTemplate Context="license">
                 <RadzenCheckBox TValue="bool" @bind-Value="license.IsResident" />
@@ -101,20 +101,20 @@
                 <RadzenDropDown @ref="filterInsurerDropDown" TValue="Guid" LoadData="LoadSelectInsurerDropDown" TextProperty="IdNavigation.FullName" ValueProperty="Id" />
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="125px" FormatString="{0:d}">
             <Template Context="license">
                 <RadzenText Text="@license.Appointment.ToString()" />
             </Template>    
             <EditTemplate Context="license">
-                <RadzenDatePicker TValue="DateOnly?" Value="@license.Appointment" />
+                <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Appointment" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="125px" FormatString="{0:d}">
             <Template Context="license">
                 <RadzenText Text="@license.Termination.ToString()" />
             </Template>
             <EditTemplate Context="license">
-                <RadzenDatePicker TValue="DateOnly?" Value="@license.Termination" />
+                <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Termination" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
@@ -230,23 +230,28 @@
     }
     async Task SaveLicenseRow(AgencyLicense license)
     {
-        // var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
-        //     {
-        //         LicenseId = Guid.NewGuid(),
-        //         AppointingState = license.AppointingState,
-        //         Appointment = license?.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-        //         Comments = license?.Comments,
-        //         Expiration = license?.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-        //         InsurerId = license.InsurerId,
-        //         IsResident = license.IsResident,
-        //         LicenseNumber = license.LicenseNumber,
-        //         State = license.State,
-        //         IsActive = license.IsActive,
-        //         Termination = license?.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
-        //     });
-        //TODO: Actually insert the license into the DB. 
-        await licenseGrid.UpdateRow(license);
-        await LoadLicenses();
+        if (license != null)
+        {
+            var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
+                {
+                    LicenseId = Guid.NewGuid(),
+                    AgencyId = AgencyId,
+                    AppointingState = license.AppointingState,
+                    Appointment = license.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                    Comments = license.Comments,
+                    Expiration = license.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                    InsurerId = license.InsurerId,
+                    IsResident = license.IsResident,
+                    LicenseNumber = license.LicenseNumber,
+                    State = license.State,
+                    IsActive = license.IsActive,
+                    Termination = license.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
+
+                });
+            //TODO: Actually insert the license into the DB. 
+            await licenseGrid.UpdateRow(license);
+            await LoadLicenses();
+        }
     }
     void OnLicenseCreate(AgencyLicense license)
     {

@@ -23,6 +23,12 @@
                 <RadzenDataGridColumn TItem="Bond" Title="Type" Property="BondType.BondType" />
                 <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" />
                 <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" />
+                <RadzenDataGridColumn TItem="Bond" Title="Amount" />
+                <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" />
+                <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" />
+                <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName" />
+                <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" />
+                <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass" />
             </Columns>
         </RadzenDataGrid>
     </Template>

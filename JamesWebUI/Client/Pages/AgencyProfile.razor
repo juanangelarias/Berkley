@@ -90,12 +90,12 @@
                             <RadzenRow>
                                 <RadzenColumn Size="3">
                                     <RadzenFormField Text="Parent No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="10300" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.ParentNavigation?.AgencyIdNavigation?.AgencyNumber" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                                 <RadzenColumn>
                                     <RadzenFormField Text="Parent" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.ParentNavigation?.FullName" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
@@ -114,7 +114,7 @@
                                 </RadzenColumn>
                                 <RadzenColumn>
                                     <RadzenFormField Text="NPN" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@agencyToDisplay?.NationalProducerNumber" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>

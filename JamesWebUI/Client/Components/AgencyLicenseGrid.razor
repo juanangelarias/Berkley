@@ -15,11 +15,11 @@
         row-gap: 2px;
     }
 </style>
-<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" RowRender="OnRowRender" Data="@agencyLicenses"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" Data="@agencyLicenses"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
-                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single" RowCreate="OnLicenseCreate"
+                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
                 IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
@@ -216,6 +216,8 @@
     }
     async Task InsertLicenseRow()
     {
+        //This is where we handle the status change of the grid (edit mode or not).
+        //The actual Insert is done in OnLicenseCreate()
         var newLicense = new AgencyLicense();
         licensesToInsert.Add(newLicense);
         await licenseGrid.InsertRow(newLicense);
@@ -230,42 +232,53 @@
     }
     async Task SaveLicenseRow(AgencyLicense license)
     {
-        if (license != null)
-        {
-            var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
-                {
-                    LicenseId = Guid.NewGuid(),
-                    AgencyId = AgencyId,
-                    AppointingState = license.AppointingState,
-                    Appointment = license.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    Comments = license.Comments,
-                    Expiration = license.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    InsurerId = license.InsurerId,
-                    IsResident = license.IsResident,
-                    LicenseNumber = license.LicenseNumber,
-                    State = license.State,
-                    IsActive = license.IsActive,
-                    Termination = license.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
-
-                });
-            //TODO: Actually insert the license into the DB. 
-            await licenseGrid.UpdateRow(license);
-            await LoadLicenses();
-        }
+        //This is where we handle the status change of the grid (edit mode or not). 
+        //The actual Update/Insert is done in those methods. 
+        await licenseGrid.UpdateRow(license);
+        await LoadLicenses();
     }
-    void OnLicenseCreate(AgencyLicense license)
+    async Task OnLicenseCreate(AgencyLicense license)
     {
-        //TODO: Insert the row. 
-        licensesToInsert.Remove(license);
+        //This is where we handle row inserts. 
+        var result = await JamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
+            {
+                AgencyId = AgencyId,
+                AppointingState = license.AppointingState,
+                Appointment = license.Appointment != null ? ((DateOnly)license.Appointment).ToDateTime(TimeOnly.Parse("12:00 AM")) : null,
+                Comments = license.Comments,
+                Expiration =  license.Expiration != null ? ((DateOnly)license.Expiration).ToDateTime(TimeOnly.Parse("12:00 AM")) : null,
+                InsurerId = license.InsurerId,
+                IsResident = license.IsResident,
+                LicenseNumber = license.LicenseNumber,
+                State = license.State,
+                IsActive = license.IsActive,
+                Termination = license.Termination != null ? ((DateOnly)license.Termination).ToDateTime(TimeOnly.Parse("12:00 AM")) : null
+            });
+        //TODO: Check for errors and notify. 
     }
     async void CancelLicenseEdit(AgencyLicense license)
     {
         licenseGrid.CancelEditRow(license);
         await LoadLicenses();
     }
-    void UpdateLicenseRow(AgencyLicense license)
+    async Task UpdateLicenseRow(AgencyLicense license)
     {
-        agencyLicenses = agencyLicenses;
+        //This is where we handle row Updates.
+        // var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
+        //     {
+        //         LicenseId = license.Id,
+        //         AgencyId = license.AgencyId,
+        //         AppointingState = license.AppointingState,
+        //         Appointment = license.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+        //         Comments = license.Comments,
+        //         Expiration = license.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+        //         InsurerId = license.InsurerId,
+        //         IsResident = license.IsResident,
+        //         LicenseNumber = license.LicenseNumber,
+        //         State = license.State,
+        //         IsActive = license.IsActive,
+        //         Termination = license.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
+        //     });
     }
     async Task StateFilterChange()
     {
@@ -284,8 +297,4 @@
         isLoading = false;
     }
 
-    void OnRowRender(RowRenderEventArgs<AgencyLicense> args)
-    {
-        args.Attributes.Add("style", $"background-color: {(args.Data.IsActive ? "red" : "green")};");
-    }
 }

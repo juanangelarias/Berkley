@@ -15,6 +15,7 @@
     <GraphQL Remove="GraphQL\GetAgencyBonds.graphql" />
     <GraphQL Remove="GraphQL\GetAgencyLicenses.graphql" />
     <GraphQL Remove="GraphQL\GetStates.graphql" />
+    <GraphQL Remove="GraphQL\Mutations\CreateLicense.graphql" />
     <GraphQL Remove="GraphQL\Mutations\SetAddress.graphql" />
     <GraphQL Remove="GraphQL\Mutations\SetLicense.graphql" />
     <GraphQL Remove="GraphQL\Mutations\SetPowerOfAttorney.graphql" />

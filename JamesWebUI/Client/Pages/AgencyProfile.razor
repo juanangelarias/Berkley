@@ -510,13 +510,13 @@
         var changedAddress = args;
         await JamesClient.SetAddress.ExecuteAsync(new SetAddressInput
             {
-                AddressId = args.Id,
-                Address1 = args.Address1,
-                Address2 = args?.Address2,
-                Address3 = args?.Address3,
-                City = args.City,
-                StateCode = args.StateCode,
-                PostalCode = args.PostalCode
+                AddressId = changedAddress.Id,
+                Address1 = changedAddress.Address1,
+                Address2 = changedAddress?.Address2,
+                Address3 = changedAddress?.Address3,
+                City = changedAddress.City,
+                StateCode = changedAddress.StateCode,
+                PostalCode = changedAddress.PostalCode
             });
 
     }

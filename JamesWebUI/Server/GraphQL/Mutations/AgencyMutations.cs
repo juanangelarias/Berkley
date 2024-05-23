@@ -1,7 +1,10 @@
 ﻿using HotChocolate.Subscriptions;
 using James.Data.Server.Model;
 using James.Shared.Model;
+using JamesWebUI.Client.GraphQL;
+using JamesWebUI.Server.SharedServices;
 using Microsoft.EntityFrameworkCore;
+using System.Web;
 
 namespace JamesWebUI.Server.GraphQL.Mutations
 {
@@ -10,25 +13,25 @@ namespace JamesWebUI.Server.GraphQL.Mutations
     public class AgencyMutation
     {
 
-        public async Task<Address> SetAddress(SetAddressInput address,
+        public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var oldAddress = ctx.LegalEntityAddresses
                 .Include(a => a.Address)
-                .FirstOrDefault(a => a.AddressId == address.AddressId)
+                .FirstOrDefault(a => a.AddressId == addressId)
                 ;
 
             if (oldAddress == null)
                 throw new GraphQLException("Invalid AddressId");
 
             
-            oldAddress.Address.Address1 = address.Address1;
-            oldAddress.Address.Address2 = address.Address2;
-            oldAddress.Address.Address3 = address.Address3;
-            oldAddress.Address.City = address.City;
-            oldAddress.Address.StateCode = address.StateCode;
-            oldAddress.Address.PostalCode = address.PostalCode;
+            oldAddress.Address.Address1 = address1;
+            oldAddress.Address.Address2 = address2;
+            oldAddress.Address.Address3 = address3;
+            oldAddress.Address.City = city;
+            oldAddress.Address.StateCode = stateCode;
+            oldAddress.Address.PostalCode = postalCode;
 
             ctx.Update(oldAddress);
             try
@@ -45,25 +48,26 @@ namespace JamesWebUI.Server.GraphQL.Mutations
 
             return oldAddress.Address;
         }
-        public async Task<AgencyLicense> SetLicense(SetLicenseInput license,
+        public async Task<AgencyLicense> SetLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var oldLicense = ctx.AgencyLicenses.FirstOrDefault(l => l.Id == license.LicenseId);
+            var oldLicense = ctx.AgencyLicenses.FirstOrDefault(l => l.Id == licenseId);
 
             if (oldLicense == null)
                 throw new GraphQLException("Invalid LicenseId");
 
-            oldLicense.AppointingState = license.AppointingState;
-            oldLicense.Appointment = license.Appointment;
-            oldLicense.Comments = license.Comments;
-            oldLicense.Expiration = license.Expiration;
-            oldLicense.InsurerId = license.InsurerId;
-            oldLicense.IsResident = license.IsResident;
-            oldLicense.LicenseNumber = license.LicenseNumber;
-            oldLicense.State = license.State;
-            oldLicense.IsActive = license.IsActive;
-            oldLicense.Termination = license.Termination;
+            oldLicense.AppointingState = appointingState;
+            oldLicense.Appointment = appointment;
+            oldLicense.Comments = comments;
+            oldLicense.Expiration = expiration;
+            oldLicense.InsurerId = insurerId;
+            oldLicense.IsResident = isResident;
+            oldLicense.LicenseNumber = licenseNumber;
+            oldLicense.State = state;
+            oldLicense.IsActive = isActive;
+            oldLicense.Termination = termination;
 
             ctx.Update(oldLicense);
             ctx.SaveChanges();
@@ -71,45 +75,50 @@ namespace JamesWebUI.Server.GraphQL.Mutations
 
             return oldLicense;
         }
-        public async Task<AgencyLicense> CreateLicense(SetLicenseInput license, [Service] ITopicEventSender sender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<AgencyLicense> CreateLicense(Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive, 
+            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
+            
             var newLicense = new AgencyLicense()
             {
-                AppointingState = license.AppointingState,
-                Appointment = license.Appointment,
-                Comments = license.Comments,
-                Expiration = license.Expiration,
-                InsurerId = license.InsurerId,
-                IsResident = license.IsResident,
-                LicenseNumber = license.LicenseNumber,
-                State = license.State,
-                IsActive = license.IsActive,
-                Termination = license.Termination
+                Id = Guid.NewGuid(),
+                AgencyId = agencyId,
+                AgentId = agentId,
+                State = state,
+                LicenseNumber = licenseNumber,
+                IsResident = isResident,
+                InsurerId = insurerId,
+                Expiration = expiration,
+                Comments = comments,
+                Appointment = appointment,
+                Termination = termination,
+                AppointingState = appointingState,
+                IsActive = isActive
             };
+            
             ctx.Add(newLicense);
             ctx.SaveChanges();
-            //TODO: Subscription
-
             return newLicense;
         }
-        public async Task<PowerOfAttorney> SetPowerOfAttorney(SetPowerOfAttorneyInput updatedPowerOfAttorney,
+        public async Task<PowerOfAttorney> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
             [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             
             var ctx = await contextFactory.CreateDbContextAsync();
-            var oldPowerOfAttorney = ctx.PowerOfAttorneys.FirstOrDefault(poa => poa.Id == updatedPowerOfAttorney.Id);
+            var oldPowerOfAttorney = ctx.PowerOfAttorneys.FirstOrDefault(poa => poa.Id == poaId);
 
             if (oldPowerOfAttorney != null)
             {
-                //TODO: Implement update/save
-                oldPowerOfAttorney.Comments = updatedPowerOfAttorney.Comments;
-                oldPowerOfAttorney.InsurerId = updatedPowerOfAttorney.InsurerId;
-                oldPowerOfAttorney.Limit = updatedPowerOfAttorney.Limit;
-                oldPowerOfAttorney.FirstIssued = updatedPowerOfAttorney.FirstIssued;
-                oldPowerOfAttorney.CurrentIssued = updatedPowerOfAttorney.CurrentIssued;
-                oldPowerOfAttorney.Comments = updatedPowerOfAttorney.Comments;
-                oldPowerOfAttorney.Status = updatedPowerOfAttorney.Status;
+                oldPowerOfAttorney.Comments = comments;
+                oldPowerOfAttorney.InsurerId = insurerId;
+                oldPowerOfAttorney.Limit = limit;
+                oldPowerOfAttorney.FirstIssued = firstIssued;
+                oldPowerOfAttorney.CurrentIssued = currentIssued;
+                oldPowerOfAttorney.Comments = comments;
+                oldPowerOfAttorney.Status = status;
+                oldPowerOfAttorney.StatusNavigation = ctx.PowerOfAttorneyStatusDms.FirstOrDefault(s => s.Id == status);
 
                 ctx.Update(oldPowerOfAttorney);
                 await ctx.SaveChangesAsync();
@@ -117,20 +126,20 @@ namespace JamesWebUI.Server.GraphQL.Mutations
             }
             return new PowerOfAttorney();
         }
-        public async Task<PowerOfAttorneyDocumentStatus> SetPowerOfAttorneyDocumentStatus(SetPowerOfAttorneyDocumentStatusInput updatedDocStatus, 
+        public async Task<PowerOfAttorneyDocumentStatus> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId, string? comments, 
             [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var oldDocStatus = ctx.PowerOfAttorneyDocumentStatuses.FirstOrDefault(p => p.Id == updatedDocStatus.Id);
+            var oldDocStatus = ctx.PowerOfAttorneyDocumentStatuses.FirstOrDefault(p => p.Id == id);
 
             if (oldDocStatus != null)
             {
-                if (updatedDocStatus.Received != null)
-                    oldDocStatus.Received = DateOnly.FromDateTime((DateTime)updatedDocStatus.Received);
-                if (updatedDocStatus.Requested != null)
-                    oldDocStatus.Requested = DateOnly.FromDateTime((DateTime)updatedDocStatus.Requested);
-                oldDocStatus.Comments = updatedDocStatus.Comments;
-                oldDocStatus.DocumentTypeId = updatedDocStatus.DocumentTypeId;
+                if (received != null)
+                    oldDocStatus.Received = DateOnly.FromDateTime((DateTime)received);
+                if (requested != null)
+                    oldDocStatus.Requested = DateOnly.FromDateTime((DateTime)requested);
+                oldDocStatus.Comments = comments;
+                oldDocStatus.DocumentTypeId = documentTypeId;
 
                 ctx.Update(oldDocStatus);
                 ctx.SaveChanges();
@@ -140,49 +149,5 @@ namespace JamesWebUI.Server.GraphQL.Mutations
         }
     }
 
-    public class SetAddressInput
-    {
-        public Guid AddressId { get; set; }
-        public string Address1 { get; set; }
-        public string? Address2 { get; set; }
-        public string? Address3 { get; set; }
-        public string City { get; set; }
-        public string? StateCode { get; set; }
-        public string? PostalCode { get; set; }
-    }
-    public class SetLicenseInput
-    {
-        public Guid LicenseId { get; set; }
-        public Guid AgencyId { get; set; }
-        public Guid? AgentId { get; set; }
-        public bool? AppointingState { get; set; }
-        public DateOnly? Appointment { get; set; }
-        public string? Comments { get; set; }
-        public DateOnly? Expiration { get; set; }
-        public Guid InsurerId { get; set; }
-        public bool IsResident { get; set; }
-        public string? LicenseNumber { get; set; }
-        public string State { get; set; }
-        public bool IsActive { get; set; }
-        public DateOnly? Termination { get; set; }
-    }
-    public class SetPowerOfAttorneyInput
-    {
-        public Guid Id { get; set; }
-        public Guid InsurerId { get; set; }
-        public int? Limit { get; set; }
-        public string? Serial { get; set; }
-        public DateOnly? FirstIssued { get; set; }
-        public DateOnly? CurrentIssued { get; set; }
-        public string? Comments { get; set; }
-        public Guid Status { get; set; }
-    }
-    public class SetPowerOfAttorneyDocumentStatusInput
-    {
-        public Guid Id { get; set; }
-        public DateTime? Requested { get; set; }
-        public DateTime? Received { get; set; }
-        public Guid DocumentTypeId { get; set; }
-        public string? Comments { get; set; }
-    }
+
 }

@@ -5,11 +5,11 @@ schema {
 }
 
 type Mutation {
-  setAddress(address: SetAddressInput!): SetAddressPayload!
-  setLicense(license: SetLicenseInput!): SetLicensePayload!
+  setAddress(input: SetAddressInput!): SetAddressPayload!
+  setLicense(input: SetLicenseInput!): SetLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
-  setPowerOfAttorney(updatedPowerOfAttorney: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
-  setPowerOfAttorneyDocumentStatus(updatedDocStatus: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
+  setPowerOfAttorney(input: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
+  setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -492,41 +492,8 @@ type Address {
   countryCode: String!
 }
 
-input SetAddressInput {
-  addressId: UUID!
-  address1: String!
-  address2: String
-  address3: String
-  city: String!
-  stateCode: String
-  postalCode: String
-}
-
-input SetLicenseInput {
-  licenseId: UUID!
-  agencyId: UUID!
-  appointingState: Boolean
-  appointment: Date
-  comments: String
-  expiration: Date
-  insurerId: UUID!
-  isResident: Boolean!
-  licenseNumber: String
-  state: String!
-  isActive: Boolean!
-  termination: Date
-}
-
-input SetPowerOfAttorneyInput {
-  id: UUID!
-  insurerId: UUID!
-  limit: Int
-  serial: String
-  firstIssued: Date
-  currentIssued: Date
-  comments: String
-  status: UUID!
-}
+"The `Date` scalar represents an ISO-8601 compliant date type."
+scalar Date
 
 type PowerOfAttorneyDocumentStatus {
   id: UUID!
@@ -541,13 +508,8 @@ type PowerOfAttorneyDocumentStatus {
   poa: PowerOfAttorney!
 }
 
-input SetPowerOfAttorneyDocumentStatusInput {
-  id: UUID!
-  requested: DateTime
-  received: DateTime
-  documentTypeId: UUID!
-  comments: String
-}
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
 
 enum Severity {
   UNSET
@@ -1379,9 +1341,6 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-"The `Date` scalar represents an ISO-8601 compliant date type."
-scalar Date
-
 type RegionDm {
   id: UUID!
   created: DateTime!
@@ -1449,9 +1408,6 @@ type ImagingCategoryTabDivision {
   divisionCodeNavigation: DivisionDm!
   tabNameNavigation: ImagingTab!
 }
-
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
 
 type Ratio {
   id: UUID!
@@ -2166,8 +2122,34 @@ type DefaultGeneralLedgerAccount {
   accountClassNavigation: AccountClassDm!
 }
 
+input SetAddressInput {
+  addressId: UUID!
+  address1: String!
+  address2: String
+  address3: String
+  city: String!
+  stateCode: String
+  postalCode: String
+}
+
 type SetAddressPayload {
   address: Address
+}
+
+input SetLicenseInput {
+  licenseId: UUID!
+  agencyId: UUID!
+  agentId: UUID
+  appointingState: Boolean
+  comments: String
+  appointment: Date
+  expiration: Date
+  termination: Date
+  insurerId: UUID!
+  isResident: Boolean!
+  licenseNumber: String
+  state: String!
+  isActive: Boolean!
 }
 
 type SetLicensePayload {
@@ -2175,15 +2157,45 @@ type SetLicensePayload {
 }
 
 input CreateLicenseInput {
-  license: SetLicenseInput!
+  agencyId: UUID!
+  agentId: UUID
+  appointingState: Boolean
+  comments: String
+  appointment: Date
+  expiration: Date
+  termination: Date
+  insurerId: UUID!
+  isResident: Boolean!
+  licenseNumber: String
+  state: String!
+  isActive: Boolean!
 }
 
 type CreateLicensePayload {
   agencyLicense: AgencyLicense
 }
 
+input SetPowerOfAttorneyInput {
+  poaId: UUID!
+  insurerId: UUID!
+  limit: Int
+  serial: String
+  firstIssued: Date
+  currentIssued: Date
+  comments: String
+  status: UUID!
+}
+
 type SetPowerOfAttorneyPayload {
   powerOfAttorney: PowerOfAttorney
+}
+
+input SetPowerOfAttorneyDocumentStatusInput {
+  id: UUID!
+  requested: DateTime
+  received: DateTime
+  documentTypeId: UUID!
+  comments: String
 }
 
 type SetPowerOfAttorneyDocumentStatusPayload {

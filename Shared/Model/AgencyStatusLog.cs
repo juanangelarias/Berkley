@@ -12,7 +12,7 @@ public partial class AgencyStatusLog
 
     public DateTime Modified { get; set; }
 
-    public string AccountNum { get; set; } = null!;
+    public string AgencyNumber { get; set; } = null!;
 
     public DateTime Effective { get; set; }
 
@@ -23,6 +23,8 @@ public partial class AgencyStatusLog
     public Guid? ChangedBy { get; set; }
 
     public string? Comments { get; set; }
+
+    public virtual Agency AgencyNumberNavigation { get; set; } = null!;
 
     public virtual UserProfile? ChangedByNavigation { get; set; }
 }

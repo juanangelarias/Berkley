@@ -22,6 +22,8 @@ public partial class AccountStatusLog
 
     public DateTime Effective { get; set; }
 
+    public virtual Account AccountNumNavigation { get; set; } = null!;
+
     public virtual AccountStatusDm AccountStatusNavigation { get; set; } = null!;
 
     public virtual UserProfile ModifiedByNavigation { get; set; } = null!;

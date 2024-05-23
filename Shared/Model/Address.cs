@@ -24,6 +24,8 @@ public partial class Address
 
     public string? PostalCode { get; set; }
 
+    public virtual ICollection<AgencyInventory> AgencyInventories { get; set; } = new List<AgencyInventory>();
+
     public virtual ICollection<Bond> Bonds { get; set; } = new List<Bond>();
 
     public virtual ICollection<Branch> Branches { get; set; } = new List<Branch>();

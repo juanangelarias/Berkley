@@ -328,6 +328,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<VAccountRateParent> VAccountRateParents { get; set; }
 
+    public virtual DbSet<VAgencyParent> VAgencyParents { get; set; }
+
     public virtual DbSet<VConfiguration> VConfigurations { get; set; }
 
     public virtual DbSet<VoidedBond> VoidedBonds { get; set; }
@@ -464,6 +466,7 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.HasOne(d => d.Cpacontact).WithMany(p => p.AccountCpacontacts)
                 .HasForeignKey(d => d.CpacontactId)
+                .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("FK_Account_LegalEntity_CPAContact");
 
             entity.HasOne(d => d.Cpafirm).WithMany(p => p.AccountCpafirms)
@@ -556,6 +559,7 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<AccountProgramEmailNotificationGroup>(entity =>
         {
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -750,6 +754,11 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
+            entity.HasOne(d => d.AccountNumNavigation).WithMany(p => p.AccountStatusLogs)
+                .HasForeignKey(d => d.AccountNum)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccountStatusLog_Account");
 
             entity.HasOne(d => d.AccountStatusNavigation).WithMany(p => p.AccountStatusLogs)
                 .HasForeignKey(d => d.AccountStatus)
@@ -1002,6 +1011,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.ToTable("AgencyInventory");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Addressee).HasMaxLength(60);
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -1013,9 +1023,9 @@ public partial class JamesDatabaseContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Sent).HasColumnType("datetime");
 
-            entity.HasOne(d => d.Addressee).WithMany(p => p.AgencyInventories)
-                .HasForeignKey(d => d.AddresseeId)
-                .HasConstraintName("FK_AgencyInventory_LegalEntity");
+            entity.HasOne(d => d.Address).WithMany(p => p.AgencyInventories)
+                .HasForeignKey(d => d.AddressId)
+                .HasConstraintName("FK_AgencyInventory_Address");
 
             entity.HasOne(d => d.Agency).WithMany(p => p.AgencyInventories)
                 .HasPrincipalKey(p => p.Id)
@@ -1104,7 +1114,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.ToTable("AgencyStatusLog");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.AccountNum)
+            entity.Property(e => e.AgencyNumber)
                 .HasMaxLength(8)
                 .IsUnicode(false);
             entity.Property(e => e.Created)
@@ -1120,6 +1130,11 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.OldStatus)
                 .HasMaxLength(15)
                 .IsUnicode(false);
+
+            entity.HasOne(d => d.AgencyNumberNavigation).WithMany(p => p.AgencyStatusLogs)
+                .HasForeignKey(d => d.AgencyNumber)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AgencyStatusLog_Agency");
 
             entity.HasOne(d => d.ChangedByNavigation).WithMany(p => p.AgencyStatusLogs)
                 .HasForeignKey(d => d.ChangedBy)
@@ -3847,6 +3862,12 @@ public partial class JamesDatabaseContext : DbContext
                 .HasMaxLength(200)
                 .IsUnicode(false);
 
+            entity.HasOne(d => d.Agency).WithMany(p => p.PowerOfAttorneys)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.AgencyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PowerOfAttorney_Agency");
+
             entity.HasOne(d => d.Insurer).WithMany(p => p.PowerOfAttorneys)
                 .HasForeignKey(d => d.InsurerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -3981,7 +4002,6 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.HasOne(d => d.BudgetDefaultNavigation).WithMany(p => p.InverseBudgetDefaultNavigation)
                 .HasForeignKey(d => d.BudgetDefault)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ProfitCenter_ProfitCenter");
 
             entity.HasOne(d => d.CommercialRegionNavigation).WithMany(p => p.ProfitCenters)
@@ -4865,6 +4885,13 @@ public partial class JamesDatabaseContext : DbContext
             entity
                 .HasNoKey()
                 .ToView("vAccountRateParents");
+        });
+
+        modelBuilder.Entity<VAgencyParent>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vAgencyParents");
         });
 
         modelBuilder.Entity<VConfiguration>(entity =>

@@ -90,12 +90,12 @@
                             <RadzenRow>
                                 <RadzenColumn Size="3">
                                     <RadzenFormField Text="Parent No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="10300" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.ParentNavigation?.AgencyIdNavigation?.AgencyNumber" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                                 <RadzenColumn>
                                     <RadzenFormField Text="Parent" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.ParentNavigation?.FullName" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
@@ -114,7 +114,7 @@
                                 </RadzenColumn>
                                 <RadzenColumn>
                                     <RadzenFormField Text="NPN" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@agencyToDisplay?.NationalProducerNumber" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
@@ -510,13 +510,13 @@
         var changedAddress = args;
         await JamesClient.SetAddress.ExecuteAsync(new SetAddressInput
             {
-                AddressId = args.Id,
-                Address1 = args.Address1,
-                Address2 = args?.Address2,
-                Address3 = args?.Address3,
-                City = args.City,
-                StateCode = args.StateCode,
-                PostalCode = args.PostalCode
+                AddressId = changedAddress.Id,
+                Address1 = changedAddress.Address1,
+                Address2 = changedAddress?.Address2,
+                Address3 = changedAddress?.Address3,
+                City = changedAddress.City,
+                StateCode = changedAddress.StateCode,
+                PostalCode = changedAddress.PostalCode
             });
 
     }

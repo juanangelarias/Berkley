@@ -3,10 +3,14 @@
         id,
         comments,
         status,
+        statusNavigation{
+            status
+        }
         limit,
         serial,
         currentIssued,
         firstIssued,
+        insurerId,
         insurer{
             id,
             fullName,
@@ -19,8 +23,10 @@
             requested,
             received,
             comments,
+            documentTypeId,
             documentType{
-                name
+                name,
+                id
             }
         }
     }

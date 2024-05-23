@@ -49,7 +49,9 @@
         <RadzenDataGridColumn TItem="Bond" Title="Account No." Property="AccountNum" Width="100px" />
         <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" Width="200px" />
         <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" Width="200px" SortOrder="SortOrder.Descending" />
+        <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" Width="200px"/>
         <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="75px" />
+        <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName"  Width="200px"/>
         <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" FormatString="{0:d}" Width="200px" />
         <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass" 
             Filterable="true" FilterValue="@ClassFilter" FilterProperty="BondClass" FilterOperator="FilterOperator.Contains" Type="typeof(IEnumerable<String>)"

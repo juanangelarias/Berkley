@@ -25,6 +25,7 @@ namespace JamesWebUI.Server.GraphQL.Queries
             var result = ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
                 .Include(a => a.IdNavigation)
                 .ThenInclude(a => a.ParentNavigation)
+                .ThenInclude(a => a.AgencyIdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
 
@@ -38,6 +39,9 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .Include(a => a.IdNavigation)
                 .ThenInclude(a => a.LegalEntityAddresses.Where(lea => lea.Type == "Main"))
                 .ThenInclude(a => a.Address)
+                .Include(a => a.Bonds)
+                .ThenInclude(a => a.UnderWriter)
+                .ThenInclude(a => a.IdNavigation)
                 .Include(a => a.Bonds)
                 .ThenInclude(a => a.Obligee)
                 .ToList();
@@ -59,6 +63,7 @@ namespace JamesWebUI.Server.GraphQL.Queries
             var ctx = contextFactory.CreateDbContext();
             var result = ctx.Bonds.Where(a => a.AgencyId == agencyId)
                 .Include(b => b.UnderWriter)
+                .ThenInclude(b => b.IdNavigation)
                 .Include(b => b.Obligee)
                 .ToList();
 
@@ -107,6 +112,17 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .ThenInclude(p => p.DocumentType)
                 .Include(p => p.StatusNavigation)
                 .ToList();
+        }
+
+        public List<PowerOfAttorneyDocumentNameDm> GetPOADocumentNames([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            return ctx.PowerOfAttorneyDocumentNameDms.ToList();
+        }
+        public List<PowerOfAttorneyStatusDm> GetAllPoaStatuses([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            return ctx.PowerOfAttorneyStatusDms.ToList();
         }
     }
 }

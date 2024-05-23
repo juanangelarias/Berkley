@@ -1,0 +1,29 @@
+﻿mutation SetPowerOfAttorneyDocumentStatus($input: SetPowerOfAttorneyDocumentStatusInput!) {
+  setPowerOfAttorneyDocumentStatus(input: $input) {
+    powerOfAttorneyDocumentStatus{
+            id,
+            requested,
+            received,
+            comments,
+            documentTypeId            
+    }
+  }
+} 
+
+mutation SetPowerOfAttorney ($input: SetPowerOfAttorneyInput!) {
+  setPowerOfAttorney(input: $input) {
+    powerOfAttorney{
+        id,
+        insurerId,
+        limit,
+        serial,
+        firstIssued,
+        currentIssued,
+        comments,
+        status,
+        statusNavigation{
+         status
+        }
+    }
+  }
+}

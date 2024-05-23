@@ -15,7 +15,7 @@
         </RadzenColumn>
         <RadzenColumn>
             <RadzenStack Orientation="Orientation.Vertical">
-                <RadzenText Text="@agentToDisplay.FullName"/>
+                <RadzenText Text="@agentToDisplay.IdNavigation.FullName"/>
             </RadzenStack>
         </RadzenColumn>
     </RadzenRow>
@@ -30,7 +30,7 @@
 
 
 @code {
-    [Parameter] public IGetAgencyByAgencyNumber_AgencyByAgencyNumber_Agents agentToDisplay { get; set; }
+    [Parameter] public Agent agentToDisplay { get; set; }
     
     protected override async Task OnInitializedAsync()
     {

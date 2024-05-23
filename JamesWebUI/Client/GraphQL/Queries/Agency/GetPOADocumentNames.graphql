@@ -1,0 +1,8 @@
+﻿query GetPOADocumentNames{
+  poaDocumentNames {
+    created
+    id
+    modified
+    name
+  }
+}

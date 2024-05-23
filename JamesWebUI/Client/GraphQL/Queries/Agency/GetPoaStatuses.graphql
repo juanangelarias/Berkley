@@ -1,0 +1,6 @@
+﻿query GetAllPoaStatuses{
+  allPoaStatuses {
+    id,
+    status
+  }
+} 

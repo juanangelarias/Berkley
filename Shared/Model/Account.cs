@@ -142,6 +142,8 @@ public partial class Account
 
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 
+    public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
+
     public virtual ICollection<AdditionalRelatedParty> AdditionalRelatedParties { get; set; } = new List<AdditionalRelatedParty>();
 
     public virtual ICollection<AgencyCompetition> AgencyCompetitions { get; set; } = new List<AgencyCompetition>();

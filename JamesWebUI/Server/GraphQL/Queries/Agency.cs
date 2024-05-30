@@ -65,6 +65,8 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 .Include(b => b.UnderWriter)
                 .ThenInclude(b => b.IdNavigation)
                 .Include(b => b.Obligee)
+                .Include(b => b.AccountNumNavigation)
+                .ThenInclude(b => b.IdNavigation)
                 .ToList();
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}."); ;

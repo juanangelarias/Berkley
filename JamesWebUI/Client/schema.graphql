@@ -5,9 +5,11 @@ schema {
 }
 
 type Mutation {
+  createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
   setLicense(input: SetLicenseInput!): SetLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
+  deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
   setPowerOfAttorney(input: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
@@ -2122,6 +2124,32 @@ type DefaultGeneralLedgerAccount {
   accountClassNavigation: AccountClassDm!
 }
 
+input CreateAgencyInput {
+  parentId: UUID!
+  fullName: String!
+  branch: String!
+  nasbp: Boolean!
+  w9: Boolean!
+  need1099: Boolean!
+  profitSharing: Boolean!
+  address1: String!
+  address2: String!
+  address3: String!
+  city: String!
+  stateCode: String!
+  postalCode: String!
+  billingAddress1: String!
+  billingAddress2: String!
+  billingAddress3: String!
+  billingCity: String!
+  billingStateCode: String!
+  billingPostalCode: String!
+}
+
+type CreateAgencyPayload {
+  agency: Agency
+}
+
 input SetAddressInput {
   addressId: UUID!
   address1: String!
@@ -2173,6 +2201,14 @@ input CreateLicenseInput {
 
 type CreateLicensePayload {
   agencyLicense: AgencyLicense
+}
+
+input DeleteLicenseInput {
+  licenseId: UUID!
+}
+
+type DeleteLicensePayload {
+  boolean: Boolean
 }
 
 input SetPowerOfAttorneyInput {

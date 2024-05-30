@@ -1,0 +1,5 @@
+﻿mutation DeleteLicense ($input: DeleteLicenseInput!){
+  deleteLicense(input: $input) {
+    boolean
+  }
+} 

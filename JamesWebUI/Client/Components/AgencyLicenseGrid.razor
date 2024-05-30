@@ -228,7 +228,9 @@
     }
     async Task DeleteLicenseRow(AgencyLicense license)
     {
-
+        await ShowLoading();
+        var result = await JamesClient.DeleteLicense.ExecuteAsync(new DeleteLicenseInput(){LicenseId = license.Id});
+        await LoadLicenses();
     }
     async Task SaveLicenseRow(AgencyLicense license)
     {

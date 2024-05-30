@@ -12,7 +12,62 @@ namespace JamesWebUI.Server.GraphQL.Mutations
     [MutationType]
     public class AgencyMutation
     {
-
+        public async Task<Agency> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9, bool need1099, bool profitSharing, string address1, string address2, string address3, string city, string stateCode,
+            string postalCode, string billingAddress1, string billingAddress2, string billingAddress3, string billingCity, string billingStateCode, string billingPostalCode,
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            Guid newId = Guid.NewGuid();
+            LegalEntity newLegalEntity = new LegalEntity()
+            {
+                Id = newId,
+                FullName = fullName,
+                Parent = parentId,
+                EntityType = "Agency",
+                IsIndividual = false
+            };
+            //TODO: Figure out Agency Number
+            Agency newAgency = new Agency()
+            {
+                Id = newId,
+                Nasbp = nasbp,
+                W9 = w9,
+                Need1099 = need1099,
+                ProfitSharing = profitSharing,
+            };
+            Address newMainAddress = new Address()
+            {
+                Id = Guid.NewGuid(),
+                Address1 = address1,
+                Address2 = address2,
+                Address3 = address3,
+                City = city,
+                StateCode = stateCode,
+                PostalCode = postalCode
+            };
+            Address newBillingAddress = new Address()
+            {
+                Id = Guid.NewGuid(),
+                Address1 = billingAddress1,
+                Address2 = billingAddress2,
+                Address3 = billingAddress3,
+                City = billingCity,
+                StateCode = billingStateCode,
+                PostalCode = billingPostalCode
+            };
+            LegalEntityAddress newLEMainAddress = new LegalEntityAddress()
+            {
+                LegalEntityId = newId,
+                AddressId = newMainAddress.Id
+            };
+            LegalEntityAddress newLEBillingAddress = new LegalEntityAddress()
+            {
+                LegalEntityId = newId,
+                AddressId = newBillingAddress.Id
+            };
+            //TODO: Insert the new agency
+            return new Agency();
+        }
         public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -101,6 +156,23 @@ namespace JamesWebUI.Server.GraphQL.Mutations
             ctx.Add(newLicense);
             ctx.SaveChanges();
             return newLicense;
+        }
+        public async Task<bool> DeleteLicense(Guid licenseId, [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            bool success = false;
+
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var licenseToRemove = ctx.AgencyLicenses.FirstOrDefault(l => l.Id == licenseId);
+
+            if (licenseToRemove != null)
+            {
+                ctx.AgencyLicenses.Remove(licenseToRemove);
+                ctx.SaveChanges(true);
+                success = true;
+            }
+            //TODO: Handle errors
+
+            return success;
         }
         public async Task<PowerOfAttorney> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
             [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)

@@ -1,7 +1,13 @@
 ﻿query GetAgencyBonds($agencyId: UUID!) {
   agencyBonds(agencyId: $agencyId) {
     bondNumber
-    accountNum
+    accountNumNavigation{
+      accountNum
+      idNavigation{
+        fullName
+      }
+      
+    }
     effective
     expiration
     underWriter{

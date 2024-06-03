@@ -8,7 +8,6 @@
 @inherits SlidingComponent
 
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
 
 <Theme />
 
@@ -26,13 +25,7 @@
         </RadzenTabsItem>
         <RadzenTabsItem Text="Related Parties">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <RadzenDataGrid TItem="string" Data="@blankList"
-                                Style="border-radius: 20px;" EmptyText="No records to display">
-                    <Columns>
-                        <RadzenDataGridColumn TItem="string" Title="Agency #" Width="100px" />
-                        <RadzenDataGridColumn TItem="string" Title="Agency Name" />
-                    </Columns>
-                </RadzenDataGrid>
+                <AgencyRelatedPartiesGrid AgencyID="agencyId"/>
             </Animate>
         </RadzenTabsItem>
     </Tabs>

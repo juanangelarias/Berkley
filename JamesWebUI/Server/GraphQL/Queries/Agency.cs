@@ -126,5 +126,23 @@ namespace JamesWebUI.Server.GraphQL.Queries
             var ctx = contextFactory.CreateDbContext();
             return ctx.PowerOfAttorneyStatusDms.ToList();
         }
+        public List<Agency> GetAgencyRelatedParties(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = contextFactory.CreateDbContext();
+            var topParent = ctx.VAgencyParents.FirstOrDefault(a => a.Id == agencyId);
+
+            if (topParent != null)
+            {
+                var relatedPartyIds = ctx.VAgencyParents.Where(a => a.Parent == topParent.Parent).Select(a => a.Id).ToList();
+                var relatedAgencies = ctx.Agencies.Where(a => relatedPartyIds.Contains(a.Id))
+                    .Include(a => a.IdNavigation)
+                    .ToList();
+                return relatedAgencies;
+            }
+            else
+            {
+                return new List<Agency>();
+            }
+        }
     }
 }

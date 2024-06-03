@@ -1,1 +1,7 @@
-﻿
+﻿mutation SetAgencyLicense ($input: SetLicenseInput!) {
+  setLicense(input: $input) {
+    agencyLicense{
+      id
+    }
+  }
+} 

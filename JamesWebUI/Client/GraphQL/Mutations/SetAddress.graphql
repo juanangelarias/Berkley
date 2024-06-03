@@ -1,7 +1,0 @@
-﻿mutation SetAddress($input: SetAddressInput!) {
-  setAddress(input: $input) {
-    address {
-      id
-    }
-  }
-}

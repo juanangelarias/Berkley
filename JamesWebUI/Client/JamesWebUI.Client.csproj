@@ -13,12 +13,8 @@
     <GraphQL Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
     <GraphQL Remove="GraphQL\GetAgencyLicenses.graphql" />
     <GraphQL Remove="GraphQL\GetStates.graphql" />
-    <GraphQL Remove="GraphQL\Mutations\CreateLicense.graphql" />
-    <GraphQL Remove="GraphQL\Mutations\DeleteLicense.graphql" />
-    <GraphQL Remove="GraphQL\Mutations\SetAddress.graphql" />
-    <GraphQL Remove="GraphQL\Mutations\SetLicense.graphql" />
-    <GraphQL Remove="GraphQL\Mutations\SetPowerOfAttorney.graphql" />
-    <GraphQL Remove="GraphQL\Queries\Agency.graphql" />
+    <GraphQL Remove="GraphQL\Mutations\AgencyMutations.graphql" />
+    <GraphQL Remove="GraphQL\Queries\AgencyQueries.graphql" />
     <GraphQL Remove="GraphQL\Queries\GetAgentByAgentId.graphql" />
     <GraphQL Remove="GraphQL\Queries\GetInsurers.graphql" />
     <GraphQL Remove="GraphQL\SearchAgencies.graphql" />

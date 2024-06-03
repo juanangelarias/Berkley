@@ -136,6 +136,8 @@ namespace JamesWebUI.Server.GraphQL.Queries
                 var relatedPartyIds = ctx.VAgencyParents.Where(a => a.Parent == topParent.Parent).Select(a => a.Id).ToList();
                 var relatedAgencies = ctx.Agencies.Where(a => relatedPartyIds.Contains(a.Id))
                     .Include(a => a.IdNavigation)
+                    .ThenInclude(a => a.LegalEntityAddresses.Where(lea => lea.Type == "Main"))
+                    .ThenInclude(a=> a.Address)
                     .ToList();
                 return relatedAgencies;
             }

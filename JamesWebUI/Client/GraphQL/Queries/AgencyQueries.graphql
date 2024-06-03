@@ -211,6 +211,14 @@ query GetAgencyRelatedParties($input: UUID!){
     agencyNumber
     idNavigation{
         fullName
+        legalEntityAddresses{
+          address{
+            address1
+            city
+            stateCode
+            postalCode
+          }
+        }
     }
     id
   }

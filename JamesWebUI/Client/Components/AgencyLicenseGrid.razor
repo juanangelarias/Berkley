@@ -19,7 +19,7 @@
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" 
-                AllowColumnPicking="true" AllowGrouping="true"
+                AllowColumnPicking="true" AllowGrouping="true" 
                 RowUpdate="UpdateLicenseRow" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
                 IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
@@ -170,13 +170,20 @@
         var result = await JamesClient.GetAgencyLicenses.ExecuteAsync(AgencyId);
 
         var licensesList = new List<AgencyLicense>();
-        if (result.Data != null)
+        if (result.Errors.Count == 0)
         {
-            foreach (var license in result.Data.AgencyLicenses)
+            if (result.Data != null)
             {
-                licensesList.Add(James.Shared.ThisToThat.ToEntityType<AgencyLicense>(license));
+                foreach (var license in result.Data.AgencyLicenses)
+                {
+                    licensesList.Add(James.Shared.ThisToThat.ToEntityType<AgencyLicense>(license));
+                }
+                agencyLicenses = licensesList;
             }
-            agencyLicenses = licensesList;
+        }
+        else
+        {
+            //TODO: Handle errors
         }
 
         await licenseGrid.Reload();

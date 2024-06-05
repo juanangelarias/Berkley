@@ -1,0 +1,242 @@
+﻿query GetAgencyByAgencyNumber($agencyNumber: String!) {
+  agencyByAgencyNumber(agencyNumber: $agencyNumber) {
+    id
+    agencyNumber
+    branch
+    status
+    w9
+    nasbp
+    nationalProducerNumber
+    idNavigation {
+      fullName
+      parentNavigation {
+        id
+        fullName
+        agencyIdNavigation {
+          agencyNumber
+        }
+      }
+      legalEntityAddresses {
+        type
+        address {
+          id
+          address1
+          address2
+          address3
+          city
+          stateCode
+          stateCodeNavigation {
+            countryCode
+            countryCodeNavigation {
+              name
+            }
+          }
+          postalCode
+        }
+      }
+    }
+  }
+}
+
+query agencyAccounts($agencyNumber: String!) {
+  agencyAccounts(agencyNumber: $agencyNumber) {
+    accountNum
+    branch
+    idNavigation {
+      fullName
+    }
+    bonds {
+      bondNumber
+      accountNum
+      effective
+      expiration
+      underWriter {
+        idNavigation{
+          fullName
+        }
+      }
+      obligee {
+        fullName
+      }
+      bondType {
+        bondType
+      }
+      siccode
+      municipality
+      bondClass
+      status
+    }
+    mainAddress {
+      id
+      address1
+      address2
+      city
+      stateCode
+      postalCode
+    }
+  }
+}
+
+query GetAgencyBonds($agencyId: UUID!) {
+  agencyBonds(agencyId: $agencyId) {
+    bondNumber
+    accountNumNavigation{
+      accountNum
+      idNavigation{
+        fullName
+      }
+      
+    }
+    effective
+    expiration
+    underWriter{
+      idNavigation{
+        fullName
+      }
+    }
+    obligee{
+      fullName
+    }
+    bondType {
+      bondType
+    }
+    siccode
+    municipality
+    bondClass
+    status
+  }
+}
+
+query GetAgencyAgents($agencyId: UUID!){
+	agencyAgents(agencyId: $agencyId){
+        agentId,
+        agent{
+            fullName,
+            givenName,
+            middleInitial,
+            familyName,
+            mainEmailAddress,
+            nationalProducerNumber,
+            idNavigation{
+                givenName,
+                middleInitial,
+                familyName,
+                fullName
+            }
+            agencyLicenses{
+                id,
+                licenseNumber,
+                comments,
+                appointment,
+                termination,
+                appointingState,
+                state,
+                isActive,
+                created,
+                insurer{
+                    id,
+                    idNavigation{
+                        fullName
+                    }
+                }
+            }
+        }
+    }
+}
+
+query GetAgencyStatuses(){
+	agencyStatuses(){
+		id,
+		status
+	}
+}
+
+query GetAgencyLicenses($agencyId: UUID!) {
+  agencyLicenses(agencyId: $agencyId) {
+    id,
+    isActive,
+    state,
+    appointingState,
+    licenseNumber,
+    isResident,
+    insurerId,
+    appointment,
+    expiration,
+    termination,
+    insurer {
+      id,
+      idNavigation{
+        fullName
+      }
+    }
+  }
+}
+
+query GetAgencyPOAs($agencyId: UUID!){
+    agencyPOAs(agencyId: $agencyId){
+        id,
+        comments,
+        status,
+        statusNavigation{
+            status
+        }
+        limit,
+        serial,
+        currentIssued,
+        firstIssued,
+        insurerId,
+        insurer{
+            id,
+            fullName,
+            idNavigation{
+              fullName
+            }
+        }
+        powerOfAttorneyDocumentStatuses{
+            id,
+            requested,
+            received,
+            comments,
+            documentTypeId,
+            documentType{
+                name,
+                id
+            }
+        }
+    }
+}
+
+query GetAgencyRelatedParties($input: UUID!){
+  agencyRelatedParties (agencyId: $input) {
+    agencyNumber
+    idNavigation{
+        fullName
+        legalEntityAddresses{
+          address{
+            address1
+            city
+            stateCode
+            postalCode
+          }
+        }
+    }
+    id
+  }
+} 
+
+query GetAllPoaStatuses{
+  allPoaStatuses {
+    id,
+    status
+  }
+} 
+
+query GetPOADocumentNames{
+  poaDocumentNames {
+    created
+    id
+    modified
+    name
+  }
+}
+

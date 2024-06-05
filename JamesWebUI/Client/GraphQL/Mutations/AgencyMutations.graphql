@@ -1,0 +1,59 @@
+﻿mutation CreateLicense ($input: CreateLicenseInput!){
+  createLicense(input: $input) {
+    agencyLicense{
+      id
+    }
+  }
+} 
+
+mutation DeleteLicense ($input: DeleteLicenseInput!){
+  deleteLicense(input: $input) {
+    boolean
+  }
+} 
+
+mutation SetAddress($input: SetAddressInput!) {
+  setAddress(input: $input) {
+    address {
+      id
+    }
+  }
+}
+
+mutation SetAgencyLicense ($input: SetLicenseInput!) {
+  setLicense(input: $input) {
+    agencyLicense{
+      id
+    }
+  }
+} 
+
+mutation SetPowerOfAttorneyDocumentStatus($input: SetPowerOfAttorneyDocumentStatusInput!) {
+  setPowerOfAttorneyDocumentStatus(input: $input) {
+    powerOfAttorneyDocumentStatus{
+            id,
+            requested,
+            received,
+            comments,
+            documentTypeId            
+    }
+  }
+} 
+
+mutation SetPowerOfAttorney ($input: SetPowerOfAttorneyInput!) {
+  setPowerOfAttorney(input: $input) {
+    powerOfAttorney{
+        id,
+        insurerId,
+        limit,
+        serial,
+        firstIssued,
+        currentIssued,
+        comments,
+        status,
+        statusNavigation{
+         status
+        }
+    }
+  }
+}

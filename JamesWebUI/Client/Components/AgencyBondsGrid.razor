@@ -11,8 +11,9 @@
 
 <Theme />
 
-<RadzenDataGrid TItem="Bond" @ref="@agencyBondGrid" AllowGrouping="true" AllowSorting="true" Density="Density.Compact"
-                Style="height: 500px; border-radius: 20px;" AllowColumnResize="true" AllowColumnPicking="true"
+<RadzenDataGrid TItem="Bond" @ref="@agencyBondGrid" 
+                AllowGrouping="true" AllowSorting="true" AllowColumnResize="true" AllowColumnPicking="true"
+                Density="Density.Compact" Style="height: 500px; border-radius: 20px;" 
                 AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <Columns>
@@ -117,7 +118,6 @@
             }
 
             agencyBonds = bondList;
-            agencyBondGrid.Data = bondList;
             await agencyBondGrid.Reload();
         }
     }

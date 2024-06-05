@@ -1,7 +1,0 @@
-﻿mutation CreateLicense ($input: CreateLicenseInput!){
-  createLicense(input: $input) {
-    agencyLicense{
-      id
-    }
-  }
-} 

@@ -18,8 +18,9 @@
 <RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" Data="@agencyLicenses"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
-                AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
-                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
+                AllowFiltering="true" FilterMode="FilterMode.Simple" 
+                AllowColumnPicking="true" AllowGrouping="true" 
+                RowUpdate="UpdateLicenseRow" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
                 IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
@@ -160,22 +161,29 @@
 
         if (AgencyId != Guid.Empty)
         {
-            await ShowLoading();
             await LoadLicenses();
         }
     }
     private async Task LoadLicenses()
     {
+        await ShowLoading();
         var result = await JamesClient.GetAgencyLicenses.ExecuteAsync(AgencyId);
 
         var licensesList = new List<AgencyLicense>();
-        if (result.Data != null)
+        if (result.Errors.Count == 0)
         {
-            foreach (var license in result.Data.AgencyLicenses)
+            if (result.Data != null)
             {
-                licensesList.Add(James.Shared.ThisToThat.ToEntityType<AgencyLicense>(license));
+                foreach (var license in result.Data.AgencyLicenses)
+                {
+                    licensesList.Add(James.Shared.ThisToThat.ToEntityType<AgencyLicense>(license));
+                }
+                agencyLicenses = licensesList;
             }
-            agencyLicenses = licensesList;
+        }
+        else
+        {
+            //TODO: Handle errors
         }
 
         await licenseGrid.Reload();
@@ -224,6 +232,7 @@
     }
     async Task EditLicenseRow(AgencyLicense license)
     {
+        await ShowLoading();
         await licenseGrid.EditRow(license);
     }
     async Task DeleteLicenseRow(AgencyLicense license)
@@ -266,21 +275,21 @@
     async Task UpdateLicenseRow(AgencyLicense license)
     {
         //This is where we handle row Updates.
-        // var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
-        //     {
-        //         LicenseId = license.Id,
-        //         AgencyId = license.AgencyId,
-        //         AppointingState = license.AppointingState,
-        //         Appointment = license.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-        //         Comments = license.Comments,
-        //         Expiration = license.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-        //         InsurerId = license.InsurerId,
-        //         IsResident = license.IsResident,
-        //         LicenseNumber = license.LicenseNumber,
-        //         State = license.State,
-        //         IsActive = license.IsActive,
-        //         Termination = license.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
-        //     });
+        var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
+            {
+                LicenseId = license.Id,
+                AgencyId = license.AgencyId,
+                AppointingState = license.AppointingState,
+                Appointment = license.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                Comments = license.Comments,
+                Expiration = license.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                InsurerId = license.InsurerId,
+                IsResident = license.IsResident,
+                LicenseNumber = license.LicenseNumber,
+                State = license.State,
+                IsActive = license.IsActive,
+                Termination = license.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
+            });
     }
     async Task StateFilterChange()
     {

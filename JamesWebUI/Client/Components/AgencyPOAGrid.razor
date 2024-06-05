@@ -5,37 +5,83 @@
 @inject ThemeService ThemeService
 @inject IDataAccess DataAccess
 @inject ILoggingService LoggingService
+@inject NotificationService NotificationService
 
 <Theme />
 
 <RadzenDataGrid @ref="poaGrid" TItem="PowerOfAttorney" Data="powerOfAttorneys"
-                AllowFiltering="true" FilterMode="FilterMode.Simple" Style="height: 500px;" Filter="@ShowLoading"
+                AllowFiltering="true" FilterMode="FilterMode.Simple" Style="height: 500px; border-radius: 20px;" Filter="@ShowLoading"
                 AllowSorting="true">
     <Template Context="poa">
-        <RadzenDataList TItem="PowerOfAttorneyDocumentStatus" Data="poa.PowerOfAttorneyDocumentStatuses"
-        Style="max-height:400px; overflow:auto; width:100%" AllowVirtualization="true" WrapItems="false" AllowPaging="false">
+        <RadzenDataList TItem="PowerOfAttorneyDocumentStatus" Data="poa.PowerOfAttorneyDocumentStatuses" Density="Density.Compact"
+                        Style="max-height:400px; overflow:auto; width:100%" AllowVirtualization="true" WrapItems="false" AllowPaging="false">
             <Template Context="poaDocStatus">
                 <PowerOfAttorneyDocumentStatusCard poaDocumentStatus="poaDocStatus" />
             </Template>
         </RadzenDataList>
     </Template>
     <Columns>
-        <RadzenDataGridColumn Title="Status" Property="StatusNavigation.Status" />
-        <RadzenDataGridColumn Title="Insurer" Property="Insurer.IdNavigation.FullName" Width="300px" Type="typeof(IEnumerable<String>)"
+        <RadzenDataGridColumn Title="Status" Property="Status" Type="typeof(IEnumerable<Guid>)"
+            FilterValue="@StatusFilter" FilterProperty="Status" FilterOperator="FilterOperator.Contains">
+            <FilterTemplate>
+                <RadzenDropDown Change="StatusFilterChange" @bind-Value="@StatusFilter" AllowClear="true" Style="width:95%" TextProperty="StatusNavigation.Status" ValueProperty="Status"
+                                Multiple="true" TValue="List<Guid>" 
+                                Data="@powerOfAttorneys?.OrderBy(p => p.StatusNavigation.Status).GroupBy(p => p.Status).Select(p => p?.FirstOrDefault()).ToList()" />
+            </FilterTemplate>
+            <EditTemplate Context="poa">
+                <RadzenDropDown TValue="Guid" @bind-Value="poa.Status" Data="@AllStatuses" Style="width: 95%"
+                TextProperty="Status" ValueProperty="Id" />
+            </EditTemplate>
+            <Template Context="poa">
+                @poa.StatusNavigation.Status
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Insurer" Property="Insurer.IdNavigation.FullName" 
+                              Width="300px" Type="typeof(IEnumerable<String>)"
                               FilterValue="@InsurerFilter" FilterProperty="Insurer.IdNavigation.FullName" FilterOperator="FilterOperator.Contains">
             <FilterTemplate>
-                <RadzenDropDown Change="InsurerFilterChange" @bind-Value="@InsurerFilter" AllowClear="true"
-                                Multiple="true" TValue="List<String>" Data="@powerOfAttorneys?.OrderBy(p => p.Insurer.IdNavigation.FullName).GroupBy(p => p.Insurer.Id).Select(p => p?.FirstOrDefault()?.Insurer.IdNavigation.FullName).ToList()" />
+                <RadzenDropDown Change="InsurerFilterChange" @bind-Value="@InsurerFilter" AllowClear="true" Style="width:95%"
+                                Multiple="true" TValue="List<String>" 
+                                Data="@powerOfAttorneys?.OrderBy(p => p.Insurer.IdNavigation.FullName).GroupBy(p => p.Insurer.Id).Select(p => p?.FirstOrDefault()?.Insurer.IdNavigation.FullName).ToList()" />
             </FilterTemplate>
+            <EditTemplate Context="poa">
+                <RadzenDropDown @bind-Value="poa.Insurer" Data="@AllInsurers" Style="width: 95%"
+                TextProperty="IdNavigation.FullName" />
+            </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px" />
-        <RadzenDataGridColumn Title="Ref #" Property="Serial" />
-        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" />
-        <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}" SortOrder="SortOrder.Descending" />
+        <RadzenDataGridColumn Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px">
+            <EditTemplate Context="poa">
+                <RadzenNumeric @bind-Value="poa.Limit" Format="c0" Style="width: 95%" ShowUpDown="false" />
+            </EditTemplate>    
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Ref #" Property="Serial" >
+            <EditTemplate Context="poa">
+                <RadzenTextBox @bind-Value="poa.Serial" Style="width: 95%" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" Width="200px">
+            <EditTemplate Context="poa">
+                <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.FirstIssued" Style="width: 95%" />
+            </EditTemplate>    
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}" SortOrder="SortOrder.Descending" Width="200px">
+            <EditTemplate Context="poa">
+                <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.CurrentIssued" Style="width: 95%" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="POA">
             <Template>
                 <RadzenButton Variant="Variant.Text" Icon="picture_as_pdf" Size="ButtonSize.ExtraSmall" />
             </Template>
+
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+            <Template Context="poa">
+                <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.ExtraSmall" Click="@(args => EditPoaRow(poa))" @onclick:stopPropagation="true" /> 
+            </Template>
+            <EditTemplate Context="poa">
+                <RadzenButton Variant="Variant.Text" Icon="save" Size="ButtonSize.ExtraSmall" Click="@(args => UpdatePoaRow(poa))" />
+            </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
 </RadzenDataGrid>
@@ -45,8 +91,13 @@
     private List<PowerOfAttorney> powerOfAttorneys { get; set; }
     private RadzenDataGrid<PowerOfAttorney> poaGrid { get; set; }
     private RadzenDropDown<Guid> filterInsurerDropDown { get; set; }
+    private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
+    private List<PowerOfAttorneyStatusDm> AllStatuses { get; set; } = new List<PowerOfAttorneyStatusDm>();
     private List<String> InsurerFilter = null;
+    private List<Guid> StatusFilter = null;
     private bool isLoading = false;
+    private bool poaEditMode = false;
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -54,6 +105,10 @@
 
         await ShowLoading();
         await LoadPOAs();
+        if (AllInsurers.Count == 0)
+            AllInsurers = await GetInsurers();
+        if (AllStatuses.Count == 0)
+            AllStatuses = await GetAllStatuses();
     }
     private async Task LoadPOAs()
     {
@@ -82,15 +137,28 @@
             return [];
         }
     }
-    private async Task LoadInsurerFilterDropDown()
+    private async Task<List<PowerOfAttorneyStatusDm>> GetAllStatuses()
     {
-        filterInsurerDropDown.Data = await GetInsurers();
+        var result = await DataAccess.GetAllPoaStatuses();
+        if (result.Success)
+        return result.Data.OrderBy(s => s.Status).ToList();
+        //TODO:Add error details
+        LoggingService.LogError("Error getting all statuses in the AgencyPOAGrid");
+        return [];
     }
     async Task InsurerFilterChange()
     {
         if (InsurerFilter != null && !InsurerFilter.Any())
         {
             InsurerFilter = null;
+        }
+        await poaGrid.Reload();
+    }
+    async Task StatusFilterChange()
+    {
+        if (StatusFilter != null && !StatusFilter.Any())
+        {
+            StatusFilter = null;
         }
         await poaGrid.Reload();
     }
@@ -102,4 +170,43 @@
 
         isLoading = false;
     }
+    private void TogglePoaEditMode()
+    {
+        poaEditMode = !poaEditMode;
+    }
+
+    //Enable row edit mode for a POA record.
+    private async void EditPoaRow(PowerOfAttorney poaToEdit)
+    {
+        await poaGrid.EditRow(poaToEdit);
+    }
+    //Save changes to a POA row, disable edit mode for that row. 
+    private async void UpdatePoaRow(PowerOfAttorney poaToUpdate)
+    {
+        await ShowLoading();
+        if (poaToUpdate != null)
+        {
+            var result = await DataAccess.SetPowerOfAttorney(poaToUpdate.Id,
+                poaToUpdate.InsurerId,
+                poaToUpdate.Limit,
+                poaToUpdate.Serial,
+                poaToUpdate.FirstIssued,
+                poaToUpdate.CurrentIssued,
+                poaToUpdate.Comments,
+                poaToUpdate.Status);
+            if(result.Success)
+            {
+                NotificationService.Notify(new NotificationMessage{Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000});
+
+                await poaGrid.UpdateRow(poaToUpdate);
+                await poaGrid.Reload();
+            }
+            else
+            {
+                //TODO: Deal with errors.
+            }
+            
+        }
+    }
+
 }

@@ -17,11 +17,12 @@
         row-gap: 2px;
     }
 </style>
-<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" RowRender="OnRowRender" Data="@agencyLicenses"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" Data="@agencyLicenses"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
-                AllowFiltering="true" FilterMode="FilterMode.Simple" RowUpdate="UpdateLicenseRow"
-                AllowGrouping="true" AllowColumnPicking="true" EditMode="DataGridEditMode.Single" RowCreate="OnLicenseCreate"
+                AllowFiltering="true" FilterMode="FilterMode.Simple" 
+                AllowColumnPicking="true" AllowGrouping="true" 
+                RowUpdate="UpdateLicenseRow" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
                 IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
@@ -31,7 +32,7 @@
     </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false"
-                              Title="Active" Property="IsActive" Width="50px">
+                              Title="Status" Property="IsActive" Width="90px">
             <Template Context="license">
                 @{
                     if (license.IsActive)
@@ -65,9 +66,9 @@
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense"
-                              Title="No Aptmt" Width="100px">
+                              Title="No Aptmt" Width="75px">
             <Template Context="license">
-                <RadzenCheckBox Value="license.AppointingState" />
+                <RadzenCheckBox Value="license.AppointingState" ReadOnly="true" />
             </Template>
             <EditTemplate Context="license">
                 <RadzenCheckBox @bind-Value="license.AppointingState" />
@@ -84,7 +85,7 @@
         <RadzenDataGridColumn TItem="AgencyLicense"
                               Title="Resident" Width="75px">
             <Template Context="license">
-                <RadzenCheckBox TValue="bool" Value="license.IsResident" />
+                <RadzenCheckBox TValue="bool" Value="license.IsResident" ReadOnly="true" />
             </Template>
             <EditTemplate Context="license">
                 <RadzenCheckBox TValue="bool" @bind-Value="license.IsResident" />
@@ -103,20 +104,20 @@
                 <RadzenDropDown @ref="filterInsurerDropDown" TValue="Guid" LoadData="LoadSelectInsurerDropDown" TextProperty="IdNavigation.FullName" ValueProperty="Id" />
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="150px" FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="125px" FormatString="{0:d}">
             <Template Context="license">
                 <RadzenText Text="@license.Appointment.ToString()" />
             </Template>    
             <EditTemplate Context="license">
-                <RadzenDatePicker TValue="DateOnly?" Value="@license.Appointment" />
+                <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Appointment" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="150px" FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="125px" FormatString="{0:d}">
             <Template Context="license">
                 <RadzenText Text="@license.Termination.ToString()" />
             </Template>
             <EditTemplate Context="license">
-                <RadzenDatePicker TValue="DateOnly?" Value="@license.Termination" />
+                <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Termination" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
@@ -162,21 +163,23 @@
 
         if (AgencyId != Guid.Empty)
         {
-            await ShowLoading();
             await LoadLicenses();
         }
     }
     private async Task LoadLicenses()
     {
+        await ShowLoading();
         var result = await DataAccess.GetAgencyLicenses(AgencyId);
-        if (result.Success == false)
+        if (result.Success)
+        {
+            if (result.Data != null)
+            {
+                agencyLicenses = result.Data;
+            }
+        }
+        else
             //UNDONE: Add actual errors as data
             Logging.LogError("Error getting Agency Licenses in Agency License Grid");
-
-        if (result.Data != null)
-        {
-            agencyLicenses = result.Data;
-        }
 
         await licenseGrid.Reload();
     }
@@ -207,51 +210,69 @@
     }
     async Task InsertLicenseRow()
     {
+        //This is where we handle the status change of the grid (edit mode or not).
+        //The actual Insert is done in OnLicenseCreate()
         var newLicense = new AgencyLicense();
         licensesToInsert.Add(newLicense);
         await licenseGrid.InsertRow(newLicense);
     }
     async Task EditLicenseRow(AgencyLicense license)
     {
+        await ShowLoading();
         await licenseGrid.EditRow(license);
     }
     async Task DeleteLicenseRow(AgencyLicense license)
     {
-
+        await ShowLoading();
+        var result = await DataAccess.DeleteLicense(license.Id);
+        await LoadLicenses();
     }
     async Task SaveLicenseRow(AgencyLicense license)
     {
-        // var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
-        //     {
-        //         LicenseId = Guid.NewGuid(),
-        //         AppointingState = license.AppointingState,
-        //         Appointment = license?.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-        //         Comments = license?.Comments,
-        //         Expiration = license?.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-        //         InsurerId = license.InsurerId,
-        //         IsResident = license.IsResident,
-        //         LicenseNumber = license.LicenseNumber,
-        //         State = license.State,
-        //         IsActive = license.IsActive,
-        //         Termination = license?.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
-        //     });
-        //TODO: Actually insert the license into the DB. 
+        //This is where we handle the status change of the grid (edit mode or not). 
+        //The actual Update/Insert is done in those methods. 
         await licenseGrid.UpdateRow(license);
         await LoadLicenses();
     }
-    void OnLicenseCreate(AgencyLicense license)
+    async Task OnLicenseCreate(AgencyLicense license)
     {
-        //TODO: Insert the row. 
-        licensesToInsert.Remove(license);
+        //This is where we handle row inserts. 
+        var result = await DataAccess.CreateLicense(
+                AgencyId, null,//TODO:MAke sure this should be null
+                license.AppointingState,
+                license.Comments,
+                license.Appointment,
+                license.Expiration,
+                license.Termination,
+                license.InsurerId,
+                license.IsResident,
+                license.LicenseNumber,
+                license.State,
+                license.IsActive
+            );
+        //TODO: Check for errors and notify. 
     }
     async void CancelLicenseEdit(AgencyLicense license)
     {
         licenseGrid.CancelEditRow(license);
         await LoadLicenses();
     }
-    void UpdateLicenseRow(AgencyLicense license)
+    async Task UpdateLicenseRow(AgencyLicense license)
     {
-        agencyLicenses = agencyLicenses;
+        //This is where we handle row Updates.
+        var result = await DataAccess.SetAgencyLicense(license.Id,
+                license.AgencyId, license.AgentId,
+                license.AppointingState,
+                license.Comments,
+                license.Appointment,
+                license.Expiration,
+                license.Termination,
+                license.InsurerId,
+                license.IsResident,
+                license.LicenseNumber,
+                license.State,
+                license.IsActive
+            );
     }
     async Task StateFilterChange()
     {
@@ -270,8 +291,4 @@
         isLoading = false;
     }
 
-    void OnRowRender(RowRenderEventArgs<AgencyLicense> args)
-    {
-        args.Attributes.Add("style", $"background-color: {(args.Data.IsActive ? "red" : "green")};");
-    }
 }

@@ -21,38 +21,42 @@ namespace James.Data.Server.GraphQL.Queries
                 return await ctx.Agencies.Include(a => a.IdNavigation)
                     .ToListAsync();
         }
-        public Agency? GetAgencyByAgencyNumber(string agencyNumber, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<Agency?> GetAgencyByAgencyNumber(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
-            var result = ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber)
                 .Include(a => a.IdNavigation)
                 .ThenInclude(a => a.ParentNavigation)
+                .ThenInclude(a => a.AgencyIdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
 
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
-        public List<Account> GetAgencyAccounts(string agencyNumber, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<Account>> GetAgencyAccounts(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
-            var result = ctx.Accounts.Where(a => a.AgencyNumber == agencyNumber)
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.Accounts.Where(a => a.AgencyNumber == agencyNumber)
                 .Include(a => a.IdNavigation)
                 .ThenInclude(a => a.LegalEntityAddresses.Where(lea => lea.Type == "Main"))
                 .ThenInclude(a => a.Address)
                 .Include(a => a.Bonds)
+                .ThenInclude(a => a.UnderWriter)
+                .ThenInclude(a => a.IdNavigation)
+                .Include(a => a.Bonds)
                 .ThenInclude(a => a.Obligee)
-                .ToList();
+                .ToListAsync();
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
-                
+
         }
-        public Agency GetAgencyParent(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<Agency> GetAgencyParent(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
-            var result = ctx.Agencies.Where(a => a.Id == agencyId)
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.Agencies.Where(a => a.Id == agencyId)
                 .Include(a => a.IdNavigation)
                 .ThenInclude(a => a.ParentNavigation)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
         }
@@ -61,12 +65,15 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.Bonds.Where(a => a.AgencyId == agencyId)
                 .Include(b => b.UnderWriter)
+                .ThenInclude(b => b.IdNavigation)
                 .Include(b => b.Obligee)
-                .ToListAsync(); 
+                .Include(b => b.AccountNumNavigation)
+                .ThenInclude(b => b.IdNavigation)
+                .ToListAsync();
 
-            return result;
+            return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}."); ;
         }
-        public async Task<List<AgentsInAgency>> GetAgencyAgents(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<AgentsInAgency>> GetAgencyAgents(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
 
@@ -81,7 +88,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ToListAsync();
         }
 
-        public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = contextFactory.CreateDbContext();
             var result = await ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
@@ -92,23 +99,54 @@ namespace James.Data.Server.GraphQL.Queries
             return result;
         }
 
-        public async Task<List<AgencyStatusDm>> GetAgencyStatuses([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<AgencyStatusDm>> GetAgencyStatuses([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.AgencyStatusDms.ToListAsync();
         }
 
-        public async Task<List<PowerOfAttorney>> GetAgencyPOAs(Guid agencyId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<PowerOfAttorney>> GetAgencyPOAs(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.PowerOfAttorneys
                 .Where(p => p.AgencyId.Equals(agencyId))
-                .Include(p=>p.Insurer)
+                .Include(p => p.Insurer)
                 .ThenInclude(i => i.IdNavigation)
                 .Include(p => p.PowerOfAttorneyDocumentStatuses)
                 .ThenInclude(p => p.DocumentType)
                 .Include(p => p.StatusNavigation)
                 .ToListAsync();
+        }
+
+        public async Task<List<PowerOfAttorneyDocumentNameDm>> GetPOADocumentNames([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.PowerOfAttorneyDocumentNameDms.ToListAsync();
+        }
+        public async Task<List<PowerOfAttorneyStatusDm>> GetAllPoaStatuses([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.PowerOfAttorneyStatusDms.ToListAsync();
+        }
+        public async Task<List<Agency>> GetAgencyRelatedParties(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var topParent = await ctx.VAgencyParents.FirstOrDefaultAsync(a => a.Id == agencyId);
+
+            if (topParent != null)
+            {
+                var relatedPartyIds = await ctx.VAgencyParents.Where(a => a.Parent == topParent.Parent).Select(a => a.Id).ToListAsync();
+                var relatedAgencies = await ctx.Agencies.Where(a => relatedPartyIds.Contains(a.Id))
+                    .Include(a => a.IdNavigation)
+                    .ThenInclude(a => a.LegalEntityAddresses.Where(lea => lea.Type == "Main"))
+                    .ThenInclude(a => a.Address)
+                    .ToListAsync();
+                return relatedAgencies;
+            }
+            else
+            {
+                return new List<Agency>();
+            }
         }
     }
 }

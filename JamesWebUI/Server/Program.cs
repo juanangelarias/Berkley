@@ -103,9 +103,6 @@ try
         baseAddress = baseAddress + "/";
     var graphqlHttpUrl = baseAddress + "graphql";
     var graphqlWebSocketUrl = graphqlHttpUrl.Replace("http", "ws", StringComparison.InvariantCultureIgnoreCase);
-    builder.Services.AddJamesClient(ExecutionStrategy.CacheAndNetwork)
-        .ConfigureHttpClient(client => client.BaseAddress = new Uri(graphqlHttpUrl))
-        .ConfigureWebSocketClient(client => client.Uri = new Uri(graphqlWebSocketUrl));
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents()
         .AddInteractiveWebAssemblyComponents();

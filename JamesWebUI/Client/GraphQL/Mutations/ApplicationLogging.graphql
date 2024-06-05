@@ -1,9 +1,0 @@
-﻿mutation LogMessage($input :LogInformationInput! ){
-  logInformation(input: $input){boolean}
-}
-mutation LogException($input :LogExceptionInput! ){
-  logException(input: $input){boolean}
-}
-mutation LogUser($input:LogUserInput!){
-  logUser(input:$input)  {string}
-}

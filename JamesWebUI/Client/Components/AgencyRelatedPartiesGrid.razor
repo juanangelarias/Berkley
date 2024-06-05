@@ -1,0 +1,68 @@
+﻿@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject IDataAccess DataAccess
+@inject NotificationService NotificationService
+
+<Theme />
+
+<RadzenDataGrid @ref="relatedPartiesGrid" Data="relatedParties" TItem="Agency"
+                AllowSorting="true" AllowGrouping="true"
+                Style="height: 500px; border-radius: 20px;" IsLoading="@isLoading">
+    <Columns>
+        <RadzenDataGridColumn TItem="Agency" Title="Agency #" Property="AgencyNumber" Width="100px" />
+        <RadzenDataGridColumn TItem="Agency" Title="Agency Name" Property="IdNavigation.FullName" />
+        <RadzenDataGridColumn TItem="Agency" Title="Address" Filterable="false">
+            <Template Context="relatedParty">
+                @relatedParty?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault()?.Address.Address1
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agency" Title="City">
+            <Template Context="relatedParty">
+                @relatedParty?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault()?.Address.City
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agency" Title="State">
+            <Template Context="relatedParty">
+                @relatedParty?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault()?.Address.StateCode
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </LoadingTemplate>
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public Guid AgencyID { get; set; }
+    private List<Agency> relatedParties { get; set; } = new List<Agency>();
+    private RadzenDataGrid<Agency> relatedPartiesGrid { get; set; }
+    private bool isLoading = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+        await LoadRelatedParties();
+    }
+    private async Task LoadRelatedParties()
+    {
+
+        await ShowLoading();
+        // var result = await JamesClient.GetAgencyRelatedParties.ExecuteAsync(AgencyID);
+        var result = await DataAccess.GetAgencyRelatedParties(AgencyID);
+        //TODO:  Handle errors
+        relatedParties = result.Data;
+        await relatedPartiesGrid.Reload();
+    }
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
+    }
+}

@@ -14,9 +14,21 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
+        public Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId);
         public Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search);
+        public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
 
-        public Task SetAddress(Address address);//TODO:  Change to Task<ISaveData>
+        public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
+            DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
+        public Task<ISaveDataResult> SetAddress(Address address);
+        public Task<IDataAccessResult<AgencyLicense>> CreateLicense(Guid agencyId, Guid? agentId, bool? appointingState, 
+            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
+
+        public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState,
+            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
+        public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
 
         //TODO: Figure out subscriptions
         public Task<IDisposable> AddressModified();
@@ -24,16 +36,23 @@ namespace James.Shared.Data
 
     public interface ISubscription<T>:IDisposable{}
 
-    public int
-    public interface IDataAccessResult<T>
+    public interface ISaveDataResult
     {
-        public T? Data { get; }
         public string[] Errors { get; }
         public bool Success { get; }
     }
+    public interface IDataAccessResult<T>:ISaveDataResult
+    {
+        public T? Data { get; }
+    }
     
+    //TODO: Discuss not using SaveDataResult as base class (I think there is no reason to ever view a DataAccessResult as a SaveDataResult)
+    public class SaveDataResult : ISaveDataResult
+    {
+        public string[] Errors { get; init; } = [];
 
-    //TODO: Create SaveDataResult with just Errors and Succcess
+        public bool Success => Errors.Length==0;
+    }
     public class DataAccessResult<T>: IDataAccessResult<T>
     {
         public T? Data { get; init; }

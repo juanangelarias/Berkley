@@ -399,3 +399,4 @@ FodyWeavers.xsd
 /Data/JamesDAL.Server/TempModel
 /.graphqlrc.json
 /schema.graphql
+/Data/JamesDAL.Server/TempServer

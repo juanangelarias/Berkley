@@ -8,8 +8,11 @@
 
   <ItemGroup>
     <Compile Remove="TempModel\**" />
+    <Compile Remove="TempServer\**" />
     <EmbeddedResource Remove="TempModel\**" />
+    <EmbeddedResource Remove="TempServer\**" />
     <None Remove="TempModel\**" />
+    <None Remove="TempServer\**" />
   </ItemGroup>
 
   <ItemGroup>

@@ -85,6 +85,7 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
             var jwt = _contextAccessor.HttpContext?.Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
             if (string.IsNullOrEmpty(jwt))
             {
+                Debug.Assert(_contextAccessor.HttpContext != null, "_contextAccessor.HttpContext != null");
                 var accessToken = await _contextAccessor.HttpContext.GetTokenAsync("access_token");
                 if (accessToken != null)
                 {

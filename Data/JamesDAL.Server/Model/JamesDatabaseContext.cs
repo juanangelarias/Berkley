@@ -4002,7 +4002,6 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.HasOne(d => d.BudgetDefaultNavigation).WithMany(p => p.InverseBudgetDefaultNavigation)
                 .HasForeignKey(d => d.BudgetDefault)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ProfitCenter_ProfitCenter");
 
             entity.HasOne(d => d.CommercialRegionNavigation).WithMany(p => p.ProfitCenters)

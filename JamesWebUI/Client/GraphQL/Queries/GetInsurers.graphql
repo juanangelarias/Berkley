@@ -1,9 +1,0 @@
-﻿query allInsurers(){
-    allInsurers(){
-        id,
-        lenumPeopleSoft,
-        idNavigation{
-            fullName
-        }
-    }
-}

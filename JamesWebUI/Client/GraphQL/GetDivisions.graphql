@@ -1,7 +1,0 @@
-﻿query GetDivisions()
-{
-	divisions(){
-		divisionCode,
-		division
-	}
-}

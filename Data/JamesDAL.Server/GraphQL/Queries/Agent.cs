@@ -7,7 +7,7 @@ namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     { 
-        public Agent GetAgentByAgentId(Guid agentId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<Agent> GetAgentByAgentId(Guid agentId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = contextFactory.CreateDbContext();
 

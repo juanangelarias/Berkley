@@ -8,34 +8,24 @@ using Severity = James.Shared.Model.Severity;
 
 namespace James.Data.Client
 {
-    public class ClientDataAccess : IDataAccess
+    public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging) : IDataAccess
     {
-        private readonly IJamesClient _jamesClient;
-        private readonly ILoggingService _logging;
-
-        public ClientDataAccess(IJamesClient jamesClient, ILoggingService logging)
-        {
-            _jamesClient = jamesClient;
-            _logging = logging;
-        }
-
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
             try
             {
-                var result = await _jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber);
+                var result = await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber);
                 if (result.Errors.Any())
                     return new DataAccessResult<List<Account>> { Errors = result.Errors.Select(ErrorToString).ToArray() };
                 Debug.Assert(result.Data != null, "result.Data != null");
                 var accountList =
                     new List<Account>(
-                        result.Data.AgencyAccounts.Select(acnt =>
-                            ThisToThat.ToEntityType<Account>(acnt)));
+                        result.Data.AgencyAccounts.Select(ThisToThat.ToEntityType<Account>));
                 return new DataAccessResult<List<Account>> { Data = accountList };
             }
             catch (Exception e)
             {
-                _logging.LogException(e, "GetAgencyByAgencyNumber returned exception",
+                logging.LogException(e, "GetAgencyByAgencyNumber returned exception",
                     e.ToText(), Severity.Error, "GraphQl");
                 throw;
             }
@@ -43,95 +33,191 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber)
         {
-            var result = await _jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber);
+            var result = await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber);
             if (result.Errors.Count == 0)
             {
                 Debug.Assert(result.Data != null, "result.Data != null");
                 return new DataAccessResult<Agency> { Data = ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber) };
             }
 
-            _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)",
+            logging.LogWarning("GetAgencyByAgencyNumber returned error(s)",
                 string.Join("\r\n", result.Errors.Select(ErrorToString)), "GraphQl");
             return new DataAccessResult<Agency> { Errors = result.Errors.Select(ErrorToString).ToArray() };
         }
 
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
         {
-            var result = await _jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId);
+            var result = await jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId);
             return GraphQLResult<List<AgencyLicense>>(result);
         }
 
         public async Task<IDataAccessResult<List<Insurer>>> GetAllInsurers()
         {
-            var result = await _jamesClient.AllInsurers.ExecuteAsync();
+            var result = await jamesClient.AllInsurers.ExecuteAsync();
             return GraphQLResult<List<Insurer>>(result);
         }
 
         public async Task<IDataAccessResult<List<State>>> GetAllStates()
         {
-            var result = await _jamesClient.GetAllStates.ExecuteAsync();
+            var result = await jamesClient.GetAllStates.ExecuteAsync();
             return GraphQLResult<List<State>>(result);
         }
 
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
-            var result = await _jamesClient.GetAgencyBonds.ExecuteAsync(agencyId);
+            var result = await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId);
             return GraphQLResult<List<Bond>>(result);
         }
 
         public async Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId)
         {
-            var result = await _jamesClient.GetAgencyAgents.ExecuteAsync(agencyId);
+            var result = await jamesClient.GetAgencyAgents.ExecuteAsync(agencyId);
             return GraphQLResult<List<AgentsInAgency>>(result);
         }
 
         public async Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses()
         {
-            var result = await _jamesClient.GetAgencyStatuses.ExecuteAsync();
+            var result = await jamesClient.GetAgencyStatuses.ExecuteAsync();
             return GraphQLResult<List<AgencyStatusDm>>(result);
-        }
-
-        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
-        {
-            var result = await _jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId);
-            return GraphQLResult<List<PowerOfAttorney>>(result);
         }
 
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
-            var result = await _jamesClient.AgentByAgentId.ExecuteAsync(agentId);
+            var result = await jamesClient.AgentByAgentId.ExecuteAsync(agentId);
             return GraphQLResult<Agent>(result);
+        }
+
+        public async Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId)
+        {
+            var result = await jamesClient.GetAgencyRelatedParties.ExecuteAsync(agencyId);
+            return GraphQLResult<List<Agency>>(result);
         }
 
         public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search)
         {
             try
             {
-                var result = await _jamesClient.SearchAgencies.ExecuteAsync(search);
+                var result = await jamesClient.SearchAgencies.ExecuteAsync(search);
                 return GraphQLResult<List<Agency>>(result);
             }
             catch (Exception ex)
             {
                 var exceptionDetail = ex.ToText();
-                _logging.LogException(ex, "GetAgencyByAgencyNumber returned exception",
+                logging.LogException(ex, "GetAgencyByAgencyNumber returned exception",
                     exceptionDetail, Severity.Error, "GraphQl");
-                return new DataAccessResult<List<Agency>> { Data = [],Errors = [ex.Message] };
+                return new DataAccessResult<List<Agency>> { Data = [], Errors = [ex.Message] };
             }
+        }
+
+        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
+        {
+            //TODO:Refactor to call this type of method with all boiler plate.
+            //try
+            //{
+            //    var result = await _jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId);
+            //    return GraphQLResult<List<PowerOfAttorney>>(result);
+            //}
+            //catch (Exception ex)
+            //{
+            //    var exceptionDetail = ex.ToText();
+            //    _logging.LogException(ex, "GetAgencyPOAs returned exception",
+            //        exceptionDetail, Severity.Error, "GraphQl");
+            //    return new DataAccessResult<List<PowerOfAttorney>> { Data = [], Errors = [ex.Message] };
+            //}
+            return await ExecuteGet<List<PowerOfAttorney>>(async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId), "GetAgencyPOAs");
+        }
+
+        public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
+        {
+            return await ExecuteGet<List<PowerOfAttorneyStatusDm>>(async () => await jamesClient.GetAllPoaStatuses.ExecuteAsync(), "GetAllPoaStatuses");
+        }
+
+        public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued,
+            DateOnly? currentIssued, string? comments, Guid status)
+        {
+            return await ExecuteGet<PowerOfAttorney>(async () =>
+                await jamesClient.SetPowerOfAttorney.ExecuteAsync(new SetPowerOfAttorneyInput
+                {
+                    PoaId = poaId,
+                    InsurerId = insurerId,
+                    Limit = limit,
+                    Serial = serial,
+                    FirstIssued = firstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                    CurrentIssued = currentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                    Comments = comments,
+                    Status = status
+                }), "SetPowerOfAttorney");
+        }
+
+        public async Task<ISaveDataResult> DeleteLicense(Guid licenseId)
+        {
+            var result = await jamesClient.DeleteLicense.ExecuteAsync(new DeleteLicenseInput { LicenseId = licenseId });
+            return GraphQLSaveResult(result);
         }
 
         public async Task<IDisposable> AddressModified()
         {
-            return _jamesClient.AddressModified.Watch().Subscribe();
+            return jamesClient.AddressModified.Watch().Subscribe();
         }
 
-        public async Task SetAddress(Address address)
+        public async Task<ISaveDataResult> SetAddress(Address address)
         {
-            await _jamesClient.SetAddress.ExecuteAsync(new SetAddressInput
+            var result = await jamesClient.SetAddress.ExecuteAsync(new SetAddressInput
             {
-                AddressId = address.Id, Address1 = address.Address1, Address2 = address.Address2,
-                Address3 = address.Address3, City=address.City, StateCode = address.StateCode, 
+                AddressId = address.Id,
+                Address1 = address.Address1,
+                Address2 = address.Address2,
+                Address3 = address.Address3,
+                City = address.City,
+                StateCode = address.StateCode,
                 PostalCode = address.PostalCode
             });
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<IDataAccessResult<AgencyLicense>> CreateLicense(Guid agencyId, Guid? agentId, bool? appointingState,
+            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+            Guid insurerId, bool isResident, string? licenseNumber, string state,
+            bool isActive)
+        {
+            var result = await jamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
+            {
+                AgencyId = agencyId,
+                AgentId = agentId,
+                AppointingState = appointingState,
+                Comments = comments,
+                Appointment = appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                Expiration = expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                Termination = termination?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                InsurerId = insurerId,
+                IsResident = isResident,
+                LicenseNumber = licenseNumber,
+                State = state,
+                IsActive = isActive
+            });
+            return GraphQLResult<AgencyLicense>(result);
+        }
+
+        public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments,
+            DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
+            string? licenseNumber, string state, bool isActive)
+        {
+            var result = await jamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
+            {
+                AgencyId = agencyId,
+                AgentId = agentId,
+                AppointingState = appointingState,
+                Comments = comments,
+                Appointment = appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                Expiration = expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                Termination = termination?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                InsurerId = insurerId,
+                IsResident = isResident,
+                LicenseNumber = licenseNumber,
+                State = state,
+                IsActive = isActive
+            });
+            return GraphQLResult<AgencyLicense>(result);
         }
 
         private static string ErrorToString(IClientError error)
@@ -145,7 +231,28 @@ namespace James.Data.Client
         {
             var data = ThisToThat.ToEntityType<T>(graphQLResult?.Data);
             return new DataAccessResult<T>
-            { Data = data, Errors = graphQLResult?.Errors.Select(ErrorToString).ToArray()?? [] };
+            { Data = data, Errors = graphQLResult?.Errors.Select(ErrorToString).ToArray() ?? [] };
+        }
+        private static ISaveDataResult GraphQLSaveResult(IOperationResult? graphQLResult)
+        {
+            return new SaveDataResult
+            { Errors = graphQLResult?.Errors.Select(ErrorToString).ToArray() ?? [] };
+        }
+
+        private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<IOperationResult>> dataFunc, string graphQlFunctionName, T? defaultValue = null) where T : class, new()
+        {
+            try
+            {
+                var result = await dataFunc();
+                return GraphQLResult<T>(result);
+            }
+            catch (Exception ex)
+            {
+                var exceptionDetail = ex.ToText();
+                logging.LogException(ex, graphQlFunctionName + " returned exception",
+                    exceptionDetail, Severity.Error, "GraphQl");
+                return new DataAccessResult<T> { Data = defaultValue, Errors = [ex.Message] };
+            }
         }
     }
 }

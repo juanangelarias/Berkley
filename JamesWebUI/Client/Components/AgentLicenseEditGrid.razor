@@ -8,16 +8,15 @@
 @using James.Shared;
 @inherits LayoutComponentBase
 
-@inject NavigationManager NavigationManager
-@inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
+@inject ILoggingService LoggingService
 
 <Theme />
 
-<RadzenDataGrid TItem="AgencyLicense" @ref="licenseGrid" 
-    EditMode="DataGridEditMode.Multiple" Density="Density.Compact" >
+<RadzenDataGrid TItem="AgencyLicense" @ref="licenseGrid"
+                EditMode="DataGridEditMode.Multiple" Density="Density.Compact">
     <HeaderTemplate>
-        <RadzenButton Icon="edit" Text="Edit All" Click="EditAll"/>
+        <RadzenButton Icon="edit" Text="Edit All" Click="EditAll" />
     </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Width="125px">
@@ -25,7 +24,7 @@
                 <RadzenText Text="@license.LicenseNumber" />
             </Template>
             <EditTemplate Context="license">
-                <RadzenTextBox @bind-Value="license.LicenseNumber" /> 
+                <RadzenTextBox @bind-Value="license.LicenseNumber" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Width="100px">
@@ -56,12 +55,12 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public string agentId { get; set ; }
+    [Parameter] public string agentId { get; set; }
     private RadzenDataGrid<AgencyLicense> licenseGrid;
     private List<AgencyLicense> licenses = new List<AgencyLicense>();
     private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
 
-    
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
@@ -71,15 +70,18 @@
 
     private async Task LoadLicenses()
     {
-        var result = await JamesClient.AgentByAgentId.ExecuteAsync(Guid.Parse(agentId));
+        var result = await DataAccess.GetAgent(Guid.Parse(agentId));
 
-        foreach (var license in result.Data.AgentByAgentId.AgencyLicenses)
+        if (result.Success)
         {
-            licenses.Add(ThisToThat.ToEntityType<AgencyLicense>(license));
+            licenseGrid.Data = licenses;
+            licenseGrid.Reload();
         }
-
-        licenseGrid.Data = licenses;
-        licenseGrid.Reload();
+        else
+        {
+            //TODO:Add error details
+            LoggingService.LogError("Error loading licenses in Agent License Edit Grid");
+        }
     }
 
     async Task EditAll()
@@ -92,14 +94,11 @@
     }
     private async Task<List<Insurer>> GetInsurers()
     {
-        var result = await JamesClient.AllInsurers.ExecuteAsync();
-
-        var insurerList = new List<Insurer>();
-
-        foreach (var insurer in result.Data.AllInsurers)
-        {
-            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
-        }
-        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
+        var result = await DataAccess.GetAllInsurers();
+        if (result.Success)
+            return result.Data!.OrderBy(i => i.IdNavigation.FullName).ToList();
+        //TODO:Add error details
+        LoggingService.LogError("Error getting insurers in Agent Licence Edit Grid");
+        return [];
     }
 }

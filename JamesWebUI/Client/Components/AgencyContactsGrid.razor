@@ -1,13 +1,11 @@
-﻿@using System.Globalization;
-@using James.Data.Client.GraphQL;
-@using James.Data.Client.GraphQL.Components;
-@using StrawberryShake;
+﻿@using System.Diagnostics
 @using James.Shared;
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
+@inject ILoggingService LoggingService
 
 <Theme />
 
@@ -110,20 +108,17 @@
     }
     private async Task LoadAgents()
     {
-        var result = await JamesClient.GetAgencyAgents.ExecuteAsync(AgencyId);
+        var result = await DataAccess.GetAgencyAgents(AgencyId);
 
-        if (result.Data.AgencyAgents.Count > 0)
+        if (result.Data?.Any() ==true)
         {
-            var agentList = new List<Agent>();
-
-            foreach (var agentInAgency in result.Data.AgencyAgents)
-            {
-                agentList.Add(ThisToThat.ToEntityType<Agent>(agentInAgency.Agent));
-            }
-
-            agents = agentList;
-            agentsGrid.Data = agents;
+            agentsGrid.Data = agents = result.Data.Select(aia=>aia.Agent).ToList();
             agentsGrid.Reload();
+        }
+        else
+        {
+            //TODO:Add error details
+            LoggingService.LogError("Error loading agents in AgencyContactsGrid");
         }
     }
     private async Task LoadSelectInsurerDropDown()
@@ -132,14 +127,14 @@
     }
     private async Task<List<Insurer>> GetInsurers()
     {
-        var result = await JamesClient.AllInsurers.ExecuteAsync();
-
-        var insurerList = new List<Insurer>();
-
-        foreach (var insurer in result.Data.AllInsurers)
+        var result = await DataAccess.GetAllInsurers();
+        if (result.Success == false)
         {
-            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
+            //TODO:Add error details
+            LoggingService.LogError("Error getting insurers in Agency Contract Grid");
         }
-        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
+
+        Debug.Assert(result.Data != null, "result.Data != null");
+        return result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
     }
 }

@@ -1,12 +1,15 @@
 using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using James.Shared.Model;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace JamesWebUI.Server.AuthenticationStateSyncer;
 
@@ -15,6 +18,7 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly PersistentComponentState _state;
     private readonly IdentityOptions _options;
+    private readonly IHttpContextAccessor _contextAccessor;
 
     private readonly PersistingComponentStateSubscription _subscription;
 
@@ -24,7 +28,8 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
         ILoggerFactory loggerFactory,
         IServiceScopeFactory scopeFactory,
         PersistentComponentState state,
-        IOptions<IdentityOptions> options)
+        IOptions<IdentityOptions> options,
+        IHttpContextAccessor contextAccessor)
         : base(loggerFactory)
     {
         _scopeFactory = scopeFactory;
@@ -33,6 +38,7 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
 
         AuthenticationStateChanged += OnAuthenticationStateChanged;
         _subscription = state.RegisterOnPersisting(OnPersistingAsync, RenderMode.InteractiveWebAssembly);
+        _contextAccessor = contextAccessor;
     }
 
     protected override TimeSpan RevalidationInterval => TimeSpan.FromMinutes(30);
@@ -75,15 +81,27 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
             //TODO: set up to use the UserShared code to hydrate the SiteUserInfo
             var userId = principal.FindFirst(_options.ClaimsIdentity.UserIdClaimType)?.Value;
             var name = principal.FindFirst("name")?.Value;
-            var email = principal.FindFirst("email")?.Value;
-
+            var email = principal.FindFirst("email_address")?.Value;
+            var jwt = _contextAccessor.HttpContext?.Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
+            if (string.IsNullOrEmpty(jwt))
+            {
+                var accessToken = await _contextAccessor.HttpContext.GetTokenAsync("access_token");
+                if (accessToken != null)
+                {
+                    var tokenHandler = new JwtSecurityTokenHandler();
+                    var token = tokenHandler.ReadJwtToken(accessToken);
+                    jwt = token.ToString();
+                }
+            }
             if (userId != null && name != null)
             {
                 _state.PersistAsJson(nameof(SiteUserInfo), new SiteUserInfo
                 {
                     Username = userId,
                     FullName = name,
-                    Email = email
+                    Email = email!,
+                    PictureUrl = principal.FindFirstValue("picture"),
+                    JWT = jwt ?? ""
                 });
             }
         }

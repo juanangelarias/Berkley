@@ -1,32 +1,39 @@
-using System.Diagnostics;
 using ApplicationLog;
 using Auth0.AspNetCore.Authentication;
+using James.Data.Server;
 using James.Data.Server.GraphQL;
+using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.Model;
 using James.Shared;
+using James.Shared.Data;
 using James.Shared.Server;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Client.GraphQL;
 using JamesWebUI.Client.Services;
 using JamesWebUI.Server.AuthenticationStateSyncer;
-using JamesWebUI.Server.Controllers;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Serilog;
 using StrawberryShake;
+using System.Diagnostics;
+using JamesWebUI.Client;
+using JamesWebUI.Server;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
     .Build();
+
+const string LOG_IN_PATH = "/account/Login";
+const string LOG_OUT_PATH = "/account/Logout";
 
 try
 {
@@ -38,7 +45,8 @@ try
 
     var auth0Authority = config["Auth0:Authority"] ?? "https://dev-auth.wrberkley.auth0.com";
     builder.Services.AddHttpClient("Auth0UserInfo",
-    client => client.BaseAddress = new Uri(auth0Authority));
+    client => client.BaseAddress = new Uri(auth0Authority))
+        .AddHttpMessageHandler<TokenHandler>();
     builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
         .CreateClient("Auth0UserInfo"));
 
@@ -47,7 +55,12 @@ try
         .AddAuth0WebAppAuthentication(options =>
         {
             options.Domain = domain;
-            options.ClientId = builder.Configuration["Auth0:ClientId"];
+            options.ClientId = builder.Configuration["Auth0:ClientId"]!;
+            options.ClientSecret = builder.Configuration["Auth0:ClientSecret"]!;
+        })
+        .WithAccessToken(options =>
+        {
+            options.Audience = builder.Configuration["Auth0:Audience"];
         });
 
     builder.Services
@@ -59,7 +72,7 @@ try
         });
     builder.Services
         .AddGraphQLServer()
-        .AddAuthorization()
+        //.AddAuthorization()
         .AddQueryType<Query>()
         .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
         .AddSubscriptionType<Subscription>()
@@ -69,11 +82,20 @@ try
         ;
     builder.Services.AddControllersWithViews();
     builder.Services.AddRazorPages();
+    builder.Services.ConfigureApplicationCookie(options =>
+    {
+        // Default Lockout settings.
+        options.LoginPath = LOG_IN_PATH;
+        options.LogoutPath = LOG_OUT_PATH;
+    });
     builder.Services.AddRadzenComponents();
     builder.Services.AddScoped<ThemeService>();
     builder.Services.AddScoped<IUserShared, UserShared>();
     builder.Services.AddScoped<ILoggingShared, LoggingShared>();
     builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
+    builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
+    builder.Services.AddScoped<Query>();
+    builder.Services.AddScoped<AgencyMutation>();
     var baseAddressHttp = config["Kestrel:Endpoints:Https:Url"];
     var baseAddressHttps = config["Kestrel:Endpoints:Http:Url"];
     var baseAddress = string.IsNullOrWhiteSpace(baseAddressHttps) ? baseAddressHttp! : baseAddressHttps;
@@ -89,6 +111,7 @@ try
         .AddInteractiveWebAssemblyComponents();
 
     builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<TokenHandler>();
     builder.Services.AddCors(options =>
     {
         //TODO:  Make settings appropriate for production
@@ -143,7 +166,7 @@ try
 
     app.UseWebSockets();
 
-    app.MapGet("/User/Login", async (HttpContext httpContext, string redirectUri = "/") =>
+    app.MapGet(LOG_IN_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
         var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
             .WithRedirectUri(redirectUri)
@@ -152,7 +175,7 @@ try
         await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
     });
 
-    app.MapGet("/User/Logout", async (HttpContext httpContext, string redirectUri = "/") =>
+    app.MapGet(LOG_OUT_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
         var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
             .WithRedirectUri(redirectUri)

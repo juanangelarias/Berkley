@@ -50,6 +50,8 @@ public partial class Agency
 
     public virtual ICollection<AgencyLicense> AgencyLicenses { get; set; } = new List<AgencyLicense>();
 
+    public virtual ICollection<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
+
     public virtual ICollection<AgentsInAgency> AgentsInAgencies { get; set; } = new List<AgentsInAgency>();
 
     public virtual LegalEntity? BillingContact { get; set; }
@@ -59,6 +61,8 @@ public partial class Agency
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 
     public virtual ICollection<OnlineBondSystem> OnlineBondSystems { get; set; } = new List<OnlineBondSystem>();
+
+    public virtual ICollection<PowerOfAttorney> PowerOfAttorneys { get; set; } = new List<PowerOfAttorney>();
 
     public virtual AgencyStatusDm StatusNavigation { get; set; } = null!;
 

@@ -4,11 +4,11 @@ namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
-        public List<Insurer> GetAllInsurers([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<Insurer>> GetAllInsurers([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
+            var ctx = await contextFactory.CreateDbContextAsync();
 
-            return ctx.Insurers.Include(i => i.IdNavigation).ToList();
+            return await ctx.Insurers.Include(i => i.IdNavigation).ToListAsync();
         }
     }
 }

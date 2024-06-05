@@ -1,10 +1,4 @@
-﻿@using System.Globalization;
-@using James.Data.Client.GraphQL;
-@using James.Data.Client.GraphQL.Components;
-@using StrawberryShake;
-@using James.Shared;
-@using James.Shared.Data
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
@@ -13,10 +7,10 @@
 <Theme />
 
 
-<RadzenDataGrid TItem="Account" @ref="@agencyAccountGrid" Data="@agencyAccounts" AllowGrouping="true" AllowSorting="true"
+<RadzenDataGrid TItem="Account" @ref="@agencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true" AllowSorting="true"
                 Style="height: 750px; border-radius: 20px;" AllowColumnResize="true" AllowColumnPicking="true"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+                IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <Template Context="account">
         <RadzenDataGrid Data="account.Bonds" TItem="Bond" Style="height: 300px; border-radius: 15px;">
             <Columns>
@@ -68,11 +62,11 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public string AgencyNumber { get; set; }
+    [Parameter] public required string AgencyNumber { get; set; }
 
-    private List<Account> agencyAccounts = new List<Account>();
+    private List<Account> _agencyAccounts = new();
     private RadzenDataGrid<Account> agencyAccountGrid;
-    private bool isLoading = false;
+    private bool _isLoading = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,15 +86,15 @@
     private async Task LoadAgencyAccounts()
     {
         var result = await _dataAccess.GetAgencyAccounts(AgencyNumber);
-        agencyAccountGrid.Data = agencyAccounts = result;
+        agencyAccountGrid.Data = _agencyAccounts = result.Data;
             await agencyAccountGrid.Reload();
     }
     protected async Task ShowLoading()
     {
-        isLoading = true;
+        _isLoading = true;
 
         await Task.Yield();
 
-        isLoading = false;
+        _isLoading = false;
     }
 }

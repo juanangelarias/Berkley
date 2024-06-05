@@ -6,7 +6,7 @@ namespace James.Shared.Model;
 
 public partial class AccountProgramEmailNotificationGroup
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public DateTime? Created { get; set; }
 

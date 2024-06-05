@@ -20,11 +20,13 @@ public partial class AgencyInventory
 
     public string DocumentType { get; set; } = null!;
 
-    public Guid? AddresseeId { get; set; }
+    public string? Addressee { get; set; }
+
+    public Guid? AddressId { get; set; }
 
     public Guid Approver { get; set; }
 
-    public virtual LegalEntity? Addressee { get; set; }
+    public virtual Address? Address { get; set; }
 
     public virtual Agency Agency { get; set; } = null!;
 

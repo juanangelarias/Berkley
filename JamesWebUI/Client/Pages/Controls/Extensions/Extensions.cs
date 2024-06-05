@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using James.Shared.Data;
+using Microsoft.AspNetCore.Components;
+using StrawberryShake;
 
 namespace JamesWebUI.Client.Controls.Extensions
 {
@@ -11,6 +13,5 @@ namespace JamesWebUI.Client.Controls.Extensions
         {
             return navigation.Uri.Substring(navigation.BaseUri.Length - 1);
         }
-
     }
 }

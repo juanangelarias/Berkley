@@ -1,14 +1,10 @@
-﻿@using System.Globalization;
-@using James.Data.Client.GraphQL;
-@using James.Data.Client.GraphQL.Components;
-@using StrawberryShake;
-@using James.Shared;
-
+﻿@using James.Shared
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
+@inject ILoggingService LoggingService
 
 <Theme />
 
@@ -61,32 +57,30 @@
     }
     private async Task LoadPOAs()
     {
-        var result = await JamesClient.GetAgencyPOAs.ExecuteAsync(AgencyID);
+        var result = await DataAccess.GetAgencyPoas(AgencyID);
 
-        if (result.Data.AgencyPOAs.Count > 0)
+        if (result.Success)
         {
-            var poaList = new List<PowerOfAttorney>();
-
-            foreach (var poa in result.Data.AgencyPOAs)
-            {
-                poaList.Add(ThisToThat.ToEntityType<PowerOfAttorney>(poa));
-            }
-
-            powerOfAttorneys = poaList;
+            powerOfAttorneys = result.Data;
             await poaGrid.Reload();
+        }
+        else
+        {
+            //TODO:Add error details
+            LoggingService.LogError("Error loading POAs in the AgencyPOAGrid");
         }
     }
     private async Task<List<Insurer>> GetInsurers()
     {
-        var result = await JamesClient.AllInsurers.ExecuteAsync();
-
-        var insurerList = new List<Insurer>();
-
-        foreach (var insurer in result.Data.AllInsurers)
+        var result = await DataAccess.GetAllInsurers();
+        if (result.Success)
+            return result.Data!.OrderBy(i => i.IdNavigation.FullName).ToList();
+        else
         {
-            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
+            //TODO:Add error details
+            LoggingService.LogError("Error getting insurers in the AgencyPOAGrid");
+            return [];
         }
-        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
     }
     private async Task LoadInsurerFilterDropDown()
     {

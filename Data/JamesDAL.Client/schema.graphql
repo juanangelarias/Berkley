@@ -12,12 +12,6 @@ type Mutation {
   logUser(input: LogUserInput!): LogUserPayload!
 }
 
-enum ApplyPolicy {
-  BEFORE_RESOLVER
-  AFTER_RESOLVER
-  VALIDATION
-}
-
 type Query {
   account(accountNumber: String): Account
   accountOnly(accountNumber: String): Account

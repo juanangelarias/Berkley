@@ -11,7 +11,7 @@
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
 @inject ILoggingService _logging;
 @inject AuthenticationStateProvider _context;
 @* @attribute [Authorize] *@
@@ -115,7 +115,7 @@
     string[] dropDownValues = { "Test1", "Test2", "Test3" };
 
     //DropDown Data
-    private IReadOnlyList<ISearchAgencies_SearchAgencies> agencyResults;
+    private IReadOnlyList<Agency> agencyResults;
     private RadzenTextBox txtAgencyNameSearch;
     private string AgencySearchString;
     public ISearchAgencies_SearchAgencies selectedAgency;
@@ -131,8 +131,14 @@
     }
     async Task SearchAgencies()
     {
-        var results = await JamesClient.SearchAgencies.ExecuteAsync(txtAgencyNameSearch.Value);
-        agencyResults = results.Data.SearchAgencies;
+        var results = await DataAccess.SearchAgencies(txtAgencyNameSearch.Value);
+        if (results.Success)
+            agencyResults = results.Data;
+        else
+        {
+            //TODO:Add error details
+            _logging.LogError("Error searching agencies in AgencySearch");
+        }
     }
     async Task OpenAgency(DataGridRowMouseEventArgs<ISearchAgencies_SearchAgencies> args)
     {

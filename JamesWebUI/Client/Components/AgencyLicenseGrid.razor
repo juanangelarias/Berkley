@@ -1,13 +1,15 @@
 ﻿@using System.Globalization;
 @using James.Data.Client.GraphQL;
 @using James.Data.Client.GraphQL.Components;
+@using James.Shared
 @using StrawberryShake;
 
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
+@inject ILoggingService Logging
 
 <Theme />
 <style>
@@ -166,44 +168,33 @@
     }
     private async Task LoadLicenses()
     {
-        var result = await JamesClient.GetAgencyLicenses.ExecuteAsync(AgencyId);
+        var result = await DataAccess.GetAgencyLicenses(AgencyId);
+        if (result.Success == false)
+            //UNDONE: Add actual errors as data
+            Logging.LogError("Error getting Agency Licenses in Agency License Grid");
 
-        var licensesList = new List<AgencyLicense>();
         if (result.Data != null)
         {
-            foreach (var license in result.Data.AgencyLicenses)
-            {
-                licensesList.Add(James.Shared.ThisToThat.ToEntityType<AgencyLicense>(license));
-            }
-            agencyLicenses = licensesList;
+            agencyLicenses = result.Data;
         }
 
         await licenseGrid.Reload();
     }
     private async Task LoadStateDropDown()
     {
-        var result = await JamesClient.GetAllStates.ExecuteAsync();
-
-        var stateList = new List<State>();
-
-        foreach (var state in result.Data.AllStates)
-        {
-            stateList.Add(James.Shared.ThisToThat.ToEntityType<State>(state));
-        }
-
-        stateDropDown.Data = stateList;
+        var result = await DataAccess.GetAllStates();
+        if (result.Success == false)
+            //UNDONE: Add actual errors as data
+            Logging.LogError("Error getting all States in Agency License Grid");
+        stateDropDown.Data = result.Data;
     }
     private async Task<List<Insurer>> GetInsurers()
     {
-        var result = await JamesClient.AllInsurers.ExecuteAsync();
-
-        var insurerList = new List<Insurer>();
-
-        foreach (var insurer in result.Data.AllInsurers)
-        {
-            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
-        }
-        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
+        var result = await DataAccess.GetAllInsurers();
+        if (result.Success == false)
+            //UNDONE: Add actual errors as data
+            Logging.LogError("Error getting all Insurers in Agency License Grid");
+        return result.Data?.OrderBy(i => i.IdNavigation.FullName).ToList()?? [];
     }
 
     private async Task LoadSelectInsurerDropDown()

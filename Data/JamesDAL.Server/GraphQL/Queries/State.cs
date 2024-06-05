@@ -4,10 +4,10 @@ namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
-        public List<State> GetAllStates([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<State>> GetAllStates([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
-            return ctx.States.ToList();
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.States.ToListAsync();
         }
     }
 }

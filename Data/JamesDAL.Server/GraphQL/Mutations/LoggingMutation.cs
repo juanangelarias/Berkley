@@ -1,7 +1,4 @@
-﻿using HotChocolate.Authorization;
-using HotChocolate.Types;
-using James.Shared.Server;
-using Microsoft.Extensions.Logging;
+﻿using James.Shared.Server;
 
 namespace James.Data.Server.GraphQL.Mutations
 {
@@ -40,34 +37,13 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         //TODO:Get rid of this after testing
-        [Authorize]
+        //[Authorize]
         public async Task<string> LogUser(string message = "")
         {
             var userInfo = await _userShared.GetCurrentUser();
             await LogInformation(LoggingServiceBase.MessageEventId.Id, string.IsNullOrWhiteSpace(message) ? "Logging authenticated user" : "Logging authenticated user with message " + message,
                 userInfo.Username ?? "", Severity.Information);
             return userInfo.Username ?? "Unknown user" + (string.IsNullOrWhiteSpace(message) ? "" : " " + message);
-        }
-
-        private static LogLevel GetLogLevel(Severity severity)
-        {
-            switch (severity)
-            {
-                case Severity.Verbose:
-                    return LogLevel.Trace;
-                case Severity.Debug:
-                    return LogLevel.Debug;
-                case Severity.Information:
-                    return LogLevel.Information;
-                case Severity.Warning:
-                    return LogLevel.Warning;
-                case Severity.Error:
-                    return LogLevel.Error;
-                case Severity.Fatal:
-                    return LogLevel.Critical;
-                default:
-                    return LogLevel.None;
-            }
         }
     }
 }

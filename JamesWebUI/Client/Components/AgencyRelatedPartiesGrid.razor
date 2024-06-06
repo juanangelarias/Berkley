@@ -1,14 +1,8 @@
-﻿@using System.Globalization;
-@using JamesWebUI.Client.GraphQL;
-@using JamesWebUI.Client.GraphQL.Components;
-@using StrawberryShake;
-@using James.Shared;
-
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
 @inject NotificationService NotificationService
 
 <Theme />
@@ -17,17 +11,17 @@
                 AllowSorting="true" AllowGrouping="true"
                 Style="height: 500px; border-radius: 20px;" IsLoading="@isLoading">
     <Columns>
-        <RadzenDataGridColumn TItem="Agency" Title="Agency #" Property="AgencyNumber" Width="100px"/>
+        <RadzenDataGridColumn TItem="Agency" Title="Agency #" Property="AgencyNumber" Width="100px" />
         <RadzenDataGridColumn TItem="Agency" Title="Agency Name" Property="IdNavigation.FullName" />
         <RadzenDataGridColumn TItem="Agency" Title="Address" Filterable="false">
             <Template Context="relatedParty">
                 @relatedParty?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault()?.Address.Address1
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="City"  >
+        <RadzenDataGridColumn TItem="Agency" Title="City">
             <Template Context="relatedParty">
                 @relatedParty?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault()?.Address.City
-            </Template>    
+            </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="State">
             <Template Context="relatedParty">
@@ -57,14 +51,11 @@
     {
 
         await ShowLoading();
-        var result = await JamesClient.GetAgencyRelatedParties.ExecuteAsync(AgencyID);
-        List<Agency> agencies = new List<Agency>();
-        foreach (var agency in result.Data.AgencyRelatedParties)
-        {
-            agencies.Add(ThisToThat.ToEntityType<Agency>(agency));
-        }
-        relatedParties = agencies;
-        relatedPartiesGrid.Reload();
+        // var result = await JamesClient.GetAgencyRelatedParties.ExecuteAsync(AgencyID);
+        var result = await DataAccess.GetAgencyRelatedParties(AgencyID);
+        //TODO:  Handle errors
+        relatedParties = result.Data;
+        await relatedPartiesGrid.Reload();
     }
     protected async Task ShowLoading()
     {

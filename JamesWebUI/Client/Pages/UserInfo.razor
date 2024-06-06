@@ -2,9 +2,10 @@
 @using JamesWebUI.Shared
 @using James.Shared.Model
 @using System.Diagnostics
+@using James.Shared
 @inject HttpClient Http
 @* @attribute [Authorize] *@
-@inject LoggingService _logging;
+@inject ILoggingService _logging;
 <h3>User Info</h3>
 
 

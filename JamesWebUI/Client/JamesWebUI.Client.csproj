@@ -9,33 +9,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <GraphQL Remove="GraphQL\GetAccountByAccountNumber.graphql" />
-    <GraphQL Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
-    <GraphQL Remove="GraphQL\GetAgencyLicenses.graphql" />
-    <GraphQL Remove="GraphQL\GetStates.graphql" />
-    <GraphQL Remove="GraphQL\Mutations\AgencyMutations.graphql" />
-    <GraphQL Remove="GraphQL\Queries\AgencyQueries.graphql" />
-    <GraphQL Remove="GraphQL\Queries\GetAgentByAgentId.graphql" />
-    <GraphQL Remove="GraphQL\Queries\GetInsurers.graphql" />
-    <GraphQL Remove="GraphQL\SearchAgencies.graphql" />
-    <GraphQL Remove="GraphQL\Subscriptions\AddressSubs.graphql" />
+    <Compile Remove="GraphQL\**" />
+    <Content Remove="GraphQL\**" />
+    <EmbeddedResource Remove="GraphQL\**" />
+    <GraphQL Remove="GraphQL\**" />
+    <None Remove="GraphQL\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="GraphQL\GetAccountByAccountNumberLight.graphql" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.6" />
     <PackageReference Include="Blazorise.Animate" Version="1.5.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.6" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageReference Include="Radzen.Blazor" Version="4.29.8" />
-    <PackageReference Include="StrawberryShake.Blazor" Version="13.9.0" />
-    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="13.9.0" />
+    <PackageReference Include="Radzen.Blazor" Version="4.32.1" />
+    <PackageReference Include="StrawberryShake.Blazor" Version="13.9.4" />
+    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="13.9.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Data\JamesDAL.Client\James.Data.Client.csproj" />
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
   </ItemGroup>
 

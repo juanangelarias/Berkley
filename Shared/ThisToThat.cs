@@ -1,27 +1,25 @@
 ﻿using System.Collections;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace James.Shared
 {
     public static partial class ThisToThat
     {
 
-        public static TDest ToEntityType<TDest>(object source) where TDest : new()
+        public static TDest ToEntityType<TDest>(object? source) where TDest : new()
         {
             return (TDest)ToEntityType(source, typeof(TDest));
         }
 
-        public static object ToEntityType(object source, Type destinationType)
+        public static object ToEntityType(object? source, Type destinationType)
         {
             if (null == source) 
                 return null!;
-            var dConstructor = destinationType.GetConstructor(Array.Empty<Type>());
-            if (dConstructor == null)
-                throw new Exception("Destination type must have a no argument constructor");
-            var result = dConstructor.Invoke(Array.Empty<object?>());
+            var dConstructor = destinationType.GetConstructor([]) ??
+                               throw new Exception("Destination type must have a no argument constructor");
+            var result = dConstructor.Invoke([]);
             var sProperties = source.GetType().GetProperties();
             var dProperties = result.GetType().GetProperties();
             var propMatches = from sProp in sProperties
@@ -46,7 +44,6 @@ namespace James.Shared
                     //IEnumberable to IEnumearble: Copy list
                     var list = new List<object>();
                     //HACK: Will fail on multi-argument generic list.  I don't believe they will be encountered in these conversions.
-                    var listType = propmatch.sProp.PropertyType.GenericTypeArguments.Single();
                     var dListType = propmatch.dProp.PropertyType.GenericTypeArguments.Single();
                     var sList = (IEnumerable)propmatch.sProp.GetValue(source)!;
                     foreach (var listItem in sList)
@@ -61,19 +58,19 @@ namespace James.Shared
                         var genList = Activator.CreateInstance(makeme);
                         var addMethod = genList!.GetType().GetMethod("Add");
                         foreach(var item in list)
-                            addMethod?.Invoke(genList, new object?[] {item});
+                            addMethod?.Invoke(genList, new[] {item});
                         propmatch.dProp.SetValue(result, genList);
                     } else
                     {
                         //HACK: Assumes there will be a constructor that will take an IEnumerable of values.
-                        var dListConstructor = propmatch.dProp.PropertyType.GetConstructor(new Type[] {list.GetType()});
+                        var dListConstructor = propmatch.dProp.PropertyType.GetConstructor(new[] {list.GetType()});
                         var dList = dListConstructor?.Invoke(new object?[] { list });
                         propmatch.dProp.SetValue(result, dList);
                     }
                 }
-                else if (new Type[] {typeof(DateTimeOffset?), typeof(DateTimeOffset)}.Contains(propmatch.sProp
+                else if (new[] {typeof(DateTimeOffset?), typeof(DateTimeOffset)}.Contains(propmatch.sProp
                              .PropertyType)
-                         && new Type[] { typeof(DateTime?), typeof(DateTime) }.Contains(propmatch.dProp
+                         && new[] { typeof(DateTime?), typeof(DateTime) }.Contains(propmatch.dProp
                              .PropertyType))
                 {
                     //Convert DataTimeOffset into DateTime
@@ -85,18 +82,18 @@ namespace James.Shared
                             $"Destination cannot accept a null value for property {propmatch.dProp.Name}");
                     propmatch.dProp.SetValue(result, dtVal);
                 }
-                else if (new Type[] { typeof(DateTime?), typeof(DateTime) }.Contains(propmatch.sProp.PropertyType)
-                    && new Type[] { typeof(DateOnly?), typeof(DateOnly) }.Contains(propmatch.dProp.PropertyType))
+                else if (new[] { typeof(DateTime?), typeof(DateTime) }.Contains(propmatch.sProp.PropertyType)
+                    && new[] { typeof(DateOnly?), typeof(DateOnly) }.Contains(propmatch.dProp.PropertyType))
                 {
                     //Convert DateTime to DateOnly
                     var val = propmatch.sProp.GetValue(source);
                     if (null != val)
                     {
-                        var dateOnlyProperty = DateOnly.FromDateTime((DateTime)val);
-                        
-                        if (null == dateOnlyProperty && propmatch.dProp.PropertyType == typeof(DateOnly))
+                        if (null == val && propmatch.dProp.PropertyType == typeof(DateOnly))
                             throw new ArgumentNullException($"{nameof(source)}.{propmatch.sProp.Name}",
                                 $"Destination cannot accept a null value for property {propmatch.dProp.Name}");
+                        var dateOnlyProperty = DateOnly.FromDateTime((DateTime)val!);
+                        
                         propmatch.dProp.SetValue(result, dateOnlyProperty);
                     }
                 }

@@ -1,13 +1,15 @@
 ﻿@using System.Globalization;
-@using JamesWebUI.Client.GraphQL;
-@using JamesWebUI.Client.GraphQL.Components;
+@using James.Data.Client.GraphQL;
+@using James.Data.Client.GraphQL.Components;
+@using James.Shared
 @using StrawberryShake;
 
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
+@inject ILoggingService Logging
 
 <Theme />
 <style>
@@ -167,51 +169,35 @@
     private async Task LoadLicenses()
     {
         await ShowLoading();
-        var result = await JamesClient.GetAgencyLicenses.ExecuteAsync(AgencyId);
-
-        var licensesList = new List<AgencyLicense>();
-        if (result.Errors.Count == 0)
+        var result = await DataAccess.GetAgencyLicenses(AgencyId);
+        if (result.Success)
         {
             if (result.Data != null)
             {
-                foreach (var license in result.Data.AgencyLicenses)
-                {
-                    licensesList.Add(James.Shared.ThisToThat.ToEntityType<AgencyLicense>(license));
-                }
-                agencyLicenses = licensesList;
+                agencyLicenses = result.Data;
             }
         }
         else
-        {
-            //TODO: Handle errors
-        }
+            //UNDONE: Add actual errors as data
+            Logging.LogError("Error getting Agency Licenses in Agency License Grid");
 
         await licenseGrid.Reload();
     }
     private async Task LoadStateDropDown()
     {
-        var result = await JamesClient.GetAllStates.ExecuteAsync();
-
-        var stateList = new List<State>();
-
-        foreach (var state in result.Data.AllStates)
-        {
-            stateList.Add(James.Shared.ThisToThat.ToEntityType<State>(state));
-        }
-
-        stateDropDown.Data = stateList;
+        var result = await DataAccess.GetAllStates();
+        if (result.Success == false)
+            //UNDONE: Add actual errors as data
+            Logging.LogError("Error getting all States in Agency License Grid");
+        stateDropDown.Data = result.Data;
     }
     private async Task<List<Insurer>> GetInsurers()
     {
-        var result = await JamesClient.AllInsurers.ExecuteAsync();
-
-        var insurerList = new List<Insurer>();
-
-        foreach (var insurer in result.Data.AllInsurers)
-        {
-            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
-        }
-        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
+        var result = await DataAccess.GetAllInsurers();
+        if (result.Success == false)
+            //UNDONE: Add actual errors as data
+            Logging.LogError("Error getting all Insurers in Agency License Grid");
+        return result.Data?.OrderBy(i => i.IdNavigation.FullName).ToList()?? [];
     }
 
     private async Task LoadSelectInsurerDropDown()
@@ -238,7 +224,7 @@
     async Task DeleteLicenseRow(AgencyLicense license)
     {
         await ShowLoading();
-        var result = await JamesClient.DeleteLicense.ExecuteAsync(new DeleteLicenseInput(){LicenseId = license.Id});
+        var result = await DataAccess.DeleteLicense(license.Id);
         await LoadLicenses();
     }
     async Task SaveLicenseRow(AgencyLicense license)
@@ -251,20 +237,19 @@
     async Task OnLicenseCreate(AgencyLicense license)
     {
         //This is where we handle row inserts. 
-        var result = await JamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
-            {
-                AgencyId = AgencyId,
-                AppointingState = license.AppointingState,
-                Appointment = license.Appointment != null ? ((DateOnly)license.Appointment).ToDateTime(TimeOnly.Parse("12:00 AM")) : null,
-                Comments = license.Comments,
-                Expiration =  license.Expiration != null ? ((DateOnly)license.Expiration).ToDateTime(TimeOnly.Parse("12:00 AM")) : null,
-                InsurerId = license.InsurerId,
-                IsResident = license.IsResident,
-                LicenseNumber = license.LicenseNumber,
-                State = license.State,
-                IsActive = license.IsActive,
-                Termination = license.Termination != null ? ((DateOnly)license.Termination).ToDateTime(TimeOnly.Parse("12:00 AM")) : null
-            });
+        var result = await DataAccess.CreateLicense(
+                AgencyId, null,//TODO:MAke sure this should be null
+                license.AppointingState,
+                license.Comments,
+                license.Appointment,
+                license.Expiration,
+                license.Termination,
+                license.InsurerId,
+                license.IsResident,
+                license.LicenseNumber,
+                license.State,
+                license.IsActive
+            );
         //TODO: Check for errors and notify. 
     }
     async void CancelLicenseEdit(AgencyLicense license)
@@ -275,21 +260,19 @@
     async Task UpdateLicenseRow(AgencyLicense license)
     {
         //This is where we handle row Updates.
-        var result = await JamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
-            {
-                LicenseId = license.Id,
-                AgencyId = license.AgencyId,
-                AppointingState = license.AppointingState,
-                Appointment = license.Appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                Comments = license.Comments,
-                Expiration = license.Expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                InsurerId = license.InsurerId,
-                IsResident = license.IsResident,
-                LicenseNumber = license.LicenseNumber,
-                State = license.State,
-                IsActive = license.IsActive,
-                Termination = license.Termination?.ToDateTime(TimeOnly.Parse("12:00 AM"))
-            });
+        var result = await DataAccess.SetAgencyLicense(license.Id,
+                license.AgencyId, license.AgentId,
+                license.AppointingState,
+                license.Comments,
+                license.Appointment,
+                license.Expiration,
+                license.Termination,
+                license.InsurerId,
+                license.IsResident,
+                license.LicenseNumber,
+                license.State,
+                license.IsActive
+            );
     }
     async Task StateFilterChange()
     {

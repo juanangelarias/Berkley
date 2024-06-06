@@ -1,14 +1,10 @@
-﻿@using System.Globalization;
-@using JamesWebUI.Client.GraphQL;
-@using JamesWebUI.Client.GraphQL.Components;
-@using StrawberryShake;
-@using James.Shared;
-
+﻿@using James.Shared
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
+@inject ILoggingService LoggingService
 @inject NotificationService NotificationService
 
 <Theme />
@@ -116,44 +112,39 @@
     }
     private async Task LoadPOAs()
     {
-        var result = await JamesClient.GetAgencyPOAs.ExecuteAsync(AgencyID);
+        var result = await DataAccess.GetAgencyPoas(AgencyID);
 
-        if (result.Data.AgencyPOAs.Count > 0)
+        if (result.Success)
         {
-            var poaList = new List<PowerOfAttorney>();
-
-            foreach (var poa in result.Data.AgencyPOAs)
-            {
-                poaList.Add(ThisToThat.ToEntityType<PowerOfAttorney>(poa));
-            }
-
-            powerOfAttorneys = poaList;
+            powerOfAttorneys = result.Data;
             await poaGrid.Reload();
+        }
+        else
+        {
+            //TODO:Add error details
+            LoggingService.LogError("Error loading POAs in the AgencyPOAGrid");
         }
     }
     private async Task<List<Insurer>> GetInsurers()
     {
-        var result = await JamesClient.AllInsurers.ExecuteAsync();
-
-        var insurerList = new List<Insurer>();
-
-        foreach (var insurer in result.Data.AllInsurers)
+        var result = await DataAccess.GetAllInsurers();
+        if (result.Success)
+            return result.Data!.OrderBy(i => i.IdNavigation.FullName).ToList();
+        else
         {
-            insurerList.Add(James.Shared.ThisToThat.ToEntityType<Insurer>(insurer));
+            //TODO:Add error details
+            LoggingService.LogError("Error getting insurers in the AgencyPOAGrid");
+            return [];
         }
-        return insurerList.OrderBy(i => i.IdNavigation.FullName).ToList();
     }
     private async Task<List<PowerOfAttorneyStatusDm>> GetAllStatuses()
     {
-        var result = await JamesClient.GetAllPoaStatuses.ExecuteAsync();
-
-        var statusList = new List<PowerOfAttorneyStatusDm>();
-
-        foreach (var status in result.Data.AllPoaStatuses)
-        {
-            statusList.Add(James.Shared.ThisToThat.ToEntityType<PowerOfAttorneyStatusDm>(status));
-        }
-        return statusList.OrderBy(s => s.Status).ToList();
+        var result = await DataAccess.GetAllPoaStatuses();
+        if (result.Success)
+        return result.Data.OrderBy(s => s.Status).ToList();
+        //TODO:Add error details
+        LoggingService.LogError("Error getting all statuses in the AgencyPOAGrid");
+        return [];
     }
     async Task InsurerFilterChange()
     {
@@ -195,20 +186,15 @@
         await ShowLoading();
         if (poaToUpdate != null)
         {
-            var input = new SetPowerOfAttorneyInput()
-                {
-                    PoaId = poaToUpdate.Id,
-                    InsurerId = poaToUpdate.InsurerId,
-                    Limit = poaToUpdate.Limit,
-                    Serial = poaToUpdate.Serial,
-                    FirstIssued = poaToUpdate?.FirstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    CurrentIssued = poaToUpdate?.CurrentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    Comments = poaToUpdate.Comments,
-                    Status = poaToUpdate.Status
-                };
-
-            var result = await JamesClient.SetPowerOfAttorney.ExecuteAsync(input);
-            if(result.Errors.Count == 0)
+            var result = await DataAccess.SetPowerOfAttorney(poaToUpdate.Id,
+                poaToUpdate.InsurerId,
+                poaToUpdate.Limit,
+                poaToUpdate.Serial,
+                poaToUpdate.FirstIssued,
+                poaToUpdate.CurrentIssued,
+                poaToUpdate.Comments,
+                poaToUpdate.Status);
+            if(result.Success)
             {
                 NotificationService.Notify(new NotificationMessage{Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000});
 

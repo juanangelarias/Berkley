@@ -1,0 +1,42 @@
+﻿@using JamesWebUI.Client.Services
+@using JamesWebUI.Client.Classes
+@using James.Data.Client.GraphQL
+@using System.Globalization
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+
+<RadzenCard Style="width:350px;max-width: 350px;">
+    <RadzenRow>
+        <RadzenColumn Size="2">
+            <RadzenGravatar/>
+        </RadzenColumn>
+        <RadzenColumn>
+            <RadzenStack Orientation="Orientation.Vertical">
+                <RadzenText Text="@agentToDisplay.IdNavigation.FullName"/>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenStack Orientation="Orientation.Vertical">
+            <RadzenText Text="TestEmail@Test.com"/>
+            <RadzenText Text="Appointment: 1/1/2024"/>
+        </RadzenStack>
+    </RadzenRow>
+</RadzenCard>
+
+
+
+@code {
+    [Parameter] public Agent agentToDisplay { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        ThemeService.Initialize(NavigationManager);
+
+    }
+}

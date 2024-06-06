@@ -3,8 +3,8 @@
 @using System.Diagnostics
 @using System.Globalization
 @using James.Shared
-@using JamesWebUI.Client.GraphQL;
-@using JamesWebUI.Client.GraphQL.Components;
+@using James.Data.Client.GraphQL;
+@using James.Data.Client.GraphQL.Components;
 @using StrawberryShake;
 
 @inherits LayoutComponentBase
@@ -12,9 +12,9 @@
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
-@inject LoggingService _logging
-@* @attribute [Authorize] *@
+@inject IDataAccess _dataAccess
+@inject ILoggingService _logging
+@attribute [Authorize]
 
 <Theme />
 
@@ -447,29 +447,29 @@
     {
         await base.OnInitializedAsync();
 
-        var result = await JamesClient.GetAgencyByAgencyNumber.ExecuteAsync(Id);
-        if (result.Errors.Count == 0)
+        var result = await _dataAccess.GetAgencyByAgencyNumber(Id);
+        if (result.Success)
         {
-            agencyToDisplay = ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
+            agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
 
             mainAddress = agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
             billingAddress = agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
         }
         else
         {
-            var error = 1;
-            _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors.Select(ErrorToString)), "GraphQl");
+            _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors), "GraphQl");
         }
 
-        session = JamesClient.AddressModified.Watch().Subscribe(a =>
-            {
-                ShowNotification(new NotificationMessage
-                    {
-                        Severity = NotificationSeverity.Info,
-                        Detail = "Information on this page has been changed by another user.",
-                        Duration = 4000
-                    });
-            });
+        // session = JamesClient.AddressModified.Watch().Subscribe(a =>
+        //     {
+        //         ShowNotification(new NotificationMessage
+        //             {
+        //                 Severity = NotificationSeverity.Info,
+        //                 Detail = "Information on this page has been changed by another user.",
+        //                 Duration = 4000
+        //             });
+        //     });
+        session = _dataAccess.AddressModified();
 
         ThemeService.Initialize(NavigationManager);
 
@@ -478,23 +478,11 @@
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-                };
-        //TODO:Remove after testing
-        var username = await JamesClient.LogUser.ExecuteAsync(new LogUserInput{Message = "From Agency Profile OnInitialized"});
-        Debug.WriteLine("Current user is "+ username.Data?.LogUser.String);
-        //mutation LogUser($input:string){
-        // logUser(input: $input){string}
-        //                }
-    }
-
-    private static string ErrorToString(IClientError error)
-    {
-        //TODO: Make this better and put somewhere where the code can be shared.
-        return $"Message: {error.Message}\r\nCode: {error.Code}\r\nException: {error.Exception}\r\nPath: {error.Path}\r\nExtensions: {error.Extensions}";
+            };
     }
     protected override async Task OnParametersSetAsync()
     {
-        
+
     }
 
     private void ToggleMainAddressEditMode()
@@ -505,19 +493,9 @@
     {
         billingAddressEditMode = !billingAddressEditMode;
     }
-    async Task SubmitAddressChange(Address args)
+    async Task SubmitAddressChange(Address newAddress)
     {
-        var changedAddress = args;
-        await JamesClient.SetAddress.ExecuteAsync(new SetAddressInput
-            {
-                AddressId = changedAddress.Id,
-                Address1 = changedAddress.Address1,
-                Address2 = changedAddress?.Address2,
-                Address3 = changedAddress?.Address3,
-                City = changedAddress.City,
-                StateCode = changedAddress.StateCode,
-                PostalCode = changedAddress.PostalCode
-            });
+        await _dataAccess.SetAddress(newAddress);
 
     }
     async Task AddressChangeDetected(IAddressModifiedResult result)

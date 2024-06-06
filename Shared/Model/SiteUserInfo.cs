@@ -10,6 +10,7 @@ namespace James.Shared.Model
         public string? FullName { get; set; }
         public string? Initials { get; set; }
         public string? Title { get; set; }
+        public string? PictureUrl { get; set; }
         public bool IsUnderwriter { get; set; } = false;
         public bool IsHomeOfficeApprover { get; set; } = false;
         public string JWT { get; set; }

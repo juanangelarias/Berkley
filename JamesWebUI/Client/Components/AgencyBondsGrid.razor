@@ -1,13 +1,14 @@
 ﻿@using System.Globalization;
-@using JamesWebUI.Client.GraphQL;
-@using JamesWebUI.Client.GraphQL.Components;
+@using James.Data.Client.GraphQL;
+@using James.Data.Client.GraphQL.Components;
 @using StrawberryShake;
 @using James.Shared;
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject JamesClient JamesClient
+@inject IDataAccess  DataAccess
+@inject LoggingService LoggingService
 
 <Theme />
 
@@ -107,17 +108,14 @@
     }
     private async Task LoadAgencyBonds()
     {
-        var result = await JamesClient.GetAgencyBonds.ExecuteAsync(AgencyId);
-
-        if (result.Data.AgencyBonds.Count > 0)
+        var result = await DataAccess.GetAgencyBonds(AgencyId);
+        if (result.Success == false)
         {
-            var bondList = new List<Bond>();
-            foreach (var bond in result.Data.AgencyBonds)
-            {
-                bondList.Add(ThisToThat.ToEntityType<Bond>(bond));
-            }
-
-            agencyBonds = bondList;
+            //TODO:Add error details
+            LoggingService.LogError("Error loading agency bonds");
+        }
+        if (result.Data?.Any() == true)
+        {
             await agencyBondGrid.Reload();
         }
     }

@@ -31,7 +31,14 @@
         </div>
     </nav>
 </div>
-
+    @if (OperatingSystem.IsBrowser())
+    {
+        <span>WASM</span>
+    }
+    else
+    {
+        <span>Server</span>
+    }
 @code {
     private bool collapseNavMenu = true;
 

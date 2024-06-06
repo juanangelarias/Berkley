@@ -1,0 +1,36 @@
+﻿@using System.Globalization
+@using James.Data.Client.GraphQL;
+@using James.Data.Client.GraphQL.Components;
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+
+<UseGetDivisions Context="divisionData">
+    <ChildContent>
+        <RadzenDropDown @rendermode="@InteractiveWebAssembly" Placeholder="Division"
+                        Multiple="true" Chips="true" SelectAllText="Select All"
+                        AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        TValue="List<IGetDivisions_Divisions>" Data="divisionData?.Divisions.ToList()"
+                        TextProperty="Division">
+        </RadzenDropDown>
+    </ChildContent>
+    <ErrorContent>
+        Something went wrong...<br />
+    </ErrorContent>
+    <LoadingContent>
+        <RadzenDropDown Placeholder="Loading..." TValue="IGetDivisions_Divisions" />
+    </LoadingContent>
+</UseGetDivisions>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        ThemeService.Initialize(NavigationManager);
+        
+    }
+}

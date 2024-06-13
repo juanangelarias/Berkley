@@ -19,7 +19,7 @@
         </RadzenProfileMenu>
     </Authorized>
     <NotAuthorized>
-        <a href="user/login?redirectUri=@Navigation.Page()">Log in</a>
+        <a href="account/login?redirectUri=@Navigation.Page()">Log in</a>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -27,7 +27,7 @@
     private async Task ProfileItemClicked(RadzenProfileMenuItem item)
     {
         if (item.Text == "Logout")
-            Navigation.NavigateToLogout("user/logout");
+            Navigation.NavigateTo("account/Logout?redirectUri=/");
     }
     
 }

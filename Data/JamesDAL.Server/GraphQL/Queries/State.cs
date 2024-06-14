@@ -1,6 +1,4 @@
-﻿using James.Data.Server.Model;
-
-namespace James.Data.Server.GraphQL.Queries
+﻿namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {

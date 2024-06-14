@@ -1,9 +1,10 @@
-﻿<AuthorizeView>
+﻿@using JamesWebUI.Client.Classes
+<AuthorizeView>
     <Authorized>
-        <a href="/account/logout">Log out</a>
+        <a href="@JamesConstants.LOG_IN_PATH">Log out</a>
     </Authorized>
     <NotAuthorized>
-        <a href="/account/Login?redirectUri=/">Log in</a>
+        <a href="@JamesConstants.LOG_IN_PATH?redirectUri=/">Log in</a>
     </NotAuthorized>
 </AuthorizeView>
 @code

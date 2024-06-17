@@ -1,16 +1,14 @@
-﻿using HotChocolate;
-using James.Data.Server.Model;
-using James.Shared.Model;
-using Microsoft.EntityFrameworkCore;
+﻿using HotChocolate.Authorization;
 
 namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
-        public List<DivisionDm> GetDivisions([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        [Authorize]
+        public async Task<List<DivisionDm>> GetDivisions([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
-            return ctx.DivisionDms.ToList();
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.DivisionDms.ToListAsync();
         }
     }
 }

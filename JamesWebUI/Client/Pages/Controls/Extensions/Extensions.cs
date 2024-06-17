@@ -1,6 +1,4 @@
-﻿using James.Shared.Data;
-using Microsoft.AspNetCore.Components;
-using StrawberryShake;
+﻿using Microsoft.AspNetCore.Components;
 
 namespace JamesWebUI.Client.Controls.Extensions
 {

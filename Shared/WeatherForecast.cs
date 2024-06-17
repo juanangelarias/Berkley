@@ -1,4 +1,4 @@
-namespace JamesWebUI.Shared
+namespace James.Shared
 {
     public class WeatherForecast
     {

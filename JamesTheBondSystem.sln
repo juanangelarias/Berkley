@@ -36,7 +36,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{128D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Data.Client", "Data\JamesDAL.Client\James.Data.Client.csproj", "{D4950B20-EEC2-4513-BC56-41DDED4C9802}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "James.Shared.Server", "James.Shared.Server\James.Shared.Server.csproj", "{24B258AF-D905-4B59-8842-F10BA2D39FAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Shared.Server", "James.Shared.Server\James.Shared.Server.csproj", "{24B258AF-D905-4B59-8842-F10BA2D39FAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

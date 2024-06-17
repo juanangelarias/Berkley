@@ -1,7 +1,6 @@
 ﻿using James.Data.Server.GraphQL.Mutations;
 using James.Shared.Model;
 using James.Shared.Server;
-using JamesWebUI.Client.Services;
 
 namespace JamesWebUI.Server.SharedServices
 {
@@ -28,7 +27,7 @@ namespace JamesWebUI.Server.SharedServices
         {
             try
             {
-                var username = (await userShared.GetCurrentUser()).Username;
+                var username = (data?.ContainsKey("username") == true)? data["username"]:(await userShared.GetCurrentUser()).Username ;
 #pragma warning disable CS4014
                 await Task.Factory.StartNew(() =>
 #pragma warning restore CS4014
@@ -42,7 +41,7 @@ namespace JamesWebUI.Server.SharedServices
                     if (!string.IsNullOrEmpty(exceptionDetail))
                         extraInfo.Add(nameof(exceptionDetail), exceptionDetail);
                     if (data != null)
-                        foreach (var datum in data)
+                        foreach (var datum in data.Where(d=>d.Key!="username"))
                             extraInfo.Add(datum.Key, datum.Value);
                     using (logger.BeginScope(extraInfo))
                         logger.Log(GetLogLevel(severity), eventId, message: message);
@@ -58,23 +57,16 @@ namespace JamesWebUI.Server.SharedServices
 
         private static LogLevel GetLogLevel(Severity severity)
         {
-            switch (severity)
+            return severity switch
             {
-                case Severity.Verbose:
-                    return LogLevel.Trace;
-                case Severity.Debug:
-                    return LogLevel.Debug;
-                case Severity.Information:
-                    return LogLevel.Information;
-                case Severity.Warning:
-                    return LogLevel.Warning;
-                case Severity.Error:
-                    return LogLevel.Error;
-                case Severity.Fatal:
-                    return LogLevel.Critical;
-                default:
-                    return LogLevel.None;
-            }
+                Severity.Verbose => LogLevel.Trace,
+                Severity.Debug => LogLevel.Debug,
+                Severity.Information => LogLevel.Information,
+                Severity.Warning => LogLevel.Warning,
+                Severity.Error => LogLevel.Error,
+                Severity.Fatal => LogLevel.Critical,
+                _ => LogLevel.None
+            };
         }
     }
 }

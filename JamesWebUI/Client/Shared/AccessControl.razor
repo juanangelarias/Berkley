@@ -1,5 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using JamesWebUI.Client.Controls.Extensions
+﻿@using James.Shared
 
 @inject NavigationManager Navigation
 
@@ -12,14 +11,14 @@
             </Template>
             <ChildContent>
                 <RadzenProfileMenuItem Text="@("Hello, " + context.User.Identity.Name)" />
-                <RadzenProfileMenuItem Text="My Profile" Path="profile" Icon="account_circle"/>
-                <RadzenProfileMenuItem Text="My Dashboard" Path="" Icon="home"/>
+                <RadzenProfileMenuItem Text="My Profile" Path="profile" Icon="account_circle" />
+                <RadzenProfileMenuItem Text="My Dashboard" Path="" Icon="home" />
                 <RadzenProfileMenuItem Text="Logout" Icon="logout" />
             </ChildContent>
         </RadzenProfileMenu>
     </Authorized>
     <NotAuthorized>
-        <a href="account/login?redirectUri=@Navigation.Page()">Log in</a>
+        <a href="@JamesConstants.LOG_IN_PATH?redirectUri=@Navigation.Page()">Log in</a>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -27,7 +26,7 @@
     private async Task ProfileItemClicked(RadzenProfileMenuItem item)
     {
         if (item.Text == "Logout")
-            Navigation.NavigateTo("account/Logout?redirectUri=/");
+            Navigation.NavigateTo(JamesConstants.LOG_OUT_PATH + "?redirectUri=/");
     }
-    
+
 }

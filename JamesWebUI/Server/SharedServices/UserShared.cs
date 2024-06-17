@@ -31,10 +31,15 @@ namespace JamesWebUI.Server.SharedServices
         //private static UserInformationCache<SiteUserInfo> _cachedSiteUserInfo = null!;
         private static readonly JwtSecurityTokenHandler _handler = new();
 
+        private static readonly SiteUserInfo _unknownUserInfo = new SiteUserInfo()
+            {FullName = "Unknown", FirstName = "Not", LastName = "Known", Username = "unknown"};
         public async Task<SiteUserInfo> GetCurrentUser()
         {
             Debug.Assert(null != _httpContextAccessor.HttpContext, "Must be called with a non-null HttpContext");
             var jwt = _httpContextAccessor.HttpContext.Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
+            if (string.IsNullOrWhiteSpace(jwt))
+                //TODO: Remove after solving Auth0 issue.
+                return _unknownUserInfo;
             var userInfo = await GetUserInfoAsync(jwt);
             return userInfo;
         }
@@ -62,6 +67,12 @@ namespace JamesWebUI.Server.SharedServices
 
         public async Task<SiteUserInfo> GetUserInfoAsync(string jwt)
         {
+            if (string.IsNullOrWhiteSpace(jwt))
+            {
+                //TODO: Review after solving new auth0 user technique is found.
+                _logger.LogWarning("UserInfo request with no JWT");
+                return _unknownUserInfo;
+            }
             _logger.LogDebug("UserInfo request received.");
 
             //Get Email from JWT

@@ -1,4 +1,4 @@
-﻿namespace JamesWebUI.Client.Classes
+﻿namespace James.Shared
 {
     public static class JamesConstants
     {

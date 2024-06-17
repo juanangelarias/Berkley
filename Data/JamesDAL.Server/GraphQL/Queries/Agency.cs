@@ -1,12 +1,10 @@
-﻿using HotChocolate;
-using James.Data.Server.Model;
-using James.Shared.Model;
-using Microsoft.EntityFrameworkCore;
+﻿using HotChocolate.Authorization;
 
 namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
+        [Authorize]
         //UNDONE: Change these all to sync Tasks
         public async Task<List<Agency>> SearchAgencies(string? stringToSearch, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -21,6 +19,8 @@ namespace James.Data.Server.GraphQL.Queries
                 return await ctx.Agencies.Include(a => a.IdNavigation)
                     .ToListAsync();
         }
+
+        [Authorize]
         public async Task<Agency?> GetAgencyByAgencyNumber(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -34,6 +34,8 @@ namespace James.Data.Server.GraphQL.Queries
                 .FirstOrDefaultAsync();
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
+
+        [Authorize]
         public async Task<List<Account>> GetAgencyAccounts(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -50,6 +52,8 @@ namespace James.Data.Server.GraphQL.Queries
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
 
         }
+
+        [Authorize]
         public async Task<Agency> GetAgencyParent(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -60,6 +64,8 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
         }
+
+        [Authorize]
         public async Task<List<Bond>> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -73,6 +79,8 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}."); ;
         }
+
+        [Authorize]
         public async Task<List<AgentsInAgency>> GetAgencyAgents(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -88,6 +96,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ToListAsync();
         }
 
+        [Authorize]
         public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = contextFactory.CreateDbContext();
@@ -99,12 +108,14 @@ namespace James.Data.Server.GraphQL.Queries
             return result;
         }
 
+        [Authorize]
         public async Task<List<AgencyStatusDm>> GetAgencyStatuses([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.AgencyStatusDms.ToListAsync();
         }
 
+        [Authorize]
         public async Task<List<PowerOfAttorney>> GetAgencyPOAs(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -118,16 +129,21 @@ namespace James.Data.Server.GraphQL.Queries
                 .ToListAsync();
         }
 
+        [Authorize]
         public async Task<List<PowerOfAttorneyDocumentNameDm>> GetPOADocumentNames([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.PowerOfAttorneyDocumentNameDms.ToListAsync();
         }
+
+        [Authorize]
         public async Task<List<PowerOfAttorneyStatusDm>> GetAllPoaStatuses([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.PowerOfAttorneyStatusDms.ToListAsync();
         }
+
+        [Authorize]
         public async Task<List<Agency>> GetAgencyRelatedParties(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

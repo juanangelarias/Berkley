@@ -13,103 +13,158 @@ namespace James.Shared
             return (TDest)ToEntityType(source, typeof(TDest));
         }
 
-        public static object ToEntityType(object? source, Type destinationType)
+        //public static TDest ToIEnumerableEntityType<TDest, TSource>(IEnumerable<TSource>? source) where TDest : class, IEnumerable
+        //{
+        //    if (null == source)
+        //        return null!;
+        //    var tempSource = new TObjectWithList<List<TSource>> { List = new List<TSource>(source) };
+        //    var tempResult = ToEntityType<TObjectWithList<TDest>>(tempSource);
+        //    return tempResult.List ?? throw new UnreachableException("IEnumerable was not created");
+        //}
+        private static readonly Type _genericListType = typeof(List<>);
+
+        private static object ToEntityType(object? source, Type destinationType)
         {
-            if (null == source) 
+            if (null == source)
                 return null!;
+            if (destinationType.GetInterfaces().Contains(typeof(IEnumerable)))
+            {
+                return CopyIEnumerable((IEnumerable)source, destinationType);
+            }
             var dConstructor = destinationType.GetConstructor([]) ??
                                throw new Exception("Destination type must have a no argument constructor");
             var result = dConstructor.Invoke([]);
             var sProperties = source.GetType().GetProperties();
-            var dProperties = result.GetType().GetProperties();
+            var dProperties = result.GetType().GetProperties().Where(pi => pi.CanWrite).ToArray();
             var propMatches = from sProp in sProperties
                               join dProp in dProperties
                                   on sProp.Name.ToLower() equals dProp.Name.ToLower()
                               select (sProp, dProp);
-            foreach (var propmatch in propMatches)
-            {
-                if (propmatch.sProp.PropertyType == propmatch.dProp.PropertyType)
+            foreach (var propMatch in propMatches)
+                try
                 {
-                    //The simplest case:  Scalar to scalar
-                    propmatch.dProp.SetValue(result, propmatch.sProp.GetValue(source));
-                }
-                else if (propmatch.dProp.PropertyType.IsClass)
-                {
-                    //Object to Object: Try to convert recursively
-                    propmatch.dProp.SetValue(result,
-                        ToEntityType(propmatch.sProp.GetValue(source)!, propmatch.dProp.PropertyType));
-                }
-                else if (propmatch.sProp.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
-                {
-                    //IEnumberable to IEnumearble: Copy list
-                    var list = new List<object>();
-                    //HACK: Will fail on multi-argument generic list.  I don't believe they will be encountered in these conversions.
-                    var dListType = propmatch.dProp.PropertyType.GenericTypeArguments.Single();
-                    var sList = (IEnumerable)propmatch.sProp.GetValue(source)!;
-                    foreach (var listItem in sList)
+                    if (propMatch.sProp.PropertyType == propMatch.dProp.PropertyType)
                     {
-                        list.Add(ToEntityType(listItem, dListType));
+                        //The simplest case:  Scalar to scalar
+                        propMatch.dProp.SetValue(result, propMatch.sProp.GetValue(source));
                     }
+                    else if (propMatch.sProp.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
+                    {
 
-                    if (propmatch.dProp.PropertyType.IsInterface)
+                        var destEnumerableType = propMatch.dProp.PropertyType;
+                        var sList = (IEnumerable)propMatch.sProp.GetValue(source)!;
+                        propMatch.dProp.SetValue(result, CopyIEnumerable(sList, destEnumerableType));
+                    }
+                    else if (propMatch.dProp.PropertyType.IsClass)
                     {
-                        var genListType = typeof(List<>);
-                        var makeme = genListType.MakeGenericType(propmatch.dProp.PropertyType.GenericTypeArguments);
-                        var genList = Activator.CreateInstance(makeme);
-                        var addMethod = genList!.GetType().GetMethod("Add");
-                        foreach(var item in list)
-                            addMethod?.Invoke(genList, new[] {item});
-                        propmatch.dProp.SetValue(result, genList);
-                    } else
+                        //Object to Object: Try to convert recursively
+                        propMatch.dProp.SetValue(result,
+                            ToEntityType(propMatch.sProp.GetValue(source)!, propMatch.dProp.PropertyType));
+                    }
+                    else if (new[] { typeof(DateTimeOffset?), typeof(DateTimeOffset) }.Contains(propMatch.sProp
+                                 .PropertyType)
+                             && new[] { typeof(DateTime?), typeof(DateTime) }.Contains(propMatch.dProp
+                                 .PropertyType))
                     {
-                        //HACK: Assumes there will be a constructor that will take an IEnumerable of values.
-                        var dListConstructor = propmatch.dProp.PropertyType.GetConstructor(new[] {list.GetType()});
-                        var dList = dListConstructor?.Invoke(new object?[] { list });
-                        propmatch.dProp.SetValue(result, dList);
+                        //Convert DataTimeOffset into DateTime
+                        var val = propMatch.sProp.GetValue(source);
+                        var dateTimeProperty = val?.GetType().GetProperty("DateTime");
+                        var dtVal = (DateTime?)dateTimeProperty?.GetValue(val);
+                        if (null == dtVal && propMatch.dProp.PropertyType == typeof(DateTime))
+                            throw new ArgumentNullException($"{nameof(source)}.{propMatch.sProp.Name}",
+                                $"Destination cannot accept a null value for property {propMatch.dProp.Name}");
+                        propMatch.dProp.SetValue(result, dtVal);
+                    }
+                    else if (new[] { typeof(DateTime?), typeof(DateTime) }.Contains(propMatch.sProp.PropertyType)
+                             && new[] { typeof(DateOnly?), typeof(DateOnly) }.Contains(propMatch.dProp.PropertyType))
+                    {
+                        //Convert DateTime to DateOnly
+                        var val = propMatch.sProp.GetValue(source);
+                        if (null != val)
+                        {
+                            if (null == val && propMatch.dProp.PropertyType == typeof(DateOnly))
+                                throw new ArgumentNullException($"{nameof(source)}.{propMatch.sProp.Name}",
+                                    $"Destination cannot accept a null value for property {propMatch.dProp.Name}");
+                            var dateOnlyProperty = DateOnly.FromDateTime((DateTime)val!);
+
+                            propMatch.dProp.SetValue(result, dateOnlyProperty);
+                        }
+                    }
+                    else
+                    {
+                        Debug.WriteLine(
+                            $"Property {propMatch.sProp.Name} skipped because source type was {propMatch.sProp.PropertyType} and destination type was {propMatch.dProp.PropertyType}");
                     }
                 }
-                else if (new[] {typeof(DateTimeOffset?), typeof(DateTimeOffset)}.Contains(propmatch.sProp
-                             .PropertyType)
-                         && new[] { typeof(DateTime?), typeof(DateTime) }.Contains(propmatch.dProp
-                             .PropertyType))
+                catch (Exception ex)
                 {
-                    //Convert DataTimeOffset into DateTime
-                    var val = propmatch.sProp.GetValue(source);
-                    var dateTimeProperty = val?.GetType().GetProperty("DateTime");
-                    var dtVal = (DateTime?)dateTimeProperty?.GetValue(val);
-                    if (null == dtVal && propmatch.dProp.PropertyType == typeof(DateTime))
-                        throw new ArgumentNullException($"{nameof(source)}.{propmatch.sProp.Name}",
-                            $"Destination cannot accept a null value for property {propmatch.dProp.Name}");
-                    propmatch.dProp.SetValue(result, dtVal);
+                    //TODO:Improve this
+                    Debug.WriteLine($"Exception converting property {propMatch.sProp.Name}\r\n{ex.ToText()}");
+                    throw;
                 }
-                else if (new[] { typeof(DateTime?), typeof(DateTime) }.Contains(propmatch.sProp.PropertyType)
-                    && new[] { typeof(DateOnly?), typeof(DateOnly) }.Contains(propmatch.dProp.PropertyType))
-                {
-                    //Convert DateTime to DateOnly
-                    var val = propmatch.sProp.GetValue(source);
-                    if (null != val)
-                    {
-                        if (null == val && propmatch.dProp.PropertyType == typeof(DateOnly))
-                            throw new ArgumentNullException($"{nameof(source)}.{propmatch.sProp.Name}",
-                                $"Destination cannot accept a null value for property {propmatch.dProp.Name}");
-                        var dateOnlyProperty = DateOnly.FromDateTime((DateTime)val!);
-                        
-                        propmatch.dProp.SetValue(result, dateOnlyProperty);
-                    }
-                }
-                else
-                {
-                    Debug.WriteLine($"Property {propmatch.sProp.Name} skipped because source type was {propmatch.sProp.PropertyType} and destination type was {propmatch.dProp.PropertyType}");
-                }
-            }
             return result;
+        }
+
+        private static readonly HashSet<Type> _validIEnumerableTypes = new();
+        // ReSharper disable once InvalidXmlDocComment
+        /// <summary>
+        /// Copies from an IEnumerable to a typed destination
+        /// </summary>
+        /// <param name="source">Source IEnumerable</param>
+        /// <param name="destType">Destination type.  Generic List<> objects are recommended</param>
+        /// <returns>concrete version of the destination type with converted data</returns>
+        private static IEnumerable CopyIEnumerable(IEnumerable source, Type destType)
+        {
+            //HACK: Will fail on multi-argument generic list.  I don't believe they will be encountered in these conversions.
+            
+            //Confirm destination type is a generic IEnumerable and cache the result to avoid reflection hit.
+            //TODO:Performance test this
+            if (!_validIEnumerableTypes.Contains(destType))
+            {
+                if (destType.GetInterfaces().All(i => i.Name != "IEnumerable`1"))
+                    throw new NotSupportedException("destType must be a generic IEnumerable");
+                _validIEnumerableTypes.Add(destType);
+            }
+
+            var dListType = destType.GenericTypeArguments.Single();
+            var list = (from object? item in source select ToEntityType(item, dListType)).ToList();
+
+            IEnumerable? MakeConcreteList(Type type)
+            {
+                var genList = Activator.CreateInstance(type)!;
+                var addMethod = type.GetMethod("Add");
+                if (addMethod == null) return null;
+                foreach (var item in list)
+                    addMethod?.Invoke(genList, [item]);
+                return (IEnumerable)genList;
+            }
+
+            var finalType = destType.IsInterface?_genericListType.MakeGenericType(destType.GenericTypeArguments):
+                    destType;
+            //if (destType.IsInterface)
+            //{
+            //    //Interfaces don't have constructors, so make List<> which implements IEnumerable<>
+            //    var genListType = typeof(List<>);
+            //    finalType = genListType.MakeGenericType(destType.GenericTypeArguments);
+            //}
+            //if (null != destType.GetConstructor([]))
+            //    finalType = destType;
+            //if (null != finalType)
+            //{
+                var finalList = MakeConcreteList(finalType);
+                if (finalList != null) return finalList;
+            //}
+            //HACK: Assumes there will be a constructor that will take an IEnumerable of values.
+            var dListConstructor = destType.GetConstructor([list.GetType()]);
+            var dList = dListConstructor?.Invoke([list])!;
+            return (IEnumerable)dList;
         }
 
         /// <summary>
         /// Converts an <paramref name="exception"/> details to text
         /// </summary>
         /// <param name="exception">exception</param>
-        /// <returns>Mulit-lined text with details about the exception</returns>
+        /// <returns>Multi-lined text with details about the exception</returns>
         public static string ToText(this Exception exception)
         {
             var sb = new StringBuilder(100);
@@ -163,7 +218,7 @@ namespace James.Shared
         /// Converts an <paramref name="exception"/> details to text
         /// </summary>
         /// <param name="exception">exception</param>
-        /// <returns>Mulit-lined text with details about the exception</returns>
+        /// <returns>Multi-lined text with details about the exception</returns>
         public static string ToHtml(this Exception exception)
         {
             var detailText = exception.ToText();
@@ -174,4 +229,8 @@ namespace James.Shared
         [GeneratedRegex("[\r\n]+")]
         private static partial Regex LineBreakRegex();
     }
+    //internal class TObjectWithList<T>() where T : IEnumerable
+    //{
+    //    internal T? List { get; set; }
+    //}
 }

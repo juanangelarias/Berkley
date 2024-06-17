@@ -1,11 +1,9 @@
 ﻿@page "/Agency/{Id}"
 
-@using System.Diagnostics
-@using System.Globalization
+@using System.Security.Claims
 @using James.Shared
 @using James.Data.Client.GraphQL;
 @using James.Data.Client.GraphQL.Components;
-@using StrawberryShake;
 
 @inherits LayoutComponentBase
 
@@ -102,7 +100,7 @@
                             <RadzenRow>
                                 <RadzenColumn>
                                     <RadzenFormField Text="Tax ID" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@Username" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
@@ -422,6 +420,9 @@
 
 @code {
     [Parameter] public string? Id { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    private string Username = "";
     public Notification[]? notifications;
     List<string> blankList = new List<string>();
     private bool contactsGridView = false;
@@ -459,7 +460,14 @@
         {
             _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors), "GraphQl");
         }
+        if (authenticationState != null)
+        {
+            var state = await authenticationState;
 
+            Username = state.User.FindFirst("nickname")?.Value ?? string.Empty;
+        }
+        //TODO: Remove after testing
+        _logging.LogInformation("AgencyProfile initialized for AgencyId: " + Id, data: new Dictionary<string, string> { { "username", Username } });
         // session = JamesClient.AddressModified.Watch().Subscribe(a =>
         //     {
         //         ShowNotification(new NotificationMessage

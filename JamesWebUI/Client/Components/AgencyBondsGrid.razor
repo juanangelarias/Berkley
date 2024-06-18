@@ -1,18 +1,15 @@
 ﻿@using System.Globalization;
-@using James.Data.Client.GraphQL;
-@using James.Data.Client.GraphQL.Components;
-@using StrawberryShake;
 @using James.Shared;
 @inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
 @inject IDataAccess  DataAccess
-@inject LoggingService LoggingService
+@inject ILoggingService LoggingService
 
 <Theme />
 
-<RadzenDataGrid TItem="Bond" @ref="@agencyBondGrid" 
+<RadzenDataGrid TItem="Bond" @ref="@agencyBondGrid" Data="@agencyBonds"
                 AllowGrouping="true" AllowSorting="true" AllowColumnResize="true" AllowColumnPicking="true"
                 Density="Density.Compact" Style="height: 500px; border-radius: 20px;" 
                 AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
@@ -116,6 +113,7 @@
         }
         if (result.Data?.Any() == true)
         {
+            agencyBonds = result.Data;
             await agencyBondGrid.Reload();
         }
     }

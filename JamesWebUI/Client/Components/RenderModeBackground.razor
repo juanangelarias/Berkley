@@ -1,0 +1,31 @@
+﻿@implements IAsyncDisposable
+@inject IJSRuntime JS
+<!--Changes the background color of the enclosing div according to whether
+    it is rendered on the client-side or server-side
+-->
+<div class="renderModeBaseDiv" @ref=baseDiv></div>
+
+@code {
+    IJSObjectReference _module;
+    ElementReference baseDiv;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+            _module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./Components/RenderModeBackground.razor.js");
+        //TODO:Add a check that this is not run in production.
+        if (OperatingSystem.IsBrowser())
+            await _module.InvokeVoidAsync("setBackgroundClient", baseDiv);
+        else
+            await _module.InvokeVoidAsync("setBackgroundServer", baseDiv);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            await _module.DisposeAsync();
+        }
+    }
+}

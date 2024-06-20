@@ -24,6 +24,12 @@ enum ApplyPolicy {
   VALIDATION
 }
 
+enum ApplyPolicy {
+  BEFORE_RESOLVER
+  AFTER_RESOLVER
+  VALIDATION
+}
+
 type Query {
   account(accountNumber: String): Account
   accountOnly(accountNumber: String): Account

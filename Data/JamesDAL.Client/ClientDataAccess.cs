@@ -260,8 +260,9 @@ namespace James.Data.Client
             string? licenseNumber, string state, bool isActive)
         {
             return await ExecuteGet<AgencyLicense>(
-                async () => await jamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
+                async () => await jamesClient.SetAgencyLicense.ExecuteAsync(new SetAgencyLicenseInput
                 {
+                    LicenseId = licenseId,
                     AgencyId = agencyId,
                     AgentId = agentId,
                     AppointingState = appointingState,

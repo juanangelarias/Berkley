@@ -7,7 +7,7 @@ schema {
 type Mutation {
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
-  setAgencyLicense(input: SetLicenseInput!): SetLicensePayload!
+  setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
   setPowerOfAttorney(input: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
@@ -15,6 +15,12 @@ type Mutation {
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
+}
+
+enum ApplyPolicy {
+  BEFORE_RESOLVER
+  AFTER_RESOLVER
+  VALIDATION
 }
 
 type Query {
@@ -2166,7 +2172,7 @@ type SetAddressPayload {
   address: Address
 }
 
-input SetLicenseInput {
+input SetAgencyLicenseInput {
   licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
@@ -2182,7 +2188,7 @@ input SetLicenseInput {
   isActive: Boolean!
 }
 
-type SetLicensePayload {
+type SetAgencyLicensePayload {
   agencyLicense: AgencyLicense
 }
 

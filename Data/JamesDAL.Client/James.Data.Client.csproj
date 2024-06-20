@@ -16,4 +16,12 @@
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <GenerateGraphQLCodeItems Remove="GraphQL\Mutations\ObligeeMutations.graphql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="GraphQL\Mutations\ObligeeMutations.graphql" />
+  </ItemGroup>
+
 </Project>

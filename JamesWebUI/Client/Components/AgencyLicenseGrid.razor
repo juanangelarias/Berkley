@@ -238,7 +238,7 @@
     {
         //This is where we handle row inserts. 
         var result = await DataAccess.CreateLicense(
-                AgencyId, null,//TODO:MAke sure this should be null
+                AgencyId, null,
                 license.AppointingState,
                 license.Comments,
                 license.Appointment,
@@ -261,7 +261,8 @@
     {
         //This is where we handle row Updates.
         var result = await DataAccess.SetAgencyLicense(license.Id,
-                license.AgencyId, license.AgentId,
+                license.AgencyId, 
+                license.AgentId,
                 license.AppointingState,
                 license.Comments,
                 license.Appointment,

@@ -349,7 +349,7 @@
                     <RadzenRow>
                         <RadzenColumn Size="6">
                             <RadzenFieldset Text="Contract Rates">
-                                <RadzenRow>
+@*                                 <RadzenRow>
                                     <RadzenColumn Size="3">
                                         <span>$1 - $2,500,000</span>
                                     </RadzenColumn>
@@ -378,11 +378,11 @@
                                         <RadzenSlider Range="true" Min="1" Max="100000000"
                                                       TValue="IEnumerable<int>" @bind-Value="@fourthRange" />
                                     </RadzenColumn>
-                                </RadzenRow>
+                                </RadzenRow> *@
                             </RadzenFieldset>
                         </RadzenColumn>
                         <RadzenColumn Size="6">
-                            <RadzenFieldset Text="Commercial Rates">
+@*                             <RadzenFieldset Text="Commercial Rates">
                                 <RadzenRow>
                                     <RadzenColumn Size="3">
                                         <span>$1 - $2,500,000</span>
@@ -405,8 +405,8 @@
                                         <RadzenSlider Range="true" Min="1" Max="7500000"
                                                       TValue="IEnumerable<int>" @bind-Value="@thirdRange" />
                                     </RadzenColumn>
-                                </RadzenRow>
-                            </RadzenFieldset>
+                                </RadzenRow> 
+                            </RadzenFieldset>*@
                         </RadzenColumn>
                     </RadzenRow>
 
@@ -438,28 +438,11 @@
 
 
 
-    //TODO: Remove test code below
-    IEnumerable<int> firstRange = new int[] { 1, 2500000 };
-    IEnumerable<int> secondRange = new int[] { 2500000, 5000000 };
-    IEnumerable<int> thirdRange = new int[] { 5000000, 7500000 };
-    IEnumerable<int> fourthRange = new int[] { 7500000, 100000000 };
-
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        var result = await _dataAccess.GetAgencyByAgencyNumber(Id);
-        if (result.Success)
-        {
-            agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
 
-            mainAddress = agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
-            billingAddress = agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
-        }
-        else
-        {
-            _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors), "GraphQl");
-        }
         if (authenticationState != null)
         {
             var state = await authenticationState;
@@ -486,11 +469,24 @@
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-            };
+        };
     }
     protected override async Task OnParametersSetAsync()
     {
+        await base.OnParametersSetAsync();
 
+        var result = await _dataAccess.GetAgencyByAgencyNumber(Id);
+        if (result.Success)
+        {
+            agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
+
+            mainAddress = agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
+            billingAddress = agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
+        }
+        else
+        {
+            _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors), "GraphQl");
+        }
     }
 
     private void ToggleMainAddressEditMode()

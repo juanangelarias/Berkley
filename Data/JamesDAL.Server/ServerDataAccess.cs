@@ -227,6 +227,11 @@ namespace James.Data.Server
             return await ExecuteGet(async()=> await query.GetAllPoaStatuses(contextFactory));
         }
 
+        public async Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyCommissionRates(agencyId, contextFactory));
+        }
+
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {

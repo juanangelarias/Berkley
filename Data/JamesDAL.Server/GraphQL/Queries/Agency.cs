@@ -164,5 +164,13 @@ namespace James.Data.Server.GraphQL.Queries
                 return new List<Agency>();
             }
         }
+
+        [Authorize]
+        public async Task<List<AgencyCommission>> GetAgencyCommissionRates(Guid agencyId,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.AgencyCommissions.Where(ac => ac.AgencyId == agencyId).ToListAsync();
+        }
     }
 }

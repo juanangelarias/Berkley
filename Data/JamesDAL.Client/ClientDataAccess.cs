@@ -170,6 +170,13 @@ namespace James.Data.Client
                 "AllPoaStatuses");
         }
 
+        public async Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId)
+        {
+            throw new NotImplementedException();
+            //return await ExecuteGet<List<AgencyCommission>>(async () => await jamesClient..ExecuteAsync(),
+            //"AllPoaStatuses");
+        }
+
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
         {
@@ -260,7 +267,7 @@ namespace James.Data.Client
             string? licenseNumber, string state, bool isActive)
         {
             return await ExecuteGet<AgencyLicense>(
-                async () => await jamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
+                async () => await jamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput()
                 {
                     AgencyId = agencyId,
                     AgentId = agentId,

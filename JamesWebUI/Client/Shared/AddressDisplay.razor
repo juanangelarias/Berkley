@@ -1,0 +1,133 @@
+﻿@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+
+@inject IDataAccess _dataAccess
+
+<RadzenPanel Visible="!EditMode">
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
+                <RadzenText Text="Detailed View" />
+                <RadzenButton Icon="edit" Visible="!EditMode" Size="ButtonSize.Small" Text="Edit" Click="ToggleEditMode" />
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
+                <RadzenTextBox @bind-Value="@AddressToDisplay.Address1" Name="Address1" />
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
+                <RadzenTextBox @bind-Value="@AddressToDisplay.Address2" Name="Address2" />
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false" Visible="DetailedMode">
+                <RadzenTextBox @bind-Value="@AddressToDisplay.Address3" Name="Address3" />
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <RadzenFormField Variant="Variant.Text" Text="City" AllowFloatingLabel="false" Style="width:90%">
+                <RadzenTextBox @bind-Value="@AddressToDisplay.City" Name="City" />
+            </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn Size="2">
+            <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
+                <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@AddressToDisplay.StateCode" />
+            </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn Size="2">
+            <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
+                <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" />
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenPanel>
+<RadzenPanel Visible="EditMode">
+    <RadzenTemplateForm TItem="Address" Data="@AddressToDisplay"
+                        Submit="@(async (Address args) => {await SubmitAddressChange(args); ToggleEditMode();})">
+        <RadzenRow>
+            <RadzenColumn>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
+                    <RadzenText Text="Detailed View" />
+                    <RadzenButton Icon="save" Visible="EditMode" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
+                </RadzenStack>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn>
+                <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address1" Name="Address1" />
+                </RadzenFormField>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn>
+                <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address2" Name="Address2" />
+                </RadzenFormField>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn>
+                <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false" Visible="DetailedMode">
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address3" Name="Address3" />
+                </RadzenFormField>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="4">
+                <RadzenFormField Variant="Variant.Text" Text="City" AllowFloatingLabel="false" Style="width:90%">
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.City" Name="City" />
+                </RadzenFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="2">
+                <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
+                    <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@AddressToDisplay.StateCode" />
+                </RadzenFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="2">
+                <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" />
+                </RadzenFormField>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenTemplateForm>
+</RadzenPanel>
+
+@code {
+    [Parameter] public Guid AddressId { get; set; }
+    private Address AddressToDisplay { get; set; } = new Address();
+    private bool DetailedMode { get; set; } = false;
+    private bool EditMode { get; set; } = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        //TODO: Get Data
+        var result = await _dataAccess.GetAddress(AddressId);
+        if (null != result.Data)
+            AddressToDisplay = result.Data;
+    }
+    async Task SubmitAddressChange(Address newAddress)
+    {
+        await _dataAccess.SetAddress(newAddress);
+    }
+    private void ToggleEditMode()
+    {
+        EditMode = !EditMode;
+    }
+}

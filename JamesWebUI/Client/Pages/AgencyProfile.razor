@@ -2,8 +2,6 @@
 
 @using System.Security.Claims
 @using James.Shared
-@using James.Data.Client.GraphQL;
-@using James.Data.Client.GraphQL.Components;
 
 @inherits LayoutComponentBase
 
@@ -138,186 +136,10 @@
                     <RadzenTabs>
                         <Tabs>
                             <RadzenTabsItem Text="Main">
-                                <RadzenButton Icon="edit" Visible="!mainAddressEditMode" Size="ButtonSize.Small" Text="Edit" Click="ToggleMainAddressEditMode" />
-
-                                <RadzenTemplateForm TItem="Address" Visible="mainAddressEditMode"
-                                                    Data="@mainAddress" Submit="@(async (Address args)  =>  { await SubmitAddressChange(args); ToggleMainAddressEditMode();})">
-                                    <RadzenButton Icon="save" Visible="mainAddressEditMode" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
-                                                <RadzenTextBox @bind-Value="@mainAddress.Address1" Name="Address1" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
-                                                <RadzenTextBox @bind-Value="@mainAddress.Address2" Name="Address2" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false">
-                                                <RadzenTextBox @bind-Value="@mainAddress.Address3" Name="Address3" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn Size="4">
-                                            <RadzenFormField Variant="Variant.Text" Text="City" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox @bind-Value="@mainAddress.City" Name="City" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                        <RadzenColumn Size="2">
-                                            <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
-                                                <UseGetAllStates Context="states">
-                                                    <ChildContent>
-                                                        <RadzenDropDown TValue="string" Data="states.AllStates" TextProperty="Name" ValueProperty="Code" @bind-Value="@mainAddress.StateCode" />
-                                                    </ChildContent>
-                                                </UseGetAllStates>
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                        <RadzenColumn Size="2">
-                                            <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox @bind-Value="@mainAddress.PostalCode" Name="PostalCode" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                </RadzenTemplateForm>
-                                <RadzenStack Orientation="Orientation.Vertical" Visible="!mainAddressEditMode" Gap="0">
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Text="Address 1" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@mainAddress.Address1" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Text="Address 2" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@mainAddress.Address2" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Text="Address 3" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@mainAddress.Address3" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn Size="4">
-                                            <RadzenFormField Text="City" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@mainAddress.City" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                        <RadzenColumn Size="2">
-                                            <RadzenFormField Text="State" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@mainAddress.StateCode" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                        <RadzenColumn Size="2">
-                                            <RadzenFormField Text="Postal Code" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@mainAddress.PostalCode" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-
-                                </RadzenStack>
+                                <AddressDisplay AddressId="@mainAddress.Id" />
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Billing">
-                                <RadzenButton Icon="edit" Visible="!billingAddressEditMode" Size="ButtonSize.Small" Text="Edit" Click="ToggleBillingAddressEditMode" />
-
-                                <RadzenTemplateForm TItem="Address" Visible="billingAddressEditMode"
-                                                    Data="@billingAddress" Submit="@(async (Address args)  =>  { await SubmitAddressChange(args); ToggleBillingAddressEditMode();})">
-                                    <RadzenButton Icon="save" Visible="billingAddressEditMode" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
-                                                <RadzenTextBox @bind-Value="@billingAddress.Address1" Name="Address1" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
-                                                <RadzenTextBox @bind-Value="@billingAddress.Address2" Name="Address2" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false">
-                                                <RadzenTextBox @bind-Value="@billingAddress.Address3" Name="Address3" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn Size="4">
-                                            <RadzenFormField Variant="Variant.Text" Text="City" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox @bind-Value="@billingAddress.City" Name="City" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                        <RadzenColumn Size="2">
-                                            <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
-                                                <UseGetAllStates Context="states">
-                                                    <ChildContent>
-                                                        <RadzenDropDown TValue="string" Data="states.AllStates" TextProperty="Name" ValueProperty="Code" @bind-Value="@billingAddress.StateCode" />
-                                                    </ChildContent>
-                                                </UseGetAllStates>
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                        <RadzenColumn Size="2">
-                                            <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox @bind-Value="@billingAddress.PostalCode" Name="PostalCode" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                </RadzenTemplateForm>
-                                <RadzenStack Orientation="Orientation.Vertical" Visible="!billingAddressEditMode" Gap="0">
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Text="Address 1" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@billingAddress.Address1" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Text="Address 2" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@billingAddress.Address2" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn>
-                                            <RadzenFormField Text="Address 3" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@billingAddress.Address3" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-                                    <RadzenRow>
-                                        <RadzenColumn Size="4">
-                                            <RadzenFormField Text="City" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@billingAddress.City" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                        <RadzenColumn Size="2">
-                                            <RadzenFormField Text="State" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@billingAddress.StateCode" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                        <RadzenColumn Size="2">
-                                            <RadzenFormField Text="Postal Code" AllowFloatingLabel="false" Style="width:90%" Variant="Variant.Text">
-                                                <RadzenTextBox Value="@billingAddress.PostalCode" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
-                                        </RadzenColumn>
-                                    </RadzenRow>
-
-                                </RadzenStack>
+                                <AddressDisplay AddressId="@billingAddress.Id" />
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Errors & Omissions Coverage">
                                 <RadzenStack Orientation="Orientation.Vertical">
@@ -349,64 +171,11 @@
                     <RadzenRow>
                         <RadzenColumn Size="6">
                             <RadzenFieldset Text="Contract Rates">
-@*                                 <RadzenRow>
-                                    <RadzenColumn Size="3">
-                                        <span>$1 - $2,500,000</span>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="9">
-                                        <RadzenSlider Range="true" Min="1" Max="100000000"
-                                                      TValue="IEnumerable<int>" @bind-Value="@firstRange" />
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="3">
-                                        <span>$2,500,000 - $5,000,000</span>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="9">
-                                        <RadzenSlider Range="true" Min="1" Max="100000000"
-                                                      TValue="IEnumerable<int>" @bind-Value="@secondRange" />
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="3">
-                                        <span>$5,000,000 - $7,500,000</span>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="9">
-                                        <RadzenSlider Range="true" Min="1" Max="100000000"
-                                                      TValue="IEnumerable<int>" @bind-Value="@thirdRange" />
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="3">
-                                        <span>$7,500,000 - $100,000,000</span>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="9">
-                                        <RadzenSlider Range="true" Min="1" Max="100000000"
-                                                      TValue="IEnumerable<int>" @bind-Value="@fourthRange" />
-                                    </RadzenColumn>
-                                </RadzenRow> *@
+
                             </RadzenFieldset>
                         </RadzenColumn>
                         <RadzenColumn Size="6">
-@*                             <RadzenFieldset Text="Commercial Rates">
-                                <RadzenRow>
-                                    <RadzenColumn Size="3">
-                                        <span>$1 - $2,500,000</span>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="9">
-                                        <RadzenSlider Range="true" Min="1" Max="7500000"
-                                                      TValue="IEnumerable<int>" @bind-Value="@firstRange" />
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="3">
-                                        <span>$2,500,000 - $5,000,000</span>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="9">
-                                        <RadzenSlider Range="true" Min="1" Max="7500000"
-                                                      TValue="IEnumerable<int>" @bind-Value="@secondRange" />
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="3">
-                                        <span>$5,000,000 - $7,500,000</span>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="9">
-                                        <RadzenSlider Range="true" Min="1" Max="7500000"
-                                                      TValue="IEnumerable<int>" @bind-Value="@thirdRange" />
-                                    </RadzenColumn>
-                                </RadzenRow> 
-                            </RadzenFieldset>*@
+
                         </RadzenColumn>
                     </RadzenRow>
 
@@ -469,7 +238,7 @@
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-        };
+    };
     }
     protected override async Task OnParametersSetAsync()
     {
@@ -502,13 +271,13 @@
         await _dataAccess.SetAddress(newAddress);
 
     }
-    async Task AddressChangeDetected(IAddressModifiedResult result)
-    {
-        var data = result;
-    }
     void ShowNotification(NotificationMessage message)
     {
         NotificationService.Notify(message);
+    }
+    async Task AddressChangeDetected(Address result)
+    {
+        var data = result;
     }
     private async Task CanChange(StepsCanChangeEventArgs args)
     {

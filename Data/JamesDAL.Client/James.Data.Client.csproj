@@ -21,6 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <GraphQL Remove="GraphQL\Queries\General.graphql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="GraphQL\Mutations\ObligeeMutations.graphql" />
   </ItemGroup>
 

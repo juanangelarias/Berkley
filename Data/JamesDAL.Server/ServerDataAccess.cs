@@ -216,7 +216,10 @@ namespace James.Data.Server
                 return new DataAccessResult<List<Agency>> { Errors = [ex.Message] };
             }
         }
-
+        public async Task<IDataAccessResult<Address>> GetAddress(Guid addressId)
+        {
+            return await ExecuteGet(async () => await query.GetAddress(addressId, contextFactory));
+        }
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));

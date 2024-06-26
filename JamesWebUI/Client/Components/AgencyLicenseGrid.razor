@@ -249,6 +249,7 @@
                 license.State,
                 license.IsActive
             );
+            licensesToInsert.Remove(license);
         //TODO: Check for errors and notify. 
     }
     async void CancelLicenseEdit(AgencyLicense license)

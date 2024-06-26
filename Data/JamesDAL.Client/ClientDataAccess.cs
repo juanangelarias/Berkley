@@ -60,7 +60,13 @@ namespace James.Data.Client
             //var result = await jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId);
             //return GraphQLResult<List<AgencyLicense>>(result, "AgencyLicenses");
         }
+        public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId)
+        {
 
+            return await ExecuteGet<List<AgencyInventory>>(
+                async () => await jamesClient.GetAgencyInventory.ExecuteAsync(agencyId),
+                subProperty: "AgencyInventory");
+        }
         public async Task<IDataAccessResult<List<Insurer>>> GetAllInsurers()
         {
             return await ExecuteGet<List<Insurer>>(

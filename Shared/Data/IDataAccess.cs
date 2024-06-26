@@ -11,6 +11,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<State>>> GetAllStates();
         public Task<IDataAccessResult<Address>> GetAddress(Guid addressId);
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
+        public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);

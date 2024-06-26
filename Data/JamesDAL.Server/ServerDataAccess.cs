@@ -43,7 +43,23 @@ namespace James.Data.Server
                 return new DataAccessResult<Agency> { Errors = [ex.Message] };
             }
         }
-
+        public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId){
+            try
+            {
+                var result = await query.GetAgencyInventory(agencyId, contextFactory);
+                return null == result
+                    ? new DataAccessResult<List<AgencyInventory>> { Errors = ["No inventory for this agency number was found."] }
+                    : new DataAccessResult<List<AgencyInventory>> { Data = result };
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<List<AgencyInventory>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<List<AgencyInventory>> { Errors = [ex.Message] };
+            }
+        }
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
         {
             try

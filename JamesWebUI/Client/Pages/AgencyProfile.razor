@@ -143,9 +143,15 @@
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Errors & Omissions Coverage">
                                 <RadzenStack Orientation="Orientation.Vertical">
-                                    <RadzenText Text="Carrier: Indian Harbor Insurance Company" />
-                                    <RadzenText Text="Expiration Date: 6/1/2024" />
-                                    <RadzenText Text="Limit of Coverage: $10,000,000" />
+                                    <RadzenFormField AllowFloatingLabel="false" Text="Carrier">
+                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Carrier" />
+                                    </RadzenFormField>
+                                    <RadzenFormField AllowFloatingLabel="false" Text="Exp Date">
+                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Expiration.ToShortDateString()" />
+                                    </RadzenFormField>
+                                    <RadzenFormField AllowFloatingLabel="false" Text="Limit">
+                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.CoverageLimit.ToString("c0")" />
+                                    </RadzenFormField>
                                 </RadzenStack>
                             </RadzenTabsItem>
                         </Tabs>
@@ -163,7 +169,9 @@
                 <RadzenTabsItem Text="Contacts">
                     <AgencyContactsGrid AgencyId="@agencyToDisplay.Id" />
                 </RadzenTabsItem>
-                <RadzenTabsItem Text="Inventory"></RadzenTabsItem>
+                <RadzenTabsItem Text="Inventory">
+                    <AgencyInventoryGrid AgencyId="@agencyToDisplay.Id" />
+                </RadzenTabsItem>
                 <RadzenTabsItem Text="Accounts and Bonds">
                     <AgencyAccountsAndBonds agencyToDisplay="@agencyToDisplay" />
                 </RadzenTabsItem>

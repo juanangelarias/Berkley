@@ -30,6 +30,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(a => a.AgencyIdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
+                .Include(a => a.AgencyErrorAndOmissions)
 
                 .FirstOrDefaultAsync();
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");

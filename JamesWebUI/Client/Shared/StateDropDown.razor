@@ -1,0 +1,91 @@
+﻿@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+
+@inject IDataAccess _dataAccess
+
+@{
+    if (MultiSelect)
+    {
+        <RadzenDropDown Multiple="true" Chips="true" SelectAllText="Select All" Disabled="@Disabled"
+                        AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        TValue="List<State>" Data="AllStates" @bind-Value="@SelectedStates"
+                        TextProperty="Name">
+        </RadzenDropDown>
+    }
+    else
+    {
+        <style>
+            .rz-dropdown-panel {
+                width: 250px !important;
+            }
+        </style>
+        <RadzenDropDown Multiple="false" SelectAllText="Select All" Disabled="@Disabled"
+                        AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                        TValue="string" ValueProperty="Code" Data="AllStates" @bind-Value="@SelectedStateCode"
+                        TextProperty="Name">
+            <Template Context="state">
+                <RadzenText Text="@state.Name" />
+            </Template>
+        </RadzenDropDown>
+    }
+}
+
+@code {
+    [Parameter] public bool MultiSelect { get; set; } = false;
+    [Parameter] public bool Disabled { get; set; } = false;
+
+    private List<State> AllStates { get; set; } = new List<State>();
+
+    private string _value;
+    private List<State> _values;
+
+    /// <summary>
+    /// This property should only be used as a binding target when MultiSelect is set to false.
+    /// </summary>
+    [Parameter] public string SelectedStateCode
+    {
+        get => _value;
+        set
+        {
+            if (_value == value) return;
+            _value = value;
+            SelectedStateCodeChanged.InvokeAsync(value);
+        }
+    }
+
+    /// <summary>
+    /// This property should only be used as a binding target when MultiSelect is set to true.
+    /// </summary>
+    [Parameter] public List<State>? SelectedStates
+    {
+        get => _values;
+        set
+        {
+            if (_values == value) return;
+            _values = value;
+            SelectedStateCodesChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<string> SelectedStateCodeChanged{ get; set; }
+    [Parameter] public EventCallback<List<State>> SelectedStateCodesChanged{ get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        ThemeService.Initialize(NavigationManager);
+        await GetAllStates();
+    }
+
+    private async Task GetAllStates()
+    {
+        var result = await _dataAccess.GetAllStates();
+
+        AllStates = result.Data;
+
+
+    }
+}

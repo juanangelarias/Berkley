@@ -78,7 +78,11 @@ namespace James.Data.Client
             //result.Data.AllStates
             //return GraphQLResult<List<State>>(result);
         }
-
+        public async Task<IDataAccessResult<Address>> GetAddress(Guid addressId)
+        {
+            return await ExecuteGet<Address>(
+                async () => await jamesClient.GetAddress.ExecuteAsync(addressId), "Address");
+        }
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
             return await ExecuteGet<List<Bond>>(
@@ -267,8 +271,9 @@ namespace James.Data.Client
             string? licenseNumber, string state, bool isActive)
         {
             return await ExecuteGet<AgencyLicense>(
-                async () => await jamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput()
+                async () => await jamesClient.SetAgencyLicense.ExecuteAsync(new SetAgencyLicenseInput
                 {
+                    LicenseId = licenseId,
                     AgencyId = agencyId,
                     AgentId = agentId,
                     AppointingState = appointingState,

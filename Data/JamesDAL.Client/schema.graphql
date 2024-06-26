@@ -7,7 +7,7 @@ schema {
 type Mutation {
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
-  setAgencyLicense(input: SetLicenseInput!): SetLicensePayload!
+  setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
   setPowerOfAttorney(input: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
@@ -15,6 +15,13 @@ type Mutation {
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
+  createObligee(input: CreateObligeeInput!): CreateObligeePayload!
+}
+
+enum ApplyPolicy {
+  BEFORE_RESOLVER
+  AFTER_RESOLVER
+  VALIDATION
 }
 
 type Query {
@@ -36,6 +43,7 @@ type Query {
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
   branches: [Branch!]!
   divisions: [DivisionDm!]!
+  address(addressId: UUID!): Address!
   allInsurers: [Insurer!]!
   allStates: [State!]!
 }
@@ -43,6 +51,26 @@ type Query {
 type Subscription {
   onAddressModified: Address!
   onLicenseModified: AgencyLicense!
+}
+
+type Address {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  address1: String!
+  address2: String
+  address3: String
+  city: String!
+  stateCode: String
+  postalCode: String
+  agencyInventories: [AgencyInventory!]!
+  bonds: [Bond!]!
+  branches: [Branch!]!
+  legalEntityAddress: LegalEntityAddress
+  stateCodeNavigation: State
+  state: String!
+  country: String!
+  countryCode: String!
 }
 
 type DivisionDm {
@@ -474,26 +502,6 @@ type State {
   surcharges: [Surcharge!]!
 }
 
-type Address {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  address1: String!
-  address2: String
-  address3: String
-  city: String!
-  stateCode: String
-  postalCode: String
-  agencyInventories: [AgencyInventory!]!
-  bonds: [Bond!]!
-  branches: [Branch!]!
-  legalEntityAddress: LegalEntityAddress
-  stateCodeNavigation: State
-  state: String!
-  country: String!
-  countryCode: String!
-}
-
 "The `Date` scalar represents an ISO-8601 compliant date type."
 scalar Date
 
@@ -526,6 +534,31 @@ enum Severity {
 input KeyValuePairOfStringAndStringInput {
   key: String!
   value: String!
+}
+
+type Obligee {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  obligeeNum: String!
+  type: String
+  editedBy: UUID
+  printStatusLetter: Boolean!
+  notes: String
+  bondRequests: [BondRequest!]!
+  editedByNavigation: UserProfile
+  idNavigation: LegalEntity!
+  typeNavigation: ObligeeTypeDm
+  fullName: String!
+  mainAddress: Address
+  addresses: [LegalEntityAddress!]!
+  mainPhoneNumber: PhoneNumber
+  phoneNumbers: [LegalEntityPhone!]!
+  mainEmailAddress: String
+  emailAddresses: [LegalEntityEmail!]!
+  givenName: String
+  middleInitial: String
+  familyName: String
 }
 
 type LegalEntity {
@@ -682,6 +715,35 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type KeyPersonnel {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  encryptYearOfBirth: String
+  position: String
+  responsibility: String
+  yearJoinedCompany: String
+  yearEnteredField: String
+  spouseName: String
+  personalIndemnification: Boolean!
+  comments: String
+  profession: String
+  accountNumNavigation: Account!
+  idNavigation: LegalEntity!
+  responsibilityNavigation: ResponsibilityDm
+  fullName: String!
+  mainAddress: Address
+  addresses: [LegalEntityAddress!]!
+  mainPhoneNumber: PhoneNumber
+  phoneNumbers: [LegalEntityPhone!]!
+  mainEmailAddress: String
+  emailAddresses: [LegalEntityEmail!]!
+  givenName: String
+  middleInitial: String
+  familyName: String
 }
 
 type Indemnitor {
@@ -1391,35 +1453,6 @@ type ImagingCategoryTabDivision {
   tabNameNavigation: ImagingTab!
 }
 
-type KeyPersonnel {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  encryptYearOfBirth: String
-  position: String
-  responsibility: String
-  yearJoinedCompany: String
-  yearEnteredField: String
-  spouseName: String
-  personalIndemnification: Boolean!
-  comments: String
-  profession: String
-  accountNumNavigation: Account!
-  idNavigation: LegalEntity!
-  responsibilityNavigation: ResponsibilityDm
-  fullName: String!
-  mainAddress: Address
-  addresses: [LegalEntityAddress!]!
-  mainPhoneNumber: PhoneNumber
-  phoneNumbers: [LegalEntityPhone!]!
-  mainEmailAddress: String
-  emailAddresses: [LegalEntityEmail!]!
-  givenName: String
-  middleInitial: String
-  familyName: String
-}
-
 type PersonalFinancialStatement {
   id: UUID!
   created: DateTime!
@@ -1600,6 +1633,14 @@ type Surcharge {
   typeNavigation: SurchargeTypeDm!
 }
 
+type ObligeeTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  obligees: [Obligee!]!
+}
+
 type AccountReference {
   id: UUID!
   created: DateTime!
@@ -1615,31 +1656,6 @@ type LegalEntityTypeDm {
   modified: DateTime!
   entityType: String!
   legalEntities: [LegalEntity!]!
-}
-
-type Obligee {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  obligeeNum: String!
-  type: String
-  editedBy: UUID
-  printStatusLetter: Boolean!
-  notes: String
-  bondRequests: [BondRequest!]!
-  editedByNavigation: UserProfile
-  idNavigation: LegalEntity!
-  typeNavigation: ObligeeTypeDm
-  fullName: String!
-  mainAddress: Address
-  addresses: [LegalEntityAddress!]!
-  mainPhoneNumber: PhoneNumber
-  phoneNumbers: [LegalEntityPhone!]!
-  mainEmailAddress: String
-  emailAddresses: [LegalEntityEmail!]!
-  givenName: String
-  middleInitial: String
-  familyName: String
 }
 
 type PersonalFinancialHeader {
@@ -1715,14 +1731,6 @@ type PersonalFinancialStatementTypeDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
-type ObligeeTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  obligees: [Obligee!]!
-}
-
 type ReferenceTypeDm {
   id: UUID!
   created: DateTime!
@@ -1751,14 +1759,6 @@ type PersonalFinancialSubaccount {
   asAllowed: Int
   comments: String
   parentAccount: PersonalFinancialStatement!
-}
-
-type ResponsibilityDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  responsibility: String!
-  keyPersonnel: [KeyPersonnel!]!
 }
 
 type ImagingTab {
@@ -2091,6 +2091,14 @@ type StatementBasisDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
+type ResponsibilityDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  responsibility: String!
+  keyPersonnel: [KeyPersonnel!]!
+}
+
 type NotebookEntryTypeDm {
   id: UUID!
   created: DateTime!
@@ -2166,7 +2174,7 @@ type SetAddressPayload {
   address: Address
 }
 
-input SetLicenseInput {
+input SetAgencyLicenseInput {
   licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
@@ -2182,7 +2190,7 @@ input SetLicenseInput {
   isActive: Boolean!
 }
 
-type SetLicensePayload {
+type SetAgencyLicensePayload {
   agencyLicense: AgencyLicense
 }
 
@@ -2272,4 +2280,22 @@ input LogUserInput {
 
 type LogUserPayload {
   string: String
+}
+
+input CreateObligeeInput {
+  fullName: String!
+  obligeeType: String!
+  printStatusLetter: Boolean!
+  notes: String!
+  address1: String!
+  address2: String!
+  city: String!
+  state: String!
+  postalCode: String!
+  phoneNumber: String!
+  email: String!
+}
+
+type CreateObligeePayload {
+  obligee: Obligee
 }

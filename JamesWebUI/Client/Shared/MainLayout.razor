@@ -34,8 +34,7 @@
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">                         
                         <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;" 
                         TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes" 
-                        Value="@ThemeService.CurrentTheme" Change="@ChangeTheme"
-                        @rendermode="@InteractiveWebAssembly">
+                        Value="@ThemeService.CurrentTheme" Change="@ChangeTheme">
                             <ValueTemplate>
                                 @context.Text Theme
                             </ValueTemplate>

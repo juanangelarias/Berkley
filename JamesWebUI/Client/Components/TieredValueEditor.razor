@@ -1,6 +1,7 @@
 ﻿@typeparam T where T : System.Numerics.INumber<T>
 
 @inject TooltipService tooltipService
+@inject NotificationService NotificationService
 
 <RadzenRow>
     <RadzenColumn Size="4">
@@ -14,7 +15,7 @@
     </RadzenColumn>
 </RadzenRow>
 @{
-    var tierCount = Values?.Count??0;
+    var tierCount = Values?.Count ?? 0;
 }
 @if (tierCount == 0)
 {
@@ -33,11 +34,10 @@ else
             <RadzenColumn Size="4">
                 @if (EditMode)
                 {
-                    <RadzenNumeric TValue="int?" Value=@Values[index].Maximum
+                    <RadzenNumeric TValue="int?" @bind-Value=@Values[index].Maximum
                                    Placeholder="Maximum" ShowUpDown="false"
                                    Min="@(index>0? Values[index-1].Maximum+1:2)" Max="@(Values[index+1].Maximum-1)"
-                                   MouseEnter="@(args =>
-                            ShowTooltip(args))" />
+                                   Change=@(_=>SetMinimums()) />
                 }
                 else
                 {
@@ -47,9 +47,9 @@ else
             <RadzenColumn Size="4">
                 @if (EditMode)
                 {
-                    <RadzenNumeric TValue="T" Value=@Values[index].Value
+                    <RadzenNumeric TValue="T" @bind-Value=@Values[index].Value
                                    Placeholder=@ValuePlaceholder ShowUpDown="false"
-                                   Min=@((decimal)Convert.ChangeType( ValueMinimum, typeof(decimal))) 
+                                   Min=@((decimal)Convert.ChangeType( ValueMinimum, typeof(decimal)))
                                    Max=@((decimal)Convert.ChangeType( ValueMaximum, typeof(decimal))) />
                 }
                 else
@@ -66,11 +66,11 @@ else
         <RadzenColumn Size="4">
             @if (EditMode)
             {
-                <RadzenNumeric TValue="int?" Value=@Values[tierCount-1].Maximum
+                <RadzenNumeric TValue="int?" @bind-Value=@Values[tierCount-1].Maximum
                                Placeholder="Unlimited" ShowUpDown="false"
                                Min="@(tierCount>1? Values[tierCount-2].Maximum+1:2)"
-                               MouseEnter="@(args =>
-                            ShowTooltip(args))" />
+                               Change=@(_=>SetMinimums())
+                               MouseEnter="@(args => ShowTooltip(args))" />
             }
             else
             {
@@ -80,62 +80,115 @@ else
         <RadzenColumn Size="@(EditMode?2:4)">
             @if (EditMode)
             {
-                <RadzenNumeric TValue="T" Value=@Values[tierCount-1].Value
+                <RadzenNumeric TValue="T" @bind-Value=@Values[tierCount-1].Value
                                Placeholder=@ValuePlaceholder ShowUpDown="false"
-                               Min=@((decimal)Convert.ChangeType( ValueMinimum, typeof(decimal))) 
-                               Max=@((decimal)Convert.ChangeType( ValueMaximum, typeof(decimal))) 
-                               MouseEnter="@(args =>
-                                                       ShowTooltip(args))" />
+                               Min=@((decimal)Convert.ChangeType( ValueMinimum, typeof(decimal)))
+                               Max=@((decimal)Convert.ChangeType( ValueMaximum, typeof(decimal))) />
             }
             else
             {
                 <RadzenText Text=@Values[tierCount-1].Value.ToString() />
             }
         </RadzenColumn>
-    @if (EditMode)
-    {
-        <RadzenColumn Size="2 ">
-            <RadzenButton Text="Delete Tier" Icon="remove_circle_outline"></RadzenButton>
-        </RadzenColumn>
-    }
+        @if (EditMode)
+        {
+            <RadzenColumn Size="2 ">
+                <RadzenButton Text="Delete Tier" Icon="remove_circle_outline" Click=@RemoveTier></RadzenButton>
+            </RadzenColumn>
+        }
     </RadzenRow>
 }
 @if (EditMode)
 {
     <RadzenRow>
-        <RadzenButton Text="Add rate tier" Icon="add_circle_outline" />
+        <RadzenButton Text="Add rate tier" Icon="add_circle_outline" Click=@AddTier />
     </RadzenRow>
 }
 
 @code {
     private List<ITieredValue<T>>? _values;
+    private bool _editMode;
 
     [Parameter]
     public List<ITieredValue<T>>? Values
     {
         get => _values;
-        set => _values = value?.OrderBy(v=>v.Minimum).ToList();
+        set => _values = value?.OrderBy(v => v.Minimum).ToList();
     }
 
-    [Parameter] public bool EditMode { get; set; }
+    [Parameter]
+    public bool EditMode
+    {
+        get => _editMode;
+        set
+        {
+            // ReSharper disable once AssignmentInConditionalExpression
+            if (_editMode = value && null != Values)
+                //Minimums need to be set initially to fix any initial bad data.
+                //TODO: Send notification if minimums were changed here.
+            if (SetMinimums())
+                    NotificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Info,
+                        Summary = "Invalid range minimums have been automatically fixed.",
+                        Duration = 5000,
+                        CloseOnClick = true
+                    });
+
+        }
+    }
+
     [Parameter] public string ValuePlaceholder { get; set; } = "";
     [Parameter] public string ValueHeaderText { get; set; } = "";
     [Parameter] public T ValueMinimum { get; set; } = (T)Convert.ChangeType(0, typeof(T));
     [Parameter] public T ValueMaximum { get; set; } = (T)Convert.ChangeType(100, typeof(T));
     [Parameter] public bool ShowValidations { get; set; }
+    [Parameter, EditorRequired] public required Func<ITieredValue<T>> CreationFunction { get; set; }
 
     public bool IsValid()
     {
-        if (null== Values) return false;
+        if (null == Values) return false;
         if (!Values.Any()) return false;
         var prevMax = 0;
         foreach (var tieredValue in Values)
         {
             if (tieredValue.Minimum != prevMax + 1) return false;
-            prevMax = tieredValue.Maximum??-1;
+            prevMax = tieredValue.Maximum ?? -1;
         }
         return true;
     }
 
     void ShowTooltip(ElementReference element) => tooltipService.Open(element, "Clear value for unlimited.");
+
+    void RemoveTier()
+    {
+        Values!.RemoveAt(Values.Count - 1);
+        StateHasChanged();
+    }
+
+    void AddTier()
+    {
+        Values ??= [];
+        Values.Add(CreationFunction());
+    }
+
+    private bool SetMinimums()
+    {
+        var previousMax = 0;
+        Values ??= [];
+        var minFixed = false;
+        foreach (var tieredValue in Values)
+        {
+            if (tieredValue.Minimum != previousMax + 1)
+            {
+                tieredValue.Minimum = previousMax + 1;
+                minFixed = true;
+            }
+            previousMax = tieredValue.Maximum ?? int.MaxValue;
+        }
+        if (minFixed)
+            StateHasChanged();
+        return minFixed;
+    }
+
 }

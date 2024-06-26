@@ -32,6 +32,7 @@ namespace James.Shared.Data
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
 
+        public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
 
         //TODO: Figure out subscriptions
         public Task<IDisposable> AddressModified();

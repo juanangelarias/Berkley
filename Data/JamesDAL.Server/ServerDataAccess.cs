@@ -325,6 +325,11 @@ namespace James.Data.Server
             //}
         }
 
+        public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
+        {
+            return await ExecuteSave(async ()=>await agencyMutation.SaveCommissionRates(agencyId, rates, eventSender, contextFactory));
+        }
+
         //UNDONE:  Refactor to DRY out the code
         private async Task<IDataAccessResult<T>> ExecuteGet<T>( Func<Task<T>> dataFunc)
         {

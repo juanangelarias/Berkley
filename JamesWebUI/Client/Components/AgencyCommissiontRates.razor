@@ -1,11 +1,16 @@
-﻿<RenderModeBackground />
-<RadzenTemplateForm TItem="List<AgencyCommission>" Data="@_commissionRates" Submit="@SaveCommissionRates">
-    <RadzenRow Component="CommissionRates">
+﻿@using James.Shared
+@inject IDataAccess DataAccess;
+@inject ILoggingService Logging;
+@inject NotificationService NotificationService
+<RenderModeBackground />
+<RadzenTemplateForm TItem="List<AgencyCommission>" Data="@_commissionRates" Submit="@SaveEdit">
+    <RadzenRow>
         <RadzenColumn Size="5">
-            <RadzenFieldset Text="Contract Rates">
+            <RadzenFieldset Text="Contract Rates" Name="contractRates">
                 <TieredValueEditor T="double" EditMode=@_editMode
-                                   @ref=@_contractEditor
+                                   @ref=@_contractEditor 
                                    ShowValidations="@ValidationRequired"
+                                   CreationFunction=@(() => CreateNewTier("Contract"))
                                    ValuePlaceholder="Commission Rate" ValueHeaderText="Commission Rate"
                                    ValueMinimum="1" ValueMaximum="100" Values=@_contractRates />
             </RadzenFieldset>
@@ -13,8 +18,9 @@
         <RadzenColumn Size="5">
             <RadzenFieldset Text="Commercial Rates">
                 <TieredValueEditor T="double" EditMode=@_editMode
-                                   @ref=@_commercialEditor
+                                   @ref=@_commercialEditor 
                                    ShowValidations="@ValidationRequired"
+                                   CreationFunction=@(() => CreateNewTier("Commission"))
                                    ValuePlaceholder="Commission Rate" ValueHeaderText="Commission Rate"
                                    ValueMinimum="1" ValueMaximum="100" Values=@_commercialRates />
             </RadzenFieldset>
@@ -22,7 +28,7 @@
         <RadzenColumn>
             @if (_editMode)
             {
-                <RadzenButton Click=@SaveEdit Text="Save" />
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Save" />
                 <RadzenButton Click=@CancelEdit Text="Cancel" />
             }
             else
@@ -33,12 +39,14 @@
             <span style="font-size:small">Temp UI by Greg</span>
         </RadzenColumn>
     </RadzenRow>
-    <RadzenCustomValidator Component="CommissionRates" Validator="@IsValid" Text="Commission rates must exist, have no gaps and not overlap" />
 </RadzenTemplateForm>
 
 @code {
     [Parameter] public Guid AgencyId { get; set; }
     [Parameter] public string AgencyStatus { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
     string _agencyStatus = "";
     bool _editMode;
     List<AgencyCommission> _commissionRates;
@@ -55,18 +63,19 @@
 
     async Task LoadRates()
     {
-        //UNDONE:  Query from DB
-        _commissionRates =
-        [
-            new() {AgencyId = AgencyId, BondType = "Commercial", Minimum = 1, Maximum = 50000, Rate = 30},
-            new() {AgencyId = AgencyId, BondType = "Commercial", Minimum = 50001, Maximum = 250000, Rate = 25},
-            new() {AgencyId = AgencyId, BondType = "Commercial", Minimum = 250001, Maximum = 1000000, Rate = 20},
-            new() {AgencyId = AgencyId, BondType = "Commercial", Minimum = 1000001, Rate = 5}
-        ];
-        await Task.Delay(250);
-        _commercialRates = _commissionRates.Where(r => r.BondType == "Commercial").Cast<ITieredValue<double>>().ToList();
-        _contractRates = _commissionRates.Where(r => r.BondType == "Contract").Cast<ITieredValue<double>>().ToList();
-        StateHasChanged();
+
+        var result = await DataAccess.GetAgencyCommissionRates(AgencyId);
+        if (result.Success)
+        {
+            _commissionRates = result.Data;
+            _commercialRates = _commissionRates.Where(r => r.BondType == "Commercial").Cast<ITieredValue<double>>().ToList();
+            _contractRates = _commissionRates.Where(r => r.BondType == "Contract").Cast<ITieredValue<double>>().ToList();
+            StateHasChanged();
+        }
+        else
+        {
+            Logging.LogError("Error loading AgencyCommissionRates", category:"Data Access");
+        }
     }
 
     async Task CancelEdit()
@@ -78,18 +87,53 @@
     async Task SaveEdit()
     {
         //UNDONE: Save to DB
-        _editMode = false;
-        await LoadRates();
+        if (IsValid())
+        {
+            var ratesToSave = new List<AgencyCommission>(_contractEditor.Values!
+                                                                .Cast<AgencyCommission>());
+            ratesToSave.AddRange(_commercialEditor.Values.Cast<AgencyCommission>());
+            var saveResult = await DataAccess.SetAgencyCommissionRates(AgencyId, ratesToSave.ToArray());
+            if (saveResult.Success)
+                NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Save Successful",
+                    Duration = 2000,
+                    CloseOnClick = true
+                });
+            else
+                foreach (var saveResultError in saveResult.Errors)
+            {
+                Logging.LogError("Error saving commission rates", details:saveResultError, "DataAccess");
+                    NotificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Error,
+                        Summary = saveResultError,
+                        Duration = 2*60*60*1000, //Leave on screen for 2 hours to allow screenshots, etc.
+                        CloseOnClick = true
+                    });
+            }
+            _editMode = false;
+            await LoadRates();
+        }
     }
 
     private string[] _noValidationStatuses = {"Pending", "Lost", "Terminated"};
     private bool ValidationRequired => !_noValidationStatuses.Contains(AgencyStatus);
 
-    private bool IsValid() => !ValidationRequired || (_contractEditor.IsValid() && _commercialEditor.IsValid());
-
-    private void SaveCommissionRates(List<AgencyCommission> obj)
+    private bool IsValid()
     {
-        throw new NotImplementedException();
+        if (!ValidationRequired) return true;
+        if (_contractEditor.IsValid() && _commercialEditor.IsValid())
+            return true;
+        NotificationService.Notify(new NotificationMessage {Severity = NotificationSeverity.Error, 
+            Summary = "Commission rates must exist, have no gaps and not overlap", 
+            Duration = 5000, CloseOnClick = true, Payload = DateTime.Now});
+        return false;
     }
 
+    AgencyCommission CreateNewTier(string bondType)
+    {
+        return new AgencyCommission() {AgencyId = AgencyId, BondType = bondType};
+    }
 }

@@ -97,6 +97,42 @@ namespace James.Data.Server.GraphQL.Mutations
 
             return oldAddress.Address;
         }
+        public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee, 
+            Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var oldInventory = ctx.AgencyInventories.Where(a => a.Id == inventoryId)
+                .Include(a => a.Address)
+                .FirstOrDefault();
+
+            if (oldInventory == null)
+                throw new GraphQLException("Invalid AgencyInventory ID");
+
+            oldInventory.Sent = sent;
+            oldInventory.Quantity = quantity;
+            oldInventory.DocumentType = documentType;
+            oldInventory.Addressee = addressee;
+            oldInventory.Address.Address1 = address1;
+            oldInventory.Address.Address2 = address2;
+            oldInventory.Address.Address3 = address3;
+            oldInventory.Address.City = city;
+            oldInventory.Address.StateCode = stateCode;
+            oldInventory.Address.PostalCode = postalCode;
+
+            ctx.Update(oldInventory);
+
+            try
+            {
+                await ctx.SaveChangesAsync();
+            }
+            catch(Exception ex)
+            {
+                var exception = ex;
+            }
+
+            return oldInventory;
+        }
         public async Task<AgencyLicense> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, 
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive,

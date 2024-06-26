@@ -7,6 +7,7 @@ schema {
 type Mutation {
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
+  setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
   setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
@@ -520,6 +521,9 @@ type State {
   surcharges: [Surcharge!]!
 }
 
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
+
 "The `Date` scalar represents an ISO-8601 compliant date type."
 scalar Date
 
@@ -535,9 +539,6 @@ type PowerOfAttorneyDocumentStatus {
   documentType: PowerOfAttorneyDocumentNameDm!
   poa: PowerOfAttorney!
 }
-
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
 
 enum Severity {
   UNSET
@@ -2173,6 +2174,25 @@ input SetAddressInput {
 
 type SetAddressPayload {
   address: Address
+}
+
+input SetAgencyInventoryInput {
+  inventoryId: UUID!
+  sent: DateTime
+  quantity: Int
+  documentType: String!
+  addressee: String
+  addressId: UUID!
+  address1: String!
+  address2: String
+  address3: String
+  city: String!
+  stateCode: String
+  postalCode: String
+}
+
+type SetAgencyInventoryPayload {
+  agencyInventory: AgencyInventory
 }
 
 input SetAgencyLicenseInput {

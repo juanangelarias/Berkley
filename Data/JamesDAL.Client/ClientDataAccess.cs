@@ -198,7 +198,26 @@ namespace James.Data.Client
             //ISetPowerOfAttorneyResult i;
             //i.SetPowerOfAttorney.PowerOfAttorney
         }
-
+        public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
+            Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
+        {
+            return await ExecuteGet<AgencyInventory>(async () =>
+            await jamesClient.SetAgencyInventory.ExecuteAsync(new SetAgencyInventoryInput
+            {
+                InventoryId = inventoryId,
+                Sent = sent,
+                Quantity = quantity,
+                DocumentType = documentType,
+                Addressee = addressee,
+                AddressId = addressId,
+                Address1 = address1,
+                Address2 = address2,
+                Address3 = address3,
+                City = city,
+                StateCode = stateCode,
+                PostalCode = postalCode
+            }), graphQlFunctionName: "SetAgencyInventory");
+        }
         public async Task<ISaveDataResult> DeleteLicense(Guid licenseId)
         {
             //TODO:Refactor to call this type of method with all boilerplate similar to ExecuteGet.

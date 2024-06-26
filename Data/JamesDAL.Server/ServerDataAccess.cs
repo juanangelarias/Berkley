@@ -269,7 +269,24 @@ namespace James.Data.Server
                 return new SaveDataResult { Errors = [ex.Message] };
             }
         }
-
+        public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
+            Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
+        {
+            try
+            {
+                await agencyMutation.SetAgencyInventory(inventoryId, sent, quantity, documentType, addressee, addressId, address1, address2, address3, city, stateCode, postalCode,
+                    eventSender, contextFactory);
+                return new SaveDataResult();
+            }
+            catch (AggregateException ae)
+            {
+                return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResult { Errors = [ex.Message] };
+            }
+        }
         public async Task<IDataAccessResult<AgencyLicense>> CreateLicense(Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive)
         {

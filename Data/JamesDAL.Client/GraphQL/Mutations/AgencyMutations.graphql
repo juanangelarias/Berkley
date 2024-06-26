@@ -19,7 +19,13 @@ mutation SetAddress($input: SetAddressInput!) {
     }
   }
 }
-
+mutation SetAgencyInventory($input: SetAgencyInventoryInput!){
+    setAgencyInventory(input: $input){
+        agencyInventory{
+            id
+        }
+    }
+}
 mutation SetAgencyLicense ($input: SetAgencyLicenseInput!) {
   setAgencyLicense(input: $input) {
     agencyLicense{

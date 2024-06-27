@@ -211,9 +211,23 @@ namespace James.Data.Client
         {
             //throw new NotImplementedException();
             //TODO:  Wire up for the graphql type.
-           await jamesClient.SaveAgencyCommissionRates.ExecuteAsync(new SaveCommissionRatesInput{AgencyId = agencyId, 
-               Rates = rates.Select(r => new AgencyCommissionInput{BondType = r.BondType, Minimum = r.Minimum, Maximum = r.Maximum, Rate = r.Rate}).ToList()} );
-           return new SaveDataResult();
+            var saveResult = await jamesClient.SaveAgencyCommissionRates.ExecuteAsync(new SaveCommissionRatesInput
+            {
+                AgencyId = agencyId,
+                Rates = rates.Select(r => new AgencyCommissionInput
+                {
+                    Id = r.Id,
+                    AgencyId = agencyId,
+                    Created = DateTimeOffset.Now,//Created is a required field but not used by the save
+                    Modified = DateTimeOffset.Now,//Modified is a required field but not used by the save
+                    BondType = r.BondType,
+                    Minimum = r.Minimum,
+                    Maximum = r.Maximum,
+                    Rate = r.Rate
+                }).ToList()
+
+            });
+            return GraphQLSaveResult(saveResult);
         }
 
         public async Task<IDisposable> AddressModified()
@@ -358,7 +372,7 @@ namespace James.Data.Client
         }
 
         private async Task<ISaveDataResult> ExecuteSave(Func<Task<IOperationResult>> dataFunc,
-            [CallerMemberName] string graphQlFunctionName = "GraphQL call") 
+            [CallerMemberName] string graphQlFunctionName = "GraphQL call")
         {
             try
             {

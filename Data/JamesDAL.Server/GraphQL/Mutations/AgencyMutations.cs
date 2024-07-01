@@ -1,4 +1,7 @@
-﻿using HotChocolate.Subscriptions;
+﻿using System.Collections.Immutable;
+using HotChocolate.Authorization;
+using HotChocolate.Resolvers;
+using HotChocolate.Subscriptions;
 
 namespace James.Data.Server.GraphQL.Mutations
 {
@@ -6,6 +9,7 @@ namespace James.Data.Server.GraphQL.Mutations
     [MutationType]
     public class AgencyMutation
     {
+        [Authorize]
         public async Task<Agency> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9, bool need1099, bool profitSharing, string address1, string address2, string address3, string city, string stateCode,
             string postalCode, string billingAddress1, string billingAddress2, string billingAddress3, string billingCity, string billingStateCode, string billingPostalCode,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -62,6 +66,7 @@ namespace James.Data.Server.GraphQL.Mutations
             //TODO: Insert the new agency
             return new Agency();
         }
+        [Authorize]
         public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -74,7 +79,7 @@ namespace James.Data.Server.GraphQL.Mutations
             if (oldAddress == null)
                 throw new GraphQLException("Invalid AddressId");
 
-            
+
             oldAddress.Address.Address1 = address1;
             oldAddress.Address.Address2 = address2;
             oldAddress.Address.Address3 = address3;
@@ -85,13 +90,13 @@ namespace James.Data.Server.GraphQL.Mutations
             ctx.Update(oldAddress);
             try
             {
-                ctx.SaveChanges();
+                await ctx.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 var exception = ex;
             }
-            
+
             //await eventSender.SendAsync(nameof(AgencyMutation.SetAddress), oldAddress.Address);
             await eventSender.SendAsync(nameof(Subscription.OnAddressModified), oldAddress.Address);
 
@@ -156,17 +161,18 @@ namespace James.Data.Server.GraphQL.Mutations
             oldLicense.Termination = termination;
 
             ctx.Update(oldLicense);
-            ctx.SaveChanges();
+            await ctx.SaveChangesAsync();
             await eventSender.SendAsync(nameof(Subscription.OnLicenseModified), oldLicense);
 
             return oldLicense;
         }
+        [Authorize]
         public async Task<AgencyLicense> CreateLicense(Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
-            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive, 
-            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive,
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            
+
             var newLicense = new AgencyLicense()
             {
                 Id = Guid.NewGuid(),
@@ -183,12 +189,14 @@ namespace James.Data.Server.GraphQL.Mutations
                 AppointingState = appointingState,
                 IsActive = isActive
             };
-            
+
             ctx.Add(newLicense);
-            ctx.SaveChanges();
+            await ctx.SaveChangesAsync();
             return newLicense;
+            //UNDONE: Support subscriptions with event sender
         }
-        public async Task<bool> DeleteLicense(Guid licenseId, [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        [Authorize]
+        public async Task<bool> DeleteLicense(Guid licenseId, [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             bool success = false;
 
@@ -198,17 +206,19 @@ namespace James.Data.Server.GraphQL.Mutations
             if (licenseToRemove != null)
             {
                 ctx.AgencyLicenses.Remove(licenseToRemove);
-                ctx.SaveChanges(true);
+                await ctx.SaveChangesAsync(true);
                 success = true;
             }
             //TODO: Handle errors
 
             return success;
+            //UNDONE: Support subscriptions with event sender
         }
+        [Authorize]
         public async Task<PowerOfAttorney> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
-            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            
+
             var ctx = await contextFactory.CreateDbContextAsync();
             var oldPowerOfAttorney = ctx.PowerOfAttorneys.FirstOrDefault(poa => poa.Id == poaId);
 
@@ -228,9 +238,11 @@ namespace James.Data.Server.GraphQL.Mutations
                 return oldPowerOfAttorney;
             }
             return new PowerOfAttorney();
+            //UNDONE: Support subscriptions with event sender
         }
-        public async Task<PowerOfAttorneyDocumentStatus> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId, string? comments, 
-            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        [Authorize]
+        public async Task<PowerOfAttorneyDocumentStatus> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId, string? comments,
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var oldDocStatus = ctx.PowerOfAttorneyDocumentStatuses.FirstOrDefault(p => p.Id == id);
@@ -245,10 +257,66 @@ namespace James.Data.Server.GraphQL.Mutations
                 oldDocStatus.DocumentTypeId = documentTypeId;
 
                 ctx.Update(oldDocStatus);
-                ctx.SaveChanges();
+                await ctx.SaveChangesAsync();
                 return oldDocStatus;
             }
             return new PowerOfAttorneyDocumentStatus();
+            //UNDONE: Support subscriptions with event sender
+        }
+
+        [Authorize]
+        public async Task<bool> SaveCommissionRates(Guid agencyId, AgencyCommission[] rates,
+            [Service] ITopicEventSender eventSender,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            //Make sure agency Id is set
+            foreach (var rate in rates)
+                rate.AgencyId = agencyId;
+
+            //Get existing rate ids
+            var existingRates = await ctx.AgencyCommissions
+                .Where(ac => ac.AgencyId == agencyId).ToListAsync();
+            
+            //If minimum has changed, Id must be changed to cause Entities to remove/replace it
+            //  since Entities will not allow primary keys to be changed.
+            foreach (var existingRate in existingRates)
+            {
+                var updateSource = rates.FirstOrDefault(r => r.Id == existingRate.Id);
+                if (updateSource == null) continue;
+                if (updateSource.Minimum != existingRate.Minimum)
+                    updateSource.Id = Guid.NewGuid();
+            }
+
+            var existingIds = existingRates.Select(r => r.Id).ToImmutableList();
+            var idsToSave = rates.Select(r => r.Id).ToImmutableList();
+            //Delete removed rates
+            var deletedRates = existingRates
+                .Where(er => !idsToSave.Contains(er.Id));
+            ctx.AgencyCommissions.RemoveRange(deletedRates);
+            //Update updated rates
+            var updatedRates = existingRates
+                .Where(er => idsToSave.Contains(er.Id)).ToImmutableList();
+            ctx.AgencyCommissions.UpdateRange(updatedRates);
+            //TODO: Make sure only relevant columns are updated
+            foreach (var updatedRate in updatedRates)
+            {
+                var updateSource = rates.First(r => r.Id == updatedRate.Id);
+                if (updatedRate.Maximum != updateSource.Maximum)
+                    updatedRate.Maximum = updateSource.Maximum;
+                if (Math.Abs(updatedRate.Rate - updateSource.Rate) > 0.01d)
+                    updatedRate.Rate = updateSource.Rate;
+                //NOTE: Database trigger should update Modified, not code
+            }
+            //Add new rates
+            var newRates = rates.Where(r => !existingIds.Contains(r.Id)).ToList();
+            ctx.AgencyCommissions.AddRange(newRates);
+
+            await ctx.SaveChangesAsync();
+
+            return true;//TODO:Remove if possible.  Might be required to be discovered
+            //UNDONE: Support subscriptions with event sender
         }
     }
 

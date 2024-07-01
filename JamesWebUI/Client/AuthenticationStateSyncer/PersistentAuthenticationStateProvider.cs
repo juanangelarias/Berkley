@@ -20,6 +20,10 @@
 
             Claim[] claims = [
                 new Claim(ClaimTypes.NameIdentifier, userInfo.Username ?? string.Empty),
+                new Claim("nickname", userInfo.Username ?? string.Empty),
+                new Claim("picture", userInfo.PictureUrl ?? string.Empty),
+                new Claim(ClaimTypes.GivenName, userInfo.FirstName ?? string.Empty),
+                new Claim(ClaimTypes.Surname, userInfo.LastName ?? string.Empty),
                 new Claim(ClaimTypes.Name, userInfo.FullName ?? string.Empty),
                 new Claim(ClaimTypes.Email, userInfo.Email)];
 

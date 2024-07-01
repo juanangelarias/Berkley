@@ -13,6 +13,7 @@ type Mutation {
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
   setPowerOfAttorney(input: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
+  saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -41,6 +42,7 @@ type Query {
   poaDocumentNames: [PowerOfAttorneyDocumentNameDm!]!
   allPoaStatuses: [PowerOfAttorneyStatusDm!]!
   agencyRelatedParties(agencyId: UUID!): [Agency!]!
+  agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   agentByAgentId(agentId: UUID!): Agent!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
   branches: [Branch!]!
@@ -115,6 +117,18 @@ type Agent {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type AgencyCommission {
+  value: Float!
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  agencyId: UUID!
+  bondType: String!
+  minimum: Int!
+  maximum: Int
+  rate: Float!
 }
 
 type PowerOfAttorneyStatusDm {
@@ -540,6 +554,21 @@ type PowerOfAttorneyDocumentStatus {
   poa: PowerOfAttorney!
 }
 
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
+
+input AgencyCommissionInput {
+  value: Float!
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  agencyId: UUID!
+  bondType: String!
+  minimum: Int!
+  maximum: Int
+  rate: Float!
+}
+
 enum Severity {
   UNSET
   VERBOSE
@@ -717,6 +746,150 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type Ratio {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  statementDate: Date!
+  statementType: String
+  statementBasis: String
+  statementTaxBasis: String
+  statementQuality: String
+  workingCapitalStated: Int
+  totalAssetsStated: Int
+  retainedEarningsStated: Int
+  earningsBeforeTaxesStated: Int
+  netWorthStated: Int
+  totalLiabilitiesStated: Int
+  totalEquityStated: Int
+  totalRevenueStated: Int
+  totalCostOfGoodsSoldStated: Int
+  currentAssetsStated: Int
+  currentLiabilitiesStated: Int
+  netIncomeStated: Int
+  inventoryStated: Int
+  fixedAssetsStated: Int
+  accountsReceivableStated: Int
+  accountsPayableStated: Int
+  subordinatedNotesStated: Int
+  retainageReceivedStated: Int
+  retainagePayableStated: Int
+  cashPlusEarningsGreaterThanBillingsStated: Int
+  billingsGreaterThanCostsPlusEarningsStated: Int
+  prepaidExpensesStated: Int
+  cashInventoryStated: Int
+  otherCurrentAssetsStated: Int
+  bankDebtStated: Int
+  gaexpensesStated: Int
+  operatingProfitStated: Int
+  incomeAfterTaxesStated: Int
+  cashStated: Int
+  notesStated: Int
+  qscoreStated: Int
+  qprofitStated: Int
+  qnetworthStated: Int
+  qleverageStated: Int
+  qworkingCapitalStated: Int
+  qcratioStated: Int
+  workingCapitalAllowed: Int
+  totalAssetsAllowed: Int
+  retainedEarningsAllowed: Int
+  earningsBeforeTaxesAllowed: Int
+  netWorthAllowed: Int
+  totalLiabilitiesAllowed: Int
+  totalEquityAllowed: Int
+  totalRevenueAllowed: Int
+  totalCostOfGoodsSoldAllowed: Int
+  currentAssetsAllowed: Int
+  currentLiabilitiesAllowed: Int
+  netIncomeAllowed: Int
+  inventoryAllowed: Int
+  fixedAssetsAllowed: Int
+  accountsReceivableAllowed: Int
+  accountsPayableAllowed: Int
+  subordinatedNotesAllowed: Int
+  retainageReceivedAllowed: Int
+  retainagePayableAllowed: Int
+  cashPlusEarningsGreaterThanBillingsAllowed: Int
+  billingsGreaterThanCostsPlusEarningsAllowed: Int
+  prepaidExpensesAllowed: Int
+  cashInventoryAllowed: Int
+  otherCurrentAssetsAllowed: Int
+  bankDebtAllowed: Int
+  gaexpensesAllowed: Int
+  operatingProfitAllowed: Int
+  incomeAfterTaxesAllowed: Int
+  cashAllowed: Int
+  notesAllowed: Int
+  qscoreAllowed: Int
+  qprofitAllowed: Int
+  qnetworthAllowed: Int
+  qleverageAllowed: Int
+  qworkingCapitalAllowed: Int
+  qcratioAllowed: Int
+  scaling: String
+  singleLoa: Int
+  aggregateLoa: Int
+  largestJob: Int
+  largestBacklog: Int
+  cashFromOperations: Int
+  cashFromInvestments: Int
+  cashFromFinancing: Int
+  comments: String
+  netChangeCash: Int
+  accountNumNavigation: Account!
+  balanceSheets: [BalanceSheet!]!
+}
+
+type PersonalFinancialStatement {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  statementDate: Date!
+  accountType: String!
+  sequence: Int!
+  accountName: String
+  stated: Int
+  adjustment: Int
+  asAllowed: Int
+  comments: String
+  headerId: UUID!
+  accountNumNavigation: Account!
+  header: PersonalFinancialHeader!
+  personalFinancialSubaccounts: [PersonalFinancialSubaccount!]!
+}
+
+type KeyPersonnel {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  encryptYearOfBirth: String
+  position: String
+  responsibility: String
+  yearJoinedCompany: String
+  yearEnteredField: String
+  spouseName: String
+  personalIndemnification: Boolean!
+  comments: String
+  profession: String
+  accountNumNavigation: Account!
+  idNavigation: LegalEntity!
+  responsibilityNavigation: ResponsibilityDm
+  fullName: String!
+  mainAddress: Address
+  addresses: [LegalEntityAddress!]!
+  mainPhoneNumber: PhoneNumber
+  phoneNumbers: [LegalEntityPhone!]!
+  mainEmailAddress: String
+  emailAddresses: [LegalEntityEmail!]!
+  givenName: String
+  middleInitial: String
+  familyName: String
 }
 
 type Indemnitor {
@@ -1434,150 +1607,6 @@ type ImagingCategoryTabDivision {
   tabNameNavigation: ImagingTab!
 }
 
-type KeyPersonnel {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  encryptYearOfBirth: String
-  position: String
-  responsibility: String
-  yearJoinedCompany: String
-  yearEnteredField: String
-  spouseName: String
-  personalIndemnification: Boolean!
-  comments: String
-  profession: String
-  accountNumNavigation: Account!
-  idNavigation: LegalEntity!
-  responsibilityNavigation: ResponsibilityDm
-  fullName: String!
-  mainAddress: Address
-  addresses: [LegalEntityAddress!]!
-  mainPhoneNumber: PhoneNumber
-  phoneNumbers: [LegalEntityPhone!]!
-  mainEmailAddress: String
-  emailAddresses: [LegalEntityEmail!]!
-  givenName: String
-  middleInitial: String
-  familyName: String
-}
-
-type PersonalFinancialStatement {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  statementDate: Date!
-  accountType: String!
-  sequence: Int!
-  accountName: String
-  stated: Int
-  adjustment: Int
-  asAllowed: Int
-  comments: String
-  headerId: UUID!
-  accountNumNavigation: Account!
-  header: PersonalFinancialHeader!
-  personalFinancialSubaccounts: [PersonalFinancialSubaccount!]!
-}
-
-type Ratio {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  statementDate: Date!
-  statementType: String
-  statementBasis: String
-  statementTaxBasis: String
-  statementQuality: String
-  workingCapitalStated: Int
-  totalAssetsStated: Int
-  retainedEarningsStated: Int
-  earningsBeforeTaxesStated: Int
-  netWorthStated: Int
-  totalLiabilitiesStated: Int
-  totalEquityStated: Int
-  totalRevenueStated: Int
-  totalCostOfGoodsSoldStated: Int
-  currentAssetsStated: Int
-  currentLiabilitiesStated: Int
-  netIncomeStated: Int
-  inventoryStated: Int
-  fixedAssetsStated: Int
-  accountsReceivableStated: Int
-  accountsPayableStated: Int
-  subordinatedNotesStated: Int
-  retainageReceivedStated: Int
-  retainagePayableStated: Int
-  cashPlusEarningsGreaterThanBillingsStated: Int
-  billingsGreaterThanCostsPlusEarningsStated: Int
-  prepaidExpensesStated: Int
-  cashInventoryStated: Int
-  otherCurrentAssetsStated: Int
-  bankDebtStated: Int
-  gaexpensesStated: Int
-  operatingProfitStated: Int
-  incomeAfterTaxesStated: Int
-  cashStated: Int
-  notesStated: Int
-  qscoreStated: Int
-  qprofitStated: Int
-  qnetworthStated: Int
-  qleverageStated: Int
-  qworkingCapitalStated: Int
-  qcratioStated: Int
-  workingCapitalAllowed: Int
-  totalAssetsAllowed: Int
-  retainedEarningsAllowed: Int
-  earningsBeforeTaxesAllowed: Int
-  netWorthAllowed: Int
-  totalLiabilitiesAllowed: Int
-  totalEquityAllowed: Int
-  totalRevenueAllowed: Int
-  totalCostOfGoodsSoldAllowed: Int
-  currentAssetsAllowed: Int
-  currentLiabilitiesAllowed: Int
-  netIncomeAllowed: Int
-  inventoryAllowed: Int
-  fixedAssetsAllowed: Int
-  accountsReceivableAllowed: Int
-  accountsPayableAllowed: Int
-  subordinatedNotesAllowed: Int
-  retainageReceivedAllowed: Int
-  retainagePayableAllowed: Int
-  cashPlusEarningsGreaterThanBillingsAllowed: Int
-  billingsGreaterThanCostsPlusEarningsAllowed: Int
-  prepaidExpensesAllowed: Int
-  cashInventoryAllowed: Int
-  otherCurrentAssetsAllowed: Int
-  bankDebtAllowed: Int
-  gaexpensesAllowed: Int
-  operatingProfitAllowed: Int
-  incomeAfterTaxesAllowed: Int
-  cashAllowed: Int
-  notesAllowed: Int
-  qscoreAllowed: Int
-  qprofitAllowed: Int
-  qnetworthAllowed: Int
-  qleverageAllowed: Int
-  qworkingCapitalAllowed: Int
-  qcratioAllowed: Int
-  scaling: String
-  singleLoa: Int
-  aggregateLoa: Int
-  largestJob: Int
-  largestBacklog: Int
-  cashFromOperations: Int
-  cashFromInvestments: Int
-  cashFromFinancing: Int
-  comments: String
-  netChangeCash: Int
-  accountNumNavigation: Account!
-  balanceSheets: [BalanceSheet!]!
-}
-
 type TaxBasisDm {
   id: UUID!
   created: DateTime!
@@ -2267,6 +2296,15 @@ input SetPowerOfAttorneyDocumentStatusInput {
 
 type SetPowerOfAttorneyDocumentStatusPayload {
   powerOfAttorneyDocumentStatus: PowerOfAttorneyDocumentStatus
+}
+
+input SaveCommissionRatesInput {
+  agencyId: UUID!
+  rates: [AgencyCommissionInput!]!
+}
+
+type SaveCommissionRatesPayload {
+  boolean: Boolean
 }
 
 input LogInformationInput {

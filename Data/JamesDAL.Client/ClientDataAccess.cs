@@ -3,6 +3,7 @@ using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
 using StrawberryShake;
+using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Severity = James.Shared.Model.Severity;
@@ -174,6 +175,12 @@ namespace James.Data.Client
                 "AllPoaStatuses");
         }
 
+        public async Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId)
+        {
+            return await ExecuteGet<List<AgencyCommission>>(async () => await jamesClient.GetAgencyCommissionRates.ExecuteAsync(agencyId),
+            "AgencyCommissionRates");
+        }
+
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
         {
@@ -198,6 +205,29 @@ namespace James.Data.Client
             //TODO:Refactor to call this type of method with all boilerplate similar to ExecuteGet.
             var result = await jamesClient.DeleteLicense.ExecuteAsync(new DeleteLicenseInput { LicenseId = licenseId });
             return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
+        {
+            //throw new NotImplementedException();
+            //TODO:  Wire up for the graphql type.
+            var saveResult = await jamesClient.SaveAgencyCommissionRates.ExecuteAsync(new SaveCommissionRatesInput
+            {
+                AgencyId = agencyId,
+                Rates = rates.Select(r => new AgencyCommissionInput
+                {
+                    Id = r.Id,
+                    AgencyId = agencyId,
+                    Created = DateTimeOffset.Now,//Created is a required field but not used by the save
+                    Modified = DateTimeOffset.Now,//Modified is a required field but not used by the save
+                    BondType = r.BondType,
+                    Minimum = r.Minimum,
+                    Maximum = r.Maximum,
+                    Rate = r.Rate
+                }).ToList()
+
+            });
+            return GraphQLSaveResult(saveResult);
         }
 
         public async Task<IDisposable> AddressModified()
@@ -280,21 +310,6 @@ namespace James.Data.Client
                     State = state,
                     IsActive = isActive
                 }), "SetAgencyLicense.AgencyLicense");
-            //var result = await jamesClient.SetAgencyLicense.ExecuteAsync(new SetLicenseInput
-            //{
-            //    AgencyId = agencyId,
-            //    AgentId = agentId,
-            //    AppointingState = appointingState,
-            //    Comments = comments,
-            //    Appointment = appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    Expiration = expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    Termination = termination?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    InsurerId = insurerId,
-            //    IsResident = isResident,
-            //    LicenseNumber = licenseNumber,
-            //    State = state,
-            //    IsActive = isActive
-            //});
             //result.Data.SetAgencyLicense.AgencyLicense
             //return GraphQLResult<AgencyLicense>(result);
         }
@@ -353,6 +368,23 @@ namespace James.Data.Client
                 logging.LogException(ex, graphQlFunctionName + " returned exception",
                     exceptionDetail, Severity.Error, "GraphQl");
                 return new DataAccessResult<T> { Data = defaultValue, Errors = [ex.Message] };
+            }
+        }
+
+        private async Task<ISaveDataResult> ExecuteSave(Func<Task<IOperationResult>> dataFunc,
+            [CallerMemberName] string graphQlFunctionName = "GraphQL call")
+        {
+            try
+            {
+                await dataFunc();
+                return new SaveDataResult();
+            }
+            catch (Exception ex)
+            {
+                var exceptionDetail = ex.ToText();
+                logging.LogException(ex, graphQlFunctionName + " returned exception",
+                    exceptionDetail, Severity.Error, "GraphQl");
+                return new SaveDataResult { Errors = [ex.Message] };
             }
         }
     }

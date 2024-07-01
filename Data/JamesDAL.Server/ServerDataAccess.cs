@@ -230,6 +230,11 @@ namespace James.Data.Server
             return await ExecuteGet(async()=> await query.GetAllPoaStatuses(contextFactory));
         }
 
+        public async Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyCommissionRates(agencyId, contextFactory));
+        }
+
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
@@ -318,6 +323,11 @@ namespace James.Data.Server
             //{
             //    return new SaveDataResult { Errors = [ex.Message] };
             //}
+        }
+
+        public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
+        {
+            return await ExecuteSave(async ()=>await agencyMutation.SaveCommissionRates(agencyId, rates, eventSender, contextFactory));
         }
 
         //UNDONE:  Refactor to DRY out the code

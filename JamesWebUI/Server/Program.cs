@@ -61,6 +61,8 @@ try
         {
             o.EnableDetailedErrors();
             o.UseSqlServer(config.GetConnectionString("James"));
+            o.EnableDetailedErrors();
+            o.EnableSensitiveDataLogging();//TODO: Disable in production environment
             //o.UseMemoryCache()
         });
     builder.Services.AddAuthorization();

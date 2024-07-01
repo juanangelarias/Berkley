@@ -18,6 +18,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId);
         public Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search);
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
+        public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
 
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
@@ -30,6 +31,8 @@ namespace James.Shared.Data
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
+
+        public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
 
         //TODO: Figure out subscriptions
         public Task<IDisposable> AddressModified();

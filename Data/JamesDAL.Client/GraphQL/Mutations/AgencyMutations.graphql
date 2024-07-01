@@ -57,3 +57,7 @@ mutation SetPowerOfAttorney ($input: SetPowerOfAttorneyInput!) {
     }
   }
 }
+
+mutation SaveAgencyCommissionRates($input:SaveCommissionRatesInput!) {
+    saveCommissionRates(input: $input){boolean}
+}

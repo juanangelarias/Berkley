@@ -168,7 +168,8 @@
                     <AgencyAccountsAndBonds agencyToDisplay="@agencyToDisplay" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Commission Rates">
-                    <RadzenRow>
+                    <AgencyCommissiontRates AgencyId="@agencyToDisplay.Id" AgencyStatus="@agencyToDisplay?.Status" />
+                    @* <RadzenRow>
                         <RadzenColumn Size="6">
                             <RadzenFieldset Text="Contract Rates">
 
@@ -177,7 +178,7 @@
                         <RadzenColumn Size="6">
 
                         </RadzenColumn>
-                    </RadzenRow>
+                    </RadzenRow> *@
 
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Virtual File">

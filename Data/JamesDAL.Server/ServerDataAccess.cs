@@ -292,23 +292,23 @@ namespace James.Data.Server
                 return new SaveDataResult { Errors = [ex.Message] };
             }
         }
-        public async Task<IDataAccessResult<AgencyLicense>> CreateLicense(Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+        public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive)
         {
             try
             {
-                var result = await agencyMutation.CreateLicense(agencyId, agentId, appointingState, 
+                var result = await agencyMutation.CreateLicense(licenseId, agencyId, agentId, appointingState, 
                     comments, appointment, expiration, termination,
                     insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory);
-                return new DataAccessResult<AgencyLicense>{Data = result };
+                return new DataAccessResult<bool>{Data = result };
             }
             catch (AggregateException ae)
             {
-                return new DataAccessResult<AgencyLicense> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+                return new DataAccessResult<bool> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
             }
             catch (Exception ex)
             {
-                return new DataAccessResult<AgencyLicense> { Errors = [ex.Message] };
+                return new DataAccessResult<bool> { Errors = [ex.Message] };
             }
         }
 
@@ -357,7 +357,10 @@ namespace James.Data.Server
             //    return new SaveDataResult { Errors = [ex.Message] };
             //}
         }
-
+        public async Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId)
+        {
+            return await ExecuteSave(async () => await agencyMutation.DeleteAgencyInventory(inventoryId, eventSender, contextFactory));
+        }
         public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
         {
             return await ExecuteSave(async ()=>await agencyMutation.SaveCommissionRates(agencyId, rates, eventSender, contextFactory));

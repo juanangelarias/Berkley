@@ -153,6 +153,7 @@
     {
         await ShowLoading();
         //TODO: Delete the row
+        var result = await _dataAccess.DeleteAgencyInventory(inventory.Id);
         await LoadInventory();
     }
     async Task SaveInventoryRow(AgencyInventory inventory)

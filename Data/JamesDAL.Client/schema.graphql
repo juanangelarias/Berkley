@@ -11,6 +11,7 @@ type Mutation {
   setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
+  deleteAgencyInventory(input: DeleteAgencyInventoryInput!): DeleteAgencyInventoryPayload!
   setPowerOfAttorney(input: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
@@ -55,20 +56,6 @@ type Query {
 type Subscription {
   onAddressModified: Address!
   onLicenseModified: AgencyLicense!
-}
-
-type DivisionDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  divisionCode: String!
-  division: String!
-  loanotificationGroup: String!
-  active: Boolean!
-  accounts: [Account!]!
-  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
-  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
-  profitCenters: [ProfitCenter!]!
 }
 
 type Branch {
@@ -120,7 +107,6 @@ type Agent {
 }
 
 type AgencyCommission {
-  value: Float!
   id: UUID!
   created: DateTime!
   modified: DateTime!
@@ -473,6 +459,20 @@ type Account {
   emailAddresses: [LegalEntityEmail!]!
 }
 
+type DivisionDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  divisionCode: String!
+  division: String!
+  loanotificationGroup: String!
+  active: Boolean!
+  accounts: [Account!]!
+  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
+  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
+  profitCenters: [ProfitCenter!]!
+}
+
 type Address {
   id: UUID!
   created: DateTime!
@@ -554,11 +554,7 @@ type PowerOfAttorneyDocumentStatus {
   poa: PowerOfAttorney!
 }
 
-"The `DateTime` scalar represents an ISO-8601 compliant date time type."
-scalar DateTime
-
 input AgencyCommissionInput {
-  value: Float!
   id: UUID!
   created: DateTime!
   modified: DateTime!
@@ -746,6 +742,28 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type UnderwriterRecommendation {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  postedBy: UUID!
+  comments: String
+  description: String
+  accountNumNavigation: Account!
+  postedByNavigation: UserProfile!
+}
+
+type TaxBasisDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  taxBasis: String!
+  accounts: [Account!]!
+  cashFlowStatements: [CashFlowStatement!]!
+  personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
 type Ratio {
@@ -1548,26 +1566,24 @@ type RegionDm {
   branches: [Branch!]!
 }
 
-type ProfitCenter {
+type WatchStatusDm {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  profitCenter1: String!
+  watchStatus: String!
+  accounts: [Account!]!
+}
+
+type ImagingCategoryTabDivision {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  category: String!
+  tabName: String!
   divisionCode: String!
-  lineOfBusiness: String!
-  location: String!
-  locationOverview: String!
-  budgetDefault: UUID
-  underWriterId: UUID
-  effective: Date!
-  expiration: Date!
-  commercialRegion: String
-  budgetDefaultNavigation: ProfitCenter
-  commercialRegionNavigation: CommercialRegionDm
+  categoryNavigation: ImagingCategory!
   divisionCodeNavigation: DivisionDm!
-  inverseBudgetDefaultNavigation: [ProfitCenter!]!
-  lineOfBusinessNavigation: LineOfBusinessDm!
-  underWriter: Underwriter
+  tabNameNavigation: ImagingTab!
 }
 
 type LineOfAuthorityLog {
@@ -1595,46 +1611,26 @@ type LineOfAuthorityLog {
   statusNavigation: LineOfAuthorityStatusDm
 }
 
-type ImagingCategoryTabDivision {
+type ProfitCenter {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  category: String!
-  tabName: String!
+  profitCenter1: String!
   divisionCode: String!
-  categoryNavigation: ImagingCategory!
+  lineOfBusiness: String!
+  location: String!
+  locationOverview: String!
+  budgetDefault: UUID
+  underWriterId: UUID
+  effective: Date!
+  expiration: Date!
+  commercialRegion: String
+  budgetDefaultNavigation: ProfitCenter
+  commercialRegionNavigation: CommercialRegionDm
   divisionCodeNavigation: DivisionDm!
-  tabNameNavigation: ImagingTab!
-}
-
-type TaxBasisDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  taxBasis: String!
-  accounts: [Account!]!
-  cashFlowStatements: [CashFlowStatement!]!
-  personalFinancialHeaders: [PersonalFinancialHeader!]!
-}
-
-type UnderwriterRecommendation {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  postedBy: UUID!
-  comments: String
-  description: String
-  accountNumNavigation: Account!
-  postedByNavigation: UserProfile!
-}
-
-type WatchStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  watchStatus: String!
-  accounts: [Account!]!
+  inverseBudgetDefaultNavigation: [ProfitCenter!]!
+  lineOfBusinessNavigation: LineOfBusinessDm!
+  underWriter: Underwriter
 }
 
 type CountryDm {
@@ -1779,25 +1775,28 @@ type SurchargeTypeDm {
   surcharges: [Surcharge!]!
 }
 
-type PersonalFinancialSubaccount {
+type LineOfBusinessDm {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  parentAccountId: UUID!
-  sequence: Int!
-  stated: Int
-  adjustment: Int
-  asAllowed: Int
-  comments: String
-  parentAccount: PersonalFinancialStatement!
+  lineOfBusiness: String!
+  profitCenters: [ProfitCenter!]!
 }
 
-type ResponsibilityDm {
+type CommercialRegionDm {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  responsibility: String!
-  keyPersonnel: [KeyPersonnel!]!
+  region: String!
+  profitCenters: [ProfitCenter!]!
+}
+
+type LineOfAuthorityStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  status: String!
+  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
 }
 
 type ImagingTab {
@@ -1815,30 +1814,6 @@ type ImagingCategory {
   modified: DateTime!
   category: String!
   imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
-}
-
-type LineOfAuthorityStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  status: String!
-  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
-}
-
-type LineOfBusinessDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  lineOfBusiness: String!
-  profitCenters: [ProfitCenter!]!
-}
-
-type CommercialRegionDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  region: String!
-  profitCenters: [ProfitCenter!]!
 }
 
 type BidStatusDm {
@@ -2130,6 +2105,27 @@ type StatementBasisDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
+type ResponsibilityDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  responsibility: String!
+  keyPersonnel: [KeyPersonnel!]!
+}
+
+type PersonalFinancialSubaccount {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  parentAccountId: UUID!
+  sequence: Int!
+  stated: Int
+  adjustment: Int
+  asAllowed: Int
+  comments: String
+  parentAccount: PersonalFinancialStatement!
+}
+
 type NotebookEntryTypeDm {
   id: UUID!
   created: DateTime!
@@ -2245,6 +2241,7 @@ type SetAgencyLicensePayload {
 }
 
 input CreateLicenseInput {
+  licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
   appointingState: Boolean
@@ -2260,7 +2257,7 @@ input CreateLicenseInput {
 }
 
 type CreateLicensePayload {
-  agencyLicense: AgencyLicense
+  boolean: Boolean
 }
 
 input DeleteLicenseInput {
@@ -2268,6 +2265,14 @@ input DeleteLicenseInput {
 }
 
 type DeleteLicensePayload {
+  boolean: Boolean
+}
+
+input DeleteAgencyInventoryInput {
+  inventoryId: UUID!
+}
+
+type DeleteAgencyInventoryPayload {
   boolean: Boolean
 }
 

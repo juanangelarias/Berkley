@@ -232,6 +232,11 @@ namespace James.Data.Client
             return GraphQLSaveResult(result);
         }
 
+        public async Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId)
+        {
+            var result = await jamesClient.DeleteAgencyInventory.ExecuteAsync(new DeleteAgencyInventoryInput { InventoryId = inventoryId });
+            return GraphQLSaveResult(result);
+        }
         public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
         {
             //throw new NotImplementedException();
@@ -275,27 +280,29 @@ namespace James.Data.Client
             return GraphQLSaveResult(result);
         }
 
-        public async Task<IDataAccessResult<AgencyLicense>> CreateLicense(Guid agencyId, Guid? agentId, bool? appointingState,
+        public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state,
             bool isActive)
         {
-            return await ExecuteGet<AgencyLicense>(
-                async () => await jamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
-                {
-                    AgencyId = agencyId,
-                    AgentId = agentId,
-                    AppointingState = appointingState,
-                    Comments = comments,
-                    Appointment = appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    Expiration = expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    Termination = termination?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    InsurerId = insurerId,
-                    IsResident = isResident,
-                    LicenseNumber = licenseNumber,
-                    State = state,
-                    IsActive = isActive
-                }));
+            var saveResult = await jamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
+            {
+                LicenseId = licenseId,
+                AgencyId = agencyId,
+                AgentId = agentId,
+                AppointingState = appointingState,
+                Comments = comments,
+                Appointment = appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                Expiration = expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                Termination = termination?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                InsurerId = insurerId,
+                IsResident = isResident,
+                LicenseNumber = licenseNumber,
+                State = state,
+                IsActive = isActive
+            });
+            return GraphQLSaveResult(saveResult);
+                //async () => await jamesClient.CreateLicense.ExecuteAsync);
             //var result = await jamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
             //{
             //    AgencyId = agencyId,

@@ -1,8 +1,6 @@
 ﻿mutation CreateLicense ($input: CreateLicenseInput!){
   createLicense(input: $input) {
-    agencyLicense{
-      id
-    }
+    boolean
   }
 } 
 
@@ -11,7 +9,11 @@ mutation DeleteLicense ($input: DeleteLicenseInput!){
     boolean
   }
 } 
-
+mutation DeleteAgencyInventory ($input: DeleteAgencyInventoryInput!){
+    deleteAgencyInventory(input: $input){
+        boolean
+    }
+}
 mutation SetAddress($input: SetAddressInput!) {
   setAddress(input: $input) {
     address {

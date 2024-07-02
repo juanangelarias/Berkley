@@ -121,11 +121,11 @@
                                 <RadzenColumn Size="12">
                                     <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
                                         <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" Value="@agencyToDisplay.W9"
-                                                            Text="W-9" Style="border-radius: 10px; width: 90px;" Size="ButtonSize.Small" />
+                                                            Text="W-9" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" />
                                         <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success"
-                                                            Text="Need 1099" Style="border-radius: 10px; width: 90px;" Size="ButtonSize.Small" />
+                                                            Text="Need 1099" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" />
                                         <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" Value="@agencyToDisplay.Nasbp"
-                                                            Text="NASBP" Style="border-radius: 10px; width: 90px;" Size="ButtonSize.Small" />
+                                                            Text="NASBP" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" />
                                     </RadzenStack>
                                 </RadzenColumn>
                             </RadzenRow>
@@ -143,9 +143,15 @@
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Errors & Omissions Coverage">
                                 <RadzenStack Orientation="Orientation.Vertical">
-                                    <RadzenText Text="Carrier: Indian Harbor Insurance Company" />
-                                    <RadzenText Text="Expiration Date: 6/1/2024" />
-                                    <RadzenText Text="Limit of Coverage: $10,000,000" />
+                                    <RadzenFormField AllowFloatingLabel="false" Text="Carrier">
+                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Carrier" />
+                                    </RadzenFormField>
+                                    <RadzenFormField AllowFloatingLabel="false" Text="Exp Date">
+                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Expiration.ToShortDateString()" />
+                                    </RadzenFormField>
+                                    <RadzenFormField AllowFloatingLabel="false" Text="Limit">
+                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.CoverageLimit.ToString("c0")" />
+                                    </RadzenFormField>
                                 </RadzenStack>
                             </RadzenTabsItem>
                         </Tabs>
@@ -163,23 +169,14 @@
                 <RadzenTabsItem Text="Contacts">
                     <AgencyContactsGrid AgencyId="@agencyToDisplay.Id" />
                 </RadzenTabsItem>
-                <RadzenTabsItem Text="Inventory"></RadzenTabsItem>
+                <RadzenTabsItem Text="Inventory">
+                    <AgencyInventoryGrid AgencyId="@agencyToDisplay.Id" />
+                </RadzenTabsItem>
                 <RadzenTabsItem Text="Accounts and Bonds">
                     <AgencyAccountsAndBonds agencyToDisplay="@agencyToDisplay" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Commission Rates">
-                    <AgencyCommissiontRates AgencyId="@agencyToDisplay.Id" AgencyStatus="@agencyToDisplay?.Status" />
-                    @* <RadzenRow>
-                        <RadzenColumn Size="6">
-                            <RadzenFieldset Text="Contract Rates">
-
-                            </RadzenFieldset>
-                        </RadzenColumn>
-                        <RadzenColumn Size="6">
-
-                        </RadzenColumn>
-                    </RadzenRow> *@
-
+                    <AgencyCommissionRates AgencyId="@agencyToDisplay.Id" AgencyStatus="@agencyToDisplay?.Status" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Virtual File">
                 </RadzenTabsItem>

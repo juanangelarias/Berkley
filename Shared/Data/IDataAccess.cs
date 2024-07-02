@@ -11,6 +11,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<State>>> GetAllStates();
         public Task<IDataAccessResult<Address>> GetAddress(Guid addressId);
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
+        public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);
@@ -23,15 +24,17 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
         public Task<ISaveDataResult> SetAddress(Address address);
-        public Task<IDataAccessResult<AgencyLicense>> CreateLicense(Guid agencyId, Guid? agentId, bool? appointingState, 
+        public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, 
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
 
         public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
+        public Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
+            Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode);
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
-
+        public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
         public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
 
         //TODO: Figure out subscriptions

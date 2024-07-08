@@ -31,7 +31,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
 
         //TODO: Figure out subscriptions
-        public Task<IDisposable> AddressModified();
+        public IDisposable AddressModified(Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null);
     }
 
     public interface ISubscription<T>:IDisposable{}

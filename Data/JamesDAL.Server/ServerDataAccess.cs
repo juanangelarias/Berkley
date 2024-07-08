@@ -1,12 +1,14 @@
 ﻿using HotChocolate.Subscriptions;
+using James.Data.Server.GraphQL;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
+//using James.Data.Server.GraphQL.SubscriptionExtensions
 using James.Shared.Data;
 
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ITopicEventSender eventSender) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver) : IDataAccess
     {
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
@@ -351,11 +353,39 @@ namespace James.Data.Server
             }
         }
 
-        public async Task<IDisposable> AddressModified()
+        public IDisposable AddressModified(Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null)
         {
-            //UNDONE:
-            return await Task.FromResult( FakeSubscription.Create);
+            //var eventValueTask =
+            //    await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified");
+            //eventValueTask.ReadEventsAsync();
+            ////UNDONE:
+            //return await Task.FromResult(FakeSubscription.Create);
+            return OnAddressModified.Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Address>>(onNext, onError, onComplete));
         }
+
+        private  ServerSideSubscription<SubscriptionResult<Address>>? _onAddressModified;
+
+        private ServerSideSubscription<SubscriptionResult<Address>> OnAddressModified
+        {
+            get
+            {
+                if (null == _onAddressModified)
+                {
+                    _onAddressModified = new(eventReceiver
+                        .SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified").Result.ReadEventsAsync(), CancellationToken.None);
+                }
+
+                return _onAddressModified;
+            }
+        }
+        //public async Task<IDisposable> AddressModified(CancellationToken cancellationToken = default)
+        //{
+        //    var eventValueTask =
+        //        await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified", cancellationToken);
+        //    eventValueTask.ReadEventsAsync();
+        //    //UNDONE:
+        //    return await Task.FromResult(FakeSubscription.Create);
+        //}
     }
     //TODO:Remove when subscriptions are handled
     public class FakeSubscription : IDisposable

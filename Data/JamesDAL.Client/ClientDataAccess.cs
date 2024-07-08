@@ -155,7 +155,7 @@ namespace James.Data.Client
             return GraphQLSaveResult(result);
         }
 
-        public async Task<IDisposable> AddressModified()
+        public IDisposable AddressModified(Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null)
         {
             return jamesClient.AddressModified.Watch().Subscribe();
         }

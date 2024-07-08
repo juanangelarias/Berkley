@@ -12,6 +12,7 @@
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
+@*@inject JamesClient JamesClient  TODO:Remove after debugging *@
 @inject IDataAccess _dataAccess
 @inject ILoggingService _logging
 @attribute [Authorize]
@@ -469,7 +470,15 @@
         //                 Duration = 4000
         //             });
         //     });
-        session = _dataAccess.AddressModified();
+        session = _dataAccess.AddressModified(a =>
+        {
+            ShowNotification(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Info,
+                Detail = "Information on this page has been changed by another user.",
+                Duration = 4000
+            });
+        });
 
         ThemeService.Initialize(NavigationManager);
 
@@ -482,7 +491,7 @@
     }
     protected override async Task OnParametersSetAsync()
     {
-
+        await base.OnParametersSetAsync();
     }
 
     private void ToggleMainAddressEditMode()

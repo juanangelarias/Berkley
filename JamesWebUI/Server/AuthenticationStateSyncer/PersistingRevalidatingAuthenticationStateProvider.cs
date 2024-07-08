@@ -79,7 +79,7 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
         if (principal.Identity?.IsAuthenticated == true)
         {
             //TODO: set up to use the UserShared code to hydrate the SiteUserInfo
-            var userId = principal.FindFirst(_options.ClaimsIdentity.UserIdClaimType)?.Value;
+            var userId = principal.FindFirst("nickname")?.Value;
             var name = principal.FindFirst("name")?.Value;
             var email = principal.FindFirst("email_address")?.Value;
             var jwt = _contextAccessor.HttpContext?.Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();

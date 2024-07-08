@@ -9,6 +9,7 @@ using James.Shared.Data;
 using James.Shared.Server;
 using JamesWebUI.Client.Components;
 using JamesWebUI.Client.Services;
+using JamesWebUI.Server;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
@@ -17,23 +18,15 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Serilog;
-using StrawberryShake;
 using System.Diagnostics;
-using JamesWebUI.Client;
-using JamesWebUI.Server;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
     .Build();
-
-const string LOG_IN_PATH = "/account/Login";
-const string LOG_OUT_PATH = "/account/Logout";
 
 try
 {
@@ -68,11 +61,14 @@ try
         {
             o.EnableDetailedErrors();
             o.UseSqlServer(config.GetConnectionString("James"));
+            o.EnableDetailedErrors();
+            o.EnableSensitiveDataLogging();//TODO: Disable in production environment
             //o.UseMemoryCache()
         });
+    builder.Services.AddAuthorization();
     builder.Services
         .AddGraphQLServer()
-        //.AddAuthorization()
+        .AddAuthorization()
         .AddQueryType<Query>()
         .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
         .AddSubscriptionType<Subscription>()
@@ -85,8 +81,9 @@ try
     builder.Services.ConfigureApplicationCookie(options =>
     {
         // Default Lockout settings.
-        options.LoginPath = LOG_IN_PATH;
-        options.LogoutPath = LOG_OUT_PATH;
+        options.LoginPath = JamesConstants.LOG_IN_PATH;
+        options.LogoutPath = JamesConstants.LOG_OUT_PATH;
+        options.ReturnUrlParameter = "redirectUri";
     });
     builder.Services.AddRadzenComponents();
     builder.Services.AddScoped<ThemeService>();
@@ -96,16 +93,9 @@ try
     builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AgencyMutation>();
-    var baseAddressHttp = config["Kestrel:Endpoints:Https:Url"];
-    var baseAddressHttps = config["Kestrel:Endpoints:Http:Url"];
-    var baseAddress = string.IsNullOrWhiteSpace(baseAddressHttps) ? baseAddressHttp! : baseAddressHttps;
-    if (!baseAddress.EndsWith('/'))
-        baseAddress = baseAddress + "/";
-    var graphqlHttpUrl = baseAddress + "graphql";
-    var graphqlWebSocketUrl = graphqlHttpUrl.Replace("http", "ws", StringComparison.InvariantCultureIgnoreCase);
     builder.Services.AddRazorComponents()
-        .AddInteractiveServerComponents()
-        .AddInteractiveWebAssemblyComponents();
+         .AddInteractiveServerComponents()
+         .AddInteractiveWebAssemblyComponents();
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<TokenHandler>();
@@ -163,16 +153,20 @@ try
 
     app.UseWebSockets();
 
-    app.MapGet(LOG_IN_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
+    app.MapGet(JamesConstants.LOG_IN_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
+        //TODO:Is there a more elegant way to do this?  Why does auth0 use the ReturnUrl query value?  Can it be changed?
+        var returnUrl = redirectUri;
+        if (httpContext.Request.Query.ContainsKey("ReturnUrl"))
+            returnUrl = httpContext.Request.Query["ReturnUrl"];
         var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
-            .WithRedirectUri(redirectUri)
+            .WithRedirectUri(returnUrl)
             .Build();
 
         await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
     });
 
-    app.MapGet(LOG_OUT_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
+    app.MapGet(JamesConstants.LOG_OUT_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
         var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
             .WithRedirectUri(redirectUri)

@@ -65,7 +65,7 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
     {
         _authenticationStateTask = authenticationStateTask;
     }
-
+     
     private async Task OnPersistingAsync()
     {
         if (_authenticationStateTask is null)
@@ -100,6 +100,8 @@ public class PersistingRevalidatingAuthenticationStateProvider : RevalidatingSer
                 {
                     Username = userId,
                     FullName = name,
+                    FirstName = principal.FindFirstValue(ClaimTypes.GivenName),
+                    LastName = principal.FindFirstValue(ClaimTypes.Surname),
                     Email = email!,
                     PictureUrl = principal.FindFirstValue("picture"),
                     JWT = jwt ?? ""

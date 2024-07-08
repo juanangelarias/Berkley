@@ -1,27 +1,26 @@
-﻿using HotChocolate;
-using James.Data.Server.Model;
-using James.Shared.Model;
-using Microsoft.EntityFrameworkCore;
+﻿using HotChocolate.Authorization;
 
 namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
-    { 
+    {
+        [Authorize]
         public async Task<Agent> GetAgentByAgentId(Guid agentId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
+            var ctx = await contextFactory.CreateDbContextAsync();
 
-            return ctx.Agents
+            return await ctx.Agents
                 .Include(a => a.IdNavigation)
                 .Include(a => a.AgencyLicenses)
-                .Where(a => a.Id == agentId).FirstOrDefault();
+                .Where(a => a.Id == agentId).FirstOrDefaultAsync();
         }
-        public List<AgencyLicense> GetAgentLicenses(Guid agentId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+
+        [Authorize]
+        public async Task<List<AgencyLicense>> GetAgentLicenses(Guid agentId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
+            var ctx = await contextFactory.CreateDbContextAsync();
 
-            return ctx.AgencyLicenses.Where(a => a.AgentId == agentId).ToList();
-
+            return await ctx.AgencyLicenses.Where(a => a.AgentId == agentId).ToListAsync();
         }
     }
 }

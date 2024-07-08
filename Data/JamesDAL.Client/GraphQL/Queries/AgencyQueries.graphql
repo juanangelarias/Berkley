@@ -144,6 +144,16 @@ query GetAgencyAgents($agencyId: UUID!){
     }
 }
 
+query GetAgencyCommissionRates($agencyId: UUID!){
+    agencyCommissionRates(agencyId: $agencyId){
+        id,
+        bondType,
+        minimum,
+        maximum,
+        rate
+    }
+}
+
 query GetAgencyStatuses(){
 	agencyStatuses(){
 		id,
@@ -170,6 +180,24 @@ query GetAgencyLicenses($agencyId: UUID!) {
       }
     }
   }
+}
+
+query GetAgencyInventory($agencyId: UUID!){
+    agencyInventory(agencyId: $agencyId){
+        id
+        sent
+        quantity
+        documentType
+        addressee
+        address{
+            address1
+            address2
+            address3
+            city
+            stateCode
+            postalCode
+        }
+    }
 }
 
 query GetAgencyPOAs($agencyId: UUID!){

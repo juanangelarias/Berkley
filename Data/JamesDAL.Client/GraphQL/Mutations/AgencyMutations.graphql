@@ -1,8 +1,6 @@
 ﻿mutation CreateLicense ($input: CreateLicenseInput!){
   createLicense(input: $input) {
-    agencyLicense{
-      id
-    }
+    boolean
   }
 } 
 
@@ -11,7 +9,11 @@ mutation DeleteLicense ($input: DeleteLicenseInput!){
     boolean
   }
 } 
-
+mutation DeleteAgencyInventory ($input: DeleteAgencyInventoryInput!){
+    deleteAgencyInventory(input: $input){
+        boolean
+    }
+}
 mutation SetAddress($input: SetAddressInput!) {
   setAddress(input: $input) {
     address {
@@ -19,8 +21,14 @@ mutation SetAddress($input: SetAddressInput!) {
     }
   }
 }
-
-mutation SetAgencyLicense ($input: SetLicenseInput!) {
+mutation SetAgencyInventory($input: SetAgencyInventoryInput!){
+    setAgencyInventory(input: $input){
+        agencyInventory{
+            id
+        }
+    }
+}
+mutation SetAgencyLicense ($input: SetAgencyLicenseInput!) {
   setAgencyLicense(input: $input) {
     agencyLicense{
       id
@@ -56,4 +64,8 @@ mutation SetPowerOfAttorney ($input: SetPowerOfAttorneyInput!) {
         }
     }
   }
+}
+
+mutation SaveAgencyCommissionRates($input:SaveCommissionRatesInput!) {
+    saveCommissionRates(input: $input){boolean}
 }

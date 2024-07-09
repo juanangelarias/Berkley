@@ -155,7 +155,8 @@ try
 
     app.MapGet(JamesConstants.LOG_IN_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
-        //TODO:Is there a more elegant way to do this?  Why does auth0 use the ReturnUrl query value?  Can it be changed?
+        //Note: Our Auth0 uses the ReturnUrl query value, even though the standard
+        //          (even in Auth0 docs) is to use redirectUri
         var returnUrl = redirectUri;
         if (httpContext.Request.Query.ContainsKey("ReturnUrl"))
             returnUrl = httpContext.Request.Query["ReturnUrl"];

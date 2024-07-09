@@ -1,6 +1,5 @@
 ﻿using HotChocolate.Execution;
 using HotChocolate.Subscriptions;
-using HotChocolate.Types;
 using HotChocolate.Types.Relay;
 using James.Shared;
 
@@ -23,18 +22,18 @@ namespace James.Data.Server.GraphQL
 
     public static class SubscriptionExtensions
     {
-        public static IAsyncEnumerable<T> ToConvertOutput<T, TSource>(this IAsyncEnumerable<TSource> source)
+        public static IAsyncEnumerable<T> ToConvertOutput<T, TSource>(this IAsyncEnumerable<TSource> source) where T : new()
         {
             return new AsyncEnumerableConversion<T, TSource>(source).ConvertedResult();
         }
     }
 
-    public class AsyncEnumerableConversion<T, TSource>(IAsyncEnumerable<TSource> source)
+    public class AsyncEnumerableConversion<T, TSource>(IAsyncEnumerable<TSource> source) where T : new()
     {
         public async IAsyncEnumerable<T> ConvertedResult()
         {
             await foreach (var item in source)
-                yield return (T)ThisToThat.ToEntityType(item, typeof(T));
+                yield return ThisToThat.ToEntityType<T>(item);
         }
     }
 }

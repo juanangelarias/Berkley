@@ -71,21 +71,20 @@ namespace James.Data.Server.GraphQL.Mutations
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var oldAddress = ctx.LegalEntityAddresses
-                .Include(a => a.Address)
-                .FirstOrDefault(a => a.AddressId == addressId)
+            var oldAddress = await ctx.Addresses
+                .FirstOrDefaultAsync(a => a.Id == addressId)
                 ;
 
             if (oldAddress == null)
                 throw new GraphQLException("Invalid AddressId");
 
 
-            oldAddress.Address.Address1 = address1;
-            oldAddress.Address.Address2 = address2;
-            oldAddress.Address.Address3 = address3;
-            oldAddress.Address.City = city;
-            oldAddress.Address.StateCode = stateCode;
-            oldAddress.Address.PostalCode = postalCode;
+            oldAddress.Address1 = address1;
+            oldAddress.Address2 = address2;
+            oldAddress.Address3 = address3;
+            oldAddress.City = city;
+            oldAddress.StateCode = stateCode;
+            oldAddress.PostalCode = postalCode;
 
             ctx.Update(oldAddress);
             try
@@ -98,9 +97,9 @@ namespace James.Data.Server.GraphQL.Mutations
             }
 
             //await eventSender.SendAsync(nameof(AgencyMutation.SetAddress), oldAddress.Address);
-            await eventSender.SendAsync(nameof(Subscription.OnAddressModified), oldAddress.Address);
+            await eventSender.SendAsync(nameof(Subscription.OnAddressModified), new SubscriptionResult<Address>{ Result = oldAddress });
 
-            return oldAddress.Address;
+            return oldAddress;
         }
         public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee, 
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,

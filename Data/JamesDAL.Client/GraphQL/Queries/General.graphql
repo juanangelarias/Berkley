@@ -9,3 +9,10 @@
     postalCode
   }
 }
+
+query GetAllInventoryDocTypes {
+  allInventoryDocTypes {
+    documentType
+    id
+  }
+}

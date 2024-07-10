@@ -12,13 +12,12 @@
 <Theme />
 <RenderModeBackground />
 
-<RadzenDataGrid @ref="@inventoryGrid" TItem="AgencyInventory" Data="@agencyInventories"
-                Style="border-radius: 20px; height: 400px;" Density="Density.Compact"
-                EmptyText="No records to display" IsLoading="@isLoading"
+<RadzenDataGrid TItem="AgencyInventory" @ref="@inventoryGrid" Data="@agencyInventories"
+                Style="border-radius: 20px; height: 400px;" Density="Density.Compact" EmptyText="No records to display"
                 AllowSorting="true" AllowGrouping="true" EditMode="DataGridEditMode.Single"
-                AllowFiltering="true" FilterMode="FilterMode.Simple"
+                AllowFiltering="true" FilterMode="FilterMode.Simple" SelectionMode="DataGridSelectionMode.Single"
                 RowUpdate="UpdateInventoryRow" RowCreate="CreateInventoryRow"
-                Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+                IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow" />
@@ -31,7 +30,7 @@
                 <RadzenText Text="@(inventory?.Sent?.ToShortDateString())" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenDatePicker ShowTime="false" @bind-Value="@inventory.Sent" />
+                <RadzenDatePicker TValue="DateTime?" ShowTime="false" @bind-Value="@inventory.Sent" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Doc Type" Property="DocumentType">
@@ -39,7 +38,7 @@
                 <RadzenText Text="@inventory.DocumentType" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenDropDown TValue="string" @bind-Value="@inventory.DocumentType" />
+                <RadzenDropDown TValue="string" @bind-Value="@inventory.DocumentType" Data="AllDocTypes" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Quantity" Property="Quantity"
@@ -82,7 +81,7 @@
                 <RadzenText Text="@inventory.Address.StateCode" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenDropDown TValue="string" @ref="stateDropDown" LoadData="LoadStateDropDown" @bind-Value="@inventory.Address.StateCode"
+                <RadzenDropDown TValue="string" @ref="stateDropDown" Data="AllStates" @bind-Value="@inventory.Address.StateCode"
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%" />
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -113,22 +112,53 @@
     private RadzenDataGrid<AgencyInventory> inventoryGrid { get; set; }
     private List<AgencyInventory> agencyInventories { get; set; }
     private List<AgencyInventory> inventoriesToInsert { get; set; } = new List<AgencyInventory>();
+    private List<AgencyInventory> inventoriesToUpdate { get; set; } = new List<AgencyInventory>();
     private bool isLoading { get; set; } = false;
+
+    private List<State> AllStates { get; set; } = new List<State>();
+    private List<InventoryDocumentDm> AllDocTypes { get; set; } = new List<InventoryDocumentDm>();
     private RadzenDropDown<string> stateDropDown { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
+        await ShowLoading();
+        await LoadStates();
+        await LoadDocTypes();
         await LoadInventory();
     }
-    private async Task LoadStateDropDown()
+    private async Task LoadStates()
     {
         var result = await _dataAccess.GetAllStates();
         if (result.Success == false)
             //UNDONE: Add actual errors as data
             _logging.LogError("Error getting all States in Agency License Grid");
-        stateDropDown.Data = result.Data;
+        else
+        {
+            AllStates = result.Data;
+        }
+    }
+    private async Task LoadDocTypes()
+    {
+        var result = await _dataAccess.GetAllInventoryDocTypes();
+        if (result.Success == false)
+        {
+            _logging.LogError("Error getting all Inventory Doc Types in Agency License Grid.");
+        }
+        else
+        {
+            AllDocTypes = result.Data;
+        }
+    }
+    void Reset()
+    {
+        inventoriesToInsert.Clear();
+        inventoriesToUpdate.Clear();
+    }
+    void Reset(AgencyInventory inventory)
+    {
+        inventoriesToInsert.Remove(inventory);
+        inventoriesToUpdate.Remove(inventory);
     }
     private async Task LoadInventory()
     {
@@ -147,12 +177,14 @@
     async Task EditInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
+        Reset();
+        inventoriesToUpdate.Add(inventory);
         await inventoryGrid.EditRow(inventory);
     }
     async Task DeleteInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
-        //TODO: Delete the row
+        Reset(inventory);
         var result = await _dataAccess.DeleteAgencyInventory(inventory.Id);
         await LoadInventory();
     }
@@ -165,6 +197,7 @@
     async Task CancelInventoryEdit(AgencyInventory inventory)
     {
         await ShowLoading();
+        Reset(inventory);
         inventoryGrid.CancelEditRow(inventory);
         await LoadInventory();
     }
@@ -172,12 +205,17 @@
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
-        var newInventory = new AgencyInventory();
+        await ShowLoading();
+        var newInventory = new AgencyInventory() {
+            Id = Guid.NewGuid(), 
+            Address = new Address() { Id = Guid.NewGuid() }
+            };
         inventoriesToInsert.Add(newInventory);
         await inventoryGrid.InsertRow(newInventory);
     }
     async Task UpdateInventoryRow(AgencyInventory inventory)
     {
+        Reset(inventory);
         //This is where the actual update is handled.
         var result = await _dataAccess.SetAgencyInventory(inventory.Id,
         inventory.Sent,

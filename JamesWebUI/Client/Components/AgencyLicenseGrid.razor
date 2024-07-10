@@ -225,6 +225,7 @@
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
+        await ShowLoading();
         var newLicense = new AgencyLicense() {Id = Guid.NewGuid()};
         licensesToInsert.Add(newLicense);
         await licenseGrid.InsertRow(newLicense);
@@ -247,8 +248,9 @@
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Update/Insert is done in those methods.
-        // await ShowLoading();
+        await ShowLoading();
         await licenseGrid.UpdateRow(license);
+        await LoadLicenses();
     }
     async Task OnLicenseCreate(AgencyLicense license)
     {
@@ -276,6 +278,7 @@
     }
     async void CancelLicenseEdit(AgencyLicense license)
     {
+        await ShowLoading();
         Reset(license);
         licenseGrid.CancelEditRow(license);
         await LoadLicenses();

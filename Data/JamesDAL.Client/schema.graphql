@@ -49,6 +49,7 @@ type Query {
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
+  allInventoryDocTypes: [InventoryDocumentDm!]!
   allInsurers: [Insurer!]!
   allStates: [State!]!
 }
@@ -493,6 +494,14 @@ type Address {
   countryCode: String!
 }
 
+type InventoryDocumentDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  documentType: String!
+  agencyInventories: [AgencyInventory!]!
+}
+
 type Insurer {
   id: UUID!
   created: DateTime!
@@ -742,6 +751,26 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type ImagingCategoryTabDivision {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  category: String!
+  tabName: String!
+  divisionCode: String!
+  categoryNavigation: ImagingCategory!
+  divisionCodeNavigation: DivisionDm!
+  tabNameNavigation: ImagingTab!
+}
+
+type WatchStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  watchStatus: String!
+  accounts: [Account!]!
 }
 
 type UnderwriterRecommendation {
@@ -1147,14 +1176,6 @@ type AgencyStatusLog {
   comments: String
   agencyNumberNavigation: Agency!
   changedByNavigation: UserProfile
-}
-
-type InventoryDocumentDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  documentType: String!
-  agencyInventories: [AgencyInventory!]!
 }
 
 type UserProfile {
@@ -1566,26 +1587,6 @@ type RegionDm {
   branches: [Branch!]!
 }
 
-type WatchStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  watchStatus: String!
-  accounts: [Account!]!
-}
-
-type ImagingCategoryTabDivision {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  category: String!
-  tabName: String!
-  divisionCode: String!
-  categoryNavigation: ImagingCategory!
-  divisionCodeNavigation: DivisionDm!
-  tabNameNavigation: ImagingTab!
-}
-
 type LineOfAuthorityLog {
   id: UUID!
   created: DateTime!
@@ -1797,23 +1798,6 @@ type LineOfAuthorityStatusDm {
   modified: DateTime!
   status: String!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
-}
-
-type ImagingTab {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  tabName: String!
-  description: String!
-  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
-}
-
-type ImagingCategory {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  category: String!
-  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
 }
 
 type BidStatusDm {
@@ -2124,6 +2108,23 @@ type PersonalFinancialSubaccount {
   asAllowed: Int
   comments: String
   parentAccount: PersonalFinancialStatement!
+}
+
+type ImagingTab {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  tabName: String!
+  description: String!
+  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
+}
+
+type ImagingCategory {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  category: String!
+  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
 }
 
 type NotebookEntryTypeDm {

@@ -111,7 +111,22 @@ namespace James.Data.Server
             }
 
         }
-
+        public async Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes()
+        {
+            try
+            {
+                var result = await query.GetAllInventoryDocTypes(contextFactory);
+                return new DataAccessResult <List<InventoryDocumentDm>> {  Data = result };
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<List<InventoryDocumentDm>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<List<InventoryDocumentDm>> { Errors = [ex.Message] };
+            }
+        }
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
             try

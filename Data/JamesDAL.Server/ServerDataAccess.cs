@@ -326,7 +326,24 @@ namespace James.Data.Server
                 return new DataAccessResult<bool> { Errors = [ex.Message] };
             }
         }
-
+        public async Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, string addressee,
+            string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId)
+        {
+            try
+            {
+                var result = await agencyMutation.CreateAgencyInventory(inventoryId, agencyId, dateSent, quantity, documentType, addressee, 
+                    address1, address2, address3, city, stateCode, postalCode, approverId, eventSender, contextFactory); 
+                return new DataAccessResult<bool>(); /*{  Data = result };*/
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<bool> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<bool> { Errors = [ex.Message] };
+            }
+        }
         public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments,
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
             string? licenseNumber, string state, bool isActive)

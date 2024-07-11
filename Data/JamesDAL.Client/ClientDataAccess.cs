@@ -306,23 +306,27 @@ namespace James.Data.Client
                 IsActive = isActive
             });
             return GraphQLSaveResult(saveResult);
-                //async () => await jamesClient.CreateLicense.ExecuteAsync);
-            //var result = await jamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
-            //{
-            //    AgencyId = agencyId,
-            //    AgentId = agentId,
-            //    AppointingState = appointingState,
-            //    Comments = comments,
-            //    Appointment = appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    Expiration = expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    Termination = termination?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    InsurerId = insurerId,
-            //    IsResident = isResident,
-            //    LicenseNumber = licenseNumber,
-            //    State = state,
-            //    IsActive = isActive
-            //});
-            //return GraphQLResult<AgencyLicense>(result);
+        }
+        public async Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, string addressee,
+            string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId)
+        {
+            var saveResult = await jamesClient.CreateAgencyInventory.ExecuteAsync(new CreateAgencyInventoryInput
+            {
+                InventoryId = inventoryId,
+                AgencyId = agencyId,
+                DateSent = dateSent,
+                Quantity = quantity,
+                DocumentType = documentType,
+                Addressee = addressee,
+                Address1 = address1,
+                Address2 = address2,
+                Address3 = address3,
+                City = city,
+                StateCode = stateCode,
+                PostalCode = postalCode,
+                ApproverId = approverId
+            });
+            return new SaveDataResult();
         }
 
         public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments,

@@ -38,7 +38,7 @@
                 <RadzenText Text="@inventory.DocumentType" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenDropDown TValue="string" @bind-Value="@inventory.DocumentType" Data="AllDocTypes" />
+                <RadzenDropDown TValue="string" TextProperty="DocumentType" ValueProperty="DocumentType" @bind-Value="@inventory.DocumentType" Data="AllDocTypes" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Quantity" Property="Quantity"
@@ -231,9 +231,15 @@
         inventory.Address.PostalCode);
 
     }
-    async Task CreateInventoryRow()
+    async Task CreateInventoryRow(AgencyInventory inventory)
     {
         //TODO: Make a 'create' mutation and implement it here.
+        await ShowLoading();
+        var result = await _dataAccess.CreateAgencyInventory(inventory.Id, AgencyId, (DateTime)inventory.Sent, (int)inventory.Quantity, inventory.DocumentType, inventory.Addressee, 
+        inventory.Address.Address1, inventory.Address.Address2, inventory.Address.Address3, inventory.Address.City, inventory.Address.StateCode, inventory.Address.PostalCode,
+        inventory.Approver);
+
+        inventoriesToInsert.Remove(inventory);
     }
     protected async Task ShowLoading()
     {

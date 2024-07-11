@@ -4,16 +4,24 @@
   }
 } 
 
+mutation CreateAgencyInventory($input: CreateAgencyInventoryInput!){
+  createAgencyInventory(input: $input){
+    boolean
+  }
+}
+
 mutation DeleteLicense ($input: DeleteLicenseInput!){
   deleteLicense(input: $input) {
     boolean
   }
 } 
+
 mutation DeleteAgencyInventory ($input: DeleteAgencyInventoryInput!){
     deleteAgencyInventory(input: $input){
         boolean
     }
 }
+
 mutation SetAddress($input: SetAddressInput!) {
   setAddress(input: $input) {
     address {
@@ -21,6 +29,7 @@ mutation SetAddress($input: SetAddressInput!) {
     }
   }
 }
+
 mutation SetAgencyInventory($input: SetAgencyInventoryInput!){
     setAgencyInventory(input: $input){
         agencyInventory{
@@ -28,6 +37,7 @@ mutation SetAgencyInventory($input: SetAgencyInventoryInput!){
         }
     }
 }
+
 mutation SetAgencyLicense ($input: SetAgencyLicenseInput!) {
   setAgencyLicense(input: $input) {
     agencyLicense{

@@ -203,6 +203,45 @@ namespace James.Data.Server.GraphQL.Mutations
             //UNDONE: Support subscriptions with event sender
         }
         [Authorize]
+        public async Task<bool> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, string addressee,
+            string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId,
+            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var newAddress = new Address()
+                {
+                    Id = Guid.NewGuid(),
+                    Address1 = address1,
+                    Address2 = address2,
+                    Address3 = address3,
+                    City = city,
+                    StateCode = stateCode,
+                    PostalCode = postalCode,
+                };
+                var newInventory = new AgencyInventory()
+                {
+                    Id = inventoryId,
+                    AgencyId = agencyId,
+                    Sent = dateSent,
+                    Quantity = quantity,
+                    DocumentType = documentType,
+                    Addressee = addressee,
+                    AddressId = newAddress.Id,
+                    Approver = Guid.Parse("67ACEB0B-5C24-4147-9372-FE1F237F2C22")
+                };
+                ctx.Add(newAddress);
+                ctx.Add(newInventory); 
+                await ctx.SaveChangesAsync(); 
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        [Authorize]
         public async Task<bool> DeleteLicense(Guid licenseId, [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             bool success = false;

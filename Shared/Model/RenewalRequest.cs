@@ -47,4 +47,8 @@ public partial class RenewalRequest
     public string? AccountName { get; set; }
 
     public DateTime? PendingRenewalNotificationSent { get; set; }
+
+    public DateTime? ContinuationCertificateUploaded { get; set; }
+
+    public DateTime? ContinuationCertificateEmailed { get; set; }
 }

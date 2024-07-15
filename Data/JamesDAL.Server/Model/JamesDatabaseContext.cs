@@ -1012,6 +1012,7 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Addressee).HasMaxLength(60);
+            entity.Property(e => e.Comments).HasMaxLength(255);
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -2696,6 +2697,9 @@ public partial class JamesDatabaseContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Email).HasMaxLength(128);
+            entity.Property(e => e.EntraId)
+                .HasMaxLength(48)
+                .IsUnicode(false);
             entity.Property(e => e.FullName).HasMaxLength(46);
             entity.Property(e => e.Initials).HasMaxLength(4);
             entity.Property(e => e.Modified)
@@ -4170,6 +4174,8 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.BondChangeReportEmailed).HasColumnType("datetime");
             entity.Property(e => e.BondChangeReportToEmail).HasMaxLength(1048);
             entity.Property(e => e.BondChangeReportUploaded).HasColumnType("datetime");
+            entity.Property(e => e.ContinuationCertificateEmailed).HasColumnType("datetime");
+            entity.Property(e => e.ContinuationCertificateUploaded).HasColumnType("datetime");
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

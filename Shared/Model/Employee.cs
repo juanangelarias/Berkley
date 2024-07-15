@@ -28,6 +28,8 @@ public partial class Employee
 
     public bool Active { get; set; }
 
+    public string? EntraId { get; set; }
+
     public virtual Underwriter? UnderwriterIdNavigation { get; set; }
 
     public virtual ICollection<Underwriter> UnderwriterReportsToNavigations { get; set; } = new List<Underwriter>();

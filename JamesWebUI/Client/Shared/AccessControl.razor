@@ -26,7 +26,8 @@
     private async Task ProfileItemClicked(RadzenProfileMenuItem item)
     {
         if (item.Text == "Logout")
-            Navigation.NavigateTo(JamesConstants.LOG_OUT_PATH + "?redirectUri=/");
+            //NOTE:  forceLoad must be true below to prevent the client side from trying to handle the logout request
+            Navigation.NavigateTo(JamesConstants.LOG_OUT_PATH + "?redirectUri=/", true);
     }
 
 }

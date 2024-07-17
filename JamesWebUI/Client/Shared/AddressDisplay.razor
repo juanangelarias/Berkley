@@ -117,10 +117,13 @@
     {
         await base.OnParametersSetAsync();
 
-        //TODO: Get Data
-        var result = await _dataAccess.GetAddress(AddressId);
-        if (null != result.Data)
-            AddressToDisplay = result.Data;
+        //Get Data
+        if (Guid.Empty != AddressId)
+        {
+            var result = await _dataAccess.GetAddress(AddressId);
+            if (null != result.Data)
+                AddressToDisplay = result.Data;
+        }
     }
     async Task SubmitAddressChange(Address newAddress)
     {

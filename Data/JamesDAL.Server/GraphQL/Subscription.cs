@@ -16,7 +16,7 @@ namespace James.Data.Server.GraphQL
             await eventReceiver.SubscribeAsync<Address>("OnAddressModified_" + addressId, cancellationToken);
 
         [Subscribe]
-        [Topic(nameof(Subscription.OnLicenseModified))]
+        [Topic(nameof(OnLicenseModified))]
         public AgencyLicense OnLicenseModified([EventMessage] AgencyLicense license) => license;
     }
 

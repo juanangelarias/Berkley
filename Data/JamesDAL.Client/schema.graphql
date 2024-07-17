@@ -54,7 +54,7 @@ type Query {
 }
 
 type Subscription {
-  onAddressModified: Address!
+  onAddressModified(addressId: ID!): Address!
   onLicenseModified: AgencyLicense!
 }
 

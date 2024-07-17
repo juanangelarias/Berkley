@@ -1,11 +1,11 @@
-﻿using System.Collections.Immutable;
-using HotChocolate.Authorization;
-using HotChocolate.Resolvers;
+﻿using HotChocolate.Authorization;
 using HotChocolate.Subscriptions;
+using System.Collections.Immutable;
+using System.Diagnostics;
+using James.Shared;
 
 namespace James.Data.Server.GraphQL.Mutations
 {
-
     [MutationType]
     public class AgencyMutation
     {
@@ -68,7 +68,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
         [Authorize]
         public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
-            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var oldAddress = await ctx.Addresses
@@ -93,17 +93,16 @@ namespace James.Data.Server.GraphQL.Mutations
             }
             catch (Exception ex)
             {
-                var exception = ex;
+                loggingService.LogException(ex, "Exception saving address to database", "Database");
             }
 
-            //await eventSender.SendAsync(nameof(AgencyMutation.SetAddress), oldAddress.Address);
-            await eventSender.SendAsync(nameof(Subscription.OnAddressModified), new SubscriptionResult<Address>{ Result = oldAddress });
+            await eventSender.SendAsync($"{nameof(Subscription.OnAddressModified)}_{addressId}", new SubscriptionResult<Address>{ Result = oldAddress });
 
             return oldAddress;
         }
         public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee, 
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
-            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var oldInventory = ctx.AgencyInventories.Where(a => a.Id == inventoryId)
@@ -117,6 +116,7 @@ namespace James.Data.Server.GraphQL.Mutations
             oldInventory.Quantity = quantity;
             oldInventory.DocumentType = documentType;
             oldInventory.Addressee = addressee;
+            Debug.Assert(oldInventory.Address != null, "oldInventory.Address != null");
             oldInventory.Address.Address1 = address1;
             oldInventory.Address.Address2 = address2;
             oldInventory.Address.Address3 = address3;
@@ -132,7 +132,7 @@ namespace James.Data.Server.GraphQL.Mutations
             }
             catch(Exception ex)
             {
-                var exception = ex;
+                loggingService.LogException(ex, "Exception saving agency inventory to database", "Database");
             }
 
             return oldInventory;
@@ -168,7 +168,7 @@ namespace James.Data.Server.GraphQL.Mutations
         [Authorize]
         public async Task<bool> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive,
-            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -197,6 +197,7 @@ namespace James.Data.Server.GraphQL.Mutations
             }
             catch (Exception ex)
             {
+                loggingService.LogException(ex, "Exception creating agency license in database", "Database");
                 return false;
             }
             //UNDONE: Support subscriptions with event sender
@@ -254,7 +255,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 oldPowerOfAttorney.CurrentIssued = currentIssued;
                 oldPowerOfAttorney.Comments = comments;
                 oldPowerOfAttorney.Status = status;
-                oldPowerOfAttorney.StatusNavigation = ctx.PowerOfAttorneyStatusDms.FirstOrDefault(s => s.Id == status);
+                oldPowerOfAttorney.StatusNavigation = ctx.PowerOfAttorneyStatusDms.First(s => s.Id == status);
 
                 ctx.Update(oldPowerOfAttorney);
                 await ctx.SaveChangesAsync();

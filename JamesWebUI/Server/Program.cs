@@ -50,6 +50,11 @@ try
             options.Domain = domain;
             options.ClientId = builder.Configuration["Auth0:ClientId"]!;
             options.ClientSecret = builder.Configuration["Auth0:ClientSecret"]!;
+            var reverseProxyUrl = config["ExternalReverseProxyUrl"];
+            if (!string.IsNullOrWhiteSpace(reverseProxyUrl))
+            {
+                options.CallbackPath = reverseProxyUrl;
+            }
         })
         .WithAccessToken(options =>
         {
@@ -127,7 +132,7 @@ try
     builder.Host.UseWindowsService();
 
     var app = builder.Build();
-
+    
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
@@ -153,24 +158,39 @@ try
 
     app.UseWebSockets();
 
+    var serverSideLogger = (ILoggingService)app.Services.GetService(typeof(ILoggingService))!;
     app.MapGet(JamesConstants.LOG_IN_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
         //Note: Our Auth0 uses the ReturnUrl query value, even though the standard
         //          (even in Auth0 docs) is to use redirectUri
         var returnUrl = redirectUri;
         if (httpContext.Request.Query.ContainsKey("ReturnUrl"))
-            returnUrl = httpContext.Request.Query["ReturnUrl"];
+            returnUrl = httpContext.Request.Query["ReturnUrl"]!;
+        var reverseProxyUrl = config["ExternalReverseProxyUrl"];
+        if (!string.IsNullOrWhiteSpace(reverseProxyUrl))
+        {
+            returnUrl = reverseProxyUrl + returnUrl;
+            serverSideLogger.LogInformation("Using ExternalReverseProxyUrl from appsettings.json for login RedirectUri", returnUrl, data:new(){{ "ExternalReverseProxyUrl", reverseProxyUrl } });
+        }
         var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
             .WithRedirectUri(returnUrl)
             .Build();
 
         await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
+
     });
 
     app.MapGet(JamesConstants.LOG_OUT_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
+        var returnUrl = redirectUri;
+        var reverseProxyUrl = config["ExternalReverseProxyUrl"];
+        if (!string.IsNullOrWhiteSpace(reverseProxyUrl))
+        {
+            returnUrl = reverseProxyUrl + returnUrl;
+            serverSideLogger.LogInformation("Using ExternalReverseProxyUrl from appsettings.json for logout RedirectUri", returnUrl, data: new() { { "ExternalReverseProxyUrl", reverseProxyUrl } });
+        }
         var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
-            .WithRedirectUri(redirectUri)
+            .WithRedirectUri(returnUrl)
             .Build();
 
         await httpContext.SignOutAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);

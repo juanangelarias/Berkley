@@ -260,9 +260,9 @@ namespace James.Data.Client
             return GraphQLSaveResult(saveResult);
         }
 
-        public IDisposable AddressModified(Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null)
+        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null)
         {
-            return jamesClient.AddressModified.Watch().Subscribe();
+            return jamesClient.AddressModified.Watch(addressId.ToString()).Subscribe();
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address)

@@ -28,4 +28,8 @@
     <None Remove="GraphQL\Mutations\ObligeeMutations.graphql" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GraphQL\Subscriptions\" />
+  </ItemGroup>
+
 </Project>

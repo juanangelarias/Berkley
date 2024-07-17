@@ -2,6 +2,6 @@
 
 public class SubscriptionResult<T>
 {
-    public string Identifier { get; set; }
-    public T Result { get; set; }
+    public required string Identifier { get; set; }
+    public required T Result { get; set; }
 }

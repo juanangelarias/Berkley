@@ -1,5 +1,5 @@
-﻿subscription AddressModified{
-  onAddressModified{
+﻿subscription AddressModified($addressId: ID!){
+  onAddressModified(addressId:$addressId){
     address1,
     address2,
     address3,

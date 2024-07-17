@@ -38,7 +38,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
 
         //TODO: Figure out subscriptions
-        public IDisposable AddressModified(Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null);
+        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null);
     }
 
     public interface ISubscription<T>:IDisposable{}

@@ -1,6 +1,5 @@
 ﻿@page "/Agency/{Id}"
-
-@using System.Security.Claims
+@using System.Diagnostics
 @using James.Shared
 
 @inherits LayoutComponentBase
@@ -17,22 +16,23 @@
 
 <PageTitle>Agency Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
+ @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
 <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
-    <RadzenPanel Style="border-radius: 20px;" Collapsed="SummaryView">
+    <RadzenPanel Style="border-radius: 20px;" Collapsed="_summaryView">
         <FooterTemplate>
             <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="width: 100%">
-                <RadzenButton Icon="expand_less" Variant="Variant.Text" Click="@(() => SummaryView = !SummaryView)" />
+                <RadzenButton Icon="expand_less" Variant="Variant.Text" Click="@(() => _summaryView = !_summaryView)" />
             </RadzenStack>
         </FooterTemplate>
         <SummaryTemplate>
             <RadzenRow JustifyContent="JustifyContent.End">
                 <RadzenColumn>
-                    <RadzenText TextStyle="TextStyle.DisplayH5" Text="@agencyToDisplay?.IdNavigation?.FullName" />
+                    <RadzenText TextStyle="TextStyle.DisplayH5" Text="@_agencyToDisplay?.IdNavigation?.FullName" />
                 </RadzenColumn>
                 <RadzenColumn Size="2">
                     <RadzenStack Orientation="Orientation.Horizontal">
                         <RadzenText Text="Status:" />
-                        <RadzenText Text="@agencyToDisplay?.Status" />
+                        <RadzenText Text="@_agencyToDisplay?.Status" />
                         <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.Small" />
                     </RadzenStack>
                 </RadzenColumn>
@@ -40,30 +40,30 @@
             <RadzenRow>
                 <RadzenColumn Size="3">
                     <RadzenFormField Text="Agency No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                        <RadzenTextBox Value="@agencyToDisplay?.AgencyNumber" Disabled="true" Style="color: black;" />
+                        <RadzenTextBox Value="@_agencyToDisplay?.AgencyNumber" Disabled="true" Style="color: black;" />
                     </RadzenFormField>
                 </RadzenColumn>
                 <RadzenColumn>
                     <RadzenFormField Text="Name" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                        <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.FullName" Disabled="true" Style="color: black;" />
+                        <RadzenTextBox Value="@_agencyToDisplay?.IdNavigation?.FullName" Disabled="true" Style="color: black;" />
                     </RadzenFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" Style="width: 100%">
-                    <RadzenButton Icon="expand_more" Variant="Variant.Text" Click="@(() => SummaryView = !SummaryView)" />
+                    <RadzenButton Icon="expand_more" Variant="Variant.Text" Click="@(() => _summaryView = !_summaryView)" />
                 </RadzenStack>
             </RadzenRow>
         </SummaryTemplate>
         <ChildContent>
             <RadzenRow JustifyContent="JustifyContent.End">
                 <RadzenColumn>
-                    <RadzenText TextStyle="TextStyle.DisplayH5" Text="@agencyToDisplay?.IdNavigation?.FullName" />
+                    <RadzenText TextStyle="TextStyle.DisplayH5" Text="@_agencyToDisplay?.IdNavigation?.FullName" />
                 </RadzenColumn>
                 <RadzenColumn Size="2">
                     <RadzenStack Orientation="Orientation.Horizontal">
                         <RadzenText Text="Status:" />
-                        <RadzenText Text="@agencyToDisplay?.Status" />
+                        <RadzenText Text="@_agencyToDisplay?.Status" />
                         <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.Small" />
                     </RadzenStack>
                 </RadzenColumn>
@@ -75,31 +75,31 @@
                             <RadzenRow>
                                 <RadzenColumn Size="3">
                                     <RadzenFormField Text="Agency No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="@agencyToDisplay?.AgencyNumber" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@_agencyToDisplay?.AgencyNumber" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                                 <RadzenColumn>
                                     <RadzenFormField Text="Name" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.FullName" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@_agencyToDisplay?.IdNavigation?.FullName" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
                             <RadzenRow>
                                 <RadzenColumn Size="3">
                                     <RadzenFormField Text="Parent No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.ParentNavigation?.AgencyIdNavigation?.AgencyNumber" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@_agencyToDisplay?.IdNavigation?.ParentNavigation?.AgencyIdNavigation?.AgencyNumber" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                                 <RadzenColumn>
                                     <RadzenFormField Text="Parent" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="@agencyToDisplay?.IdNavigation?.ParentNavigation?.FullName" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@_agencyToDisplay?.IdNavigation?.ParentNavigation?.FullName" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
                             <RadzenRow>
                                 <RadzenColumn>
                                     <RadzenFormField Text="Tax ID" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="@Username" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@_username" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
@@ -111,7 +111,7 @@
                                 </RadzenColumn>
                                 <RadzenColumn>
                                     <RadzenFormField Text="NPN" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="@agencyToDisplay?.NationalProducerNumber" Disabled="true" Style="color: black;" />
+                                        <RadzenTextBox Value="@_agencyToDisplay?.NationalProducerNumber" Disabled="true" Style="color: black;" />
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
@@ -121,11 +121,11 @@
                             <RadzenRow Gap="2">
                                 <RadzenColumn Size="12">
                                     <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
-                                        <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" Value="@agencyToDisplay.W9"
+                                        <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" Value="@_agencyToDisplay.W9"
                                                             Text="W-9" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" />
                                         <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success"
                                                             Text="Need 1099" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" />
-                                        <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" Value="@agencyToDisplay.Nasbp"
+                                        <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" Value="@_agencyToDisplay.Nasbp"
                                                             Text="NASBP" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" />
                                     </RadzenStack>
                                 </RadzenColumn>
@@ -137,21 +137,21 @@
                     <RadzenTabs>
                         <Tabs>
                             <RadzenTabsItem Text="Main">
-                                <AddressDisplay AddressId="@mainAddress.Id" />
+                                <AddressDisplay AddressId="@_mainAddress.Id" />
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Billing">
-                                <AddressDisplay AddressId="@billingAddress.Id" />
+                                <AddressDisplay AddressId="@_billingAddress.Id" />
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Errors & Omissions Coverage">
                                 <RadzenStack Orientation="Orientation.Vertical">
                                     <RadzenFormField AllowFloatingLabel="false" Text="Carrier">
-                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Carrier" />
+                                        <RadzenText Text="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Carrier" />
                                     </RadzenFormField>
                                     <RadzenFormField AllowFloatingLabel="false" Text="Exp Date">
-                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Expiration.ToShortDateString()" />
+                                        <RadzenText Text="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Expiration.ToShortDateString()" />
                                     </RadzenFormField>
                                     <RadzenFormField AllowFloatingLabel="false" Text="Limit">
-                                        <RadzenText Text="@agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.CoverageLimit.ToString("c0")" />
+                                        <RadzenText Text="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.CoverageLimit.ToString("c0")" />
                                     </RadzenFormField>
                                 </RadzenStack>
                             </RadzenTabsItem>
@@ -165,19 +165,19 @@
         <RadzenTabs>
             <Tabs>
                 <RadzenTabsItem Text="General Info">
-                    <AgencyGeneralInfoGrids agencyId="@agencyToDisplay.Id" />
+                    <AgencyGeneralInfoGrids agencyId="@_agencyToDisplay.Id" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Contacts">
-                    <AgencyContactsGrid AgencyId="@agencyToDisplay.Id" />
+                    <AgencyContactsGrid AgencyId="@_agencyToDisplay.Id" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Inventory">
-                    <AgencyInventoryGrid AgencyId="@agencyToDisplay.Id" />
+                    <AgencyInventoryGrid AgencyId="@_agencyToDisplay.Id" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Accounts and Bonds">
-                    <AgencyAccountsAndBonds agencyToDisplay="@agencyToDisplay" />
+                    <AgencyAccountsAndBonds agencyToDisplay="@_agencyToDisplay" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Commission Rates">
-                    <AgencyCommissionRates AgencyId="@agencyToDisplay.Id" AgencyStatus="@agencyToDisplay?.Status" />
+                    <AgencyCommissionRates AgencyId="@_agencyToDisplay.Id" AgencyStatus="@_agencyToDisplay?.Status" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Virtual File">
                 </RadzenTabsItem>
@@ -185,79 +185,80 @@
         </RadzenTabs>
     </RadzenPanel>
 </RadzenStack>
+@* ReSharper restore ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
 
 @code {
     [Parameter] public string? Id { get; set; }
     [CascadingParameter]
-    private Task<AuthenticationState>? authenticationState { get; set; }
-    private string Username = "";
-    public Notification[]? notifications;
-    List<string> blankList = new List<string>();
-    private bool contactsGridView = false;
-    private Agency agencyToDisplay = new Agency();
-    private Address mainAddress = new Address();
-    private Address billingAddress = new Address();
-    private bool SummaryView = false;
-    IDisposable? session;
-    RadzenDataGrid<AgencyLicense>? licenseGrid;
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+    private string _username = "";
+    public Notification[]? Notifications;
+    private bool _contactsGridView = false;
+    private Agency _agencyToDisplay = new Agency();
+    private Address _mainAddress = new Address();
+    private Address _billingAddress = new Address();
+    private bool _summaryView;
+    IDisposable? _mainAddressSubscription;
+    IDisposable? _billingAddressSubscription;
+    RadzenDataGrid<AgencyLicense>? _licenseGrid;
 
-    private bool mainAddressEditMode { get; set; } = false;
-    private bool billingAddressEditMode { get; set; } = false;
-
-
+    private bool MainAddressEditMode { get; set; }
+    private bool BillingAddressEditMode { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-
-        if (authenticationState != null)
+        if (AuthenticationState != null)
         {
-            var state = await authenticationState;
+            var state = await AuthenticationState;
 
-            Username = state.User.FindFirst("nickname")?.Value ?? string.Empty;
+            _username = state.User.FindFirst("nickname")?.Value ?? string.Empty;
         }
-        //TODO: Remove after testing
-        _logging.LogInformation("AgencyProfile initialized for AgencyId: " + Id, data: new Dictionary<string, string> { { "username", Username } });
-        // session = JamesClient.AddressModified.Watch().Subscribe(a =>
-        //     {
-        //         ShowNotification(new NotificationMessage
-        //             {
-        //                 Severity = NotificationSeverity.Info,
-        //                 Detail = "Information on this page has been changed by another user.",
-        //                 Duration = 4000
-        //             });
-        //     });
-        session = _dataAccess.AddressModified(a =>
-        {
-            ShowNotification(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Info,
-                Detail = "Information on this page has been changed by another user.",
-                Duration = 4000
-            });
-        });
 
         ThemeService.Initialize(NavigationManager);
 
-        notifications = new Notification[]{
-                        new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-                        new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-                        new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-                        new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-    };
+        Notifications =
+        [
+            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
+            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
+            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
+            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
+        ];
     }
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
+        if (null == Id) 
+            throw new ArgumentNullException(nameof(Id));
         var result = await _dataAccess.GetAgencyByAgencyNumber(Id);
         if (result.Success)
         {
-            agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
+            Debug.Assert(result.Data != null, "result.Data != null if result.Success == true");
+            _agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
 
-            mainAddress = agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
-            billingAddress = agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
+            _mainAddress = _agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
+            _billingAddress = _agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
+            _mainAddressSubscription = _dataAccess.AddressModified(_mainAddress.Id, _ =>
+            {
+                //TODO:Compare result to what is in editor
+                ShowNotification(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Info,
+                        Detail = "Information on this page has been changed by another user.",
+                        Duration = 4000
+                    });
+            });
+            _billingAddressSubscription = _dataAccess.AddressModified(_billingAddress.Id, a =>
+            {
+                //TODO:Compare result to what is in editor
+                ShowNotification(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Info,
+                        Detail = "Information on this page has been changed by another user.",
+                        Duration = 4000
+                    });
+            });
         }
         else
         {
@@ -267,11 +268,11 @@
 
     private void ToggleMainAddressEditMode()
     {
-        mainAddressEditMode = !mainAddressEditMode;
+        MainAddressEditMode = !MainAddressEditMode;
     }
     private void ToggleBillingAddressEditMode()
     {
-        billingAddressEditMode = !billingAddressEditMode;
+        BillingAddressEditMode = !BillingAddressEditMode;
     }
     async Task SubmitAddressChange(Address newAddress)
     {
@@ -282,12 +283,12 @@
     {
         NotificationService.Notify(message);
     }
-    async Task AddressChangeDetected(Address result)
-    {
-        var data = result;
-    }
-    private async Task CanChange(StepsCanChangeEventArgs args)
-    {
-        return;
-    }
+    // async Task AddressChangeDetected(Address result)
+    // {
+    //     var data = result;
+    // }
+    // private async Task CanChange(StepsCanChangeEventArgs args)
+    // {
+    //     return;
+    // }
 }

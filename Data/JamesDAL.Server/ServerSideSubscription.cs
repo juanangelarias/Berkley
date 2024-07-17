@@ -5,11 +5,11 @@ namespace James.Data.Server;
 
 public class ServerSideSubscription<T> : IObservable<T>, IDisposable
 {
-    public ServerSideSubscription(IAsyncEnumerable<T> source, CancellationToken cancellationToken)
+    public ServerSideSubscription(IAsyncEnumerable<T> source, CancellationToken? cancellationToken)
     {
         _source = source;
         if (null != cancellationToken)
-            source.WithCancellation(cancellationToken);
+            _source.WithCancellation(cancellationToken.Value);
         _publishTask = WaitAndPublish();
     }
 
@@ -19,6 +19,7 @@ public class ServerSideSubscription<T> : IObservable<T>, IDisposable
 
     private async Task WaitAndPublish()
     {
+        //TODO:End this loop when the cancellation token is canceled.
         await foreach (T message in _source)
         {
             try

@@ -4,6 +4,7 @@ namespace James.Shared.Model
 {
     public partial class SiteUserInfo : IActiveDirectoryUserInfo, IJwtUserInfo, IAuth0UserInfo, IApplicationUserInfo
     {
+        public string? EntraId { get; set; }
         public string? Username { get; set; }
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
@@ -21,6 +22,9 @@ namespace James.Shared.Model
     public class Auth0UserInfo : IAuth0UserInfo
     {
         //public string JWT { get; set; }
+        [JsonPropertyName("EntraId")]
+        public string EntraId { get; set; }
+
         [JsonPropertyName("given_name")]
         public string FirstName { get; set; }
         [JsonPropertyName("family_name")]

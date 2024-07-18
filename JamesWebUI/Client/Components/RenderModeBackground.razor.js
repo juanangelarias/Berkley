@@ -13,9 +13,9 @@ function setBackground(el, color){
         pdiv.style.backgroundColor = color;
 }
 export function setBackgroundClient(el){
-    setBackground(el, "aliceblue");
+    setBackground(el, "cornsilk");
 }
 export function setBackgroundServer(el){
-    setBackground(el, "mistyrose");
+    setBackground(el, "silver");
 }
 

@@ -3,11 +3,11 @@
 <!--Changes the background color of the enclosing div according to whether
     it is rendered on the client-side or server-side
 -->
-<div class="renderModeBaseDiv" @ref=baseDiv></div>
+<div class="renderModeBaseDiv" @ref=_baseDiv></div>
 
 @code {
-    IJSObjectReference _module;
-    ElementReference baseDiv;
+    IJSObjectReference? _module;
+    ElementReference _baseDiv;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
@@ -15,10 +15,11 @@
             _module = await JS.InvokeAsync<IJSObjectReference>(
                 "import", "./Components/RenderModeBackground.razor.js");
         //TODO:Add a check that this is not run in production.
-        if (OperatingSystem.IsBrowser())
-            await _module.InvokeVoidAsync("setBackgroundClient", baseDiv);
-        else
-            await _module.InvokeVoidAsync("setBackgroundServer", baseDiv);
+        if (_module != null)
+            if (OperatingSystem.IsBrowser())
+                await _module.InvokeVoidAsync("setBackgroundClient", _baseDiv);
+            else
+                await _module.InvokeVoidAsync("setBackgroundServer", _baseDiv);
     }
 
     public async ValueTask DisposeAsync()

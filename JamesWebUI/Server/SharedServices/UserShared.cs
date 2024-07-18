@@ -33,7 +33,7 @@ namespace JamesWebUI.Server.SharedServices
             _authenticationStateProvider = authenticationStateProvider;
         }
 
-        private static UserInformationCache<IAuth0UserInfo> _cachedAuth0 = null!;
+        private static UserInformationCache<IAuth0UserInfo>? _cachedAuth0;
         //private static UserInformationCache<SiteUserInfo> _cachedSiteUserInfo = null!;
         private static readonly JwtSecurityTokenHandler _handler = new();
 
@@ -82,6 +82,7 @@ namespace JamesWebUI.Server.SharedServices
                            ?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
             var siteUserInfo = new SiteUserInfo
             {
+                EntraId = principal.FindFirstValue(ClaimTypes.NameIdentifier),
                 Username = username,
                 FullName = principal.FindFirstValue(ClaimTypes.Name),
                 Email = principal.FindFirstValue( ClaimTypes.Email)??"",

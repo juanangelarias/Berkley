@@ -98,9 +98,7 @@ namespace James.Shared
                 }
                 catch (Exception ex)
                 {
-                    //TODO:Improve this
-                    Debug.WriteLine($"Exception converting property {propMatch.sProp.Name}\r\n{ex.ToText()}");
-                    throw;
+                    throw new Exception($"Exception converting property {propMatch.sProp.Name}", ex);
                 }
             return result;
         }

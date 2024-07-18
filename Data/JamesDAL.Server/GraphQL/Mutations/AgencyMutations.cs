@@ -216,7 +216,6 @@ namespace James.Data.Server.GraphQL.Mutations
                 await ctx.SaveChangesAsync(true);
                 success = true;
             }
-            //TODO: Handle errors
 
             return success;
             //UNDONE: Support subscriptions with event sender
@@ -323,7 +322,8 @@ namespace James.Data.Server.GraphQL.Mutations
             var updatedRates = existingRates
                 .Where(er => idsToSave.Contains(er.Id)).ToImmutableList();
             ctx.AgencyCommissions.UpdateRange(updatedRates);
-            //TODO: Make sure only relevant columns are updated
+
+            //Make sure only relevant columns are updated
             foreach (var updatedRate in updatedRates)
             {
                 var updateSource = rates.First(r => r.Id == updatedRate.Id);
@@ -339,7 +339,7 @@ namespace James.Data.Server.GraphQL.Mutations
 
             await ctx.SaveChangesAsync();
 
-            return true;//TODO:Remove if possible.  Might be required to be discovered
+            return true;
             //UNDONE: Support subscriptions with event sender
         }
     }

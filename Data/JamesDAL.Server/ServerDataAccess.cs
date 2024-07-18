@@ -318,7 +318,6 @@ namespace James.Data.Server
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
             string? licenseNumber, string state, bool isActive)
         {
-            //TODO:Test this before refactoring the rest
             return await ExecuteGet(async ()=> await agencyMutation.SetAgencyLicense(licenseId, agencyId, agentId, appointingState,
                     comments, appointment, expiration, termination,
                     insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory));
@@ -342,7 +341,6 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> DeleteLicense(Guid licenseId)
         {
-            //TODO:Test this before refactoring the rest
             return await ExecuteSave(async () => await agencyMutation.DeleteLicense(licenseId, eventSender, contextFactory));
 
             //try

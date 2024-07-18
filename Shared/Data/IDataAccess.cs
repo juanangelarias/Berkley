@@ -37,7 +37,6 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
         public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
 
-        //TODO: Figure out subscriptions
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null);
     }
 
@@ -51,7 +50,6 @@ namespace James.Shared.Data
         public T? Data { get; }
     }
     
-    //TODO: Discuss not using SaveDataResult as base class (I think there is no reason to ever view a DataAccessResult as a SaveDataResult)
     public class SaveDataResult : ISaveDataResult
     {
         public string[] Errors { get; init; } = [];

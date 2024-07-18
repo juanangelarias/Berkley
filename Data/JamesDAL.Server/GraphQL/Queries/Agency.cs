@@ -76,6 +76,16 @@ namespace James.Data.Server.GraphQL.Queries
             return result ?? throw new GraphQLException($"No agency inventory exists with agencyId {agencyId}.");
         }
         [Authorize]
+        public async Task<List<AgencyStatusLog>> GetAgencyStatusLog(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.AgencyStatusLogs.Where(a => a.AgencyNumber == agencyNumber)
+                .Include(a => a.ChangedByNavigation)
+                .ToListAsync();
+            return result ?? throw new GraphQLException($"No Status Log could be found for agency {agencyNumber}");
+
+        }
+        [Authorize]
         public async Task<List<Bond>> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

@@ -15,6 +15,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
         public Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
+        public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
         public Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId);

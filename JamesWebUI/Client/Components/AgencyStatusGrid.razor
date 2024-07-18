@@ -1,0 +1,84 @@
+﻿@using System.Globalization;
+@using James.Shared
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject IDataAccess _dataAccess
+@inject ILoggingService _logging
+
+<Theme />
+<RenderModeBackground />
+
+<RadzenDataGrid @ref="statusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
+    Style="border-radius: 20px;">
+    <HeaderTemplate>
+        <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertStatusRow" />
+    </HeaderTemplate>
+    <Columns>
+        <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Effective" Property="Effective"/>
+        <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Old Status" Property="OldStatus"/>
+        <RadzenDataGridColumn TItem="AgencyStatusLog" Title="New Status" Property="NewStatus" />
+        <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Created By" Property="ChangedByNavigation.Initials" />
+        <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments"/>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public string AgencyNumber { get; set; }
+    private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
+    private bool isLoading { get; set; } = false;
+    private RadzenDataGrid<AgencyStatusLog> statusLogGrid {get;set;}
+    private List<AgencyStatusLog> statusLogsToInsert { get; set; } = new List<AgencyStatusLog>();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadAgencyStatusLog();
+    }
+    void Reset()
+    {
+        statusLogsToInsert.Clear();
+        statusLogsToInsert.Clear();
+    }
+    void Reset(AgencyStatusLog statusLog)
+    {
+        statusLogsToInsert.Remove(statusLog);
+        statusLogsToInsert.Remove(statusLog);
+    }
+    private async Task LoadAgencyStatusLog()
+    {
+        var result = await _dataAccess.GetAgencyStatusLog(AgencyNumber);
+        if (result.Success == false)
+        {
+            _logging.LogError("Error get AgencyStatusLog in AgencyStatusGrid");
+        }
+        else
+        {
+            if (null != result?.Data)
+                AgencyStatusLogs = result.Data;
+        }
+    }
+    async Task InsertStatusRow()
+    {
+        await ShowLoading();
+        var newStatusLog = new AgencyStatusLog()
+            {
+                Id = Guid.NewGuid()
+            };
+        statusLogsToInsert.Add(newStatusLog);
+        await statusLogGrid.InsertRow(newStatusLog);
+    }
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
+    }
+}

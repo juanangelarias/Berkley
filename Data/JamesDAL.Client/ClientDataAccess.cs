@@ -107,7 +107,11 @@ namespace James.Data.Client
             //result.Data.AgencyAgents
             //return GraphQLResult<List<AgentsInAgency>>(result);
         }
-
+        public async Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber)
+        {
+            return await ExecuteGet<List<AgencyStatusLog>>(
+                async () => await jamesClient.GetAgencyStatusLog.ExecuteAsync(agencyNumber), "AgencyStatusLog");
+        }
         public async Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses()
         {
             return await ExecuteGet<List<AgencyStatusDm>>(

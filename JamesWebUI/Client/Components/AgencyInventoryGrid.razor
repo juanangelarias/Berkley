@@ -102,6 +102,7 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+   
     <LoadingTemplate>
         <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
     </LoadingTemplate>
@@ -115,6 +116,7 @@
     private List<AgencyInventory> inventoriesToUpdate { get; set; } = new List<AgencyInventory>();
     private bool isLoading { get; set; } = false;
 
+    //TODO: Implement an AllUsers list.
     private List<State> AllStates { get; set; } = new List<State>();
     private List<InventoryDocumentDm> AllDocTypes { get; set; } = new List<InventoryDocumentDm>();
     private RadzenDropDown<string> stateDropDown { get; set; }
@@ -206,9 +208,10 @@
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
         await ShowLoading();
-        var newInventory = new AgencyInventory() {
-            Id = Guid.NewGuid(), 
-            Address = new Address() { Id = Guid.NewGuid() }
+        var newInventory = new AgencyInventory()
+            {
+                Id = Guid.NewGuid(),
+                Address = new Address() { Id = Guid.NewGuid() }
             };
         inventoriesToInsert.Add(newInventory);
         await inventoryGrid.InsertRow(newInventory);
@@ -235,7 +238,7 @@
     {
         //TODO: Make a 'create' mutation and implement it here.
         await ShowLoading();
-        var result = await _dataAccess.CreateAgencyInventory(inventory.Id, AgencyId, (DateTime)inventory.Sent, (int)inventory.Quantity, inventory.DocumentType, inventory.Addressee, 
+        var result = await _dataAccess.CreateAgencyInventory(inventory.Id, AgencyId, (DateTime)inventory.Sent, (int)inventory.Quantity, inventory.DocumentType, inventory.Addressee,
         inventory.Address.Address1, inventory.Address.Address2, inventory.Address.Address3, inventory.Address.City, inventory.Address.StateCode, inventory.Address.PostalCode,
         inventory.Approver);
 

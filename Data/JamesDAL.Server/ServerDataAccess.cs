@@ -2,6 +2,7 @@
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Shared.Data;
+using System.Diagnostics.Contracts;
 
 namespace James.Data.Server
 {
@@ -179,25 +180,40 @@ namespace James.Data.Server
             }
 
         }
+        public async Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber)
+        {
+            try
+            {
+                var result = await query.GetAgencyStatusLog(agencyNumber, contextFactory);
+                return new DataAccessResult<List<AgencyStatusLog>> { Data = result };
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<List<AgencyStatusLog>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<List<AgencyStatusLog>> { Errors = [ex.Message] };
+            }
+        }
+            //public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
+            //{
+            //    try
+            //    {
+            //        var result = await query.GetAgencyPOAs(agencyId, contextFactory);
+            //        return new DataAccessResult<List<PowerOfAttorney>> { Data = result };
+            //    }
+            //    catch (AggregateException ae)
+            //    {
+            //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = [ex.Message] };
+            //    }
+            //}
 
-        //public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
-        //{
-        //    try
-        //    {
-        //        var result = await query.GetAgencyPOAs(agencyId, contextFactory);
-        //        return new DataAccessResult<List<PowerOfAttorney>> { Data = result };
-        //    }
-        //    catch (AggregateException ae)
-        //    {
-        //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = [ex.Message] };
-        //    }
-        //}
-
-        public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
+            public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             try
             {

@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Data\JamesDAL.Server\James.Data.Server.csproj" />
+    <ProjectReference Include="..\..\JamesWebUI\Server\JamesWebUI.Server.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -259,11 +259,11 @@ namespace James.Data.Server
             return await ExecuteGet(async()=> await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, serial, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
         }
 
-        public async Task<ISaveDataResult> SetAddress(Address address)
+        public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
             try
             {
-                await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2, address.Address3, address.City, address.StateCode, address.PostalCode,
+                await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2, address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
                 eventSender, contextFactory, loggingService);
                 return new SaveDataResult();
             }

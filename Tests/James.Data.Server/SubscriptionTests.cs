@@ -1,23 +1,22 @@
+using HotChocolate.Data;
+using HotChocolate.Execution.Configuration;
+using HotChocolate.Subscriptions;
 using James.Data.Server.GraphQL;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Data.Server.Model;
+using James.Shared;
+using James.Shared.Data;
+using James.Shared.Model;
+using James.Shared.Server;
+using JamesWebUI.Server.SharedServices;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Runtime.CompilerServices;
-using HotChocolate.Data;
-using HotChocolate.Execution.Configuration;
-using HotChocolate.Subscriptions;
-using HotChocolate.Subscriptions.Diagnostics;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using James.Shared.Data;
-using James.Shared.Server;
-using James.Shared;
-using James.Shared.Model;
-using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Xunit.Abstractions;
 
 namespace James.Data.Server
@@ -93,7 +92,6 @@ namespace James.Data.Server
                 subscription2Payload = sr;
             });
             var orig1Address3 = await ChangeAndChangeBack(dataAccess, unusedAddress1, subscription1Action);
-            var orig2Address3 = await ChangeAndChangeBack(dataAccess, unusedAddress2, subscription2Action);
 
             //Make sure subscription is fired
             Assert.True(didSubscription1Fire);
@@ -106,6 +104,7 @@ namespace James.Data.Server
             Assert.Equal(unusedAddress1.Id, subscription1Payload.Result.Id);
             Assert.Equal(orig1Address3, subscription1Payload.Result.Address3);
 
+            var orig2Address3 = await ChangeAndChangeBack(dataAccess, unusedAddress2, subscription2Action);
             Assert.True(didSubscription2Fire);
 
             Assert.NotNull(subscription1Payload);
@@ -157,10 +156,11 @@ ORDER BY cnt, a.Modified, a.Created");
             var newAddress3 = string.IsNullOrWhiteSpace(origAddress3) ? "UnitTestValue" : null;
             var newAddress = ThisToThat.ToEntityType<Address>(unusedAddress);//Clones the original
             newAddress.Address3 = newAddress3;
-            var changeAddress = await dataAccess.SetAddress(newAddress);
+            var identifier = Guid.NewGuid().ToString();
+            var changeAddress = await dataAccess.SetAddress(newAddress, identifier);
             Assert.True(changeAddress.Success);
             _output.WriteLine("Address ID {0} changed", unusedAddress.Id);
-            var resetAddress = await dataAccess.SetAddress(unusedAddress);
+            var resetAddress = await dataAccess.SetAddress(unusedAddress, identifier);
             Assert.True(resetAddress.Success);
             _output.WriteLine($"Address ID {unusedAddress.Id} changed back");
             return origAddress3;
@@ -200,11 +200,15 @@ ORDER BY cnt, a.Modified, a.Created");
 
             services.AddScoped<Query>();
             services.AddScoped<AgencyMutation>();
+            services.AddSingleton(typeof(IUserShared), typeof(TestUserShared));
+            services.AddSingleton(typeof(ILogger), typeof(NullLogger));
+            services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+            services.AddScoped<ILoggingShared, LoggingShared>();
             services.AddScoped<ILoggingService, ServerLoggingService>();
             services.AddScoped<IDataAccess, ServerDataAccess>();
             return services.BuildServiceProvider();
         }
-
+        
         protected ServiceProvider CreateServer(Action<IRequestExecutorBuilder> configure)
         {
             var serviceCollection = new ServiceCollection();
@@ -234,5 +238,26 @@ ORDER BY cnt, a.Modified, a.Created");
 
             return new JamesDatabaseContext(options.Options);
         }
+    }
+
+    public class TestUserShared : IUserShared
+    {
+        public async Task<SiteUserInfo> GetCurrentUser()
+        {
+            return await Task.FromResult(_fakeTestUser);
+        }
+
+        public async Task<SiteUserInfo> GetUserInfoAsync(string jwtToken)
+        {
+            return await Task.FromResult(_fakeTestUser);
+        }
+        private readonly SiteUserInfo _fakeTestUser = new SiteUserInfo
+        {
+            EntraId = "entraId",
+            FirstName = "first",
+            FullName = "full",
+            Email = "test@fake.com",
+            JWT = "jwt"
+        };
     }
 }

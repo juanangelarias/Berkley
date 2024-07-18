@@ -109,7 +109,8 @@
 
 @code {
     [Parameter] public Guid AddressId { get; set; }
-    private Address AddressToDisplay { get; set; } = new Address();
+    public string EditorIdentifier { get; set; } = Guid.NewGuid().ToString();
+    private Address AddressToDisplay { get; set; } = new();
     private bool DetailedMode { get; set; } = false;
     private bool EditMode { get; set; } = false;
 
@@ -127,7 +128,7 @@
     }
     async Task SubmitAddressChange(Address newAddress)
     {
-        await _dataAccess.SetAddress(newAddress);
+        await _dataAccess.SetAddress(newAddress, EditorIdentifier);
     }
     private void ToggleEditMode()
     {

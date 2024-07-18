@@ -3,11 +3,11 @@
 @using James.Shared
 
 @inherits LayoutComponentBase
+@implements IDisposable
 
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@*@inject JamesClient JamesClient  TODO:Remove after debugging *@
 @inject IDataAccess _dataAccess
 @inject ILoggingService _logging
 @attribute [Authorize]
@@ -137,10 +137,10 @@
                     <RadzenTabs>
                         <Tabs>
                             <RadzenTabsItem Text="Main">
-                                <AddressDisplay AddressId="@_mainAddress.Id" />
+                                <AddressDisplay @ref="_mainAddressEditor" AddressId="@_mainAddress.Id" />
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Billing">
-                                <AddressDisplay AddressId="@_billingAddress.Id" />
+                                <AddressDisplay @ref="_billingAddressEditor" AddressId="@_billingAddress.Id" />
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Errors & Omissions Coverage">
                                 <RadzenStack Orientation="Orientation.Vertical">
@@ -193,17 +193,13 @@
     private Task<AuthenticationState>? AuthenticationState { get; set; }
     private string _username = "";
     public Notification[]? Notifications;
-    private bool _contactsGridView = false;
-    private Agency _agencyToDisplay = new Agency();
-    private Address _mainAddress = new Address();
-    private Address _billingAddress = new Address();
+    private Agency _agencyToDisplay = new ();
+    private Address _mainAddress = new ();
+    private Address _billingAddress = new ();
     private bool _summaryView;
     IDisposable? _mainAddressSubscription;
     IDisposable? _billingAddressSubscription;
-    RadzenDataGrid<AgencyLicense>? _licenseGrid;
-
-    private bool MainAddressEditMode { get; set; }
-    private bool BillingAddressEditMode { get; set; }
+    AddressDisplay _mainAddressEditor, _billingAddressEditor;
 
     protected override async Task OnInitializedAsync()
     {
@@ -226,6 +222,11 @@
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
         ];
     }
+
+    List<string>? _addressEditors;
+
+    private List<string> AddressEditors => _addressEditors ??= [_mainAddressEditor.EditorIdentifier, _billingAddressEditor.EditorIdentifier];
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -237,27 +238,29 @@
             Debug.Assert(result.Data != null, "result.Data != null if result.Success == true");
             _agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
 
-            _mainAddress = _agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
-            _billingAddress = _agencyToDisplay?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
-            _mainAddressSubscription = _dataAccess.AddressModified(_mainAddress.Id, _ =>
+            _mainAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
+            _billingAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
+            _mainAddressSubscription = _dataAccess.AddressModified(_mainAddress.Id, sra =>
             {
-                //TODO:Compare result to what is in editor
-                ShowNotification(new NotificationMessage
-                    {
-                        Severity = NotificationSeverity.Info,
-                        Detail = "Information on this page has been changed by another user.",
-                        Duration = 4000
-                    });
+                if (!AddressEditors.Contains( sra.Identifier))
+                    //TODO:Compare result to what is in editor
+                    ShowNotification(new NotificationMessage
+                        {
+                            Severity = NotificationSeverity.Info,
+                            Detail = "Information on this page has been changed by another user.",
+                            Duration = 4000
+                        });
             });
-            _billingAddressSubscription = _dataAccess.AddressModified(_billingAddress.Id, a =>
+            _billingAddressSubscription = _dataAccess.AddressModified(_billingAddress.Id, sra =>
             {
-                //TODO:Compare result to what is in editor
-                ShowNotification(new NotificationMessage
-                    {
-                        Severity = NotificationSeverity.Info,
-                        Detail = "Information on this page has been changed by another user.",
-                        Duration = 4000
-                    });
+                if (!AddressEditors.Contains( sra.Identifier))
+                    //TODO:Compare result to what is in editor
+                    ShowNotification(new NotificationMessage
+                        {
+                            Severity = NotificationSeverity.Info,
+                            Detail = "Information on this page has been changed by another user.",
+                            Duration = 4000
+                        });
             });
         }
         else
@@ -266,29 +269,16 @@
         }
     }
 
-    private void ToggleMainAddressEditMode()
-    {
-        MainAddressEditMode = !MainAddressEditMode;
-    }
-    private void ToggleBillingAddressEditMode()
-    {
-        BillingAddressEditMode = !BillingAddressEditMode;
-    }
-    async Task SubmitAddressChange(Address newAddress)
-    {
-        await _dataAccess.SetAddress(newAddress);
-
-    }
     void ShowNotification(NotificationMessage message)
     {
         NotificationService.Notify(message);
     }
-    // async Task AddressChangeDetected(Address result)
-    // {
-    //     var data = result;
-    // }
-    // private async Task CanChange(StepsCanChangeEventArgs args)
-    // {
-    //     return;
-    // }
+    
+    public void Dispose()
+    {
+        _mainAddressSubscription?.Dispose();
+        _billingAddressSubscription?.Dispose();
+        AuthenticationState?.Dispose();
+    }
 }
+

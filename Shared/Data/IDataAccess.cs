@@ -23,7 +23,7 @@ namespace James.Shared.Data
 
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
-        public Task<ISaveDataResult> SetAddress(Address address);
+        public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, 
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
@@ -40,8 +40,6 @@ namespace James.Shared.Data
         //TODO: Figure out subscriptions
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null);
     }
-
-    public interface ISubscription<T>:IDisposable{}
 
     public interface ISaveDataResult
     {

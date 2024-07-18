@@ -265,7 +265,7 @@ namespace James.Data.Client
             return jamesClient.AddressModified.Watch(addressId.ToString()).Subscribe();
         }
 
-        public async Task<ISaveDataResult> SetAddress(Address address)
+        public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
             var result = await jamesClient.SetAddress.ExecuteAsync(new SetAddressInput
             {

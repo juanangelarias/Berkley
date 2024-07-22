@@ -99,7 +99,13 @@
                             <RadzenRow>
                                 <RadzenColumn>
                                     <RadzenFormField Text="Tax ID" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                        <RadzenTextBox Value="@Username" Disabled="true" Style="color: black;" />
+                                        <ChildContent>
+                                            <RadzenTextBox Value="@Username" Disabled="true" Style="color: black;" Visible="showTaxId" />
+                                            <RadzenPassword @bind-Value="@Username" Disabled="true" Visible="!showTaxId" />
+                                        </ChildContent>
+                                        <End>
+                                            <RadzenButton Icon="@(showTaxId ? "visibility" : "visibility_off")" Click="ToggleShowTaxId" Variant="Variant.Text" Size="ButtonSize.Small" />
+                                        </End>
                                     </RadzenFormField>
                                 </RadzenColumn>
                             </RadzenRow>
@@ -203,7 +209,7 @@
 
     private bool mainAddressEditMode { get; set; } = false;
     private bool billingAddressEditMode { get; set; } = false;
-
+    private bool showTaxId { get; set; } = false;
 
 
     protected override async Task OnInitializedAsync()
@@ -286,8 +292,20 @@
     {
         await DialogService.OpenAsync<AgencyStatusGrid>("Agency Status",
             new Dictionary<string, object>() { { "AgencyNumber", agencyToDisplay.AgencyNumber }, { "CurrentStatus", agencyToDisplay.Status } },
-            new DialogOptions() {Resizable = false, Draggable = true, Style = "border-radius: 20px", Width="1000px", Height="500px"}
+            new DialogOptions()
+                {
+                    Resizable = false,
+                    Draggable = true,
+                    CloseDialogOnOverlayClick = true,
+                    Style = "border-radius: 20px",
+                    Width = "1000px",
+                    Height = "500px"
+                }
         );
 
+    }
+    async Task ToggleShowTaxId()
+    {
+        showTaxId = !showTaxId;
     }
 }

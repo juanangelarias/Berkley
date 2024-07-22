@@ -285,8 +285,8 @@
     private async Task ShowStatusDialog()
     {
         await DialogService.OpenAsync<AgencyStatusGrid>("Agency Status",
-            new Dictionary<string, object>() { { "AgencyNumber", agencyToDisplay.AgencyNumber } },
-            new DialogOptions() {Resizable = false, Draggable = true, Style = "border-radius: 20px"}
+            new Dictionary<string, object>() { { "AgencyNumber", agencyToDisplay.AgencyNumber }, { "CurrentStatus", agencyToDisplay.Status } },
+            new DialogOptions() {Resizable = false, Draggable = true, Style = "border-radius: 20px", Width="1000px", Height="500px"}
         );
 
     }

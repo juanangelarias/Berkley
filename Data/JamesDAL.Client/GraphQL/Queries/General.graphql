@@ -16,3 +16,12 @@ query GetAllInventoryDocTypes {
     id
   }
 }
+
+query GetUserProfileByUserName($userName: String!){
+    userProfileByUserName(userName: $userName){
+        id
+        username
+        fullName
+        initials
+    }
+}

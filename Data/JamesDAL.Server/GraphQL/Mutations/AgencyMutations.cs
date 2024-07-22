@@ -202,6 +202,39 @@ namespace James.Data.Server.GraphQL.Mutations
             }
             //UNDONE: Support subscriptions with event sender
         }
+
+        [Authorize]
+        public async Task<bool> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
+            Guid changedBy, string? comments,
+            [Service] ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var newStatusLog = new AgencyStatusLog()
+                {
+                    Id = id,
+                    AgencyNumber = agencyNumber,
+                    Effective = effective,
+                    OldStatus = oldStatus,
+                    NewStatus = newStatus,
+                    Comments = comments,
+                    ChangedBy = changedBy
+                };
+                //TODO: Update Agency table status
+                var agency = ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber).FirstOrDefault();
+                agency.Status = newStatus;
+                ctx.Add(newStatusLog);
+                ctx.Update(agency);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
         [Authorize]
         public async Task<bool> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, string addressee,
             string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId,

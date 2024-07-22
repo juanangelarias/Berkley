@@ -236,7 +236,6 @@
     }
     async Task CreateInventoryRow(AgencyInventory inventory)
     {
-        //TODO: Make a 'create' mutation and implement it here.
         await ShowLoading();
         var result = await _dataAccess.CreateAgencyInventory(inventory.Id, AgencyId, (DateTime)inventory.Sent, (int)inventory.Quantity, inventory.DocumentType, inventory.Addressee,
         inventory.Address.Address1, inventory.Address.Address2, inventory.Address.Address3, inventory.Address.City, inventory.Address.StateCode, inventory.Address.PostalCode,

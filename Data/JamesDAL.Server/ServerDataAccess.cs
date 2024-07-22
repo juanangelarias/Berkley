@@ -1,4 +1,5 @@
-﻿using HotChocolate.Subscriptions;
+﻿using GreenDonut;
+using HotChocolate.Subscriptions;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Shared.Data;
@@ -281,7 +282,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyCommissionRates(agencyId, contextFactory));
         }
-
+        public async Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName)
+        {
+            return await ExecuteGet(async () => await query.GetUserProfileByUserName(userName, contextFactory));
+        }
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
@@ -312,6 +316,23 @@ namespace James.Data.Server
             {
                 await agencyMutation.SetAgencyInventory(inventoryId, sent, quantity, documentType, addressee, addressId, address1, address2, address3, city, stateCode, postalCode,
                     eventSender, contextFactory);
+                return new SaveDataResult();
+            }
+            catch (AggregateException ae)
+            {
+                return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResult { Errors = [ex.Message] };
+            }
+        }
+        public async Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus, Guid changedBy, string? comments)
+        {
+            try
+            {
+                //TODO: Impleme
+                var result = await agencyMutation.CreateAgencyStatusLog(id, agencyNumber, effective, oldStatus, newStatus, changedBy, comments, eventSender, contextFactory);
                 return new SaveDataResult();
             }
             catch (AggregateException ae)

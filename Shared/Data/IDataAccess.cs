@@ -22,10 +22,12 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search);
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
         public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
-
+        public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
         public Task<ISaveDataResult> SetAddress(Address address);
+        public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
+            Guid changedBy, string? comments);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, 
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);

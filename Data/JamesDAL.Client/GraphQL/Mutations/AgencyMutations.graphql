@@ -30,6 +30,11 @@ mutation SetAddress($input: SetAddressInput!) {
   }
 }
 
+mutation CreateAgencyStatusLog($input: CreateAgencyStatusLogInput!){
+  createAgencyStatusLog (input: $input) {
+    boolean
+  }
+}
 mutation SetAgencyInventory($input: SetAgencyInventoryInput!){
     setAgencyInventory(input: $input){
         agencyInventory{

@@ -192,5 +192,6 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.AgencyCommissions.Where(ac => ac.AgencyId == agencyId).ToListAsync();
         }
+        
     }
 }

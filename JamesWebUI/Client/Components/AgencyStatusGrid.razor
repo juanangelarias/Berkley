@@ -148,7 +148,8 @@
         var newStatusLog = new AgencyStatusLog()
             {
                 Id = Guid.NewGuid(),
-                OldStatus = CurrentStatus
+                OldStatus = CurrentStatus,
+                Effective = DateTime.Today
             };
         statusLogsToInsert.Add(newStatusLog);
         await statusLogGrid.InsertRow(newStatusLog);

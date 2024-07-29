@@ -17,6 +17,7 @@ type Mutation {
   setPowerOfAttorney(input: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
+  setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -54,7 +55,9 @@ type Query {
   address(addressId: UUID!): Address!
   userProfileByUserName(userName: String!): UserProfile!
   allInventoryDocTypes: [InventoryDocumentDm!]!
+  allBranches: [Branch!]!
   allInsurers: [Insurer!]!
+  obligeeTypes: [ObligeeTypeDm!]!
   allStates: [State!]!
 }
 
@@ -586,6 +589,14 @@ type Insurer {
   emailAddresses: [LegalEntityEmail!]!
 }
 
+type ObligeeTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  obligees: [Obligee!]!
+}
+
 type State {
   code: String!
   created: DateTime!
@@ -810,6 +821,20 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type BondBlock {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  prefix: String!
+  firstNumber: Int!
+  lastNumber: Int!
+  enabled: Boolean!
+  agencyRestricted: Boolean!
+  issuedBy: UUID
+  comments: String
+  issuedByNavigation: UserProfile
 }
 
 type AccountProgramUserAuthority {
@@ -1665,20 +1690,6 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type BondBlock {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  prefix: String!
-  firstNumber: Int!
-  lastNumber: Int!
-  enabled: Boolean!
-  agencyRestricted: Boolean!
-  issuedBy: UUID
-  comments: String
-  issuedByNavigation: UserProfile
-}
-
 type NotebookEntry {
   id: UUID!
   created: DateTime!
@@ -1747,14 +1758,6 @@ type InsurerState {
   state: String!
   insurer: Insurer!
   stateNavigation: State!
-}
-
-type ObligeeTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  obligees: [Obligee!]!
 }
 
 type AccountReference {
@@ -2353,6 +2356,22 @@ type SaveCommissionRatesPayload {
   boolean: Boolean
 }
 
+input SetAgencyGeneralInfoInput {
+  agencyId: UUID!
+  agencyName: String!
+  parentId: UUID!
+  taxId: String
+  npn: String
+  w9: Boolean!
+  need1099: Boolean!
+  nasbp: Boolean!
+  branchKey: String!
+}
+
+type SetAgencyGeneralInfoPayload {
+  boolean: Boolean
+}
+
 input LogInformationInput {
   eventId: Int!
   message: String!
@@ -2388,6 +2407,7 @@ type LogUserPayload {
 }
 
 input CreateObligeeInput {
+  id: UUID!
   fullName: String!
   obligeeType: String!
   printStatusLetter: Boolean!

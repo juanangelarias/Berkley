@@ -414,6 +414,42 @@ namespace James.Data.Server.GraphQL.Mutations
             return true;//TODO:Remove if possible.  Might be required to be discovered
             //UNDONE: Support subscriptions with event sender
         }
+        [Authorize]
+        public async Task<bool> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
+            bool need1099, bool nasbp, string branchKey, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                var legalEntity = await ctx.LegalEntities.FirstOrDefaultAsync(l => l.Id == agencyId);
+                var agency = await ctx.Agencies.FirstOrDefaultAsync(a => a.Id == agencyId);
+
+                if (null != agency)
+                {
+                    legalEntity.FullName = agencyName;
+                    legalEntity.Parent = parentId;
+                    //TODO: Deal with encrypted taxid
+                    //legalEntity.TaxIdEncrypted = taxId;
+                    agency.NationalProducerNumber = npn;
+                    agency.W9 = w9;
+                    agency.Need1099 = need1099;
+                    agency.Nasbp = nasbp;
+                    agency.Branch = branchKey;
+
+                    ctx.Update(legalEntity);
+                    ctx.Update(agency);
+                    await ctx.SaveChangesAsync();
+
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 
 

@@ -8,7 +8,7 @@ using System.Diagnostics.Contracts;
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ITopicEventSender eventSender) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, ITopicEventSender eventSender) : IDataAccess
     {
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
@@ -33,8 +33,8 @@ namespace James.Data.Server
             {
                 var result = await query.GetAgencyByAgencyNumber(agencyNumber, contextFactory);
                 return null == result
-                    ? new DataAccessResult<Agency> {Errors = ["No agency With that agency number was found."]}
-                    : new DataAccessResult<Agency> {Data = result};
+                    ? new DataAccessResult<Agency> { Errors = ["No agency With that agency number was found."] }
+                    : new DataAccessResult<Agency> { Data = result };
             }
             catch (AggregateException ae)
             {
@@ -45,7 +45,8 @@ namespace James.Data.Server
                 return new DataAccessResult<Agency> { Errors = [ex.Message] };
             }
         }
-        public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId){
+        public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId)
+        {
             try
             {
                 var result = await query.GetAgencyInventory(agencyId, contextFactory);
@@ -95,7 +96,22 @@ namespace James.Data.Server
                 return new DataAccessResult<List<Insurer>> { Errors = [ex.Message] };
             }
         }
-
+        public async Task<IDataAccessResult<List<Branch>>> GetAllBranches()
+        {
+            try
+            {
+                var result = await query.GetAllBranches(contextFactory);
+                return new DataAccessResult<List<Branch>> { Data = result };
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<List<Branch>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<List<Branch>> { Errors = [ex.Message] };
+            }
+        }
         public async Task<IDataAccessResult<List<State>>> GetAllStates()
         {
             try
@@ -118,7 +134,7 @@ namespace James.Data.Server
             try
             {
                 var result = await query.GetAllInventoryDocTypes(contextFactory);
-                return new DataAccessResult <List<InventoryDocumentDm>> {  Data = result };
+                return new DataAccessResult<List<InventoryDocumentDm>> { Data = result };
             }
             catch (AggregateException ae)
             {
@@ -197,28 +213,28 @@ namespace James.Data.Server
                 return new DataAccessResult<List<AgencyStatusLog>> { Errors = [ex.Message] };
             }
         }
-            //public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
-            //{
-            //    try
-            //    {
-            //        var result = await query.GetAgencyPOAs(agencyId, contextFactory);
-            //        return new DataAccessResult<List<PowerOfAttorney>> { Data = result };
-            //    }
-            //    catch (AggregateException ae)
-            //    {
-            //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = [ex.Message] };
-            //    }
-            //}
+        //public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
+        //{
+        //    try
+        //    {
+        //        var result = await query.GetAgencyPOAs(agencyId, contextFactory);
+        //        return new DataAccessResult<List<PowerOfAttorney>> { Data = result };
+        //    }
+        //    catch (AggregateException ae)
+        //    {
+        //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = [ex.Message] };
+        //    }
+        //}
 
-            public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
+        public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             try
             {
-                var result = await  query.GetAgentByAgentId(agentId, contextFactory);
+                var result = await query.GetAgentByAgentId(agentId, contextFactory);
                 return new DataAccessResult<Agent> { Data = result };
             }
             catch (AggregateException ae)
@@ -275,7 +291,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
-            return await ExecuteGet(async()=> await query.GetAllPoaStatuses(contextFactory));
+            return await ExecuteGet(async () => await query.GetAllPoaStatuses(contextFactory));
         }
 
         public async Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId)
@@ -289,15 +305,32 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
-            return await ExecuteGet(async()=> await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, serial, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
+            return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, serial, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address)
         {
             try
             {
-                await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2, address.Address3, address.City, address.StateCode, address.PostalCode,
+                var result = await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2, address.Address3, address.City, address.StateCode, address.PostalCode,
                 eventSender, contextFactory);
+                return new SaveDataResult();
+            }
+            catch (AggregateException ae)
+            {
+                return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResult { Errors = [ex.Message] };
+            }
+        }
+        public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
+            bool need1099, bool nasbp, string branchKey)
+        {
+            try
+            {
+                var result = await agencyMutation.SetAgencyGeneralInfo(agencyId, agencyName, parentId, taxId, npn, w9, need1099, nasbp, branchKey, contextFactory);
                 return new SaveDataResult();
             }
             catch (AggregateException ae)
@@ -349,10 +382,10 @@ namespace James.Data.Server
         {
             try
             {
-                var result = await agencyMutation.CreateLicense(licenseId, agencyId, agentId, appointingState, 
+                var result = await agencyMutation.CreateLicense(licenseId, agencyId, agentId, appointingState,
                     comments, appointment, expiration, termination,
                     insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory);
-                return new DataAccessResult<bool>{Data = result };
+                return new DataAccessResult<bool> { Data = result };
             }
             catch (AggregateException ae)
             {
@@ -368,9 +401,28 @@ namespace James.Data.Server
         {
             try
             {
-                var result = await agencyMutation.CreateAgencyInventory(inventoryId, agencyId, dateSent, quantity, documentType, addressee, 
-                    address1, address2, address3, city, stateCode, postalCode, approverId, eventSender, contextFactory); 
+                var result = await agencyMutation.CreateAgencyInventory(inventoryId, agencyId, dateSent, quantity, documentType, addressee,
+                    address1, address2, address3, city, stateCode, postalCode, approverId, eventSender, contextFactory);
                 return new DataAccessResult<bool>(); /*{  Data = result };*/
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<bool> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<bool> { Errors = [ex.Message] };
+            }
+        }
+        public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
+            string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email)
+        {
+            try
+            {
+                //TODO: Implement
+                var result = await obligeeMutation.CreateObligee(id, fullName, obligeeType, printStatusLetter, notes,
+                    address1, address2, city, state, postalCode, phoneNumber, email, eventSender, contextFactory);
+                return new DataAccessResult<bool>() { Data = true };
             }
             catch (AggregateException ae)
             {
@@ -386,7 +438,7 @@ namespace James.Data.Server
             string? licenseNumber, string state, bool isActive)
         {
             //TODO:Test this before refactoring the rest
-            return await ExecuteGet(async ()=> await agencyMutation.SetAgencyLicense(licenseId, agencyId, agentId, appointingState,
+            return await ExecuteGet(async () => await agencyMutation.SetAgencyLicense(licenseId, agencyId, agentId, appointingState,
                     comments, appointment, expiration, termination,
                     insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory));
 
@@ -432,11 +484,11 @@ namespace James.Data.Server
         }
         public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
         {
-            return await ExecuteSave(async ()=>await agencyMutation.SaveCommissionRates(agencyId, rates, eventSender, contextFactory));
+            return await ExecuteSave(async () => await agencyMutation.SaveCommissionRates(agencyId, rates, eventSender, contextFactory));
         }
 
         //UNDONE:  Refactor to DRY out the code
-        private async Task<IDataAccessResult<T>> ExecuteGet<T>( Func<Task<T>> dataFunc)
+        private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<T>> dataFunc)
         {
             try
             {
@@ -461,18 +513,18 @@ namespace James.Data.Server
             }
             catch (AggregateException ae)
             {
-                return new SaveDataResult{ Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+                return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
             }
             catch (Exception ex)
             {
-                return new SaveDataResult{ Errors = [ex.Message] };
+                return new SaveDataResult { Errors = [ex.Message] };
             }
         }
 
         public async Task<IDisposable> AddressModified()
         {
             //UNDONE:
-            return await Task.FromResult( FakeSubscription.Create);
+            return await Task.FromResult(FakeSubscription.Create);
         }
     }
     //TODO:Remove when subscriptions are handled

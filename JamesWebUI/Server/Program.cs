@@ -93,6 +93,7 @@ try
     builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AgencyMutation>();
+    builder.Services.AddScoped<ObligeeMutation>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents();

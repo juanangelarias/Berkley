@@ -25,3 +25,22 @@ query GetUserProfileByUserName($userName: String!){
         initials
     }
 }
+
+query GetAllBranches{
+  allBranches {
+    active
+    bccreceiver
+    branchKey
+    branchOfficeAddressId
+    created
+    emailReceiver
+    generalLedgerCode
+    headCount
+    homeOffice
+    id
+    modified
+    name
+    phoneId
+    region
+  }
+}

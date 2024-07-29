@@ -29,5 +29,13 @@ namespace James.Data.Server.GraphQL.Queries
             return result ?? throw new GraphQLException($"Error when retrieving InventoryDocumentDM");
 
         }
+        [Authorize]
+        public async Task<List<Branch>> GetAllBranches([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.Branches.ToListAsync();
+
+            return result ?? throw new GraphQLException($"Error when retrieving Branches.");
+        }
     }
 }

@@ -95,6 +95,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(b => b.Obligee)
                 .Include(b => b.AccountNumNavigation)
                 .ThenInclude(b => b.IdNavigation)
+                .Include(b => b.BondType)
                 .ToListAsync();
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}."); ;

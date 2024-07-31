@@ -102,8 +102,9 @@
                                         <RadzenColumn Size="6">
                                             <RadzenFormField Text="Tax ID" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
                                                 <ChildContent>
-                                                    <RadzenTextBox Value="@Username" Disabled="true" Style="color: black;" Visible="showTaxId" />
-                                                    <RadzenPassword @bind-Value="@Username" Disabled="true" Visible="!showTaxId" />
+                                                    @* TODO: Once encryption is figured out replace these values *@
+                                                    <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" Visible="showTaxId" />
+                                                    <RadzenPassword Value="Placeholder" Disabled="true" Visible="!showTaxId" />
                                                 </ChildContent>
                                                 <End>
                                                     @* TODO: Add authorization to use this button due to PII. *@
@@ -213,9 +214,9 @@
 </RadzenStack>
 
 @code {
-        [Parameter] public string? Id { get; set; }
-        [CascadingParameter]
-        private Task<AuthenticationState>? authenticationState { get; set; }
+    [Parameter] public string? Id { get; set; }
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
     private string Username = "";
     public Notification[]? notifications;
     List<string> blankList = new List<string>();
@@ -241,14 +242,6 @@
     {
         await base.OnInitializedAsync();
         await LoadBranches();
-
-        if (authenticationState != null)
-        {
-            var state = await authenticationState;
-
-            Username = state.User.FindFirst("nickname")?.Value ?? string.Empty;
-        }
-
         
         //TODO: Remove after testing
         _logging.LogInformation("AgencyProfile initialized for AgencyId: " + Id, data: new Dictionary<string, string> { { "username", Username } });
@@ -265,6 +258,7 @@
 
         ThemeService.Initialize(NavigationManager);
 
+        //TODO: Remove this once testing of notification window is done.
         notifications = new Notification[]{
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
                         new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
@@ -303,6 +297,7 @@
     }
     private async Task SaveAgencyChanges()
     {
+        //TODO: Handle errors
         var result = await _dataAccess.SetAgencyGeneralInfo(agencyToDisplay.Id, agencyToDisplay.IdNavigation.FullName, agencyToDisplay.IdNavigation.ParentNavigation.Id,
         agencyToDisplay.IdNavigation.TaxIdEncrypted, agencyToDisplay.NationalProducerNumber, agencyToDisplay.W9, agencyToDisplay.Need1099,
         agencyToDisplay.Nasbp, agencyToDisplay.Branch);

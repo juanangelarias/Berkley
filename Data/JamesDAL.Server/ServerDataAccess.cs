@@ -12,23 +12,12 @@ namespace James.Data.Server
     {
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
-            try
-            {
-                var result = await query.GetAgencyAccounts(agencyNumber, contextFactory);
-                return new DataAccessResult<List<Account>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Account>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Account>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAgencyAccounts(agencyNumber, contextFactory));
         }
 
         public async Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber)
         {
+            //TODO: Port this to Execute Get
             try
             {
                 var result = await query.GetAgencyByAgencyNumber(agencyNumber, contextFactory);
@@ -47,225 +36,57 @@ namespace James.Data.Server
         }
         public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId)
         {
-            try
-            {
-                var result = await query.GetAgencyInventory(agencyId, contextFactory);
-                return null == result
-                    ? new DataAccessResult<List<AgencyInventory>> { Errors = ["No inventory for this agency number was found."] }
-                    : new DataAccessResult<List<AgencyInventory>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<AgencyInventory>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<AgencyInventory>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAgencyInventory(agencyId, contextFactory));
         }
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
         {
-            try
-            {
-                var result = await query.GetAgencyLicenses(agencyId, contextFactory);
-                return new DataAccessResult<List<AgencyLicense>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<AgencyLicense>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<AgencyLicense>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, contextFactory));
         }
-
         public async Task<IDataAccessResult<List<Insurer>>> GetAllInsurers()
         {
-            try
-            {
-                var result = await query.GetAllInsurers(contextFactory);
-                return new DataAccessResult<List<Insurer>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Insurer>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Insurer>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAllInsurers(contextFactory));
         }
         public async Task<IDataAccessResult<List<Branch>>> GetAllBranches()
         {
-            try
-            {
-                var result = await query.GetAllBranches(contextFactory);
-                return new DataAccessResult<List<Branch>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Branch>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Branch>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAllBranches(contextFactory));
         }
         public async Task<IDataAccessResult<List<State>>> GetAllStates()
         {
-            try
-            {
-                var result = await query.GetAllStates(contextFactory);
-                return new DataAccessResult<List<State>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<State>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<State>> { Errors = [ex.Message] };
-            }
-
+            return await ExecuteGet(async () => await query.GetAllStates(contextFactory));
         }
         public async Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes()
         {
-            try
-            {
-                var result = await query.GetAllInventoryDocTypes(contextFactory);
-                return new DataAccessResult<List<InventoryDocumentDm>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<InventoryDocumentDm>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<InventoryDocumentDm>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAllInventoryDocTypes(contextFactory));
         }
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
-            try
-            {
-                var result = await query.GetAgencyBonds(agencyId, contextFactory);
-                return new DataAccessResult<List<Bond>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Bond>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Bond>> { Errors = [ex.Message] };
-            }
-
+            return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, contextFactory));
         }
-
         public async Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId)
         {
-            try
-            {
-                var result = await query.GetAgencyAgents(agencyId, contextFactory);
-                return new DataAccessResult<List<AgentsInAgency>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<AgentsInAgency>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<AgentsInAgency>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAgencyAgents(agencyId, contextFactory));
         }
-
         public async Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses()
         {
-            try
-            {
-                var result = await query.GetAgencyStatuses(contextFactory);
-                return new DataAccessResult<List<AgencyStatusDm>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<AgencyStatusDm>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<AgencyStatusDm>> { Errors = [ex.Message] };
-            }
-
+            return await ExecuteGet(async () => await query.GetAgencyStatuses(contextFactory));
         }
         public async Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber)
         {
-            try
-            {
-                var result = await query.GetAgencyStatusLog(agencyNumber, contextFactory);
-                return new DataAccessResult<List<AgencyStatusLog>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<AgencyStatusLog>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<AgencyStatusLog>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAgencyStatusLog(agencyNumber, contextFactory));
         }
-        //public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
-        //{
-        //    try
-        //    {
-        //        var result = await query.GetAgencyPOAs(agencyId, contextFactory);
-        //        return new DataAccessResult<List<PowerOfAttorney>> { Data = result };
-        //    }
-        //    catch (AggregateException ae)
-        //    {
-        //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return new DataAccessResult<List<PowerOfAttorney>> { Errors = [ex.Message] };
-        //    }
-        //}
-
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
-            try
-            {
-                var result = await query.GetAgentByAgentId(agentId, contextFactory);
-                return new DataAccessResult<Agent> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<Agent> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<Agent> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAgentByAgentId(agentId, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId)
         {
-            try
-            {
-                var result = await query.GetAgencyRelatedParties(agencyId, contextFactory);
-                return new DataAccessResult<List<Agency>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Agency>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Agency>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAgencyRelatedParties(agencyId, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search)
         {
+            //TODO: Port to Execute Get
             try
             {
                 var result = await query.SearchAgencies(search, contextFactory);
@@ -310,20 +131,8 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetAddress(Address address)
         {
-            try
-            {
-                var result = await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2, address.Address3, address.City, address.StateCode, address.PostalCode,
-                eventSender, contextFactory);
-                return new SaveDataResult();
-            }
-            catch (AggregateException ae)
-            {
-                return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new SaveDataResult { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2, address.Address3, address.City, address.StateCode, address.PostalCode,
+            eventSender, contextFactory));
         }
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
             bool need1099, bool nasbp, string branchKey)
@@ -493,19 +302,6 @@ namespace James.Data.Server
             //TODO:Test this before refactoring the rest
             return await ExecuteSave(async () => await agencyMutation.DeleteLicense(licenseId, eventSender, contextFactory));
 
-            //try
-            //{
-            //    await agencyMutation.DeleteLicense(licenseId, eventSender, contextFactory);
-            //    return new SaveDataResult();
-            //}
-            //catch (AggregateException ae)
-            //{
-            //    return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            //}
-            //catch (Exception ex)
-            //{
-            //    return new SaveDataResult { Errors = [ex.Message] };
-            //}
         }
         public async Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId)
         {

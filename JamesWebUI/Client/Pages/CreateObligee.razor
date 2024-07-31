@@ -127,8 +127,10 @@
 
     private async Task SubmitObligee()
     {
+        //TODO: Handle errors. 
         var result = await _dataAccess.CreateObligee(NewLegalEntity.Id, NewLegalEntity.FullName, "Public", NewObligee.PrintStatusLetter,
         NewObligee.Notes, NewAddress.Address1, NewAddress.Address2, NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
         NewPhoneNumber.MainNumber, "email@email.com");
+
     }
 }

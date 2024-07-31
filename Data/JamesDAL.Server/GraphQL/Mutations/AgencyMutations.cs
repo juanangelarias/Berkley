@@ -299,6 +299,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     StateCode = stateCode,
                     PostalCode = postalCode,
                 };
+                //TODO: Use a proper userID via Auth0?
                 var newInventory = new AgencyInventory()
                 {
                     Id = inventoryId,

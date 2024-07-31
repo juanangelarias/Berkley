@@ -3,7 +3,6 @@ using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
 using StrawberryShake;
-using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Severity = James.Shared.Model.Severity;
@@ -239,8 +238,6 @@ namespace James.Data.Client
         }
         public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
         {
-            //throw new NotImplementedException();
-            //TODO:  Wire up for the graphql type.
             var saveResult = await jamesClient.SaveAgencyCommissionRates.ExecuteAsync(new SaveCommissionRatesInput
             {
                 AgencyId = agencyId,
@@ -260,9 +257,76 @@ namespace James.Data.Client
             return GraphQLSaveResult(saveResult);
         }
 
-        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null)
+        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
-            return jamesClient.AddressModified.Watch(addressId.ToString()).Subscribe();
+            var subscriptionToWatch = jamesClient.AddressModified.Watch(addressId.ToString());
+            var addressModifiedWatch = new AddressModifiedWatchClass(subscriptionToWatch).SubscribeTo(onNext, onError, onComplete);
+            return addressModifiedWatch;
+        }
+
+        //private AddressModifiedWatchClass AddressModifiedWatch(
+        //    IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription)
+        //{
+        //    throw new NotImplementedException();
+        //}
+        private sealed class AddressModifiedWatchClass(IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription) :
+        //IObservable<SubscriptionResult<Address>>,
+            IDisposable
+        {
+            //private List<IObserver<IOperationResult<IAddressModifiedResult>>> _observers = new();
+            private IDisposable? _internalSubscription;
+            //public IDisposable Subscribe(IObserver<SubscriptionResult<Address>> observer)
+            //{
+            //    return graphQlSubscription.Subscribe();
+            //}
+            public IDisposable SubscribeTo(Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
+            {
+                 //conversionFunction(IOperationResult<IAddressModifiedResult> onNextResult)=> onNext.Result
+                if (null == onError && null == onComplete)
+                    return graphQlSubscription.Subscribe(Conversion(onNext));
+                //If onComplete is not null, OnError is required.
+                ArgumentNullException.ThrowIfNull(onError, nameof(onError));
+                if (null == onComplete)
+                    return graphQlSubscription.Subscribe(Conversion(onNext), onError);
+                return _internalSubscription = graphQlSubscription.Subscribe(Conversion(onNext), onError, onComplete);
+            }
+
+            private static Action<IOperationResult<IAddressModifiedResult>> Conversion(Action<SubscriptionResult<Address>> source)
+            {
+                return onNextConversion =>
+                {
+                    ArgumentNullException.ThrowIfNull(onNextConversion.Data, "Subscription Payload");
+                    var subscriptionResultAddress = new SubscriptionResult<Address>
+                    {
+                        Identifier = onNextConversion.Data.OnAddressModified.Identifier,
+                        Result = ThisToThat.ToEntityType<Address>(onNextConversion.Data.OnAddressModified.Result)
+                    };
+                    source.Invoke(subscriptionResultAddress);
+                };
+            }
+            //Action<SubscriptionResult<Address>> Conversion (Action<IOperationResult<IAddressModifiedResult>> source)
+            //{
+            //    return onNextConversion => new Action<SubscriptionResult<Address>>(next =>
+            //    {
+            //        var graphQlAddress =
+            //            new AddressModified_OnAddressModified_Result_Address(next.Result.Address1, next.Result.Address2,
+            //                next.Result.Address3, next.Result.City, next.Result.StateCode, next.Result.PostalCode,
+            //                next.Result.Id);
+            //        var addressModified =
+            //            new AddressModified_OnAddressModified_SubscriptionResultOfAddress(next.Identifier,
+            //                graphQlAddress);
+            //        var addressModifiedResult = new AddressModifiedResult(addressModified);
+            //        var operationResult =
+            //            new OperationResult<IAddressModifiedResult>(addressModifiedResult, null, null, null);
+            //         //source.Invoke(operationResult);
+            //        onNextConversion.Invoke(operationResult);
+            //    });
+            //}
+
+            public void Dispose()
+            {
+                _internalSubscription?.Dispose();
+            }
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
@@ -275,7 +339,8 @@ namespace James.Data.Client
                 Address3 = address.Address3,
                 City = address.City,
                 StateCode = address.StateCode,
-                PostalCode = address.PostalCode
+                PostalCode = address.PostalCode,
+                Identifier = identifier
             });
             return GraphQLSaveResult(result);
         }

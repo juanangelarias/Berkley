@@ -1,0 +1,110 @@
+﻿@using James.Shared
+@inherits LayoutComponentBase
+@inject ILoggingService LoggingService
+@inject DialogService DialogService
+
+<h3>
+    <RadzenText> Another user saved changes that conflict with your current changes.</RadzenText>
+</h3>
+<RadzenText>
+    Which data do you want to keep?
+</RadzenText>
+@* TODO: Add ? icon to give more information *@
+@* TODO: Prevent closing dialog without clicking OK *@
+
+<RadzenRow>
+    <RadzenColumn>
+        <RadzenText>Conflicting</RadzenText>
+    </RadzenColumn>
+    <RadzenColumn>
+        <RadzenText>Keep which?</RadzenText>
+    </RadzenColumn>
+</RadzenRow>
+<RadzenRow>
+    <RadzenColumn>
+        <RadzenText>Property</RadzenText>
+    </RadzenColumn>
+    <RadzenColumn>
+        <RadzenText>(Your change|Their Change)</RadzenText>
+    </RadzenColumn>
+</RadzenRow>
+@foreach (var conflict in _resolvers)
+{
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenText Text="@conflict.PropertyName" />
+        </RadzenColumn>
+        <RadzenColumn>
+            <RadzenSelectBar @ref=@conflict.ResolveEditor @bind-Value="@conflict.SelectedChange" TValue="object">
+                <Items>
+                    <RadzenSelectBarItem Value="@conflict.OurChange" Text="@conflict.OurChange?.ToString().ToScreenText()" />
+                    <RadzenSelectBarItem Value="@conflict.TheirChange" Text="@conflict.TheirChange?.ToString().ToScreenText()" />
+                </Items>
+            </RadzenSelectBar>
+        </RadzenColumn>
+    </RadzenRow>
+}
+<RadzenRow>&nbsp;</RadzenRow>
+<RadzenRow>
+    <RadzenColumn>
+        <RadzenButton Text="Ok" Click="@OkClicked" ></RadzenButton>
+    </RadzenColumn>
+</RadzenRow>
+@code {
+    //See code file
+    [Parameter] public string DataFriendlyName { get; set; }
+    [Parameter] public Dictionary<string, ComparedValues> Conflicts { get; set; }
+    //NOTE: IgnoreNulls treats items with one side being null as items to ignore.
+    [Parameter] public bool IgnoreNulls { get; set; } = false;
+    [Parameter] public Object OurData { get; set; }
+    [Parameter] public Object TheirData { get; set; }
+    private List<ConflictResolver> _resolvers = new List<ConflictResolver>();
+    protected override void OnParametersSet()
+    {
+        _resolvers = Conflicts
+            .Where(c => IgnoreNulls || c.Value is { SourceValue: not null, TargetValue: not null })
+            .Select(cn => new ConflictResolver
+                {
+                    PropertyName = cn.Key,
+                    OurChange = cn.Value.SourceValue,
+                    TheirChange = cn.Value.TargetValue,
+                    OurRootObject = OurData,
+                    TheirRootObject = TheirData
+                }).ToList();
+        //TODO:Remove after testing
+        foreach (var conflict in _resolvers)
+            LoggingService.LogInformation("Conflict Displayed", data: new Dictionary<string, string> { { "OurChange", conflict.OurChange?.ToString() ?? "null" }, { "TheirChange", conflict.TheirChange?.ToString() ?? "null" } });
+        StateHasChanged();
+        
+    }
+
+    private async Task OkClicked()
+    {
+        //TODO: Figure out the correct way to make sure one or the other changes is selected even if the selected value is null
+        if (_resolvers.Any(r => r.ResolveEditor.HasValue == false))
+            //TODO:Display validation messages that they must select one of each
+            return;
+        foreach (var conflictResolver in _resolvers)
+        {
+            if (conflictResolver.ResolveEditor.Value != conflictResolver.OurChange)
+            {
+                //Get child object if it is multi-level
+                var propLevels = conflictResolver.PropertyName.Split('.').ToList();
+                var obj = conflictResolver.OurRootObject;
+                while (propLevels.Count > 1)
+                {
+                    var pit = obj?.GetType().GetProperty(propLevels.First());
+                    obj = pit?.GetValue(obj);
+                    propLevels.RemoveAt(0);
+                }
+                if (propLevels.Count == 1)
+                {
+                    var pi = obj?.GetType().GetProperty(propLevels.Last());
+                    pi?.SetValue(obj, conflictResolver.ResolveEditor.Value);
+                }
+            }
+        }
+        DialogService.CloseSide(true);
+    }
+
+}

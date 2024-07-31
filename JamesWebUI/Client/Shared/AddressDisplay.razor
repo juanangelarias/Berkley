@@ -1,11 +1,13 @@
-﻿@inherits LayoutComponentBase
+﻿@using James.Shared
+@inherits LayoutComponentBase
 
 @inject NavigationManager NavigationManager
+@inject DialogService DialogService
 @inject ThemeService ThemeService
 
 @inject IDataAccess _dataAccess
 
-<RadzenPanel Visible="!EditMode">
+<RadzenPanel Visible="!EditMode" Name="@(Name+"Display")">
     <RadzenRow>
         <RadzenColumn>
             <RadzenStack Orientation="Orientation.Horizontal">
@@ -18,72 +20,74 @@
     <RadzenRow>
         <RadzenColumn>
             <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.Address1" Name="Address1" />
+                <RadzenTextBox @bind-Value="@AddressToDisplay.Address1" Name="Address1" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow>
         <RadzenColumn>
             <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.Address2" Name="Address2" />
+                <RadzenTextBox @bind-Value="@AddressToDisplay.Address2" Name="Address2" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow>
         <RadzenColumn>
             <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false" Visible="DetailedMode">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.Address3" Name="Address3" />
+                <RadzenTextBox @bind-Value="@AddressToDisplay.Address3" Name="Address3" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow>
         <RadzenColumn Size="4">
             <RadzenFormField Variant="Variant.Text" Text="City" AllowFloatingLabel="false" Style="width:90%">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.City" Name="City" />
+                <RadzenTextBox @bind-Value="@AddressToDisplay.City" Name="City" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
         <RadzenColumn Size="2">
             <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
-                <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@AddressToDisplay.StateCode" />
+                <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@AddressToDisplay.StateCode" Disabled="true" />
             </RadzenFormField>
         </RadzenColumn>
         <RadzenColumn Size="2">
             <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" />
+                <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
     </RadzenRow>
 </RadzenPanel>
-<RadzenPanel Visible="EditMode">
+<RadzenPanel Visible="EditMode" Name="@(Name+"Edit")">
     <RadzenTemplateForm TItem="Address" Data="@AddressToDisplay"
-                        Submit="@(async (Address args) => {await SubmitAddressChange(args); ToggleEditMode();})">
+                        Submit="@SubmitAddressChange">
         <RadzenRow>
             <RadzenColumn>
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
                     <RadzenText Text="Detailed View" />
                     <RadzenButton Icon="save" Visible="EditMode" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
+                    <RadzenButton Icon="cancel" Visible="EditMode" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary"
+                                  Click="@Cancel" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
         <RadzenRow>
             <RadzenColumn>
                 <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address1" Name="Address1" />
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address1" Name="Address1" AutoComplete="false" />
                 </RadzenFormField>
             </RadzenColumn>
         </RadzenRow>
         <RadzenRow>
             <RadzenColumn>
                 <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address2" Name="Address2" />
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address2" Name="Address2" AutoComplete="false" />
                 </RadzenFormField>
             </RadzenColumn>
         </RadzenRow>
         <RadzenRow>
             <RadzenColumn>
                 <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false" Visible="DetailedMode">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address3" Name="Address3" />
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address3" Name="Address3" AutoComplete="false" />
                 </RadzenFormField>
             </RadzenColumn>
         </RadzenRow>
@@ -100,7 +104,7 @@
             </RadzenColumn>
             <RadzenColumn Size="2">
                 <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" />
+                    <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" AutoComplete="false" />
                 </RadzenFormField>
             </RadzenColumn>
         </RadzenRow>
@@ -109,29 +113,97 @@
 
 @code {
     [Parameter] public Guid AddressId { get; set; }
-    public string EditorIdentifier { get; set; } = Guid.NewGuid().ToString();
-    private Address AddressToDisplay { get; set; } = new();
-    private bool DetailedMode { get; set; } = false;
-    private bool EditMode { get; set; } = false;
+    [Parameter] public string Name { get; set; } = "Address";
+    [Parameter] public string EditorIdentifier { get; set; } = Guid.NewGuid().ToString();
+    public Address AddressToDisplay { get; set; } = new();
+    private Address? _loadedAddress;
+    public bool DetailedMode { get; private set; }
+    public bool EditMode { get; private set; }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        await LoadAddress();
+    }
 
-        //Get Data
+    private async Task LoadAddress()
+    {
         if (Guid.Empty != AddressId)
         {
             var result = await _dataAccess.GetAddress(AddressId);
             if (null != result.Data)
                 AddressToDisplay = result.Data;
+            //TODO:Handle errors
         }
+        else AddressToDisplay = _loadedAddress = new Address();
     }
+
+    /// <summary>
+    /// Handles the logic of updating if a subscription returns a new value.  Should not have UI duties beyond launching the ConflictingChangeDialog
+    /// </summary>
+    /// <param name="newAddress">The address returned from the subscription</param>
+    /// <returns>True if change is auto accepted and a notification is needed.  False if Dialog has already handled notifying user</returns>
+    public async Task<bool> SubscriptionUpdate(Address newAddress)
+    {
+        //TODO: Code review this to see how much of this we can condense into reusable code.
+
+        var compareWithLoaded = SameOrDifferent.Compare(newAddress, _loadedAddress);
+        if (compareWithLoaded.AreTheSame)
+            //If it is the same as what was loaded from the DB, ignore
+            return false;
+        if (!EditMode)
+        {
+            //If not in edit mode, replace
+            AddressToDisplay = _loadedAddress = newAddress;
+            return true;
+        }
+        if (null == _loadedAddress)
+            //HACK: Subscriptions fired before initial load are assumed to be
+            //      what will load during the initial load.  Not worrying about
+            //      the edge case of an update milliseconds after the initial load.
+            return false;
+
+        //Compare result to what is in editor, and to what has changed
+        var compareWithCurrent = SameOrDifferent.Compare(AddressToDisplay, newAddress);
+        var compareLoadedWithCurrent = SameOrDifferent.Compare(_loadedAddress, AddressToDisplay);
+        var autoChange = compareWithCurrent.DifferentProperties.Intersect(compareLoadedWithCurrent.SameProperties).ToList();
+        var askAboutChange = compareWithCurrent.DifferentProperties
+            .Intersect(compareLoadedWithCurrent.DifferentProperties)
+            .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
+        if (autoChange.Any())
+            SameOrDifferent.CopyTheseProperties(newAddress, AddressToDisplay, autoChange);
+        if (askAboutChange.Any())
+        {
+            //Open side dialog to ask user which version to take
+            if (true == await DialogService.OpenSideAsync<ConflictResolverDialog>(
+                    "Conflicting edits", new Dictionary<string, object>()
+                        {
+                        {"DataFriendlyName", "Address"}, {"Conflicts", askAboutChange},
+                        {"OurData", AddressToDisplay}, {"TheirData", newAddress}
+                        }, new SideDialogOptions
+                        {
+                            CloseDialogOnOverlayClick = false,
+                            Position = DialogPosition.Right,
+                            ShowMask = true
+                        }))
+            {
+                StateHasChanged();//Check value of AddressToDisplay
+                return false;
+            }
+        }
+        return true;
+    }
+
     async Task SubmitAddressChange(Address newAddress)
     {
         await _dataAccess.SetAddress(newAddress, EditorIdentifier);
+        EditMode = false;
     }
     private void ToggleEditMode()
     {
         EditMode = !EditMode;
     }
+
+    private async Task Cancel()
+    { EditMode = false; await LoadAddress(); }
 }

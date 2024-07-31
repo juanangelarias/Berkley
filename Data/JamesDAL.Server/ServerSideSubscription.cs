@@ -59,7 +59,7 @@ public class ServerSideSubscription<T> : IObservable<T>, IDisposable
     }
 }
 
-public class ServerSideSubscriptionSubscriber<T>(Action<T> onNext, Action? onError = null, Action? onComplete = null) : IObserver<T>
+public class ServerSideSubscriptionSubscriber<T>(Action<T> onNext, Action<Exception>? onError = null, Action? onComplete = null) : IObserver<T>
 {
  
     public void OnCompleted()
@@ -69,7 +69,7 @@ public class ServerSideSubscriptionSubscriber<T>(Action<T> onNext, Action? onErr
 
     public void OnError(Exception error)
     {
-        onError?.Invoke();
+        onError?.Invoke(error);
     }
 
     public void OnNext(T value)

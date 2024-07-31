@@ -9,11 +9,11 @@ namespace James.Data.Server.GraphQL
     {
         [Subscribe(With = nameof(SubscribeToOnAddressModifiedAsync))]
         [Topic(nameof(OnAddressModified))]
-        public Address OnAddressModified([ID]Guid addressId, [EventMessage] Address address, CancellationToken cancellationToken) => address;
+        public SubscriptionResult<Address> OnAddressModified([ID]Guid addressId, [EventMessage] SubscriptionResult<Address> addressResult, CancellationToken cancellationToken) => addressResult;
 
-        public async ValueTask<ISourceStream<Address>> SubscribeToOnAddressModifiedAsync(
+        public async ValueTask<ISourceStream<SubscriptionResult<Address>>> SubscribeToOnAddressModifiedAsync(
             Guid addressId, [Service] ITopicEventReceiver eventReceiver, CancellationToken cancellationToken) =>
-            await eventReceiver.SubscribeAsync<Address>("OnAddressModified_" + addressId, cancellationToken);
+            await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified_" + addressId, cancellationToken);
 
         [Subscribe]
         [Topic(nameof(OnLicenseModified))]

@@ -1,11 +1,14 @@
-﻿subscription AddressModified($addressId: ID!){
-  onAddressModified(addressId:$addressId){
-    address1,
-    address2,
-    address3,
-    city,
-    stateCode,
-    postalCode,
-    id
+﻿subscription AddressModified($addressId: ID!) {
+  onAddressModified(addressId: $addressId) {
+    identifier
+    result {
+      address1
+      address2
+      address3
+      city
+      stateCode
+      postalCode
+      id
+    }
   }
 }

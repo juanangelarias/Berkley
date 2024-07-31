@@ -92,6 +92,7 @@ namespace James.Data.Server
                 subscription2Payload = sr;
             });
             var orig1Address3 = await ChangeAndChangeBack(dataAccess, unusedAddress1, subscription1Action);
+            var orig2Address3 = await ChangeAndChangeBack(dataAccess, unusedAddress2, subscription2Action);
 
             //Make sure subscription is fired
             Assert.True(didSubscription1Fire);
@@ -104,7 +105,6 @@ namespace James.Data.Server
             Assert.Equal(unusedAddress1.Id, subscription1Payload.Result.Id);
             Assert.Equal(orig1Address3, subscription1Payload.Result.Address3);
 
-            var orig2Address3 = await ChangeAndChangeBack(dataAccess, unusedAddress2, subscription2Action);
             Assert.True(didSubscription2Fire);
 
             Assert.NotNull(subscription1Payload);
@@ -113,9 +113,9 @@ namespace James.Data.Server
             while (subscriptionFireCount < 4 && maxWaits > 0)
             {
                 maxWaits--;
-                await Task.Delay(10*(5-maxWaits));
+                await Task.Delay(10 * (5 - maxWaits));
             } //Give subscriptions time to fire, if needed
-            _output.WriteLine($"Waited for 4th subscription to fire {5- maxWaits} times.");
+            _output.WriteLine($"Waited for 4th subscription to fire {5 - maxWaits} times.");
             Assert.Equal(unusedAddress2.Id, subscription2Payload?.Result.Id);
             Assert.Equal(orig2Address3, subscription2Payload?.Result.Address3);
             //NOTE:  Testing the fire count not only confirms that it fired all 4 times, but that it never double fired.
@@ -208,7 +208,7 @@ ORDER BY cnt, a.Modified, a.Created");
             services.AddScoped<IDataAccess, ServerDataAccess>();
             return services.BuildServiceProvider();
         }
-        
+
         protected ServiceProvider CreateServer(Action<IRequestExecutorBuilder> configure)
         {
             var serviceCollection = new ServiceCollection();

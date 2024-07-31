@@ -1,5 +1,6 @@
 ﻿using James.Shared.Server;
 using System.Security.Claims;
+using James.Shared;
 
 namespace James.Data.Server.GraphQL.Mutations
 {

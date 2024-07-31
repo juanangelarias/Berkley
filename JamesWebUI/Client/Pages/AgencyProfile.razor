@@ -137,10 +137,12 @@
                     <RadzenTabs>
                         <Tabs>
                             <RadzenTabsItem Text="Main">
-                                <AddressDisplay @ref="_mainAddressEditor" AddressId="@_mainAddress.Id" />
+                                <AddressDisplay @ref="_mainAddressEditor" EditorIdentifier="@EditorIdentifier"
+                                                Name="MainAddress" AddressId="@_mainAddress.Id" />
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Billing">
-                                <AddressDisplay @ref="_billingAddressEditor" AddressId="@_billingAddress.Id" />
+                                <AddressDisplay @ref="_billingAddressEditor" EditorIdentifier="@EditorIdentifier"
+                                                Name="BillingAddress" AddressId="@_billingAddress.Id" />
                             </RadzenTabsItem>
                             <RadzenTabsItem Text="Errors & Omissions Coverage">
                                 <RadzenStack Orientation="Orientation.Vertical">
@@ -193,13 +195,14 @@
     private Task<AuthenticationState>? AuthenticationState { get; set; }
     private string _username = "";
     public Notification[]? Notifications;
-    private Agency _agencyToDisplay = new ();
-    private Address _mainAddress = new ();
-    private Address _billingAddress = new ();
+    private Agency _agencyToDisplay = new();
+    private Address _mainAddress = new();
+    private Address _billingAddress = new();
     private bool _summaryView;
+    private string EditorIdentifier { get; } = Guid.NewGuid().ToString();
     IDisposable? _mainAddressSubscription;
     IDisposable? _billingAddressSubscription;
-    AddressDisplay _mainAddressEditor, _billingAddressEditor;
+    AddressDisplay? _mainAddressEditor, _billingAddressEditor;
 
     protected override async Task OnInitializedAsync()
     {
@@ -217,20 +220,18 @@
         Notifications =
         [
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
+    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
+    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
+    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
         ];
     }
 
     List<string>? _addressEditors;
 
-    private List<string> AddressEditors => _addressEditors ??= [_mainAddressEditor.EditorIdentifier, _billingAddressEditor.EditorIdentifier];
-    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        if (null == Id) 
+        if (null == Id)
             throw new ArgumentNullException(nameof(Id));
         var result = await _dataAccess.GetAgencyByAgencyNumber(Id);
         if (result.Success)
@@ -240,40 +241,43 @@
 
             _mainAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
             _billingAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
-            _mainAddressSubscription = _dataAccess.AddressModified(_mainAddress.Id, sra =>
-            {
-                if (!AddressEditors.Contains( sra.Identifier))
-                    //TODO:Compare result to what is in editor
-                    ShowNotification(new NotificationMessage
-                        {
-                            Severity = NotificationSeverity.Info,
-                            Detail = "Information on this page has been changed by another user.",
-                            Duration = 4000
-                        });
-            });
-            _billingAddressSubscription = _dataAccess.AddressModified(_billingAddress.Id, sra =>
-            {
-                if (!AddressEditors.Contains( sra.Identifier))
-                    //TODO:Compare result to what is in editor
-                    ShowNotification(new NotificationMessage
-                        {
-                            Severity = NotificationSeverity.Info,
-                            Detail = "Information on this page has been changed by another user.",
-                            Duration = 4000
-                        });
-            });
+            if (_mainAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
+                _mainAddressSubscription = _dataAccess.AddressModified(_mainAddress.Id, async sra =>
+                {
+                    if (EditorIdentifier == sra.Identifier) return;
+                    //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
+                    if (_mainAddressEditor == null || await _mainAddressEditor.SubscriptionUpdate(sra.Result))
+                        ShowNotification("Main address");
+                });
+            if (_billingAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
+                _billingAddressSubscription = _dataAccess.AddressModified(_billingAddress.Id, async sra =>
+                {
+                    if (EditorIdentifier == sra.Identifier) return;
+                    //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
+                    if (_billingAddressEditor == null || await _billingAddressEditor.SubscriptionUpdate(sra.Result))
+                        ShowNotification("Billing Address");
+                });
         }
         else
         {
             _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors), "GraphQl");
         }
     }
-
+    
+    void ShowNotification(string nameOfInformation)
+    {
+        ShowNotification(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Info,
+                Detail = nameOfInformation +" on this page has been changed by another user.",
+            Duration = 4000
+        });;
+    }
     void ShowNotification(NotificationMessage message)
     {
         NotificationService.Notify(message);
     }
-    
+
     public void Dispose()
     {
         _mainAddressSubscription?.Dispose();

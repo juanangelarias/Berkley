@@ -54,7 +54,7 @@ type Query {
 }
 
 type Subscription {
-  onAddressModified(addressId: ID!): Address!
+  onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
   onLicenseModified: AgencyLicense!
 }
 
@@ -535,6 +535,11 @@ type State {
   surcharges: [Surcharge!]!
 }
 
+type SubscriptionResultOfAddress {
+  identifier: String!
+  result: Address!
+}
+
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
@@ -742,6 +747,14 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type WatchStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  watchStatus: String!
+  accounts: [Account!]!
 }
 
 type UnderwriterRecommendation {
@@ -1566,14 +1579,6 @@ type RegionDm {
   branches: [Branch!]!
 }
 
-type WatchStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  watchStatus: String!
-  accounts: [Account!]!
-}
-
 type ImagingCategoryTabDivision {
   id: UUID!
   created: DateTime!
@@ -2195,6 +2200,7 @@ input SetAddressInput {
   city: String!
   stateCode: String
   postalCode: String
+  identifier: String!
 }
 
 type SetAddressPayload {

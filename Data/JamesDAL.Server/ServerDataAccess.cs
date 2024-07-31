@@ -400,7 +400,7 @@ namespace James.Data.Server
             }
         }
 
-        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action? onError = null, Action? onComplete = null)
+        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
             //var eventValueTask =
             //    await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified");
@@ -414,13 +414,16 @@ namespace James.Data.Server
 
         private ServerSideSubscription<SubscriptionResult<Address>> OnAddressModified(Guid addressId)
         {
+            lock (_onAddressModified)
+            {
                 if (_onAddressModified.ContainsKey(addressId) == false)
                 {
                     _onAddressModified[addressId] = new(eventReceiver
-                            .SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified_"+addressId).Result.ReadEventsAsync(), CancellationToken.None);
+                        .SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified_"+addressId).Result.ReadEventsAsync(), CancellationToken.None);
                 }
 
                 return _onAddressModified[addressId];
+            }
         }
         //public async Task<IDisposable> AddressModified(CancellationToken cancellationToken = default)
         //{

@@ -240,7 +240,7 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
+        await LoadBranches();
 
         if (authenticationState != null)
         {
@@ -249,7 +249,7 @@
             Username = state.User.FindFirst("nickname")?.Value ?? string.Empty;
         }
 
-        await LoadBranches();
+        
         //TODO: Remove after testing
         _logging.LogInformation("AgencyProfile initialized for AgencyId: " + Id, data: new Dictionary<string, string> { { "username", Username } });
         // session = JamesClient.AddressModified.Watch().Subscribe(a =>

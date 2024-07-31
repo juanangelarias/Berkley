@@ -36,6 +36,9 @@ namespace James.Shared.Data
             string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email);
         public Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, 
             string addressee, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId);
+        public Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued,
+            DateOnly? currentIssued, string? comments, Guid status);
+        public Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId);
         public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);

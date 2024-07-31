@@ -41,6 +41,19 @@ mutation CreateAgencyStatusLog($input: CreateAgencyStatusLogInput!){
     boolean
   }
 }
+
+mutation CreateAgencyPOA($input: CreateAgencyPOAInput!) {
+  createAgencyPOA(input: $input) {
+    boolean
+  }
+}
+
+mutation DeleteAgencyPOA($input: DeleteAgencyPOAInput!){
+  deleteAgencyPOA (input: $input){
+    boolean
+  }
+}
+
 mutation SetAgencyInventory($input: SetAgencyInventoryInput!){
     setAgencyInventory(input: $input){
         agencyInventory{

@@ -11,6 +11,8 @@ type Mutation {
   setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
   createAgencyStatusLog(input: CreateAgencyStatusLogInput!): CreateAgencyStatusLogPayload!
+  createAgencyPOA(input: CreateAgencyPOAInput!): CreateAgencyPOAPayload!
+  deleteAgencyPOA(input: DeleteAgencyPOAInput!): DeleteAgencyPOAPayload!
   createAgencyInventory(input: CreateAgencyInventoryInput!): CreateAgencyInventoryPayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
   deleteAgencyInventory(input: DeleteAgencyInventoryInput!): DeleteAgencyInventoryPayload!
@@ -2281,6 +2283,30 @@ input CreateAgencyStatusLogInput {
 }
 
 type CreateAgencyStatusLogPayload {
+  boolean: Boolean
+}
+
+input CreateAgencyPOAInput {
+  poaId: UUID!
+  insurerId: UUID!
+  agencyId: UUID!
+  limit: Int!
+  serial: String
+  firstIssued: Date
+  currentIssued: Date
+  comments: String
+  status: UUID!
+}
+
+type CreateAgencyPOAPayload {
+  boolean: Boolean
+}
+
+input DeleteAgencyPOAInput {
+  poaId: UUID!
+}
+
+type DeleteAgencyPOAPayload {
   boolean: Boolean
 }
 

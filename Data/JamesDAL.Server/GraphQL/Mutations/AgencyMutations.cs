@@ -236,6 +236,53 @@ namespace James.Data.Server.GraphQL.Mutations
 
         }
         [Authorize]
+        public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
+            [Service]ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var newPoa = new PowerOfAttorney()
+                {
+                    Id = poaId,
+                    InsurerId = insurerId,
+                    AgencyId = agencyId,
+                    Limit = limit,
+                    Serial = serial,
+                    FirstIssued = firstIssued,
+                    CurrentIssued = currentIssued,
+                    Status = status,
+                    Comments = comments
+                };
+                ctx.Add(newPoa);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch {
+                return false;
+            }
+        }
+        [Authorize]
+        public async Task<bool> DeleteAgencyPOA(Guid poaId, [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var poa = ctx.PowerOfAttorneys.FirstOrDefault(p => p.Id == poaId);
+                var poaDocs = ctx.PowerOfAttorneyDocumentStatuses.Where(p => p.Poaid == poaId).ToList();
+                ctx.PowerOfAttorneys.Remove(poa);
+                foreach (var poaDoc in poaDocs) { 
+                    ctx.PowerOfAttorneyDocumentStatuses.Remove(poaDoc);
+                }
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        [Authorize]
         public async Task<bool> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, string addressee,
             string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId,
             [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)

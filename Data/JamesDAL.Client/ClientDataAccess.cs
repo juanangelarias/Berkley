@@ -2,6 +2,7 @@
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
+using Microsoft.Win32.SafeHandles;
 using StrawberryShake;
 using System.ComponentModel;
 using System.Reflection;
@@ -78,7 +79,8 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<Branch>>> GetAllBranches()
         {
-            return new DataAccessResult<List<Branch>>();
+            return await ExecuteGet<List<Branch>>(
+                async () => await jamesClient.GetAllBranches.ExecuteAsync(), "AllBranches");
         }
         public async Task<IDataAccessResult<List<State>>> GetAllStates()
         {
@@ -307,6 +309,28 @@ namespace James.Data.Client
                 Comments = comments,
                 ChangedBy = changedBy
             });
+            return GraphQLSaveResult(saveResult);
+        }
+        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued,
+            DateOnly? currentIssued, string? comments, Guid status)
+        {
+            var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
+            {
+                PoaId = poaId,
+                InsurerId = insurerId,
+                AgencyId = agencyId,
+                Limit = limit,
+                Serial = serial,
+                FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
+                CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
+                Status = status,
+                Comments = comments
+            });
+            return GraphQLSaveResult(saveResult);
+        }
+        public async Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId)
+        {
+            var saveResult = await jamesClient.DeleteAgencyPOA.ExecuteAsync(new DeleteAgencyPOAInput { PoaId = poaId });
             return GraphQLSaveResult(saveResult);
         }
         public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,

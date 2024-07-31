@@ -26,6 +26,8 @@ public partial class AgencyInventory
 
     public Guid Approver { get; set; }
 
+    public string? Comments { get; set; }
+
     public virtual Address? Address { get; set; }
 
     public virtual Agency Agency { get; set; } = null!;

@@ -76,7 +76,7 @@ namespace JamesWebUI.Server.SharedServices
             }
         }
 
-        public async Task<SiteUserInfo> GetUserInfoAsync(ClaimsPrincipal principal)
+        public  Task<SiteUserInfo> GetUserInfoAsync(ClaimsPrincipal principal)
         {
             var username = principal.FindFirstValue("nickname") 
                            ?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -90,8 +90,8 @@ namespace JamesWebUI.Server.SharedServices
                 LastName = principal.FindFirstValue(ClaimTypes.Surname),
                 PictureUrl = principal.FindFirstValue("picture"),
             };
-            //UNDONE: Get additional information
-            return siteUserInfo;
+            //TODO: Get additional information from other sources
+            return Task.FromResult( siteUserInfo);
         }
         public async Task<SiteUserInfo> GetUserInfoAsync(string jwt)
         {

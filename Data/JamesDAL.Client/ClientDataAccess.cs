@@ -298,7 +298,6 @@ namespace James.Data.Client
         }
         public async Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus, Guid changedBy, string? comments)
         {
-            //TODO: Implement
             var saveResult = await jamesClient.CreateAgencyStatusLog.ExecuteAsync(new CreateAgencyStatusLogInput
             {
                 Id = id,
@@ -336,7 +335,6 @@ namespace James.Data.Client
         public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
             string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email)
         {
-            //TODO: Implement
             var saveResult = await jamesClient.CreateObligee.ExecuteAsync(new CreateObligeeInput
             {
                 Id = id,

@@ -221,7 +221,6 @@ namespace James.Data.Server.GraphQL.Mutations
                     Comments = comments,
                     ChangedBy = changedBy
                 };
-                //TODO: Update Agency table status
                 var agency = ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber).FirstOrDefault();
                 agency.Status = newStatus;
                 ctx.Add(newStatusLog);

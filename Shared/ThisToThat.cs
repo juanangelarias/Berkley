@@ -13,14 +13,6 @@ namespace James.Shared
             return (TDest)ToEntityType(source, typeof(TDest));
         }
 
-        //public static TDest ToIEnumerableEntityType<TDest, TSource>(IEnumerable<TSource>? source) where TDest : class, IEnumerable
-        //{
-        //    if (null == source)
-        //        return null!;
-        //    var tempSource = new TObjectWithList<List<TSource>> { List = new List<TSource>(source) };
-        //    var tempResult = ToEntityType<TObjectWithList<TDest>>(tempSource);
-        //    return tempResult.List ?? throw new UnreachableException("IEnumerable was not created");
-        //}
         private static readonly Type _genericListType = typeof(List<>);
 
         private static object ToEntityType(object? source, Type destinationType)
@@ -114,7 +106,7 @@ namespace James.Shared
         private static IEnumerable CopyIEnumerable(IEnumerable source, Type destType)
         {
             //HACK: Will fail on multi-argument generic list.  I don't believe they will be encountered in these conversions.
-            
+
             //Confirm destination type is a generic IEnumerable and cache the result to avoid reflection hit.
             //TODO:Performance test this
             if (!_validIEnumerableTypes.Contains(destType))
@@ -137,21 +129,11 @@ namespace James.Shared
                 return (IEnumerable)genList;
             }
 
-            var finalType = destType.IsInterface?_genericListType.MakeGenericType(destType.GenericTypeArguments):
+            var finalType = destType.IsInterface ? _genericListType.MakeGenericType(destType.GenericTypeArguments) :
                     destType;
-            //if (destType.IsInterface)
-            //{
-            //    //Interfaces don't have constructors, so make List<> which implements IEnumerable<>
-            //    var genListType = typeof(List<>);
-            //    finalType = genListType.MakeGenericType(destType.GenericTypeArguments);
-            //}
-            //if (null != destType.GetConstructor([]))
-            //    finalType = destType;
-            //if (null != finalType)
-            //{
-                var finalList = MakeConcreteList(finalType);
-                if (finalList != null) return finalList;
-            //}
+            var finalList = MakeConcreteList(finalType);
+            if (finalList != null) return finalList;
+
             //HACK: Assumes there will be a constructor that will take an IEnumerable of values.
             var dListConstructor = destType.GetConstructor([list.GetType()]);
             var dList = dListConstructor?.Invoke([list])!;
@@ -227,8 +209,4 @@ namespace James.Shared
         [GeneratedRegex("[\r\n]+")]
         private static partial Regex LineBreakRegex();
     }
-    //internal class TObjectWithList<T>() where T : IEnumerable
-    //{
-    //    internal T? List { get; set; }
-    //}
 }

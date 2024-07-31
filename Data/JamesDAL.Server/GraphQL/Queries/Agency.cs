@@ -78,11 +78,18 @@ namespace James.Data.Server.GraphQL.Queries
         [Authorize]
         public async Task<List<AgencyStatusLog>> GetAgencyStatusLog(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.AgencyStatusLogs.Where(a => a.AgencyNumber == agencyNumber)
-                .Include(a => a.ChangedByNavigation)
-                .ToListAsync();
-            return result ?? throw new GraphQLException($"No Status Log could be found for agency {agencyNumber}");
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var result = await ctx.AgencyStatusLogs.Where(a => a.AgencyNumber == agencyNumber)
+                    .Include(a => a.ChangedByNavigation)
+                    .ToListAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retreiving status log for agency {agencyNumber}", ex);
+            }
 
         }
         [Authorize]

@@ -1,5 +1,4 @@
-﻿using GreenDonut;
-using HotChocolate.Subscriptions;
+﻿using HotChocolate.Subscriptions;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Shared.Data;

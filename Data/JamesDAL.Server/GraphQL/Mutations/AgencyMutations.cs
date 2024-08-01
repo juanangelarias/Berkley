@@ -202,6 +202,125 @@ namespace James.Data.Server.GraphQL.Mutations
             }
             //UNDONE: Support subscriptions with event sender
         }
+
+        [Authorize]
+        public async Task<bool> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
+            Guid changedBy, string? comments,
+            [Service] ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var newStatusLog = new AgencyStatusLog()
+                {
+                    Id = id,
+                    AgencyNumber = agencyNumber,
+                    Effective = effective,
+                    OldStatus = oldStatus,
+                    NewStatus = newStatus,
+                    Comments = comments,
+                    ChangedBy = changedBy
+                };
+                var agency = ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber).FirstOrDefault();
+                agency.Status = newStatus;
+                ctx.Add(newStatusLog);
+                ctx.Update(agency);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+        [Authorize]
+        public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
+            [Service]ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var newPoa = new PowerOfAttorney()
+                {
+                    Id = poaId,
+                    InsurerId = insurerId,
+                    AgencyId = agencyId,
+                    Limit = limit,
+                    Serial = serial,
+                    FirstIssued = firstIssued,
+                    CurrentIssued = currentIssued,
+                    Status = status,
+                    Comments = comments
+                };
+                ctx.Add(newPoa);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch {
+                return false;
+            }
+        }
+        [Authorize]
+        public async Task<bool> DeleteAgencyPOA(Guid poaId, [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var poa = ctx.PowerOfAttorneys.FirstOrDefault(p => p.Id == poaId);
+                var poaDocs = ctx.PowerOfAttorneyDocumentStatuses.Where(p => p.Poaid == poaId).ToList();
+                ctx.PowerOfAttorneys.Remove(poa);
+                foreach (var poaDoc in poaDocs) { 
+                    ctx.PowerOfAttorneyDocumentStatuses.Remove(poaDoc);
+                }
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        [Authorize]
+        public async Task<bool> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, string addressee,
+            string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId,
+            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var newAddress = new Address()
+                {
+                    Id = Guid.NewGuid(),
+                    Address1 = address1,
+                    Address2 = address2,
+                    Address3 = address3,
+                    City = city,
+                    StateCode = stateCode,
+                    PostalCode = postalCode,
+                };
+                //TODO: Use a proper userID via Auth0?
+                var newInventory = new AgencyInventory()
+                {
+                    Id = inventoryId,
+                    AgencyId = agencyId,
+                    Sent = dateSent,
+                    Quantity = quantity,
+                    DocumentType = documentType,
+                    Addressee = addressee,
+                    AddressId = newAddress.Id,
+                    Approver = Guid.Parse("67ACEB0B-5C24-4147-9372-FE1F237F2C22")
+                };
+                ctx.Add(newAddress);
+                ctx.Add(newInventory); 
+                await ctx.SaveChangesAsync(); 
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
         [Authorize]
         public async Task<bool> DeleteLicense(Guid licenseId, [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -341,6 +460,42 @@ namespace James.Data.Server.GraphQL.Mutations
 
             return true;//TODO:Remove if possible.  Might be required to be discovered
             //UNDONE: Support subscriptions with event sender
+        }
+        [Authorize]
+        public async Task<bool> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
+            bool need1099, bool nasbp, string branchKey, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                var legalEntity = await ctx.LegalEntities.FirstOrDefaultAsync(l => l.Id == agencyId);
+                var agency = await ctx.Agencies.FirstOrDefaultAsync(a => a.Id == agencyId);
+
+                if (null != agency)
+                {
+                    legalEntity.FullName = agencyName;
+                    legalEntity.Parent = parentId;
+                    //TODO: Deal with encrypted taxid
+                    //legalEntity.TaxIdEncrypted = taxId;
+                    agency.NationalProducerNumber = npn;
+                    agency.W9 = w9;
+                    agency.Need1099 = need1099;
+                    agency.Nasbp = nasbp;
+                    agency.Branch = branchKey;
+
+                    ctx.Update(legalEntity);
+                    ctx.Update(agency);
+                    await ctx.SaveChangesAsync();
+
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 

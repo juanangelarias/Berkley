@@ -161,6 +161,24 @@ query GetAgencyStatuses(){
 	}
 }
 
+query GetAgencyStatusLog($agencyNumber: String!){
+  agencyStatusLog (agencyNumber: $agencyNumber){
+    agencyNumber
+    changedByNavigation{
+      id,
+      initials,
+      fullName
+    }
+    comments
+    created
+    effective
+    id
+    modified
+    newStatus
+    oldStatus
+  }
+} 
+
 query GetAgencyLicenses($agencyId: UUID!) {
   agencyLicenses(agencyId: $agencyId) {
     id,

@@ -76,6 +76,23 @@ namespace James.Data.Server.GraphQL.Queries
             return result ?? throw new GraphQLException($"No agency inventory exists with agencyId {agencyId}.");
         }
         [Authorize]
+        public async Task<List<AgencyStatusLog>> GetAgencyStatusLog(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var result = await ctx.AgencyStatusLogs.Where(a => a.AgencyNumber == agencyNumber)
+                    .Include(a => a.ChangedByNavigation)
+                    .ToListAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retreiving status log for agency {agencyNumber}", ex);
+            }
+
+        }
+        [Authorize]
         public async Task<List<Bond>> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -85,6 +102,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(b => b.Obligee)
                 .Include(b => b.AccountNumNavigation)
                 .ThenInclude(b => b.IdNavigation)
+                .Include(b => b.BondType)
                 .ToListAsync();
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}."); ;
@@ -182,5 +200,6 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.AgencyCommissions.Where(ac => ac.AgencyId == agencyId).ToListAsync();
         }
+        
     }
 }

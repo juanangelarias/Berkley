@@ -3,6 +3,12 @@
 @inject ILoggingService LoggingService
 @inject DialogService DialogService
 
+@* Hide close button *@
+<style>
+    .ui-dialog-titlebar-close {
+        display: none;
+    }
+</style>
 <h3>
     <RadzenText> Another user saved changes that conflict with your current changes.</RadzenText>
 </h3>
@@ -13,7 +19,7 @@
 @* TODO: Prevent closing dialog without clicking OK *@
 
 <RadzenRow>
-    <RadzenColumn>
+    <RadzenColumn Size="4">
         <RadzenText>Conflicting</RadzenText>
     </RadzenColumn>
     <RadzenColumn>
@@ -21,24 +27,27 @@
     </RadzenColumn>
 </RadzenRow>
 <RadzenRow>
-    <RadzenColumn>
+    <RadzenColumn Size="4">
         <RadzenText>Property</RadzenText>
     </RadzenColumn>
     <RadzenColumn>
         <RadzenText>(Your change|Their Change)</RadzenText>
     </RadzenColumn>
 </RadzenRow>
+<RadzenRow Visible="@(AllConflictsResolved == false)">
+    <RadzenColumn><RadzenText Style="color:red;" Text="Please choose which value you would like to continue with in the editor before continuing." /></RadzenColumn>
+</RadzenRow>
 @foreach (var conflict in _resolvers)
 {
     <RadzenRow>
-        <RadzenColumn>
+        <RadzenColumn Size="4">
             <RadzenText Text="@conflict.PropertyName" />
         </RadzenColumn>
         <RadzenColumn>
-            <RadzenSelectBar @ref=@conflict.ResolveEditor @bind-Value="@conflict.SelectedChange" TValue="object">
+            <RadzenSelectBar @ref=@conflict.ResolveEditor @bind-Value="@conflict.SelectedChange" >
                 <Items>
-                    <RadzenSelectBarItem Value="@conflict.OurChange" Text="@conflict.OurChange?.ToString().ToScreenText()" />
-                    <RadzenSelectBarItem Value="@conflict.TheirChange" Text="@conflict.TheirChange?.ToString().ToScreenText()" />
+                    <RadzenSelectBarItem Value="1" Text="@conflict.OurChangeText" />
+                    <RadzenSelectBarItem Value="2" Text="@conflict.TheirChangeText" />
                 </Items>
             </RadzenSelectBar>
         </RadzenColumn>
@@ -58,6 +67,7 @@
     [Parameter] public bool IgnoreNulls { get; set; } = false;
     [Parameter] public Object OurData { get; set; }
     [Parameter] public Object TheirData { get; set; }
+    private bool AllConflictsResolved => _resolvers.All(r => r.ResolveEditor.HasValue);
     private List<ConflictResolver> _resolvers = new List<ConflictResolver>();
     protected override void OnParametersSet()
     {
@@ -80,9 +90,9 @@
 
     private async Task OkClicked()
     {
-        //TODO: Figure out the correct way to make sure one or the other changes is selected even if the selected value is null
-        if (_resolvers.Any(r => r.ResolveEditor.HasValue == false))
-            //TODO:Display validation messages that they must select one of each
+        StateHasChanged();//Make sure that the validation message shows or hides as appropriate.
+        if (!AllConflictsResolved)
+            //Validation message will inform user if conflicts haven't been resolved.
             return;
         foreach (var conflictResolver in _resolvers)
         {
@@ -100,7 +110,8 @@
                 if (propLevels.Count == 1)
                 {
                     var pi = obj?.GetType().GetProperty(propLevels.Last());
-                    pi?.SetValue(obj, conflictResolver.ResolveEditor.Value);
+                    var selectedValue = (int?)conflictResolver.ResolveEditor.Value == 1 ? conflictResolver.OurChange : conflictResolver.TheirChange;
+                    pi?.SetValue(obj, selectedValue);
                 }
             }
         }

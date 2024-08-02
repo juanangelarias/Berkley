@@ -3,6 +3,8 @@
 @inject ILoggingService LoggingService
 @inject DialogService DialogService
 
+@* TODO: Discuss if we should leave the below style in to prevent the close button 
+    even if someone forgets ShowClose=false in the dialog options. *@
 @* Hide close button *@
 <style>
     .ui-dialog-titlebar-close {
@@ -16,7 +18,6 @@
     Which data do you want to keep?
 </RadzenText>
 @* TODO: Add ? icon to give more information *@
-@* TODO: Prevent closing dialog without clicking OK *@
 
 <RadzenRow>
     <RadzenColumn Size="4">

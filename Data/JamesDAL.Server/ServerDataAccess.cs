@@ -2,7 +2,6 @@
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Shared;
-//using James.Data.Server.GraphQL.SubscriptionExtensions
 using James.Shared.Data;
 using System.Diagnostics.Contracts;
 
@@ -18,7 +17,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber)
         {
-            //TODO: Port this to Execute Get
+            //TODO: Port this to ExecuteGet
             try
             {
                 var result = await query.GetAgencyByAgencyNumber(agencyNumber, contextFactory);

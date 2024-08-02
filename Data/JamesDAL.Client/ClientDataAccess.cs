@@ -321,24 +321,6 @@ namespace James.Data.Client
                     source.Invoke(subscriptionResultAddress);
                 };
             }
-            //Action<SubscriptionResult<Address>> Conversion (Action<IOperationResult<IAddressModifiedResult>> source)
-            //{
-            //    return onNextConversion => new Action<SubscriptionResult<Address>>(next =>
-            //    {
-            //        var graphQlAddress =
-            //            new AddressModified_OnAddressModified_Result_Address(next.Result.Address1, next.Result.Address2,
-            //                next.Result.Address3, next.Result.City, next.Result.StateCode, next.Result.PostalCode,
-            //                next.Result.Id);
-            //        var addressModified =
-            //            new AddressModified_OnAddressModified_SubscriptionResultOfAddress(next.Identifier,
-            //                graphQlAddress);
-            //        var addressModifiedResult = new AddressModifiedResult(addressModified);
-            //        var operationResult =
-            //            new OperationResult<IAddressModifiedResult>(addressModifiedResult, null, null, null);
-            //         //source.Invoke(operationResult);
-            //        onNextConversion.Invoke(operationResult);
-            //    });
-            //}
 
             public void Dispose()
             {

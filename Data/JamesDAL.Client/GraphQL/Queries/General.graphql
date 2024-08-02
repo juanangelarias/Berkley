@@ -9,3 +9,38 @@
     postalCode
   }
 }
+
+query GetAllInventoryDocTypes {
+  allInventoryDocTypes {
+    documentType
+    id
+  }
+}
+
+query GetUserProfileByUserName($userName: String!){
+    userProfileByUserName(userName: $userName){
+        id
+        username
+        fullName
+        initials
+    }
+}
+
+query GetAllBranches{
+  allBranches {
+    active
+    bccreceiver
+    branchKey
+    branchOfficeAddressId
+    created
+    emailReceiver
+    generalLedgerCode
+    headCount
+    homeOffice
+    id
+    modified
+    name
+    phoneId
+    region
+  }
+}

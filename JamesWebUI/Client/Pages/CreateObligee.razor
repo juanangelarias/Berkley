@@ -8,8 +8,8 @@
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
 @inject ThemeService ThemeService
-@inject IDataAccess DataAccess
-@inject ILoggingService LoggingService
+@inject IDataAccess _dataAccess
+@inject ILoggingService _logging
 
 <Theme />
 
@@ -85,7 +85,7 @@
                 </RadzenColumn>
                 <RadzenColumn>
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenCheckBox Name="ReceiveLetters" TriState="false" TValue="bool" />
+                        <RadzenCheckBox Name="ReceiveLetters" TriState="false" TValue="bool" @bind-Value="@NewObligee.PrintStatusLetter" />
                         <RadzenText Text="Receive Status Letters" />
                     </RadzenStack>
                 </RadzenColumn>
@@ -112,8 +112,10 @@
 
 
 @code {
+    private Obligee NewObligee { get; set; } = new Obligee();
     private LegalEntity NewLegalEntity { get; set; } = new LegalEntity()
         {
+            Id = Guid.NewGuid(),
             EntityType = "Obligee"
         };
     private LegalEntityAddress LegalEntityAddress { get; set; } = new LegalEntityAddress()
@@ -122,9 +124,13 @@
         };
     private Address NewAddress { get; set; } = new Address();
     private PhoneNumber NewPhoneNumber { get; set; } = new PhoneNumber();
-    
+
     private async Task SubmitObligee()
     {
-        
+        //TODO: Handle errors. 
+        var result = await _dataAccess.CreateObligee(NewLegalEntity.Id, NewLegalEntity.FullName, "Public", NewObligee.PrintStatusLetter,
+        NewObligee.Notes, NewAddress.Address1, NewAddress.Address2, NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
+        NewPhoneNumber.MainNumber, "email@email.com");
+
     }
 }

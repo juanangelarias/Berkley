@@ -13,7 +13,7 @@
             <RadzenStack Orientation="Orientation.Horizontal">
                 <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
                 <RadzenText Text="Detailed View" />
-                <RadzenButton Icon="edit" Visible="!EditMode" Size="ButtonSize.Small" Text="Edit" Click="ToggleEditMode" />
+                
             </RadzenStack>
         </RadzenColumn>
     </RadzenRow>
@@ -44,15 +44,18 @@
                 <RadzenTextBox @bind-Value="@AddressToDisplay.City" Name="City" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
-        <RadzenColumn Size="2">
+        <RadzenColumn Size="3">
             <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
                 <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@AddressToDisplay.StateCode" Disabled="true" />
             </RadzenFormField>
         </RadzenColumn>
-        <RadzenColumn Size="2">
+        <RadzenColumn Size="3">
             <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
                 <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn>
+            <RadzenButton Icon="edit" Visible="!EditMode" Size="ButtonSize.Small" Text="Edit" Click="ToggleEditMode" />
         </RadzenColumn>
     </RadzenRow>
 </RadzenPanel>
@@ -64,9 +67,7 @@
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
                     <RadzenText Text="Detailed View" />
-                    <RadzenButton Icon="save" Visible="EditMode" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
-                    <RadzenButton Icon="cancel" Visible="EditMode" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary"
-                                  Click="@Cancel" />
+                    
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -97,15 +98,22 @@
                     <RadzenTextBox @bind-Value="@AddressToDisplay.City" Name="City" />
                 </RadzenFormField>
             </RadzenColumn>
-            <RadzenColumn Size="2">
+            <RadzenColumn Size="3">
                 <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
                     <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@AddressToDisplay.StateCode" />
                 </RadzenFormField>
             </RadzenColumn>
-            <RadzenColumn Size="2">
+            <RadzenColumn Size="3">
                 <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
                     <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" AutoComplete="false" />
                 </RadzenFormField>
+            </RadzenColumn>
+            <RadzenColumn>
+                <RadzenStack JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Orientation="Orientation.Horizontal">
+                    <RadzenButton Icon="save" Visible="EditMode" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
+                    <RadzenButton Icon="cancel" Visible="EditMode" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary"
+                                  Click="@Cancel" />
+                </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
     </RadzenTemplateForm>

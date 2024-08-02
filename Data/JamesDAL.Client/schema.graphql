@@ -10,11 +10,16 @@ type Mutation {
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
   setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
+  createAgencyStatusLog(input: CreateAgencyStatusLogInput!): CreateAgencyStatusLogPayload!
+  createAgencyPOA(input: CreateAgencyPOAInput!): CreateAgencyPOAPayload!
+  deleteAgencyPOA(input: DeleteAgencyPOAInput!): DeleteAgencyPOAPayload!
+  createAgencyInventory(input: CreateAgencyInventoryInput!): CreateAgencyInventoryPayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
   deleteAgencyInventory(input: DeleteAgencyInventoryInput!): DeleteAgencyInventoryPayload!
   setPowerOfAttorney(input: SetPowerOfAttorneyInput!): SetPowerOfAttorneyPayload!
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
+  setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -35,6 +40,7 @@ type Query {
   agencyAccounts(agencyNumber: String!): [Account!]!
   agencyParent(agencyId: UUID!): Agency!
   agencyInventory(agencyId: UUID!): [AgencyInventory!]!
+  agencyStatusLog(agencyNumber: String!): [AgencyStatusLog!]!
   agencyBonds(agencyId: UUID!): [Bond!]!
   agencyAgents(agencyId: UUID!): [AgentsInAgency!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
@@ -49,34 +55,17 @@ type Query {
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
+  userProfileByUserName(userName: String!): UserProfile!
+  allInventoryDocTypes: [InventoryDocumentDm!]!
+  allBranches: [Branch!]!
   allInsurers: [Insurer!]!
+  obligeeTypes: [ObligeeTypeDm!]!
   allStates: [State!]!
 }
 
 type Subscription {
   onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
   onLicenseModified: AgencyLicense!
-}
-
-type Branch {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  branchKey: String!
-  name: String!
-  branchOfficeAddressId: UUID!
-  phoneId: UUID!
-  homeOffice: Boolean!
-  emailReceiver: String!
-  bccreceiver: String
-  generalLedgerCode: String
-  active: Boolean!
-  region: String!
-  headCount: Int
-  accounts: [Account!]!
-  branchOfficeAddress: Address!
-  phone: PhoneNumber!
-  regionNavigation: RegionDm!
 }
 
 type Agent {
@@ -281,6 +270,20 @@ type Bond {
   responsibleParty: LegalEntity
 }
 
+type AgencyStatusLog {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  agencyNumber: String!
+  effective: DateTime!
+  oldStatus: String
+  newStatus: String
+  changedBy: UUID
+  comments: String
+  agencyNumberNavigation: Agency!
+  changedByNavigation: UserProfile
+}
+
 type AgencyInventory {
   id: UUID!
   created: DateTime!
@@ -292,6 +295,7 @@ type AgencyInventory {
   addressee: String
   addressId: UUID
   approver: UUID!
+  comments: String
   address: Address
   agency: Agency!
   approverNavigation: UserProfile!
@@ -459,6 +463,27 @@ type Account {
   emailAddresses: [LegalEntityEmail!]!
 }
 
+type Branch {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  branchKey: String!
+  name: String!
+  branchOfficeAddressId: UUID!
+  phoneId: UUID!
+  homeOffice: Boolean!
+  emailReceiver: String!
+  bccreceiver: String
+  generalLedgerCode: String
+  active: Boolean!
+  region: String!
+  headCount: Int
+  accounts: [Account!]!
+  branchOfficeAddress: Address!
+  phone: PhoneNumber!
+  regionNavigation: RegionDm!
+}
+
 type DivisionDm {
   id: UUID!
   created: DateTime!
@@ -493,6 +518,54 @@ type Address {
   countryCode: String!
 }
 
+type UserProfile {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  initials: String!
+  fullName: String!
+  title: String
+  primaryBranchId: UUID
+  username: String!
+  underwriter: Boolean!
+  homeOfficeApprover: Boolean!
+  accountBranchReviewByNavigations: [Account!]!
+  accountHomeOfficeReviewByNavigations: [Account!]!
+  accountProgramEmailNotificationGroups: [AccountProgramEmailNotificationGroup!]!
+  accountProgramUserAuthorityCreatedByNavigations: [AccountProgramUserAuthority!]!
+  accountProgramUserAuthorityModifiedByNavigations: [AccountProgramUserAuthority!]!
+  accountProgramUserAuthorityUsers: [AccountProgramUserAuthority!]!
+  accountStatusLogs: [AccountStatusLog!]!
+  agencyCompetitions: [AgencyCompetition!]!
+  agencyInventories: [AgencyInventory!]!
+  agencyStatusLogs: [AgencyStatusLog!]!
+  bondBlocks: [BondBlock!]!
+  bondHolds: [BondHold!]!
+  bondRequestCctoNavigations: [BondRequest!]!
+  bondRequestCommercialCctoNavigations: [BondRequestCommercial!]!
+  bondRequestCommercialHomeOfficeApprovedByNavigations: [BondRequestCommercial!]!
+  bondRequestCommercialRecordedByNavigations: [BondRequestCommercial!]!
+  bondRequestHomeOfficeApproverNavigations: [BondRequest!]!
+  lineOfAuthorityLogApprovedByNavigations: [LineOfAuthorityLog!]!
+  lineOfAuthorityLogCreatedByNavigations: [LineOfAuthorityLog!]!
+  notebookEntries: [NotebookEntry!]!
+  obligees: [Obligee!]!
+  surcharges: [Surcharge!]!
+  underwriterRecommendations: [UnderwriterRecommendation!]!
+  userLineOfAuthorityCreatedByNavigations: [UserLineOfAuthority!]!
+  userLineOfAuthorityModifiedByNavigations: [UserLineOfAuthority!]!
+  userLineOfAuthorityUsers: [UserLineOfAuthority!]!
+  voidedBonds: [VoidedBond!]!
+}
+
+type InventoryDocumentDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  documentType: String!
+  agencyInventories: [AgencyInventory!]!
+}
+
 type Insurer {
   id: UUID!
   created: DateTime!
@@ -516,6 +589,14 @@ type Insurer {
   phoneNumbers: [LegalEntityPhone!]!
   mainEmailAddress: String
   emailAddresses: [LegalEntityEmail!]!
+}
+
+type ObligeeTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  obligees: [Obligee!]!
 }
 
 type State {
@@ -747,6 +828,114 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type BondBlock {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  prefix: String!
+  firstNumber: Int!
+  lastNumber: Int!
+  enabled: Boolean!
+  agencyRestricted: Boolean!
+  issuedBy: UUID
+  comments: String
+  issuedByNavigation: UserProfile
+}
+
+type AccountProgramUserAuthority {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  userId: UUID!
+  accountClassId: UUID!
+  effective: DateTime!
+  expiration: DateTime!
+  single: Int!
+  aggregate: Int!
+  createdBy: UUID!
+  modifiedBy: UUID!
+  createdByNavigation: UserProfile!
+  modifiedByNavigation: UserProfile!
+  user: UserProfile!
+}
+
+type AccountProgramEmailNotificationGroup {
+  id: UUID!
+  created: DateTime
+  modified: DateTime
+  userId: UUID!
+  sendTo: String
+  user: UserProfile!
+}
+
+type ProfitCenter {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  profitCenter1: String!
+  divisionCode: String!
+  lineOfBusiness: String!
+  location: String!
+  locationOverview: String!
+  budgetDefault: UUID
+  underWriterId: UUID
+  effective: Date!
+  expiration: Date!
+  commercialRegion: String
+  budgetDefaultNavigation: ProfitCenter
+  commercialRegionNavigation: CommercialRegionDm
+  divisionCodeNavigation: DivisionDm!
+  inverseBudgetDefaultNavigation: [ProfitCenter!]!
+  lineOfBusinessNavigation: LineOfBusinessDm!
+  underWriter: Underwriter
+}
+
+type LineOfAuthorityLog {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  sequenceNumber: Int!
+  effective: DateTime!
+  expiration: DateTime!
+  loasingle: Int!
+  loaaggregate: Int!
+  comments: String
+  status: String
+  approvedBy: UUID
+  approved: DateTime
+  division: String
+  bondType: String
+  conditions: String
+  homeOfficeApproved: Boolean!
+  createdBy: UUID
+  approvedByNavigation: UserProfile
+  createdByNavigation: UserProfile
+  divisionNavigation: DivisionDm
+  statusNavigation: LineOfAuthorityStatusDm
+}
+
+type ImagingCategoryTabDivision {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  category: String!
+  tabName: String!
+  divisionCode: String!
+  categoryNavigation: ImagingCategory!
+  divisionCodeNavigation: DivisionDm!
+  tabNameNavigation: ImagingTab!
+}
+
+type RegionDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  region: String!
+  bondTransactions: [BondTransaction!]!
+  branches: [Branch!]!
 }
 
 type WatchStatusDm {
@@ -1148,68 +1337,6 @@ type VoidedBond {
   voidedByNavigation: UserProfile!
 }
 
-type AgencyStatusLog {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  agencyNumber: String!
-  effective: DateTime!
-  oldStatus: String
-  newStatus: String
-  changedBy: UUID
-  comments: String
-  agencyNumberNavigation: Agency!
-  changedByNavigation: UserProfile
-}
-
-type InventoryDocumentDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  documentType: String!
-  agencyInventories: [AgencyInventory!]!
-}
-
-type UserProfile {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  initials: String!
-  fullName: String!
-  title: String
-  primaryBranchId: UUID
-  username: String!
-  underwriter: Boolean!
-  homeOfficeApprover: Boolean!
-  accountBranchReviewByNavigations: [Account!]!
-  accountHomeOfficeReviewByNavigations: [Account!]!
-  accountProgramEmailNotificationGroups: [AccountProgramEmailNotificationGroup!]!
-  accountProgramUserAuthorityCreatedByNavigations: [AccountProgramUserAuthority!]!
-  accountProgramUserAuthorityModifiedByNavigations: [AccountProgramUserAuthority!]!
-  accountProgramUserAuthorityUsers: [AccountProgramUserAuthority!]!
-  accountStatusLogs: [AccountStatusLog!]!
-  agencyCompetitions: [AgencyCompetition!]!
-  agencyInventories: [AgencyInventory!]!
-  agencyStatusLogs: [AgencyStatusLog!]!
-  bondBlocks: [BondBlock!]!
-  bondHolds: [BondHold!]!
-  bondRequestCctoNavigations: [BondRequest!]!
-  bondRequestCommercialCctoNavigations: [BondRequestCommercial!]!
-  bondRequestCommercialHomeOfficeApprovedByNavigations: [BondRequestCommercial!]!
-  bondRequestCommercialRecordedByNavigations: [BondRequestCommercial!]!
-  bondRequestHomeOfficeApproverNavigations: [BondRequest!]!
-  lineOfAuthorityLogApprovedByNavigations: [LineOfAuthorityLog!]!
-  lineOfAuthorityLogCreatedByNavigations: [LineOfAuthorityLog!]!
-  notebookEntries: [NotebookEntry!]!
-  obligees: [Obligee!]!
-  surcharges: [Surcharge!]!
-  underwriterRecommendations: [UnderwriterRecommendation!]!
-  userLineOfAuthorityCreatedByNavigations: [UserLineOfAuthority!]!
-  userLineOfAuthorityModifiedByNavigations: [UserLineOfAuthority!]!
-  userLineOfAuthorityUsers: [UserLineOfAuthority!]!
-  voidedBonds: [VoidedBond!]!
-}
-
 type WorkInProgressJob {
   id: UUID!
   created: DateTime!
@@ -1570,72 +1697,55 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type RegionDm {
+type NotebookEntry {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  region: String!
-  bondTransactions: [BondTransaction!]!
-  branches: [Branch!]!
+  notebookId: UUID!
+  type: String!
+  createdBy: UUID!
+  category: String
+  note: String!
+  completed: Boolean!
+  completion: DateTime
+  reminderTime: DateTime
+  columnName: Boolean!
+  createdByNavigation: UserProfile!
+  notebook: Notebook!
+  typeNavigation: NotebookEntryTypeDm!
 }
 
-type ImagingCategoryTabDivision {
+type Surcharge {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  category: String!
-  tabName: String!
-  divisionCode: String!
-  categoryNavigation: ImagingCategory!
-  divisionCodeNavigation: DivisionDm!
-  tabNameNavigation: ImagingTab!
-}
-
-type LineOfAuthorityLog {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountNum: String!
-  sequenceNumber: Int!
-  effective: DateTime!
-  expiration: DateTime!
-  loasingle: Int!
-  loaaggregate: Int!
-  comments: String
-  status: String
-  approvedBy: UUID
-  approved: DateTime
-  division: String
-  bondType: String
-  conditions: String
-  homeOfficeApproved: Boolean!
-  createdBy: UUID
-  approvedByNavigation: UserProfile
-  createdByNavigation: UserProfile
-  divisionNavigation: DivisionDm
-  statusNavigation: LineOfAuthorityStatusDm
-}
-
-type ProfitCenter {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  profitCenter1: String!
-  divisionCode: String!
-  lineOfBusiness: String!
-  location: String!
-  locationOverview: String!
-  budgetDefault: UUID
-  underWriterId: UUID
+  state: String!
+  amount: Float!
   effective: Date!
   expiration: Date!
-  commercialRegion: String
-  budgetDefaultNavigation: ProfitCenter
-  commercialRegionNavigation: CommercialRegionDm
-  divisionCodeNavigation: DivisionDm!
-  inverseBudgetDefaultNavigation: [ProfitCenter!]!
-  lineOfBusinessNavigation: LineOfBusinessDm!
-  underWriter: Underwriter
+  exclude: Boolean!
+  type: String!
+  createdBy: UUID!
+  createdByNavigation: UserProfile!
+  stateNavigation: State!
+  typeNavigation: SurchargeTypeDm!
+}
+
+type UserLineOfAuthority {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  userId: UUID!
+  single: Int!
+  aggregate: Int!
+  expiration: Date!
+  divisionCode: String!
+  bondType: String!
+  createdBy: UUID!
+  modifiedBy: UUID!
+  createdByNavigation: UserProfile!
+  modifiedByNavigation: UserProfile!
+  user: UserProfile!
 }
 
 type CountryDm {
@@ -1655,30 +1765,6 @@ type InsurerState {
   state: String!
   insurer: Insurer!
   stateNavigation: State!
-}
-
-type Surcharge {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  state: String!
-  amount: Float!
-  effective: Date!
-  expiration: Date!
-  exclude: Boolean!
-  type: String!
-  createdBy: UUID!
-  createdByNavigation: UserProfile!
-  stateNavigation: State!
-  typeNavigation: SurchargeTypeDm!
-}
-
-type ObligeeTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  obligees: [Obligee!]!
 }
 
 type AccountReference {
@@ -1780,45 +1866,20 @@ type SurchargeTypeDm {
   surcharges: [Surcharge!]!
 }
 
-type LineOfBusinessDm {
+type NotebookEntryTypeDm {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  lineOfBusiness: String!
-  profitCenters: [ProfitCenter!]!
+  type: String!
+  notebookEntries: [NotebookEntry!]!
 }
 
-type CommercialRegionDm {
+type Notebook {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  region: String!
-  profitCenters: [ProfitCenter!]!
-}
-
-type LineOfAuthorityStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  status: String!
-  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
-}
-
-type ImagingTab {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  tabName: String!
-  description: String!
-  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
-}
-
-type ImagingCategory {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  category: String!
-  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
+  sourceTable: String!
+  notebookEntries: [NotebookEntry!]!
 }
 
 type BidStatusDm {
@@ -1913,6 +1974,7 @@ type Employee {
   primaryBranchId: UUID
   homeOfficeApprover: Boolean!
   active: Boolean!
+  entraId: String
   underwriterIdNavigation: Underwriter
   underwriterReportsToNavigations: [Underwriter!]!
 }
@@ -1945,81 +2007,6 @@ scalar Decimal
 
 "The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
 scalar Long
-
-type UserLineOfAuthority {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  userId: UUID!
-  single: Int!
-  aggregate: Int!
-  expiration: Date!
-  divisionCode: String!
-  bondType: String!
-  createdBy: UUID!
-  modifiedBy: UUID!
-  createdByNavigation: UserProfile!
-  modifiedByNavigation: UserProfile!
-  user: UserProfile!
-}
-
-type NotebookEntry {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  notebookId: UUID!
-  type: String!
-  createdBy: UUID!
-  category: String
-  note: String!
-  completed: Boolean!
-  completion: DateTime
-  reminderTime: DateTime
-  columnName: Boolean!
-  createdByNavigation: UserProfile!
-  notebook: Notebook!
-  typeNavigation: NotebookEntryTypeDm!
-}
-
-type BondBlock {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  prefix: String!
-  firstNumber: Int!
-  lastNumber: Int!
-  enabled: Boolean!
-  agencyRestricted: Boolean!
-  issuedBy: UUID
-  comments: String
-  issuedByNavigation: UserProfile
-}
-
-type AccountProgramUserAuthority {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  userId: UUID!
-  accountClassId: UUID!
-  effective: DateTime!
-  expiration: DateTime!
-  single: Int!
-  aggregate: Int!
-  createdBy: UUID!
-  modifiedBy: UUID!
-  createdByNavigation: UserProfile!
-  modifiedByNavigation: UserProfile!
-  user: UserProfile!
-}
-
-type AccountProgramEmailNotificationGroup {
-  id: UUID!
-  created: DateTime
-  modified: DateTime
-  userId: UUID!
-  sendTo: String
-  user: UserProfile!
-}
 
 type AccountProgramStatusHistory {
   id: UUID!
@@ -2131,20 +2118,45 @@ type PersonalFinancialSubaccount {
   parentAccount: PersonalFinancialStatement!
 }
 
-type NotebookEntryTypeDm {
+type ImagingTab {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  type: String!
-  notebookEntries: [NotebookEntry!]!
+  tabName: String!
+  description: String!
+  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
 }
 
-type Notebook {
+type ImagingCategory {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  sourceTable: String!
-  notebookEntries: [NotebookEntry!]!
+  category: String!
+  imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
+}
+
+type LineOfAuthorityStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  status: String!
+  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
+}
+
+type LineOfBusinessDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  lineOfBusiness: String!
+  profitCenters: [ProfitCenter!]!
+}
+
+type CommercialRegionDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  region: String!
+  profitCenters: [ProfitCenter!]!
 }
 
 type SicratioTypeDm {
@@ -2266,6 +2278,64 @@ type CreateLicensePayload {
   boolean: Boolean
 }
 
+input CreateAgencyStatusLogInput {
+  id: UUID!
+  agencyNumber: String!
+  effective: DateTime!
+  oldStatus: String!
+  newStatus: String!
+  changedBy: UUID!
+  comments: String
+}
+
+type CreateAgencyStatusLogPayload {
+  boolean: Boolean
+}
+
+input CreateAgencyPOAInput {
+  poaId: UUID!
+  insurerId: UUID!
+  agencyId: UUID!
+  limit: Int!
+  serial: String
+  firstIssued: Date
+  currentIssued: Date
+  comments: String
+  status: UUID!
+}
+
+type CreateAgencyPOAPayload {
+  boolean: Boolean
+}
+
+input DeleteAgencyPOAInput {
+  poaId: UUID!
+}
+
+type DeleteAgencyPOAPayload {
+  boolean: Boolean
+}
+
+input CreateAgencyInventoryInput {
+  inventoryId: UUID!
+  agencyId: UUID!
+  dateSent: DateTime!
+  quantity: Int!
+  documentType: String!
+  addressee: String!
+  address1: String!
+  address2: String
+  address3: String
+  city: String!
+  stateCode: String
+  postalCode: String
+  approverId: UUID!
+}
+
+type CreateAgencyInventoryPayload {
+  boolean: Boolean
+}
+
 input DeleteLicenseInput {
   licenseId: UUID!
 }
@@ -2318,6 +2388,22 @@ type SaveCommissionRatesPayload {
   boolean: Boolean
 }
 
+input SetAgencyGeneralInfoInput {
+  agencyId: UUID!
+  agencyName: String!
+  parentId: UUID!
+  taxId: String
+  npn: String
+  w9: Boolean!
+  need1099: Boolean!
+  nasbp: Boolean!
+  branchKey: String!
+}
+
+type SetAgencyGeneralInfoPayload {
+  boolean: Boolean
+}
+
 input LogInformationInput {
   eventId: Int!
   message: String!
@@ -2353,6 +2439,7 @@ type LogUserPayload {
 }
 
 input CreateObligeeInput {
+  id: UUID!
   fullName: String!
   obligeeType: String!
   printStatusLetter: Boolean!

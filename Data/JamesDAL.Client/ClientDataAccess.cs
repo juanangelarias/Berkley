@@ -2,6 +2,7 @@
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
+using Microsoft.Win32.SafeHandles;
 using StrawberryShake;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -75,7 +76,11 @@ namespace James.Data.Client
             //result.Data.AllInsurers
             //return GraphQLResult<List<Insurer>>(result);
         }
-
+        public async Task<IDataAccessResult<List<Branch>>> GetAllBranches()
+        {
+            return await ExecuteGet<List<Branch>>(
+                async () => await jamesClient.GetAllBranches.ExecuteAsync(), "AllBranches");
+        }
         public async Task<IDataAccessResult<List<State>>> GetAllStates()
         {
             return await ExecuteGet<List<State>>(
@@ -106,7 +111,11 @@ namespace James.Data.Client
             //result.Data.AgencyAgents
             //return GraphQLResult<List<AgentsInAgency>>(result);
         }
-
+        public async Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber)
+        {
+            return await ExecuteGet<List<AgencyStatusLog>>(
+                async () => await jamesClient.GetAgencyStatusLog.ExecuteAsync(agencyNumber), "AgencyStatusLog");
+        }
         public async Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses()
         {
             return await ExecuteGet<List<AgencyStatusDm>>(
@@ -179,13 +188,21 @@ namespace James.Data.Client
             return await ExecuteGet<List<PowerOfAttorneyStatusDm>>(async () => await jamesClient.GetAllPoaStatuses.ExecuteAsync(),
                 "AllPoaStatuses");
         }
-
+        public async Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes()
+        {
+            return await ExecuteGet<List<InventoryDocumentDm>>(async () => await jamesClient.GetAllInventoryDocTypes.ExecuteAsync(),
+                "AllInventoryDocTypes");
+        }
         public async Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId)
         {
             return await ExecuteGet<List<AgencyCommission>>(async () => await jamesClient.GetAgencyCommissionRates.ExecuteAsync(agencyId),
             "AgencyCommissionRates");
         }
-
+        public async Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName)
+        {
+            return await ExecuteGet<UserProfile>(async () => await jamesClient.GetUserProfileByUserName.ExecuteAsync(userName),
+                "UserProfileByUserName");
+        }
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
         {
@@ -344,7 +361,62 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(result);
         }
-
+        public async Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus, Guid changedBy, string? comments)
+        {
+            var saveResult = await jamesClient.CreateAgencyStatusLog.ExecuteAsync(new CreateAgencyStatusLogInput
+            {
+                Id = id,
+                AgencyNumber = agencyNumber,
+                Effective = effective,
+                OldStatus = oldStatus,
+                NewStatus = newStatus,
+                Comments = comments,
+                ChangedBy = changedBy
+            });
+            return GraphQLSaveResult(saveResult);
+        }
+        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued,
+            DateOnly? currentIssued, string? comments, Guid status)
+        {
+            var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
+            {
+                PoaId = poaId,
+                InsurerId = insurerId,
+                AgencyId = agencyId,
+                Limit = limit,
+                Serial = serial,
+                FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
+                CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
+                Status = status,
+                Comments = comments
+            });
+            return GraphQLSaveResult(saveResult);
+        }
+        public async Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId)
+        {
+            var saveResult = await jamesClient.DeleteAgencyPOA.ExecuteAsync(new DeleteAgencyPOAInput { PoaId = poaId });
+            return GraphQLSaveResult(saveResult);
+        }
+        public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
+            string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email)
+        {
+            var saveResult = await jamesClient.CreateObligee.ExecuteAsync(new CreateObligeeInput
+            {
+                Id = id,
+                FullName = fullName,
+                ObligeeType = obligeeType,
+                PrintStatusLetter = printStatusLetter,
+                Notes = notes,
+                Address1 = address1,
+                Address2 = address2,
+                City = city,
+                State = state,
+                PostalCode = postalCode,
+                PhoneNumber = phoneNumber,
+                Email = email
+            });
+            return GraphQLSaveResult(saveResult);
+        }
         public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state,
@@ -367,25 +439,46 @@ namespace James.Data.Client
                 IsActive = isActive
             });
             return GraphQLSaveResult(saveResult);
-                //async () => await jamesClient.CreateLicense.ExecuteAsync);
-            //var result = await jamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
-            //{
-            //    AgencyId = agencyId,
-            //    AgentId = agentId,
-            //    AppointingState = appointingState,
-            //    Comments = comments,
-            //    Appointment = appointment?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    Expiration = expiration?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    Termination = termination?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //    InsurerId = insurerId,
-            //    IsResident = isResident,
-            //    LicenseNumber = licenseNumber,
-            //    State = state,
-            //    IsActive = isActive
-            //});
-            //return GraphQLResult<AgencyLicense>(result);
+        }
+        public async Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, string addressee,
+            string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId)
+        {
+            var saveResult = await jamesClient.CreateAgencyInventory.ExecuteAsync(new CreateAgencyInventoryInput
+            {
+                InventoryId = inventoryId,
+                AgencyId = agencyId,
+                DateSent = dateSent,
+                Quantity = quantity,
+                DocumentType = documentType,
+                Addressee = addressee,
+                Address1 = address1,
+                Address2 = address2,
+                Address3 = address3,
+                City = city,
+                StateCode = stateCode,
+                PostalCode = postalCode,
+                ApproverId = approverId
+            });
+            return GraphQLSaveResult(saveResult);
         }
 
+        public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
+            bool need1099, bool nasbp, string branchKey)
+        {
+            var saveResult = await jamesClient.SetAgencyGeneralInfo.ExecuteAsync(new SetAgencyGeneralInfoInput
+            {
+                AgencyId = agencyId,
+                AgencyName = agencyName,
+                ParentId = parentId,
+                TaxId = taxId,
+                Npn = npn,
+                W9 = w9,
+                Need1099 = need1099,
+                Nasbp = nasbp,
+                BranchKey = branchKey
+            });
+            return GraphQLSaveResult(saveResult);
+        }
         public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments,
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
             string? licenseNumber, string state, bool isActive)

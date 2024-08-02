@@ -4,26 +4,27 @@ using HotChocolate.Subscriptions;
 namespace James.Data.Server.GraphQL.Mutations
 {
     [MutationType]
-    [Authorize]
-    public class ObligeeMutations
+    public class ObligeeMutation
     {
-        public async Task<Obligee> CreateObligee(string fullName, string obligeeType, bool printStatusLetter, string notes,
+        [Authorize]
+        public async Task<Obligee> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string notes,
             string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            Guid newId = Guid.NewGuid();
+            
             LegalEntity newLegalEntity = new LegalEntity()
             {
-                Id = newId,
+                Id = id,
                 FullName = fullName,
                 EntityType = "Obligee",
                 IsIndividual = false,
-                Parent = newId
+                Parent = id
             };
             Obligee newObligee = new Obligee()
             {
-                Id = newId,
-                PrintStatusLetter = printStatusLetter
+                Id = id,
+                PrintStatusLetter = printStatusLetter,
+                Type = obligeeType
             };
             Address newAddress = new Address()
             {
@@ -36,14 +37,14 @@ namespace James.Data.Server.GraphQL.Mutations
             };
             LegalEntityAddress newLEAddress = new LegalEntityAddress()
             {
-                LegalEntityId = newId,
+                LegalEntityId = id,
                 AddressId = newAddress.Id,
                 Type = "Main"
             };
             LegalEntityEmail NewEmail = new LegalEntityEmail()
             {
                 Id = Guid.NewGuid(),
-                LegalEntityId = newId,
+                LegalEntityId = id,
                 EmailAddress = email,
                 Type = "Main"
             };
@@ -55,7 +56,7 @@ namespace James.Data.Server.GraphQL.Mutations
             };
             LegalEntityPhone newLEPhone = new LegalEntityPhone()
             {
-                LegalEntityId = newId,
+                LegalEntityId = id,
                 PhoneNumberId = newPhoneNumber.Id
             };
 

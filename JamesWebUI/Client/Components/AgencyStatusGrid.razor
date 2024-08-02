@@ -1,0 +1,183 @@
+﻿@using System.Globalization;
+@using James.Shared
+@using StrawberryShake;
+
+@inherits LayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject ThemeService ThemeService
+@inject IDataAccess _dataAccess
+@inject ILoggingService _logging
+
+<Theme />
+<RenderModeBackground />
+<AuthorizeView>
+    <Authorized>
+        <RadzenDataGrid @ref="statusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
+                        Style="border-radius: 20px;"
+                        RowCreate="@OnStatusCreate">
+            <HeaderTemplate>
+                <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertStatusRow" />
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Effective" Property="Effective">
+                    <Template Context="statusLog">
+                        <RadzenText Text="@statusLog.Effective.ToShortDateString()" Style="width: 95%"/>
+                    </Template>
+                    <EditTemplate Context="statusLog">
+                        <RadzenDatePicker TValue="DateTime" ShowTime="false" @bind-Value="@statusLog.Effective" Style="width: 95%" />
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Old Status" Property="OldStatus">
+                    <Template Context="statusLog">
+                        <RadzenText Text="@statusLog.OldStatus" Style="width: 95%" />
+                    </Template>
+                    <EditTemplate Context="statusLog">
+                        <RadzenText Text="@CurrentStatus" Style="width: 95%" />
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="New Status" Property="NewStatus">
+                    <Template Context="statusLog">
+                        <RadzenText Text="@statusLog.NewStatus" Style="width: 95%" />
+                    </Template>
+                    <EditTemplate Context="statusLog">
+                        <RadzenDropDown TValue="string" Data="AllStatuses" Style="width: 95%"
+                            @bind-Value="@statusLog.NewStatus" TextProperty="Status" ValueProperty="Status" />
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Created By" Property="ChangedByNavigation.Initials">
+                    <Template Context="statusLog">
+                        <RadzenText Text="@statusLog.ChangedByNavigation.FullName" Style="width: 95%" />
+                    </Template>
+                    <EditTemplate Context="statusLog">
+                        <RadzenText @ref="txtUserName" Text="@(context.User.Identity.Name)" Style="width: 95%" />
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments">
+                    <Template Context="statusLog">
+                        <RadzenText Text="@statusLog.Comments" Style="width: 95%" />
+                    </Template>
+                    <EditTemplate Context="statusLog">
+                        <RadzenTextBox @bind-Value="@statusLog.Comments" Style="width: 95%" />
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                @*TODO: Add save/cancel button column*@
+                <RadzenDataGridColumn TItem="AgencyStatusLog">
+                    <Template Context="statusLog">
+
+                    </Template>
+                    <EditTemplate Context="statusLog">
+                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@((args) => SaveStatusLogRow(statusLog))">
+                        </RadzenButton>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </Authorized>
+</AuthorizeView>
+@code {
+    [Parameter] public string AgencyNumber { get; set; }
+    [Parameter] public string CurrentStatus { get; set; }
+    private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
+    private bool isLoading { get; set; } = false;
+    private RadzenDataGrid<AgencyStatusLog> statusLogGrid { get; set; }
+    private List<AgencyStatusLog> statusLogsToInsert { get; set; } = new List<AgencyStatusLog>();
+    private RadzenText txtUserName { get; set; } 
+
+    //TODO: Remove this once we implement caching
+    private List<AgencyStatusDm> AllStatuses { get; set; } = new List<AgencyStatusDm>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadAllStatuses();
+        await LoadAgencyStatusLog();
+
+    }
+    void Reset()
+    {
+        statusLogsToInsert.Clear();
+        statusLogsToInsert.Clear();
+    }
+    void Reset(AgencyStatusLog statusLog)
+    {
+        statusLogsToInsert.Remove(statusLog);
+        statusLogsToInsert.Remove(statusLog);
+    }
+    private async Task LoadAgencyStatusLog()
+    {
+        var result = await _dataAccess.GetAgencyStatusLog(AgencyNumber);
+        if (result.Success == false)
+        {
+            _logging.LogError("Error get AgencyStatusLog in AgencyStatusGrid");
+        }
+        else
+        {
+            if (null != result?.Data)
+            {
+                AgencyStatusLogs = result.Data;
+            }
+        }
+    }
+    async Task LoadAllStatuses()
+    {
+        var result = await _dataAccess.GetAgencyStatuses();
+
+        if (result.Errors.Count() == 0 && null != result.Data)
+        {
+            AllStatuses = result.Data;
+        }
+        else
+        {
+            _logging.LogError("Error getting agency statuses for Agency Status Grid.", result.Errors.ToString());
+        }
+    }
+    async Task SaveStatusLogRow(AgencyStatusLog statusLog)
+    {
+        await ShowLoading();
+        var userProfile = await _dataAccess.GetUserProfileByUserName(txtUserName.Text);
+        statusLog.ChangedByNavigation = userProfile.Data;
+        await statusLogGrid.UpdateRow(statusLog);
+        await LoadAgencyStatusLog();
+    }
+    async Task InsertStatusRow()
+    {
+        await ShowLoading();
+        var newStatusLog = new AgencyStatusLog()
+            {
+                Id = Guid.NewGuid(),
+                OldStatus = CurrentStatus,
+                Effective = DateTime.Today
+            };
+        statusLogsToInsert.Add(newStatusLog);
+        await statusLogGrid.InsertRow(newStatusLog);
+    }
+    async Task OnStatusCreate(AgencyStatusLog statusLog)
+    {
+        //TODO: Get UserID
+        var userName = txtUserName.Text;
+        var userProfile = await _dataAccess.GetUserProfileByUserName(userName);
+
+        var result = await _dataAccess.CreateAgencyStatusLog(
+            statusLog.Id,
+            AgencyNumber,
+            statusLog.Effective,
+            CurrentStatus,
+            statusLog.NewStatus,
+            userProfile.Data.Id,
+            statusLog.Comments
+        );
+
+        statusLogsToInsert.Remove(statusLog);
+    }
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
+    }
+}

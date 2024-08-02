@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Blazorise;
+using Microsoft.AspNetCore.Components;
 
 namespace JamesWebUI.Client.Controls.Extensions
 {
@@ -11,5 +12,12 @@ namespace JamesWebUI.Client.Controls.Extensions
         {
             return navigation.Uri.Substring(navigation.BaseUri.Length - 1);
         }
+
+        public static string ToScreenText(this string? text) => text switch
+        {
+            null => "<NULL>",
+            "" => "<BLANK>",
+            _ => text
+        };
     }
 }

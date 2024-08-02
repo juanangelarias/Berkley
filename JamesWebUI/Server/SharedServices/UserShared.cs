@@ -33,7 +33,7 @@ namespace JamesWebUI.Server.SharedServices
             _authenticationStateProvider = authenticationStateProvider;
         }
 
-        private static UserInformationCache<IAuth0UserInfo> _cachedAuth0 = null!;
+        private static UserInformationCache<IAuth0UserInfo>? _cachedAuth0;
         //private static UserInformationCache<SiteUserInfo> _cachedSiteUserInfo = null!;
         private static readonly JwtSecurityTokenHandler _handler = new();
 
@@ -76,12 +76,13 @@ namespace JamesWebUI.Server.SharedServices
             }
         }
 
-        public async Task<SiteUserInfo> GetUserInfoAsync(ClaimsPrincipal principal)
+        public  Task<SiteUserInfo> GetUserInfoAsync(ClaimsPrincipal principal)
         {
             var username = principal.FindFirstValue("nickname") 
                            ?? principal.FindFirstValue(ClaimTypes.NameIdentifier);
             var siteUserInfo = new SiteUserInfo
             {
+                EntraId = principal.FindFirstValue(ClaimTypes.NameIdentifier),
                 Username = username,
                 FullName = principal.FindFirstValue(ClaimTypes.Name),
                 Email = principal.FindFirstValue( ClaimTypes.Email)??"",
@@ -89,8 +90,8 @@ namespace JamesWebUI.Server.SharedServices
                 LastName = principal.FindFirstValue(ClaimTypes.Surname),
                 PictureUrl = principal.FindFirstValue("picture"),
             };
-            //UNDONE: Get additional information
-            return siteUserInfo;
+            //TODO: Get additional information from other sources
+            return Task.FromResult( siteUserInfo);
         }
         public async Task<SiteUserInfo> GetUserInfoAsync(string jwt)
         {

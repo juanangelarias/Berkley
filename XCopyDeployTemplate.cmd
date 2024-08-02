@@ -40,7 +40,7 @@ if "%server:~0,5%" neq "wrbts" (
 	sc \\%server:"=% stop JamesTheBondSystem
 
 	ECHO Backing up appsettings.json files to "\\%DestPath%%DestinationSubFolder%\appsettings.json" and "\\%DestPath%%DestinationSubFolder%\client.appsettings.json"
-	robocopy "\\%DestPath%%DestinationSubFolder%\" \\%DestPath%\. appsettings.json /w:5 /r:100000
+	robocopy "\\%DestPath%%DestinationSubFolder%\" "\\%DestPath%\" appsettings.json /w:5 /r:100000
 	copy /Y "\\%DestPath%%DestinationSubFolder%\wwwroot\appsettings.json" /A \\$DestPath\client.appsettings.json /A
 )
 

@@ -26,7 +26,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
-        public Task<ISaveDataResult> SetAddress(Address address);
+        public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
             Guid changedBy, string? comments);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, 
@@ -50,11 +50,8 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
         public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
 
-        //TODO: Figure out subscriptions
-        public Task<IDisposable> AddressModified();
+        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
     }
-
-    public interface ISubscription<T>:IDisposable{}
 
     public interface ISaveDataResult
     {
@@ -66,7 +63,6 @@ namespace James.Shared.Data
         public T? Data { get; }
     }
     
-    //TODO: Discuss not using SaveDataResult as base class (I think there is no reason to ever view a DataAccessResult as a SaveDataResult)
     public class SaveDataResult : ISaveDataResult
     {
         public string[] Errors { get; init; } = [];

@@ -1,15 +1,39 @@
-﻿using HotChocolate.Types;
+﻿using HotChocolate.Execution;
+using HotChocolate.Subscriptions;
+using HotChocolate.Types.Relay;
+using James.Shared;
 
 namespace James.Data.Server.GraphQL
 {
     public partial class Subscription
     {
-        [Subscribe]
-        [Topic(nameof(Subscription.OnAddressModified))]
-        public Address OnAddressModified([EventMessage] Address address) => address;
+        [Subscribe(With = nameof(SubscribeToOnAddressModifiedAsync))]
+        [Topic(nameof(OnAddressModified))]
+        public SubscriptionResult<Address> OnAddressModified([ID]Guid addressId, [EventMessage] SubscriptionResult<Address> addressResult, CancellationToken cancellationToken) => addressResult;
+
+        public async ValueTask<ISourceStream<SubscriptionResult<Address>>> SubscribeToOnAddressModifiedAsync(
+            Guid addressId, [Service] ITopicEventReceiver eventReceiver, CancellationToken cancellationToken) =>
+            await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified_" + addressId, cancellationToken);
 
         [Subscribe]
-        [Topic(nameof(Subscription.OnLicenseModified))]
+        [Topic(nameof(OnLicenseModified))]
         public AgencyLicense OnLicenseModified([EventMessage] AgencyLicense license) => license;
+    }
+
+    public static class SubscriptionExtensions
+    {
+        public static IAsyncEnumerable<T> ToConvertOutput<T, TSource>(this IAsyncEnumerable<TSource> source) where T : new()
+        {
+            return new AsyncEnumerableConversion<T, TSource>(source).ConvertedResult();
+        }
+    }
+
+    public class AsyncEnumerableConversion<T, TSource>(IAsyncEnumerable<TSource> source) where T : new()
+    {
+        public async IAsyncEnumerable<T> ConvertedResult()
+        {
+            await foreach (var item in source)
+                yield return ThisToThat.ToEntityType<T>(item);
+        }
     }
 }

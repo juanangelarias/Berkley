@@ -1,13 +1,14 @@
 ﻿using HotChocolate.Subscriptions;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
+using James.Shared;
 using James.Shared.Data;
 using System.Diagnostics.Contracts;
 
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, ITopicEventSender eventSender) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
@@ -16,7 +17,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber)
         {
-            //TODO: Port this to Execute Get
+            //TODO: Port this to ExecuteGet
             try
             {
                 var result = await query.GetAgencyByAgencyNumber(agencyNumber, contextFactory);
@@ -128,11 +129,13 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, serial, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
         }
 
-        public async Task<ISaveDataResult> SetAddress(Address address)
+        public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
-            return await ExecuteGet(async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2, address.Address3, address.City, address.StateCode, address.PostalCode,
-            eventSender, contextFactory));
+            return await ExecuteSave((async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2,
+                address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
+                eventSender, contextFactory, loggingService)));
         }
+
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
             bool need1099, bool nasbp, string branchKey)
         {
@@ -156,7 +159,7 @@ namespace James.Data.Server
             try
             {
                 await agencyMutation.SetAgencyInventory(inventoryId, sent, quantity, documentType, addressee, addressId, address1, address2, address3, city, stateCode, postalCode,
-                    eventSender, contextFactory);
+                    eventSender, contextFactory, loggingService);
                 return new SaveDataResult();
             }
             catch (AggregateException ae)
@@ -222,7 +225,7 @@ namespace James.Data.Server
             {
                 var result = await agencyMutation.CreateLicense(licenseId, agencyId, agentId, appointingState,
                     comments, appointment, expiration, termination,
-                    insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory);
+                    insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory, loggingService);
                 return new DataAccessResult<bool> { Data = result };
             }
             catch (AggregateException ae)
@@ -274,7 +277,6 @@ namespace James.Data.Server
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
             string? licenseNumber, string state, bool isActive)
         {
-            //TODO:Test this before refactoring the rest
             return await ExecuteGet(async () => await agencyMutation.SetAgencyLicense(licenseId, agencyId, agentId, appointingState,
                     comments, appointment, expiration, termination,
                     insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory));
@@ -298,7 +300,6 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> DeleteLicense(Guid licenseId)
         {
-            //TODO:Test this before refactoring the rest
             return await ExecuteSave(async () => await agencyMutation.DeleteLicense(licenseId, eventSender, contextFactory));
 
         }
@@ -345,11 +346,39 @@ namespace James.Data.Server
             }
         }
 
-        public async Task<IDisposable> AddressModified()
+        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
-            //UNDONE:
-            return await Task.FromResult(FakeSubscription.Create);
+            //var eventValueTask =
+            //    await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified");
+            //eventValueTask.ReadEventsAsync();
+            ////UNDONE:
+            //return await Task.FromResult(FakeSubscription.Create);
+            return OnAddressModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Address>>(onNext, onError, onComplete));
         }
+
+        private readonly Dictionary<Guid, ServerSideSubscription<SubscriptionResult<Address>>> _onAddressModified = new();
+
+        private ServerSideSubscription<SubscriptionResult<Address>> OnAddressModified(Guid addressId)
+        {
+            lock (_onAddressModified)
+            {
+                if (_onAddressModified.ContainsKey(addressId) == false)
+                {
+                    _onAddressModified[addressId] = new(eventReceiver
+                        .SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified_"+addressId).Result.ReadEventsAsync(), CancellationToken.None);
+                }
+
+                return _onAddressModified[addressId];
+            }
+        }
+        //public async Task<IDisposable> AddressModified(CancellationToken cancellationToken = default)
+        //{
+        //    var eventValueTask =
+        //        await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified", cancellationToken);
+        //    eventValueTask.ReadEventsAsync();
+        //    //UNDONE:
+        //    return await Task.FromResult(FakeSubscription.Create);
+        //}
     }
     //TODO:Remove when subscriptions are handled
     public class FakeSubscription : IDisposable

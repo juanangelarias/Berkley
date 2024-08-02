@@ -64,7 +64,7 @@ type Query {
 }
 
 type Subscription {
-  onAddressModified: Address!
+  onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
   onLicenseModified: AgencyLicense!
 }
 
@@ -614,6 +614,11 @@ type State {
   countryCodeNavigation: CountryDm
   insurerStates: [InsurerState!]!
   surcharges: [Surcharge!]!
+}
+
+type SubscriptionResultOfAddress {
+  identifier: String!
+  result: Address!
 }
 
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
@@ -2207,6 +2212,7 @@ input SetAddressInput {
   city: String!
   stateCode: String
   postalCode: String
+  identifier: String!
 }
 
 type SetAddressPayload {

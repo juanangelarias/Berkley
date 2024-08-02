@@ -11,11 +11,15 @@ function setBackground(el, color){
     var pdiv = getParentDiv(el);
     if (pdiv)
         pdiv.style.backgroundColor = color;
+    return pdiv;
 }
+
 export function setBackgroundClient(el){
-    setBackground(el, "aliceblue");
+    var pdiv = setBackground(el, "cornsilk");
+    pdiv.classList.add("RunningClientSide");
 }
 export function setBackgroundServer(el){
-    setBackground(el, "mistyrose");
+    var pdiv = setBackground(el, "silver");
+    pdiv.classList.add("RunningServerSide");
 }
 

@@ -15,6 +15,7 @@ using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Serilog;
@@ -32,7 +33,12 @@ try
 {
     // Add services to the container.
     var builder = WebApplication.CreateBuilder(args);
-
+    //Needed fpr Auth0 to work behind a reverse proxy
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders =
+            ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    });
     builder.Services.AddCascadingAuthenticationState();
     builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
@@ -138,10 +144,13 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.UseWebAssemblyDebugging();
+        app.UseDeveloperExceptionPage();
+        app.UseForwardedHeaders();
     }
     else
     {
         app.UseExceptionHandler("/Error");
+        app.UseForwardedHeaders();
         // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
         app.UseHsts();
     }

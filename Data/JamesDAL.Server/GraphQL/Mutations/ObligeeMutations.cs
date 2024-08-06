@@ -7,8 +7,8 @@ namespace James.Data.Server.GraphQL.Mutations
     public class ObligeeMutation
     {
         [Authorize]
-        public async Task<Obligee> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string notes,
-            string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email,
+        public async Task<Obligee> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
+            string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             

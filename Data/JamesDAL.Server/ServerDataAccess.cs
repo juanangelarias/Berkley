@@ -256,7 +256,7 @@ namespace James.Data.Server
             }
         }
         public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
-            string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email)
+            string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email)
         {
             try
             {

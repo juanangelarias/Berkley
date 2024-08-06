@@ -830,6 +830,24 @@ type LegalEntityEmail {
   typeNavigation: EmailTypeDm!
 }
 
+type NotebookEntry {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  notebookId: UUID!
+  type: String!
+  createdBy: UUID!
+  category: String
+  note: String!
+  completed: Boolean!
+  completion: DateTime
+  reminderTime: DateTime
+  columnName: Boolean!
+  createdByNavigation: UserProfile!
+  notebook: Notebook!
+  typeNavigation: NotebookEntryTypeDm!
+}
+
 type BondBlock {
   id: UUID!
   created: DateTime!
@@ -1697,24 +1715,6 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type NotebookEntry {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  notebookId: UUID!
-  type: String!
-  createdBy: UUID!
-  category: String
-  note: String!
-  completed: Boolean!
-  completion: DateTime
-  reminderTime: DateTime
-  columnName: Boolean!
-  createdByNavigation: UserProfile!
-  notebook: Notebook!
-  typeNavigation: NotebookEntryTypeDm!
-}
-
 type Surcharge {
   id: UUID!
   created: DateTime!
@@ -1864,22 +1864,6 @@ type SurchargeTypeDm {
   modified: DateTime!
   type: String!
   surcharges: [Surcharge!]!
-}
-
-type NotebookEntryTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  notebookEntries: [NotebookEntry!]!
-}
-
-type Notebook {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  sourceTable: String!
-  notebookEntries: [NotebookEntry!]!
 }
 
 type BidStatusDm {
@@ -2157,6 +2141,22 @@ type CommercialRegionDm {
   modified: DateTime!
   region: String!
   profitCenters: [ProfitCenter!]!
+}
+
+type NotebookEntryTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  notebookEntries: [NotebookEntry!]!
+}
+
+type Notebook {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  sourceTable: String!
+  notebookEntries: [NotebookEntry!]!
 }
 
 type SicratioTypeDm {
@@ -2443,14 +2443,14 @@ input CreateObligeeInput {
   fullName: String!
   obligeeType: String!
   printStatusLetter: Boolean!
-  notes: String!
+  notes: String
   address1: String!
-  address2: String!
+  address2: String
   city: String!
   state: String!
   postalCode: String!
-  phoneNumber: String!
-  email: String!
+  phoneNumber: String
+  email: String
 }
 
 type CreateObligeePayload {

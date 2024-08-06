@@ -380,7 +380,7 @@ namespace James.Data.Client
             return GraphQLSaveResult(saveResult);
         }
         public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
-            string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email)
+            string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email)
         {
             var saveResult = await jamesClient.CreateObligee.ExecuteAsync(new CreateObligeeInput
             {

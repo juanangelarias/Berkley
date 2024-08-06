@@ -28,7 +28,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("JamesAPI"));
 
 builder.Services.AddRadzenComponents();
-builder.Services.AddScoped<ThemeService>();
+builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
 builder.Services.AddSingleton<ILoggingService, LoggingService>();
 builder.Services.AddScoped<IDataAccess,ClientDataAccess>();
 

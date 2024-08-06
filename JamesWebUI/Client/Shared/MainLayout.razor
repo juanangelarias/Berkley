@@ -2,7 +2,7 @@
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject ThemeService ThemeService
+@inject JamesWebUI.Client.Services.ThemeService ThemeService
 @attribute [Authorize]
 
 <RadzenComponents />
@@ -33,7 +33,7 @@
                 <RadzenColumn Size="7">
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">                         
                         <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;" 
-                        TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes" 
+                        TValue="string" TextProperty="Text" ValueProperty="Value" Data="@JamesWebUI.Client.Services.ThemeService.Themes" 
                         Value="@ThemeService.CurrentTheme" Change="@ChangeTheme">
                             <ValueTemplate>
                                 @context.Text Theme

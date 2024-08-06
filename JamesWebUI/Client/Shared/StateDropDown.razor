@@ -1,7 +1,7 @@
-﻿@inherits LayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-@inject JamesWebUI.Client.Services.ThemeService ThemeService
+
 
 @inject IDataAccess _dataAccess
 
@@ -76,7 +76,7 @@
     {
         await base.OnInitializedAsync();
 
-        ThemeService.Initialize(NavigationManager);
+        JamesThemeService.Initialize(NavigationManager);
         await GetAllStates();
     }
 

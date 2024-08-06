@@ -2,12 +2,11 @@
 @using System.Diagnostics
 @using James.Shared
 
-@inherits LayoutComponentBase
+@inherits JamesLayoutComponentBase
 @implements IDisposable
 
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
-@inject JamesWebUI.Client.Services.ThemeService ThemeService
 @inject DialogService DialogService
 @inject IDataAccess _dataAccess
 @inject ILoggingService _logging
@@ -219,8 +218,6 @@
 
 @code {
     [Parameter] public string? Id { get; set; }
-    [CascadingParameter]
-    private Task<AuthenticationState>? AuthenticationState { get; set; }
     public Notification[]? Notifications;
     private Agency _agencyToDisplay = new();
     private Address _mainAddress = new();
@@ -242,7 +239,7 @@
         await LoadBranches();
 
 
-        ThemeService.Initialize(NavigationManager);
+        JamesThemeService.Initialize(NavigationManager);
 
         //TODO: Remove this once testing of notification window is done.
         Notifications =

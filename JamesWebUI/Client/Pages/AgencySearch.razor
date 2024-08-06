@@ -6,10 +6,10 @@
 @using James.Shared
 @using StrawberryShake;
 
-@inherits LayoutComponentBase
+@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-@inject JamesWebUI.Client.Services.ThemeService ThemeService
+
 @inject IDataAccess DataAccess
 @inject ILoggingService _logging;
 @inject AuthenticationStateProvider _context;
@@ -126,7 +126,7 @@
     {
         await base.OnInitializedAsync();
         _logging.LogDebug("Initializing Agency Search Page", "AgencySearch.razor");//, data: new Dictionary<string, string>({ { "user", .User.Identity.Name } }));
-        ThemeService.Initialize(NavigationManager);
+        JamesThemeService.Initialize(NavigationManager);
     }
     async Task SearchAgencies()
     {

@@ -3,9 +3,9 @@
 
 @using System.Globalization
 
-@inherits LayoutComponentBase
+@inherits JamesLayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject JamesWebUI.Client.Services.ThemeService ThemeService
+
 
 <RadzenContextMenu/>
 <Theme />
@@ -69,7 +69,7 @@
     }
     protected override void OnInitialized()
     {
-        ThemeService.Initialize(NavigationManager);
+        JamesThemeService.Initialize(NavigationManager);
     }
 
 }

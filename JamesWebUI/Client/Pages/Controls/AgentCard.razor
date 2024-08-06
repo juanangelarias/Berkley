@@ -3,10 +3,10 @@
 @using James.Data.Client.GraphQL
 @using System.Globalization
 
-@inherits LayoutComponentBase
+@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-@inject JamesWebUI.Client.Services.ThemeService ThemeService
+
 
 <RadzenCard Style="width:350px;max-width: 350px;">
     <RadzenRow>
@@ -36,7 +36,7 @@
     {
         await base.OnInitializedAsync();
 
-        ThemeService.Initialize(NavigationManager);
+        JamesThemeService.Initialize(NavigationManager);
 
     }
 }

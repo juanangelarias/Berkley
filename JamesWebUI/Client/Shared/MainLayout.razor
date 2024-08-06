@@ -1,14 +1,13 @@
-﻿<Theme />
+﻿
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@inherits LayoutComponentBase
+@inherits JamesLayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject ThemeService ThemeService
 @attribute [Authorize]
 
 <RadzenComponents />
 <RadzenContextMenu/>
 
-
+<Theme />
 
 <PageTitle>BasisTNG</PageTitle>
 
@@ -32,9 +31,9 @@
                 </RadzenColumn>
                 <RadzenColumn Size="7">
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">                         
-                        <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;" 
-                        TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes" 
-                        Value="@ThemeService.CurrentTheme" Change="@ChangeTheme">
+                        <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;"
+                                        TValue="string" TextProperty="Text" ValueProperty="Value" Data="@JamesWebUI.Client.Services.ThemeService.Themes"
+                                        Value="@JamesThemeService.CurrentTheme" Change="@ChangeTheme">
                             <ValueTemplate>
                                 @context.Text Theme
                             </ValueTemplate>
@@ -112,7 +111,7 @@
 
     protected override void OnInitialized()
     {
-        ThemeService.Initialize(NavigationManager);
+        JamesThemeService.Initialize(NavigationManager);
 
         notifications = new Notification[]{
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},

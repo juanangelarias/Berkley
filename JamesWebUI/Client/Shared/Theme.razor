@@ -1,17 +1,17 @@
 ﻿@using JamesWebUI.Client.Services
-
+@inherits JamesLayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject ThemeService ThemeService
+
 
 <link href="@Href" rel="stylesheet" />
 
 @code {
-    bool IsPremiumTheme => ThemeService.CurrentTheme == "fluent" || ThemeService.CurrentTheme == "material-dark";
+    bool IsPremiumTheme => JamesThemeService.CurrentTheme == "fluent" || JamesThemeService.CurrentTheme == "material-dark";
 
-    string Href => IsPremiumTheme ? $"/css/{ThemeService.CurrentTheme}-base.css" : $"_content/Radzen.Blazor/css/{ThemeService.CurrentTheme}-base.css";
+    string Href => IsPremiumTheme ? $"/css/{JamesThemeService.CurrentTheme}-base.css" : $"_content/Radzen.Blazor/css/{JamesThemeService.CurrentTheme}-base.css";
 
     protected override void OnInitialized()
     {
-        ThemeService.Initialize(NavigationManager);
+        JamesThemeService.Initialize(NavigationManager);
     }
 }

@@ -91,7 +91,7 @@ try
         options.ReturnUrlParameter = "redirectUri";
     });
     builder.Services.AddRadzenComponents();
-    builder.Services.AddScoped<ThemeService>();
+    builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
     builder.Services.AddScoped<IUserShared, UserShared>();
     builder.Services.AddScoped<ILoggingShared, LoggingShared>();
     builder.Services.AddScoped<ILoggingService, ServerLoggingService>();

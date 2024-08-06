@@ -3,10 +3,10 @@
 @using James.Data.Client.GraphQL.Components;
 @using StrawberryShake;
 
-@inherits LayoutComponentBase
+@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-@inject ThemeService ThemeService
+
 
 <Theme />
 
@@ -44,7 +44,7 @@
     {
         await base.OnInitializedAsync();
 
-        ThemeService.Initialize(NavigationManager);
+        JamesThemeService.Initialize(NavigationManager);
 
     }
 }

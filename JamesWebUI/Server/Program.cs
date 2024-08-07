@@ -36,12 +36,16 @@ try
     builder.Services.AddCascadingAuthenticationState();
     builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
-    var auth0Authority = config["Auth0:Authority"] ?? "https://dev-auth.wrberkley.auth0.com";
-    builder.Services.AddHttpClient("Auth0UserInfo",
-    client => client.BaseAddress = new Uri(auth0Authority))
-        .AddHttpMessageHandler<TokenHandler>();
-    builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
-        .CreateClient("Auth0UserInfo"));
+    ConfirmAppSettingsEntry("Auth0:Authority");
+    ConfirmAppSettingsEntry("Auth0:ClientId");
+    ConfirmAppSettingsEntry("Auth0:ClientSecret");
+    var auth0Authority = config["Auth0:Authority"]!;
+    //builder.Services.AddHttpClient("Auth0UserInfo",
+    //client => client.BaseAddress = new Uri(auth0Authority))
+    //    .AddHttpMessageHandler<TokenHandler>();
+    //builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
+    //    .CreateClient("Auth0UserInfo"));
+
 
     var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
     builder.Services
@@ -50,16 +54,25 @@ try
             options.Domain = domain;
             options.ClientId = builder.Configuration["Auth0:ClientId"]!;
             options.ClientSecret = builder.Configuration["Auth0:ClientSecret"]!;
-            //var reverseProxyUrl = config["ExternalReverseProxyUrl"];
-            //if (!string.IsNullOrWhiteSpace(reverseProxyUrl))
-            //{
-            //    options.CallbackPath = reverseProxyUrl;
-            //}
         })
         .WithAccessToken(options =>
         {
             options.Audience = builder.Configuration["Auth0:Audience"];
         });
+    //Imaging Kong0 setup
+    ConfirmAppSettingsEntry("Kong0:Imaging:audience");
+    ConfirmAppSettingsEntry("Kong0:Imaging:client_id");
+    ConfirmAppSettingsEntry("Kong0:Imaging:client_secret");
+    ConfirmAppSettingsEntry("Kong0:Imaging:token_url");
+    ConfirmAppSettingsEntry("Kong0:Imaging:service_url");
+    var tokenRequestCredentials = new KongTokenRequest {Audience = config["Kong0:Imaging:audience"]!, ClientId = config["Kong0:Imaging:client_id"]!, ClientSecret = config["Kong0:Imaging:client_secret"]! };
+    ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
+    var kong0TokenUrl = new Uri(config["Kong0:Imaging:token_url"] ?? "https://dev-auth.wrberkley.auth0.com/oauth/token");
+    builder.Services.AddHttpClient("P8FileNetTokens", 
+        client => client.BaseAddress = kong0TokenUrl);
+    builder.Services.AddHttpClient("P8FileNet", client =>
+        client.BaseAddress = new Uri(config["Kong0:Imaging:service_url"]))
+            .AddHttpMessageHandler<ImagingTokenHandler>();
 
     builder.Services
         .AddPooledDbContextFactory<JamesDatabaseContext>(o =>
@@ -104,7 +117,7 @@ try
          .AddInteractiveWebAssemblyComponents();
 
     builder.Services.AddHttpContextAccessor();
-    builder.Services.AddScoped<TokenHandler>();
+    //builder.Services.AddScoped<TokenHandler>();
     builder.Services.AddCors(options =>
     {
         //TODO:  Make settings appropriate for production
@@ -116,6 +129,7 @@ try
     });
 
     //Set up logging
+    ConfirmAppSettingsEntry("ApplicationId");
     var loggerBuilder = builder.Logging
     //builder.Logging
     .AddConsole()
@@ -164,7 +178,7 @@ try
     {
         //Note: Our Auth0 uses the ReturnUrl query value, even though the standard
         //          (even in Auth0 docs) is to use redirectUri
-        var returnUrl = ReturnUrl(redirectUri, httpContext, config, app);
+        var returnUrl = ReturnUrl(redirectUri, httpContext);
         var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
             .WithRedirectUri(returnUrl)
             .Build();
@@ -175,7 +189,7 @@ try
 
     app.MapGet(JamesConstants.LOG_OUT_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
-        var returnUrl = ReturnUrl(redirectUri, httpContext, config, app);
+        var returnUrl = ReturnUrl(redirectUri, httpContext);
         var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
             .WithRedirectUri(returnUrl)
             .Build();
@@ -184,6 +198,7 @@ try
         await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     });
 
+    ConfirmAppSettingsEntry("Cors:Origins");
     var corsOriginString = config["Cors:Origins"] ?? "localhost,usilg01-isd076,usig01-isd076.wrbts.ads.wrberkley.com";
     app.UseCors(cors => cors.WithOrigins(corsOriginString.Split(", ".ToCharArray(), StringSplitOptions.RemoveEmptyEntries)));
 
@@ -231,21 +246,32 @@ catch (Exception ex)
     }
 }
 
-string ReturnUrl(string redirectUri, HttpContext httpContext1, IConfigurationRoot configurationRoot,
-    WebApplication webApplication)
+string ReturnUrl(string redirectUri, HttpContext httpContext1)
 {
     //HACK: Our Auth0 uses the ReturnUrl query value, even though the standard
     //          (even in Auth0 docs) is to use redirectUri
     var returnUrl1 = redirectUri;
     if (httpContext1.Request.Query.ContainsKey("ReturnUrl"))
         returnUrl1 = httpContext1.Request.Query["ReturnUrl"]!;
-    //var reverseProxyUrl = configurationRoot["ExternalReverseProxyUrl"];
-    //if (!string.IsNullOrWhiteSpace(reverseProxyUrl))
-    //{
-    //    returnUrl1 = (reverseProxyUrl + returnUrl1).Replace("//", "/");
-    //    //TODO:Remove after debugging Auth0 issue
-    //    webApplication.Logger.LogInformation("Using ExternalReverseProxyUrl from appsettings.json for RedirectUri return Url = " + returnUrl1);
-    //}
 
     return returnUrl1;
+}
+
+void ConfirmAppSettingsEntry(string key, string? message=null)
+{
+    IConfiguration configNode = config;
+    try
+    {
+        foreach (var level in key.Split(':'))
+        {
+            configNode = configNode.GetRequiredSection(level);
+        }
+    }
+    catch (InvalidOperationException)
+    {
+        if (message == null)
+            throw new Exception(
+                $"Configuration key '{key}' is required by was not found in appsettings.json or the environment variables");
+        throw new Exception(message);
+    }
 }

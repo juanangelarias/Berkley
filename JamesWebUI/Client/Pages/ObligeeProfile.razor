@@ -1,0 +1,67 @@
+﻿@page "/Obligee/{ObligeeId}"
+
+@using System.Diagnostics
+@using James.Shared
+
+@inherits JamesLayoutComponentBase
+
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+@inject IDataAccess _dataAccess
+@attribute [Authorize]
+
+<Theme />
+
+<RadzenPanel Style="border-radius: 20px;">
+    <RadzenRow>
+        <RadzenColumn Size="6">
+            <RadzenFieldset Text="General Info">
+                <RadzenRow>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="Obligee No." AllowFloatingLabel="false">
+                            <RadzenText Text="@ObligeeToDisplay.ObligeeNum" Style="width: 95%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenFormField Text="Name" AllowFloatingLabel="false">
+                            <RadzenText Text="@ObligeeToDisplay.IdNavigation.FullName" Style="width: 95%" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenFieldset>
+        </RadzenColumn>
+        <RadzenColumn>
+            <LegalEntityAddressEditor LegalEntityId="@ObligeeToDisplay.Id" />
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenPanel>
+
+
+
+@code {
+    [Parameter] public string ObligeeId { get; set; }
+    public James.Shared.Model.Obligee ObligeeToDisplay { get; set; } = new Obligee();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadObligee();
+    }
+
+    private async Task LoadObligee()
+    {
+        var result = await _dataAccess.GetObligeeById(Guid.Parse(ObligeeId));
+
+        if (result.Errors.Any() && result.Data != null)
+        {
+            //TODO: Log errors
+        }
+        else
+        {
+            ObligeeToDisplay = result.Data;
+        }
+    }
+}

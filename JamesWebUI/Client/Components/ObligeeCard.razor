@@ -1,0 +1,44 @@
+﻿@using System.Globalization
+@using James.Shared;
+@using ClientBusinessLogic
+
+
+@inherits JamesLayoutComponentBase
+
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+@inject IDataAccess DataAccess
+
+<RadzenCard >
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenText Text="@ObligeeToDisplay.ObligeeNum" />
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenCard>
+
+@code {
+    [Parameter] public Guid ObligeeId { get; set; }
+    private Obligee ObligeeToDisplay { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadObligee();
+    }    
+    private async Task LoadObligee()
+    {
+        var result = await DataAccess.GetObligeeById(ObligeeId);
+
+        if (result.Errors.Any())
+        {
+            //TODO: Handle errors
+        }
+        else
+        {
+            ObligeeToDisplay = result.Data;
+        }
+    }
+}

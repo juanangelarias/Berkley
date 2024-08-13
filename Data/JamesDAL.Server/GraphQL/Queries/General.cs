@@ -51,5 +51,25 @@ namespace James.Data.Server.GraphQL.Queries
                 throw new GraphQLException($"Error when retrieving Branches.", ex);
             }
         }
+        [Authorize]
+        public async Task<List<Address>> GetAllLegalEntityAddresses(Guid legalEntityId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var result = await ctx.Addresses
+                    .Include(a => a.LegalEntityAddress)
+                    .ThenInclude(a => a.TypeNavigation)
+                    .Where(a => a.LegalEntityAddress.LegalEntityId == legalEntityId)
+                    .OrderBy(a => a.LegalEntityAddress.TypeNavigation.Order)
+                    .ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retrieving Addresses.", ex);
+            }
+        }
     }
 }

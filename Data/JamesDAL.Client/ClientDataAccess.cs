@@ -35,7 +35,11 @@ namespace James.Data.Client
             //    throw;
             //}
         }
-
+        public async Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id)
+        {
+            return await ExecuteGet<Obligee?>(async () => await jamesClient.GetObligeeById.ExecuteAsync(id), "ObligeeById");
+            
+        }
         public async Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber)
         {
             var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
@@ -93,6 +97,12 @@ namespace James.Data.Client
         {
             return await ExecuteGet<Address>(
                 async () => await jamesClient.GetAddress.ExecuteAsync(addressId), "Address");
+        }
+        public async Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId)
+        {
+            return await ExecuteGet<List<Address>>(
+                async () => await jamesClient.GetAllLegalEntityAddresses.ExecuteAsync(legalEntityId), "AllLegalEntityAddresses");
+            
         }
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
@@ -379,6 +389,7 @@ namespace James.Data.Client
             var saveResult = await jamesClient.DeleteAgencyPOA.ExecuteAsync(new DeleteAgencyPOAInput { PoaId = poaId });
             return GraphQLSaveResult(saveResult);
         }
+
         public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
             string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email)
         {

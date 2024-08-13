@@ -6,11 +6,13 @@ namespace James.Shared.Data
     {
         public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
         public Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber);
+        public Task<IDataAccessResult<Obligee>> GetObligeeById(Guid id);
         public Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId);
         public Task<IDataAccessResult<List<Insurer>>> GetAllInsurers();
         public Task<IDataAccessResult<List<State>>> GetAllStates();
         public Task<IDataAccessResult<List<Branch>>> GetAllBranches();
         public Task<IDataAccessResult<Address>> GetAddress(Guid addressId);
+        public Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId);
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();

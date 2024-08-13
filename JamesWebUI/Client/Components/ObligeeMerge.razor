@@ -1,0 +1,30 @@
+﻿@page "/MergeObligee"
+
+@using System.Globalization
+@using James.Shared;
+@using ClientBusinessLogic
+
+
+@inherits JamesLayoutComponentBase
+
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+@inject IDataAccess DataAccess
+
+<RadzenDropZone TItem="Obligee">
+<ChildContent>
+    <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenDropZone TItem="Obligee" Style="flex: 1; gap: 1rem;">
+            <RadzenText Text="Search Results"/>
+        </RadzenDropZone>
+            <RadzenDropZone TItem="Obligee" class="rz-display-flex rz-flex-column rz-background-color-success-lighter rz-border-success-light rz-border-radius-2 rz-p-4" Style="flex: 1; gap: 1rem;">
+                <RadzenText Text="Obligees To Merge" />
+            </RadzenDropZone>
+    </RadzenStack>
+</ChildContent>
+</RadzenDropZone>
+
+@code {
+
+}

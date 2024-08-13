@@ -58,7 +58,9 @@ type Query {
   userProfileByUserName(userName: String!): UserProfile!
   allInventoryDocTypes: [InventoryDocumentDm!]!
   allBranches: [Branch!]!
+  allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
   allInsurers: [Insurer!]!
+  obligeeById(id: UUID!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
   allStates: [State!]!
 }
@@ -591,6 +593,31 @@ type Insurer {
   emailAddresses: [LegalEntityEmail!]!
 }
 
+type Obligee {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  obligeeNum: String!
+  type: String
+  editedBy: UUID
+  printStatusLetter: Boolean!
+  notes: String
+  bondRequests: [BondRequest!]!
+  editedByNavigation: UserProfile
+  idNavigation: LegalEntity!
+  typeNavigation: ObligeeTypeDm
+  fullName: String!
+  mainAddress: Address
+  addresses: [LegalEntityAddress!]!
+  mainPhoneNumber: PhoneNumber
+  phoneNumbers: [LegalEntityPhone!]!
+  mainEmailAddress: String
+  emailAddresses: [LegalEntityEmail!]!
+  givenName: String
+  middleInitial: String
+  familyName: String
+}
+
 type ObligeeTypeDm {
   id: UUID!
   created: DateTime!
@@ -664,31 +691,6 @@ enum Severity {
 input KeyValuePairOfStringAndStringInput {
   key: String!
   value: String!
-}
-
-type Obligee {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  obligeeNum: String!
-  type: String
-  editedBy: UUID
-  printStatusLetter: Boolean!
-  notes: String
-  bondRequests: [BondRequest!]!
-  editedByNavigation: UserProfile
-  idNavigation: LegalEntity!
-  typeNavigation: ObligeeTypeDm
-  fullName: String!
-  mainAddress: Address
-  addresses: [LegalEntityAddress!]!
-  mainPhoneNumber: PhoneNumber
-  phoneNumbers: [LegalEntityPhone!]!
-  mainEmailAddress: String
-  emailAddresses: [LegalEntityEmail!]!
-  givenName: String
-  middleInitial: String
-  familyName: String
 }
 
 type LegalEntity {

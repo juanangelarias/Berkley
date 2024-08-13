@@ -1,0 +1,15 @@
+﻿query GetObligeeById ($input: UUID!){
+  obligeeById (id: $input){
+    created
+    id
+    middleInitial
+    modified
+    notes
+    obligeeNum
+    printStatusLetter
+    type
+    idNavigation{
+      fullName
+    }
+  }
+} 

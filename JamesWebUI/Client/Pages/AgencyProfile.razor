@@ -7,7 +7,7 @@
 
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
-@inject DialogService DialogService
+
 @inject IDataAccess _dataAccess
 @inject ILoggingService _logging
 @attribute [Authorize]
@@ -17,6 +17,9 @@
 <PageTitle>Agency Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
  @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
+
+
+
 <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
     <RadzenPanel Style="border-radius: 20px;" Collapsed="_summaryView" class="rz-shadow-7">
         <FooterTemplate>
@@ -155,8 +158,9 @@
                     </RadzenFieldset>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
-                    <RadzenFieldset Text="Addresses and Coverages">
-                        <RadzenTabs>
+                    <RadzenFieldset Text="Addresses">
+                         <LegalEntityAddressEditor LegalEntityId="@_agencyToDisplay.Id" />
+                       @*  <RadzenTabs>
                             <Tabs>
                                 <RadzenTabsItem Text="Main">
                                     <AddressDisplay @ref="_mainAddressEditor" EditorIdentifier="@EditorIdentifier"
@@ -184,7 +188,7 @@
                                     </RadzenStack>
                                 </RadzenTabsItem>
                             </Tabs>
-                        </RadzenTabs>
+                        </RadzenTabs> *@
                     </RadzenFieldset>
                 </RadzenColumn>
             </RadzenRow>

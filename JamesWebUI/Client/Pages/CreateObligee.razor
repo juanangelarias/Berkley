@@ -2,36 +2,45 @@
 
 @using System.Globalization
 @using James.Shared;
+@using ClientBusinessLogic
+
 
 @inherits JamesLayoutComponentBase
 
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
 
-@inject IDataAccess _dataAccess
-@inject ILoggingService _logging
+@inject IDataAccess DataAccess
 
 <Theme />
 
 <RadzenPanel>
     <HeaderTemplate>
-        <RadzenText Text="Create New Obligee" />
+        <RadzenText Text="Create New Obligee" TextStyle="TextStyle.DisplayH4" />
     </HeaderTemplate>
     <ChildContent>
-        <RadzenTemplateForm TItem="Obligee" Submit="SubmitObligee">
+        <RadzenTemplateForm TItem="Obligee" Submit="@((Obligee args) => { SubmitObligee(args);})" Data="NewObligee">
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
-                        <RadzenTextBox Name="ObligeeName" @bind-Value="@NewLegalEntity.FullName" />
-                        <RadzenRequiredValidator Component="ObligeeName" Popup="true" Text="Obligee Name is required." />
+                        <ChildContent>
+                            <RadzenTextBox Name="ObligeeName" @bind-Value="@NewObligee.IdNavigation.FullName" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="ObligeeName" Text="Obligee Name is required." />
+                        </Helper>
                     </RadzenFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <RadzenFormField Text="Address 1" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
-                        <RadzenTextBox Name="Address1" @bind-Value="@NewAddress.Address1" />
-                        <RadzenRequiredValidator Component="Address1" Popup="true" Text="Address 1 is required." />
+                        <ChildContent>
+                            <RadzenTextBox Name="Address1" @bind-Value="@NewAddress.Address1" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="Address1" Text="Address 1 is required." />
+                        </Helper>
                     </RadzenFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -39,7 +48,9 @@
                 <RadzenColumn Size="6">
 
                     <RadzenFormField Text="Address 2" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
-                        <RadzenTextBox Name="Address2" @bind-Value="@NewAddress.Address2" />
+                        <ChildContent>
+                            <RadzenTextBox Name="Address2" @bind-Value="@NewAddress.Address2" />
+                        </ChildContent>
                     </RadzenFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -47,16 +58,31 @@
                 <RadzenColumn Size="6">
                     <RadzenStack Orientation="Orientation.Horizontal">
                         <RadzenFormField Text="City" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:250px;">
-                            <RadzenTextBox Name="City" @bind-Value="@NewAddress.City" />
-                            <RadzenRequiredValidator Component="City" Popup="true" Text="City is required." />
+                            <ChildContent>
+                                <RadzenTextBox Name="City" @bind-Value="@NewAddress.City" />
+                            </ChildContent>
+                            <Helper>
+                                <RadzenRequiredValidator Component="City" Text="City is required." />
+                            </Helper>
                         </RadzenFormField>
                         <RadzenFormField Text="State" AllowFloatingLabel="true" Variant="Variant.Text">
-                            <RadzenDropDown Name="State" TValue="String" @bind-Value="@NewAddress.StateCode" />
-                            <RadzenRequiredValidator Component="State" Popup="true" Text="State is required." />
+                            <ChildContent>
+                                <RadzenDropDown Name="State" TValue="String" @bind-Value="@NewAddress.StateCode"
+                                                Data="AllStates" ValueProperty="Code" TextProperty="Name" />
+                            </ChildContent>
+                            <Helper>
+                                <RadzenRequiredValidator Component="State" Text="State is required." />
+                            </Helper>
+
+
                         </RadzenFormField>
                         <RadzenFormField Text="Postal Code" AllowFloatingLabel="true" Variant="Variant.Text">
-                            <RadzenTextBox Name="Postal Code" @bind-Value="@NewAddress.PostalCode" />
-                            <RadzenRequiredValidator Component="Postal Code" Popup="true" Text="Postal Code is required." />
+                            <ChildContent>
+                                <RadzenTextBox Name="Postal Code" @bind-Value="@NewAddress.PostalCode" />
+                            </ChildContent>
+                            <Helper>
+                                <RadzenRequiredValidator Component="Postal Code" Text="Postal Code is required." />
+                            </Helper>
                         </RadzenFormField>
                     </RadzenStack>
                 </RadzenColumn>
@@ -64,7 +90,10 @@
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <RadzenFormField Text="Phone" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
-                        <RadzenMask Name="Phone" @bind-Value="@NewPhoneNumber.MainNumber" Mask="(***) ***-****" CharacterPattern="[0-9]" Placeholder="(000) 000-0000" />
+                        <ChildContent>
+                            <RadzenMask Name="Phone" @bind-Value="@NewPhoneNumber.MainNumber" Mask="(***) ***-****"
+                                        CharacterPattern="[0-9]" Placeholder="(000) 000-0000" />
+                        </ChildContent>
                     </RadzenFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -72,21 +101,27 @@
                 <RadzenColumn>
                     <RadzenColumn Size="6">
                         <RadzenFormField Text="Email" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
-                            <RadzenTextBox Name="Email" @bind-Value="@NewAddress.Address2" />
+                            <ChildContent>
+                                <RadzenTextBox Name="Email" @bind-Value="@NewEmail" />
+                            </ChildContent>
+                            <Helper>
+                                <RadzenCustomValidator Component="Email" Text="Email is invalid."
+                                                       Validator="@(() => null == NewEmail ? true : Validators.ValidateEmail(NewEmail))" />
+                            </Helper>
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
-                <RadzenColumn>
-                    <RadzenFormField Text="Type" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
-                        <RadzenDropDown TValue="Guid" Name="Type" />
-                    </RadzenFormField>
-                </RadzenColumn>
-                <RadzenColumn>
-                    <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenCheckBox Name="ReceiveLetters" TriState="false" TValue="bool" @bind-Value="@NewObligee.PrintStatusLetter" />
-                        <RadzenText Text="Receive Status Letters" />
+                <RadzenColumn Size="6">
+                    <RadzenStack Orientation="Orientation.Vertical">
+                        <RadzenFormField Text="Type" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
+                            <RadzenDropDown TValue="Guid" Name="Type" />
+                        </RadzenFormField>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="ReceiveLetters" TriState="false" TValue="bool" @bind-Value="@NewObligee.PrintStatusLetter" />
+                            <RadzenText Text="Receive Status Letters" />
+                        </RadzenStack>
                     </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
@@ -110,32 +145,87 @@
 </RadzenPanel>
 
 
-
 @code {
+    private List<State> AllStates { get; set; }
+
     private Obligee NewObligee { get; set; } = new Obligee()
-    {
-        Id = Guid.NewGuid(),
-        PrintStatusLetter = true,
-        Type = "Unknown"
-    };
-    private LegalEntity NewLegalEntity { get; set; } = new LegalEntity()
         {
-            Id = Guid.NewGuid(),
-            EntityType = "Obligee"
+            PrintStatusLetter = true,
+            Type = "Unknown",
+            IdNavigation = new LegalEntity()
+            {
+                EntityType = "Obligee"
+            }
         };
+
     private LegalEntityAddress LegalEntityAddress { get; set; } = new LegalEntityAddress()
         {
             Type = "Main"
         };
     private Address NewAddress { get; set; } = new Address();
     private PhoneNumber NewPhoneNumber { get; set; } = new PhoneNumber();
+    private string? _newEmail;
+    private string? NewEmail 
+    { 
+        get
+        {
+            return _newEmail;
+        }
+        set
+        {
+            _newEmail = value == "" ? null : value;
+        }
+    }
 
-    private async Task SubmitObligee()
+    protected override async Task OnInitializedAsync()
     {
-        //TODO: Handle errors. 
-        var result = await _dataAccess.CreateObligee(NewLegalEntity.Id, NewLegalEntity.FullName, "Public", NewObligee.PrintStatusLetter,
-        NewObligee.Notes, NewAddress.Address1, NewAddress.Address2, NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
-        NewPhoneNumber.MainNumber, "email@email.com");
+        await base.OnInitializedAsync();
 
+        await LoadStates();
+    }
+    private async Task LoadStates()
+    {
+        var result = await DataAccess.GetAllStates();
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError("Error loading states.", result.Errors.ToString());
+        }
+        else
+        {
+            AllStates = result.Data;
+        }
+    }
+
+    private async Task SubmitObligee(Obligee newObligee)
+    {
+        var result = await DataAccess.CreateObligee(Guid.NewGuid(), newObligee.IdNavigation.FullName, "Public", newObligee.PrintStatusLetter,
+        newObligee.Notes, NewAddress.Address1, NewAddress.Address2, NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
+        NewPhoneNumber.MainNumber.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", ""), null);
+
+        //TODO: Handle errors better.
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError("Error creating obligee", result.Errors.ToString());
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Error when creating new Obligee.",
+                    Duration = 5000,
+                    CloseOnClick = true,
+                    Payload = DateTime.Now
+                });
+        }
+        else
+        {
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Success,
+                    Summary = "Successfully created new Obligee.",
+                    Duration = 5000,
+                    CloseOnClick = true,
+                    Payload = DateTime.Now
+                });
+            //TODO: Redirect?
+        }
     }
 }

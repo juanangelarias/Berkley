@@ -34,6 +34,24 @@ namespace James.Data.Server
                 return new DataAccessResult<Agency> { Errors = [ex.Message] };
             }
         }
+        public async Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id)
+        {
+            try
+            {
+                var result = await query.GetObligeeById(id, contextFactory);
+                return null == result
+                    ? new DataAccessResult<Obligee?> { Errors = ["No obligee with the supplied id was found."] }
+                    : new DataAccessResult<Obligee?> { Data = result };
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<Obligee?> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<Obligee?> { Errors = [ex.Message] };
+            }
+        }
         public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyInventory(agencyId, contextFactory));
@@ -104,6 +122,11 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<Address>> GetAddress(Guid addressId)
         {
             return await ExecuteGet(async () => await query.GetAddress(addressId, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId)
+        {
+            return await ExecuteGet(async () => await query.GetAllLegalEntityAddresses(legalEntityId, contextFactory));
+            
         }
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
         {
@@ -255,6 +278,7 @@ namespace James.Data.Server
                 return new DataAccessResult<bool> { Errors = [ex.Message] };
             }
         }
+
         public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
             string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email)
         {

@@ -2,7 +2,7 @@
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-@inject DialogService DialogService
+
 
 
 @inject IDataAccess _dataAccess
@@ -13,7 +13,7 @@
             <RadzenStack Orientation="Orientation.Horizontal">
                 <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
                 <RadzenText Text="Detailed View" />
-                
+                <RadzenButton Icon="edit" Visible="!EditMode" Size="ButtonSize.Small" Variant="Variant.Text" Click="ToggleEditMode" />
             </RadzenStack>
         </RadzenColumn>
     </RadzenRow>
@@ -55,7 +55,7 @@
             </RadzenFormField>
         </RadzenColumn>
         <RadzenColumn>
-            <RadzenButton Icon="edit" Visible="!EditMode" Size="ButtonSize.Small" Text="Edit" Click="ToggleEditMode" />
+            
         </RadzenColumn>
     </RadzenRow>
 </RadzenPanel>
@@ -67,7 +67,6 @@
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
                     <RadzenText Text="Detailed View" />
-                    
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -111,8 +110,7 @@
             <RadzenColumn>
                 <RadzenStack JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Orientation="Orientation.Horizontal">
                     <RadzenButton Icon="save" Visible="EditMode" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
-                    <RadzenButton Icon="cancel" Visible="EditMode" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary"
-                                  Click="@Cancel" />
+                    <RadzenButton Icon="cancel" Visible="EditMode" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary" Click="@Cancel" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>

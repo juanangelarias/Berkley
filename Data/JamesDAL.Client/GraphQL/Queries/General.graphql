@@ -44,3 +44,23 @@ query GetAllBranches{
     region
   }
 }
+
+query GetAllLegalEntityAddresses($input: UUID!) {
+  allLegalEntityAddresses (legalEntityId: $input) {
+    address1
+    address2
+    address3
+    city
+    country
+    countryCode
+    created
+    id
+    modified
+    postalCode
+    state
+    stateCode
+    legalEntityAddress{
+      type
+    }
+  }
+} 

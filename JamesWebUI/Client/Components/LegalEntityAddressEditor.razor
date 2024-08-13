@@ -1,0 +1,52 @@
+﻿@using System.Globalization
+@using James.Shared;
+@using ClientBusinessLogic
+
+
+@inherits JamesLayoutComponentBase
+
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+@inject IDataAccess DataAccess
+
+<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" >
+    <Tabs>
+        @foreach (var a in AllAddresses)
+        {
+            <RadzenTabsItem Text="@(a.LegalEntityAddress.Type)">
+                <AddressDisplay AddressId="a.Id" />   
+            </RadzenTabsItem>
+        }
+        <RadzenTabsItem Icon="add" Text="Add Address" />
+    </Tabs>
+</RadzenTabs>
+
+
+@code {
+    [Parameter] public Guid LegalEntityId{ get; set; }
+    private RadzenTabs addressTabs { get; set; }
+    private List<Address> AllAddresses { get; set; } = new List<Address>();
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadAddresses(LegalEntityId);
+
+    }
+
+    private async Task LoadAddresses(Guid legalEntityId)
+    {
+        var result = await DataAccess.GetAllLegalEntityAddresses(legalEntityId);
+
+        if (result.Errors.Any())
+        {
+            //TODO: Handle Errors
+        }
+        else
+        {
+            AllAddresses = result.Data;
+            addressTabs.SelectedIndex = 0;
+        }
+    }
+}

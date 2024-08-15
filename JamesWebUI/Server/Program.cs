@@ -1,14 +1,15 @@
 using ApplicationLog;
 using Auth0.AspNetCore.Authentication;
+using James.Data.Imaging;
 using James.Data.Server;
 using James.Data.Server.GraphQL;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.Model;
 using James.Shared;
 using James.Shared.Data;
+using James.Shared.Imaging;
 using James.Shared.Server;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Client.Services;
 using JamesWebUI.Server;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using JamesWebUI.Server.SharedServices;
@@ -71,7 +72,7 @@ try
     builder.Services.AddHttpClient("P8FileNetTokens", 
         client => client.BaseAddress = kong0TokenUrl);
     builder.Services.AddHttpClient("P8FileNet", client =>
-        client.BaseAddress = new Uri(config["Kong0:Imaging:service_url"]))
+        client.BaseAddress = new Uri(config["Kong0:Imaging:service_url"]!))
             .AddHttpMessageHandler<ImagingTokenHandler>();
 
     builder.Services
@@ -109,6 +110,8 @@ try
     builder.Services.AddScoped<ILoggingShared, LoggingShared>();
     builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
     builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
+    if (OperatingSystem.IsWindows())
+        builder.Services.AddScoped<IImagingAccess, ServerImagingAccess>();
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();

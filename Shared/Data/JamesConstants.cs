@@ -1,4 +1,4 @@
-﻿namespace James.Shared
+﻿namespace James.Shared.Data
 {
     public static class JamesConstants
     {

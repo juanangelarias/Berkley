@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Shared.Server", "Jame
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Data.Server.Test", "Tests\James.Data.Server\James.Data.Server.Test.csproj", "{672B2F5C-406D-40A4-87A1-22EDD3AB3540}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Data.Imaging", "Data\JamesDAL.Imaging\James.Data.Imaging.csproj", "{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{672B2F5C-406D-40A4-87A1-22EDD3AB3540}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{672B2F5C-406D-40A4-87A1-22EDD3AB3540}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{672B2F5C-406D-40A4-87A1-22EDD3AB3540}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -103,6 +109,7 @@ Global
 		{B6DFFAA5-460B-4100-AF21-8FD4BB6316F5} = {69BB7FC5-8EE7-450A-8072-E0A8043515DD}
 		{D4950B20-EEC2-4513-BC56-41DDED4C9802} = {C60478F9-28B0-415F-9FC6-39D8506F7B62}
 		{672B2F5C-406D-40A4-87A1-22EDD3AB3540} = {69BB7FC5-8EE7-450A-8072-E0A8043515DD}
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA} = {C60478F9-28B0-415F-9FC6-39D8506F7B62}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C162C589-90F1-41BB-A1C8-5C250EDB98A3}

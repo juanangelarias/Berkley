@@ -1,0 +1,7 @@
+﻿query GetBondRequestNumberByBondNumber($bondNumber: String!) {
+    bondRequestNumber(bondNumber: $bondNumber)
+}
+
+query GetBondNumberByBondRequestNumber($bondRequestNumber: String!) {
+    bondNumber(bondRequestNumber: $bondRequestNumber) 
+}

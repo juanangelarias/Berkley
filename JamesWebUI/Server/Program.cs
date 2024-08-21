@@ -7,10 +7,9 @@ using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.Model;
 using James.Shared;
 using James.Shared.Data;
-using James.Shared.Imaging;
 using James.Shared.Server;
+using James.Shared.Server.Kong0;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Server;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
@@ -21,10 +20,10 @@ using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Serilog;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
-
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
@@ -61,20 +60,19 @@ try
         {
             options.Audience = builder.Configuration["Auth0:Audience"];
         });
-    //Imaging Kong0 setup
-    ConfirmAppSettingsEntry("Kong0:Imaging:audience");
-    ConfirmAppSettingsEntry("Kong0:Imaging:client_id");
-    ConfirmAppSettingsEntry("Kong0:Imaging:client_secret");
-    ConfirmAppSettingsEntry("Kong0:Imaging:token_url");
-    ConfirmAppSettingsEntry("Kong0:Imaging:service_url");
-    var tokenRequestCredentials = new KongTokenRequest {Audience = config["Kong0:Imaging:audience"]!, ClientId = config["Kong0:Imaging:client_id"]!, ClientSecret = config["Kong0:Imaging:client_secret"]! };
-    ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
-    var kong0TokenUrl = new Uri(config["Kong0:Imaging:token_url"] ?? "https://dev-auth.wrberkley.auth0.com/oauth/token");
-    builder.Services.AddHttpClient("P8FileNetTokens", 
-        client => client.BaseAddress = kong0TokenUrl);
-    builder.Services.AddHttpClient("P8FileNet", client =>
-        client.BaseAddress = new Uri(config["Kong0:Imaging:service_url"]!))
-            .AddHttpMessageHandler<ImagingTokenHandler>();
+
+    //ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
+    var kong0TokenUrl = new Uri(config["Kong0:Imaging:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
+    var tokenClientBuilder = builder.Services.AddHttpClient("P8FileNetTokens").ConfigureHttpClient(
+        client =>
+        {
+            client.BaseAddress = kong0TokenUrl;
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        })
+        .ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler { ClientCertificateOptions = ClientCertificateOption.Automatic });
+    if (bool.TryParse(config["Kong0:http_client_trace_logging"], out var traceLogging) && traceLogging)
+        tokenClientBuilder.AddTraceContentLogging();
 
     builder.Services
         .AddPooledDbContextFactory<JamesDatabaseContext>(o =>
@@ -106,13 +104,22 @@ try
         options.ReturnUrlParameter = "redirectUri";
     });
     builder.Services.AddRadzenComponents();
+
     builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
     builder.Services.AddScoped<IUserShared, UserShared>();
     builder.Services.AddScoped<ILoggingShared, LoggingShared>();
     builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
     builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
     if (OperatingSystem.IsWindows())
-        builder.Services.AddScoped<IImagingAccess, ServerImagingAccess>();
+    {
+        //Imaging Kong0 setup
+        ConfirmAppSettingsEntry("Kong0:token_url");
+        ConfirmAppSettingsEntry("Kong0:audience");
+        ConfirmAppSettingsEntry("Kong0:Imaging:client_id");
+        ConfirmAppSettingsEntry("Kong0:Imaging:client_secret");
+        ConfirmAppSettingsEntry("Kong0:Imaging:service_url");
+        builder.Services.SetupImagingForKong(config["Kong0:Imaging:client_id"]!, config["Kong0:Imaging:client_secret"]!, config["Kong0:Imaging:audience"]!);
+    }
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
@@ -156,7 +163,7 @@ try
     builder.Host.UseWindowsService();
 
     var app = builder.Build();
-    
+
     app.UseForwardedHeaders(new ForwardedHeadersOptions
     {
         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
@@ -271,7 +278,7 @@ string ReturnUrl(string redirectUri, HttpContext httpContext1)
     return returnUrl1;
 }
 
-void ConfirmAppSettingsEntry(string key, string? message=null)
+void ConfirmAppSettingsEntry(string key, string? message = null)
 {
     IConfiguration configNode = config;
     try

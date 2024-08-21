@@ -20,16 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Connected Services\FileNetP8SoapService\ConnectedService.json" />
     <None Remove="Migrations\InsertData.sql" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Connected Services\FileNetP8SoapService\ConnectedService.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
     <Content Include="Migrations\InsertData.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

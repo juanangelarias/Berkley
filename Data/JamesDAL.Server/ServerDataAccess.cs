@@ -312,6 +312,16 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await agencyMutation.SaveCommissionRates(agencyId, rates, eventSender, contextFactory));
         }
 
+        public async Task<IDataAccessResult<string>> GetBondRequestNumber(string bondNumber)
+        {
+            return await ExecuteGet(async () => await query.GetBondRequestNumber(bondNumber, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber)
+        {
+            return await ExecuteGet(async () => await query.GetBondNumber(bondRequestNumber, contextFactory));
+        }
+
         //UNDONE:  Refactor to DRY out the code
         private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<T>> dataFunc)
         {

@@ -1,0 +1,1559 @@
+<wsdl:definitions name="P8ServiceImplService" targetNamespace="http://services.p8.imaging.bts.com/" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://services.p8.imaging.bts.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+    <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://services.p8.imaging.bts.com/" xmlns:tns="http://services.p8.imaging.bts.com/" xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:import namespace="http://www.w3.org/2005/05/xmlmime"/>
+      <xs:element name="addDocument" type="tns:addDocument"/>
+      <xs:element name="addDocumentResponse" type="tns:addDocumentResponse"/>
+      <xs:element name="addItemToChoiceList" type="tns:addItemToChoiceList"/>
+      <xs:element name="addItemToChoiceListResponse" type="tns:addItemToChoiceListResponse"/>
+      <xs:element name="cancelDocumentCheckout" type="tns:cancelDocumentCheckout"/>
+      <xs:element name="cancelDocumentCheckoutResponse" type="tns:cancelDocumentCheckoutResponse"/>
+      <xs:element name="checkoutDocument" type="tns:checkoutDocument"/>
+      <xs:element name="checkoutDocumentResponse" type="tns:checkoutDocumentResponse"/>
+      <xs:element name="createUserSession" type="tns:createUserSession"/>
+      <xs:element name="createUserSessionResponse" type="tns:createUserSessionResponse"/>
+      <xs:element name="demoteVersion" type="tns:demoteVersion"/>
+      <xs:element name="demoteVersionResponse" type="tns:demoteVersionResponse"/>
+      <xs:element name="exportDocumentRequestStatus" type="tns:exportDocumentRequestStatus"/>
+      <xs:element name="exportDocumentRequestStatusResponse" type="tns:exportDocumentRequestStatusResponse"/>
+      <xs:element name="exportDocumentResponse" type="tns:exportDocumentResponse"/>
+      <xs:element name="exportDocuments" type="tns:exportDocuments"/>
+      <xs:element name="exportDocumentsResponse" type="tns:exportDocumentsResponse"/>
+      <xs:element name="forceCancelDocumentCheckout" type="tns:forceCancelDocumentCheckout"/>
+      <xs:element name="forceCancelDocumentCheckoutResponse" type="tns:forceCancelDocumentCheckoutResponse"/>
+      <xs:element name="forceVersionDocument" type="tns:forceVersionDocument"/>
+      <xs:element name="forceVersionDocumentResponse" type="tns:forceVersionDocumentResponse"/>
+      <xs:element name="freezeVersion" type="tns:freezeVersion"/>
+      <xs:element name="freezeVersionResponse" type="tns:freezeVersionResponse"/>
+      <xs:element name="getAnnotations" type="tns:getAnnotations"/>
+      <xs:element name="getAnnotationsResponse" type="tns:getAnnotationsResponse"/>
+      <xs:element name="getCurrentVersion" type="tns:getCurrentVersion"/>
+      <xs:element name="getCurrentVersionResponse" type="tns:getCurrentVersionResponse"/>
+      <xs:element name="getDocumentByID" type="tns:getDocumentByID"/>
+      <xs:element name="getDocumentByIDResponse" type="tns:getDocumentByIDResponse"/>
+      <xs:element name="getDocumentProperties" type="tns:getDocumentProperties"/>
+      <xs:element name="getDocumentPropertiesResponse" type="tns:getDocumentPropertiesResponse"/>
+      <xs:element name="getDocumentThumbnails" type="tns:getDocumentThumbnails"/>
+      <xs:element name="getDocumentThumbnailsResponse" type="tns:getDocumentThumbnailsResponse"/>
+      <xs:element name="getDocumentVersions" type="tns:getDocumentVersions"/>
+      <xs:element name="getDocumentVersionsResponse" type="tns:getDocumentVersionsResponse"/>
+      <xs:element name="getPropertyMappings" type="tns:getPropertyMappings"/>
+      <xs:element name="getPropertyMappingsResponse" type="tns:getPropertyMappingsResponse"/>
+      <xs:element name="getReleasedVersion" type="tns:getReleasedVersion"/>
+      <xs:element name="getReleasedVersionResponse" type="tns:getReleasedVersionResponse"/>
+      <xs:element name="getSupportedMimeTypes" type="tns:getSupportedMimeTypes"/>
+      <xs:element name="getSupportedMimeTypesResponse" type="tns:getSupportedMimeTypesResponse"/>
+      <xs:element name="hasAnnotations" type="tns:hasAnnotations"/>
+      <xs:element name="hasAnnotationsResponse" type="tns:hasAnnotationsResponse"/>
+      <xs:element name="promoteVersion" type="tns:promoteVersion"/>
+      <xs:element name="promoteVersionResponse" type="tns:promoteVersionResponse"/>
+      <xs:element name="refreshUserSession" type="tns:refreshUserSession"/>
+      <xs:element name="refreshUserSessionResponse" type="tns:refreshUserSessionResponse"/>
+      <xs:element name="relateCompoundDocuments" type="tns:relateCompoundDocuments"/>
+      <xs:element name="relateCompoundDocumentsResponse" type="tns:relateCompoundDocumentsResponse"/>
+      <xs:element name="removeItemFromChoiceList" type="tns:removeItemFromChoiceList"/>
+      <xs:element name="removeItemFromChoiceListResponse" type="tns:removeItemFromChoiceListResponse"/>
+      <xs:element name="searchCurrentDocuments" type="tns:searchCurrentDocuments"/>
+      <xs:element name="searchCurrentDocumentsResponse" type="tns:searchCurrentDocumentsResponse"/>
+      <xs:element name="searchDocuments" type="tns:searchDocuments"/>
+      <xs:element name="searchDocumentsResponse" type="tns:searchDocumentsResponse"/>
+      <xs:element name="searchReleasedDocuments" type="tns:searchReleasedDocuments"/>
+      <xs:element name="searchReleasedDocumentsResponse" type="tns:searchReleasedDocumentsResponse"/>
+      <xs:element name="unrelateCompoundDocuments" type="tns:unrelateCompoundDocuments"/>
+      <xs:element name="unrelateCompoundDocumentsResponse" type="tns:unrelateCompoundDocumentsResponse"/>
+      <xs:element name="updateDocumentProperties" type="tns:updateDocumentProperties"/>
+      <xs:element name="updateDocumentPropertiesResponse" type="tns:updateDocumentPropertiesResponse"/>
+      <xs:element name="versionDocument" type="tns:versionDocument"/>
+      <xs:element name="versionDocumentResponse" type="tns:versionDocumentResponse"/>
+      <xs:complexType name="forceCancelDocumentCheckout">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="adaptedMap">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="entry" nillable="true" type="tns:entry"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="entry">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="key" type="xs:string"/>
+          <xs:element minOccurs="0" name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="forceCancelDocumentCheckoutResponse">
+        <xs:sequence/>
+      </xs:complexType>
+      <xs:complexType name="getDocumentByID">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="useMTOM" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getDocumentByIDResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="document" type="tns:document"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="document">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="contentList" nillable="true" type="tns:content"/>
+          <xs:element minOccurs="0" name="documentClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="folderPath" type="xs:string"/>
+          <xs:element minOccurs="0" name="guid" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="properties" nillable="true" type="tns:property"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="content">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="content" type="xs:base64Binary"/>
+          <xs:element minOccurs="0" name="contentMTOM" type="xs:base64Binary" xmime:expectedContentTypes="application/octet-stream"/>
+          <xs:element minOccurs="0" name="fileName" type="xs:string"/>
+          <xs:element minOccurs="0" name="mimeType" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="property">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="choiceOption" nillable="true" type="tns:choice"/>
+          <xs:element minOccurs="0" name="dataType" type="tns:propertyDataType"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="dateListValue" nillable="true" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="dateValue" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="description" type="xs:string"/>
+          <xs:element minOccurs="0" name="displayName" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="listValue" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element minOccurs="0" name="readOnly" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="required" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="requiredFormat" type="xs:string"/>
+          <xs:element minOccurs="0" name="requiredFormatRegex" type="xs:string"/>
+          <xs:element minOccurs="0" name="systemGenerated" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="choice">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="displayValue" type="xs:string"/>
+          <xs:element minOccurs="0" name="value" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getSupportedMimeTypes">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getSupportedMimeTypesResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="mimeType" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="updateDocumentProperties">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="documentProperties" type="tns:property"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="updateDocumentPropertiesResponse">
+        <xs:sequence/>
+      </xs:complexType>
+      <xs:complexType name="exportDocumentRequestStatus">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="transactionId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="exportDocumentRequestStatusResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="exportDocumentRequest" type="tns:exportDocumentRequest"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="exportDocumentRequest">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="batchInstanceId" type="xs:string"/>
+          <xs:element minOccurs="0" name="bpmNotesDate" type="xs:string"/>
+          <xs:element minOccurs="0" name="bpmNotesRefId" type="xs:string"/>
+          <xs:element minOccurs="0" name="businessApplication" type="xs:string"/>
+          <xs:element minOccurs="0" name="completionTime" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="documentClass" type="xs:string"/>
+          <xs:element name="documentsExported" type="xs:int"/>
+          <xs:element name="documentsRequested" type="xs:int"/>
+          <xs:element minOccurs="0" name="encryptionKey" type="xs:string"/>
+          <xs:element minOccurs="0" name="exportDocumentRequestStatus" type="tns:ExportDocumentRequestStatusEnum"/>
+          <xs:element minOccurs="0" name="filenameProperty" type="xs:string"/>
+          <xs:element name="includeDocumentContent" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="objectStore" type="xs:string"/>
+          <xs:element minOccurs="0" name="PDFConvert" type="xs:string"/>
+          <xs:element minOccurs="0" name="searchQuery" type="xs:string"/>
+          <xs:element minOccurs="0" name="serviceJVMInstanceId" type="xs:string"/>
+          <xs:element minOccurs="0" name="startTime" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="statusMessage" type="xs:string"/>
+          <xs:element minOccurs="0" name="tableOfContentsProperties" type="xs:string"/>
+          <xs:element minOccurs="0" name="transactionId" type="xs:string"/>
+          <xs:element minOccurs="0" name="transactionName" type="xs:string"/>
+          <xs:element minOccurs="0" name="user" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="versionDocument">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="ContentItems" type="tns:content"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Properties" type="tns:property"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="isMinorVersion" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="checkoutUser" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="versionDocumentResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="version" type="tns:version"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="version">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="currentVersionDocumentId" type="xs:string"/>
+          <xs:element minOccurs="0" name="documentId" type="xs:string"/>
+          <xs:element minOccurs="0" name="isCheckedOut" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="releasedVersionDocumentId" type="xs:string"/>
+          <xs:element minOccurs="0" name="version" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="refreshUserSession">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="sessionId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="refreshUserSessionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="sessionId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="checkoutDocument">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="checkoutUser" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="checkoutDocumentResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="checkoutUser" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="hasAnnotations">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="hasAnnotationsResponse">
+        <xs:sequence>
+          <xs:element name="return" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getAnnotations">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getAnnotationsResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="annotations" type="tns:annotation"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="annotation">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="access" type="xs:int"/>
+          <xs:element minOccurs="0" name="actionType" type="xs:string"/>
+          <xs:element minOccurs="0" name="annotationType" type="tns:annotationType"/>
+          <xs:element minOccurs="0" name="annotationXML" type="xs:string"/>
+          <xs:element minOccurs="0" name="distinguishedName" type="xs:string"/>
+          <xs:element minOccurs="0" name="id" type="xs:string"/>
+          <xs:element minOccurs="0" name="permissionLevel" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getReleasedVersion">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getReleasedVersionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="releasedVersionId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="searchReleasedDocuments">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="searchCriteria" type="tns:searchCriteria"/>
+          <xs:element minOccurs="0" name="includeSubclasses" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="searchOptions" type="tns:adaptedMap"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="searchCriteria">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="contentSearchString" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="fields" type="xs:string"/>
+          <xs:element minOccurs="0" name="maxResults" type="xs:string"/>
+          <xs:element minOccurs="0" name="searchTimeoutSeconds" type="xs:int"/>
+          <xs:element minOccurs="0" name="whereClause" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="searchReleasedDocumentsResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="documentList" type="tns:document"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="createUserSession">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="createUserSessionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="sessionId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="freezeVersion">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="freezeVersionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="version" type="tns:version"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getDocumentVersions">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getDocumentVersionsResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="versionList" type="tns:version"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="forceVersionDocument">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="ContentItems" type="tns:content"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="Properties" type="tns:property"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="isMinorVersion" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="forceVersionDocumentResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="version" type="tns:version"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="promoteVersion">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="promoteVersionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="version" type="tns:version"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="unrelateCompoundDocuments">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="parentDocId" type="xs:string"/>
+          <xs:element minOccurs="0" name="childDocId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="unrelateCompoundDocumentsResponse">
+        <xs:sequence/>
+      </xs:complexType>
+      <xs:complexType name="getCurrentVersion">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getCurrentVersionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="currentVersionId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getDocumentProperties">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getDocumentPropertiesResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="properties" type="tns:property"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="relateCompoundDocuments">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="parentDocId" type="xs:string"/>
+          <xs:element minOccurs="0" name="childDocId" type="xs:string"/>
+          <xs:element name="cascadeDeletions" type="xs:boolean"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="relateCompoundDocumentsResponse">
+        <xs:sequence/>
+      </xs:complexType>
+      <xs:complexType name="exportDocuments">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="searchCriteria" type="tns:searchCriteria"/>
+          <xs:element minOccurs="0" name="includeSubclasses" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="searchOptions" type="tns:adaptedMap"/>
+          <xs:element minOccurs="0" name="businessApplication" type="xs:string"/>
+          <xs:element name="includeDocumentContent" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="enduser" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="exportDocumentsResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" ref="tns:exportDocumentResponse"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="exportDocumentResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="transactionId" type="xs:string"/>
+          <xs:element minOccurs="0" name="encryptionKey" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getPropertyMappings">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getPropertyMappingsResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="properties" type="tns:property"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="demoteVersion">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="demoteVersionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="version" type="tns:version"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="addDocument">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="document" type="tns:document"/>
+          <xs:element minOccurs="0" name="transactionId" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="addDocumentResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="searchDocuments">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="searchCriteria" type="tns:searchCriteria"/>
+          <xs:element minOccurs="0" name="includeSubclasses" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="searchOptions" type="tns:adaptedMap"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="searchDocumentsResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="documentList" type="tns:document"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="addItemToChoiceList">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="propertyName" type="xs:string"/>
+          <xs:element minOccurs="0" name="choiceValue" type="xs:string"/>
+          <xs:element minOccurs="0" name="choiceDisplayValue" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="addItemToChoiceListResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="property" type="tns:property"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="cancelDocumentCheckout">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+          <xs:element minOccurs="0" name="checkoutUser" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="cancelDocumentCheckoutResponse">
+        <xs:sequence/>
+      </xs:complexType>
+      <xs:complexType name="getDocumentThumbnails">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="docId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getDocumentThumbnailsResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="thumbnail" type="tns:thumbnail"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="thumbnail">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="createdOn" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="id" type="xs:string"/>
+          <xs:element minOccurs="0" name="image" type="xs:base64Binary"/>
+          <xs:element minOccurs="0" name="mimeType" type="xs:string"/>
+          <xs:element minOccurs="0" name="modifiedOn" type="xs:dateTime"/>
+          <xs:element minOccurs="0" name="name" type="xs:string"/>
+          <xs:element name="sequenceNumber" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="searchCurrentDocuments">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="searchCriteria" type="tns:searchCriteria"/>
+          <xs:element minOccurs="0" name="includeSubclasses" type="xs:boolean"/>
+          <xs:element minOccurs="0" name="searchOptions" type="tns:adaptedMap"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="searchCurrentDocumentsResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="documentList" type="tns:document"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="removeItemFromChoiceList">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="username" type="xs:string"/>
+          <xs:element minOccurs="0" name="password" type="xs:string"/>
+          <xs:element minOccurs="0" name="docClassName" type="xs:string"/>
+          <xs:element minOccurs="0" name="propertyName" type="xs:string"/>
+          <xs:element minOccurs="0" name="choiceValue" type="xs:string"/>
+          <xs:element minOccurs="0" name="additionalParams" type="tns:adaptedMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="removeItemFromChoiceListResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="property" type="tns:property"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:simpleType name="propertyDataType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="STRING"/>
+          <xs:enumeration value="STRING_LIST"/>
+          <xs:enumeration value="DATE"/>
+          <xs:enumeration value="DATE_LIST"/>
+          <xs:enumeration value="INTEGER"/>
+          <xs:enumeration value="INTEGER_LIST"/>
+          <xs:enumeration value="DOUBLE"/>
+          <xs:enumeration value="DOUBLE_LIST"/>
+          <xs:enumeration value="CHOICE_LIST_STRING"/>
+          <xs:enumeration value="CHOICE_LIST_INTEGER"/>
+          <xs:enumeration value="CHOICE_LIST_STRING_MULTI"/>
+          <xs:enumeration value="CHOICE_LIST_INTEGER_MULTI"/>
+          <xs:enumeration value="BOOLEAN"/>
+          <xs:enumeration value="BOOLEAN_LIST"/>
+          <xs:enumeration value="UNKOWN"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="ExportDocumentRequestStatusEnum">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="QUEUED_INITIAL_REQUEST_RECEIVED"/>
+          <xs:enumeration value="EXPORT_DATA_PROCESSING"/>
+          <xs:enumeration value="EXPORT_DATA_ERRORED"/>
+          <xs:enumeration value="EXPORT_DATA_COMPLETE"/>
+          <xs:enumeration value="EXPORT_DOCUMENT_PROCESSING"/>
+          <xs:enumeration value="EXPORT_DOCUMENT_ERRORED"/>
+          <xs:enumeration value="COMPLETE"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="annotationType">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="REDACTION"/>
+          <xs:enumeration value="TEXT"/>
+          <xs:enumeration value="SHAPE"/>
+          <xs:enumeration value="STAMP"/>
+          <xs:enumeration value="HIGHLIGHT"/>
+          <xs:enumeration value="UNKOWN"/>
+          <xs:enumeration value="NOTE"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="P8ServiceException" type="tns:P8ServiceException"/>
+      <xs:complexType name="P8ServiceException">
+        <xs:sequence>
+          <xs:element name="errorCode" nillable="true" type="xs:string"/>
+          <xs:element name="message" nillable="true" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="getDocumentByID">
+    <wsdl:part element="tns:getDocumentByID" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSupportedMimeTypes">
+    <wsdl:part element="tns:getSupportedMimeTypes" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="freezeVersionResponse">
+    <wsdl:part element="tns:freezeVersionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="refreshUserSession">
+    <wsdl:part element="tns:refreshUserSession" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="checkoutDocument">
+    <wsdl:part element="tns:checkoutDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="relateCompoundDocumentsResponse">
+    <wsdl:part element="tns:relateCompoundDocumentsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAnnotations">
+    <wsdl:part element="tns:getAnnotations" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="exportDocumentRequestStatusResponse">
+    <wsdl:part element="tns:exportDocumentRequestStatusResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addDocumentResponse">
+    <wsdl:part element="tns:addDocumentResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="cancelDocumentCheckoutResponse">
+    <wsdl:part element="tns:cancelDocumentCheckoutResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="searchCurrentDocumentsResponse">
+    <wsdl:part element="tns:searchCurrentDocumentsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getCurrentVersionResponse">
+    <wsdl:part element="tns:getCurrentVersionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="hasAnnotationsResponse">
+    <wsdl:part element="tns:hasAnnotationsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="promoteVersionResponse">
+    <wsdl:part element="tns:promoteVersionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDocumentVersions">
+    <wsdl:part element="tns:getDocumentVersions" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="forceVersionDocument">
+    <wsdl:part element="tns:forceVersionDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="versionDocumentResponse">
+    <wsdl:part element="tns:versionDocumentResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateDocumentPropertiesResponse">
+    <wsdl:part element="tns:updateDocumentPropertiesResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="checkoutDocumentResponse">
+    <wsdl:part element="tns:checkoutDocumentResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="exportDocumentsResponse">
+    <wsdl:part element="tns:exportDocumentsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="unrelateCompoundDocuments">
+    <wsdl:part element="tns:unrelateCompoundDocuments" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="searchDocumentsResponse">
+    <wsdl:part element="tns:searchDocumentsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDocumentPropertiesResponse">
+    <wsdl:part element="tns:getDocumentPropertiesResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="relateCompoundDocuments">
+    <wsdl:part element="tns:relateCompoundDocuments" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="exportDocuments">
+    <wsdl:part element="tns:exportDocuments" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="demoteVersion">
+    <wsdl:part element="tns:demoteVersion" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addItemToChoiceList">
+    <wsdl:part element="tns:addItemToChoiceList" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="searchReleasedDocumentsResponse">
+    <wsdl:part element="tns:searchReleasedDocumentsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="searchCurrentDocuments">
+    <wsdl:part element="tns:searchCurrentDocuments" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="demoteVersionResponse">
+    <wsdl:part element="tns:demoteVersionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="removeItemFromChoiceList">
+    <wsdl:part element="tns:removeItemFromChoiceList" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPropertyMappingsResponse">
+    <wsdl:part element="tns:getPropertyMappingsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDocumentByIDResponse">
+    <wsdl:part element="tns:getDocumentByIDResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="forceCancelDocumentCheckout">
+    <wsdl:part element="tns:forceCancelDocumentCheckout" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createUserSessionResponse">
+    <wsdl:part element="tns:createUserSessionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateDocumentProperties">
+    <wsdl:part element="tns:updateDocumentProperties" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDocumentVersionsResponse">
+    <wsdl:part element="tns:getDocumentVersionsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="exportDocumentRequestStatus">
+    <wsdl:part element="tns:exportDocumentRequestStatus" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="unrelateCompoundDocumentsResponse">
+    <wsdl:part element="tns:unrelateCompoundDocumentsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="versionDocument">
+    <wsdl:part element="tns:versionDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="refreshUserSessionResponse">
+    <wsdl:part element="tns:refreshUserSessionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="hasAnnotations">
+    <wsdl:part element="tns:hasAnnotations" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="forceVersionDocumentResponse">
+    <wsdl:part element="tns:forceVersionDocumentResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addItemToChoiceListResponse">
+    <wsdl:part element="tns:addItemToChoiceListResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getReleasedVersion">
+    <wsdl:part element="tns:getReleasedVersion" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="searchReleasedDocuments">
+    <wsdl:part element="tns:searchReleasedDocuments" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createUserSession">
+    <wsdl:part element="tns:createUserSession" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSupportedMimeTypesResponse">
+    <wsdl:part element="tns:getSupportedMimeTypesResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="freezeVersion">
+    <wsdl:part element="tns:freezeVersion" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDocumentThumbnailsResponse">
+    <wsdl:part element="tns:getDocumentThumbnailsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="promoteVersion">
+    <wsdl:part element="tns:promoteVersion" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getCurrentVersion">
+    <wsdl:part element="tns:getCurrentVersion" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDocumentProperties">
+    <wsdl:part element="tns:getDocumentProperties" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="forceCancelDocumentCheckoutResponse">
+    <wsdl:part element="tns:forceCancelDocumentCheckoutResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPropertyMappings">
+    <wsdl:part element="tns:getPropertyMappings" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="P8ServiceException">
+    <wsdl:part element="tns:P8ServiceException" name="P8ServiceException">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addDocument">
+    <wsdl:part element="tns:addDocument" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getReleasedVersionResponse">
+    <wsdl:part element="tns:getReleasedVersionResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="searchDocuments">
+    <wsdl:part element="tns:searchDocuments" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="cancelDocumentCheckout">
+    <wsdl:part element="tns:cancelDocumentCheckout" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getDocumentThumbnails">
+    <wsdl:part element="tns:getDocumentThumbnails" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="removeItemFromChoiceListResponse">
+    <wsdl:part element="tns:removeItemFromChoiceListResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAnnotationsResponse">
+    <wsdl:part element="tns:getAnnotationsResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="P8Service">
+    <wsdl:operation name="forceCancelDocumentCheckout">
+      <wsdl:input message="tns:forceCancelDocumentCheckout" name="forceCancelDocumentCheckout">
+      </wsdl:input>
+      <wsdl:output message="tns:forceCancelDocumentCheckoutResponse" name="forceCancelDocumentCheckoutResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDocumentByID">
+      <wsdl:input message="tns:getDocumentByID" name="getDocumentByID">
+      </wsdl:input>
+      <wsdl:output message="tns:getDocumentByIDResponse" name="getDocumentByIDResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getSupportedMimeTypes">
+      <wsdl:input message="tns:getSupportedMimeTypes" name="getSupportedMimeTypes">
+      </wsdl:input>
+      <wsdl:output message="tns:getSupportedMimeTypesResponse" name="getSupportedMimeTypesResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="updateDocumentProperties">
+      <wsdl:input message="tns:updateDocumentProperties" name="updateDocumentProperties">
+      </wsdl:input>
+      <wsdl:output message="tns:updateDocumentPropertiesResponse" name="updateDocumentPropertiesResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="exportDocumentRequestStatus">
+      <wsdl:input message="tns:exportDocumentRequestStatus" name="exportDocumentRequestStatus">
+      </wsdl:input>
+      <wsdl:output message="tns:exportDocumentRequestStatusResponse" name="exportDocumentRequestStatusResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="versionDocument">
+      <wsdl:input message="tns:versionDocument" name="versionDocument">
+      </wsdl:input>
+      <wsdl:output message="tns:versionDocumentResponse" name="versionDocumentResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="refreshUserSession">
+      <wsdl:input message="tns:refreshUserSession" name="refreshUserSession">
+      </wsdl:input>
+      <wsdl:output message="tns:refreshUserSessionResponse" name="refreshUserSessionResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="checkoutDocument">
+      <wsdl:input message="tns:checkoutDocument" name="checkoutDocument">
+      </wsdl:input>
+      <wsdl:output message="tns:checkoutDocumentResponse" name="checkoutDocumentResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="hasAnnotations">
+      <wsdl:input message="tns:hasAnnotations" name="hasAnnotations">
+      </wsdl:input>
+      <wsdl:output message="tns:hasAnnotationsResponse" name="hasAnnotationsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getAnnotations">
+      <wsdl:input message="tns:getAnnotations" name="getAnnotations">
+      </wsdl:input>
+      <wsdl:output message="tns:getAnnotationsResponse" name="getAnnotationsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getReleasedVersion">
+      <wsdl:input message="tns:getReleasedVersion" name="getReleasedVersion">
+      </wsdl:input>
+      <wsdl:output message="tns:getReleasedVersionResponse" name="getReleasedVersionResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="searchReleasedDocuments">
+      <wsdl:input message="tns:searchReleasedDocuments" name="searchReleasedDocuments">
+      </wsdl:input>
+      <wsdl:output message="tns:searchReleasedDocumentsResponse" name="searchReleasedDocumentsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="createUserSession">
+      <wsdl:input message="tns:createUserSession" name="createUserSession">
+      </wsdl:input>
+      <wsdl:output message="tns:createUserSessionResponse" name="createUserSessionResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="freezeVersion">
+      <wsdl:input message="tns:freezeVersion" name="freezeVersion">
+      </wsdl:input>
+      <wsdl:output message="tns:freezeVersionResponse" name="freezeVersionResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDocumentVersions">
+      <wsdl:input message="tns:getDocumentVersions" name="getDocumentVersions">
+      </wsdl:input>
+      <wsdl:output message="tns:getDocumentVersionsResponse" name="getDocumentVersionsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="forceVersionDocument">
+      <wsdl:input message="tns:forceVersionDocument" name="forceVersionDocument">
+      </wsdl:input>
+      <wsdl:output message="tns:forceVersionDocumentResponse" name="forceVersionDocumentResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="promoteVersion">
+      <wsdl:input message="tns:promoteVersion" name="promoteVersion">
+      </wsdl:input>
+      <wsdl:output message="tns:promoteVersionResponse" name="promoteVersionResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="unrelateCompoundDocuments">
+      <wsdl:input message="tns:unrelateCompoundDocuments" name="unrelateCompoundDocuments">
+      </wsdl:input>
+      <wsdl:output message="tns:unrelateCompoundDocumentsResponse" name="unrelateCompoundDocumentsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getCurrentVersion">
+      <wsdl:input message="tns:getCurrentVersion" name="getCurrentVersion">
+      </wsdl:input>
+      <wsdl:output message="tns:getCurrentVersionResponse" name="getCurrentVersionResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDocumentProperties">
+      <wsdl:input message="tns:getDocumentProperties" name="getDocumentProperties">
+      </wsdl:input>
+      <wsdl:output message="tns:getDocumentPropertiesResponse" name="getDocumentPropertiesResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="relateCompoundDocuments">
+      <wsdl:input message="tns:relateCompoundDocuments" name="relateCompoundDocuments">
+      </wsdl:input>
+      <wsdl:output message="tns:relateCompoundDocumentsResponse" name="relateCompoundDocumentsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="exportDocuments">
+      <wsdl:input message="tns:exportDocuments" name="exportDocuments">
+      </wsdl:input>
+      <wsdl:output message="tns:exportDocumentsResponse" name="exportDocumentsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPropertyMappings">
+      <wsdl:input message="tns:getPropertyMappings" name="getPropertyMappings">
+      </wsdl:input>
+      <wsdl:output message="tns:getPropertyMappingsResponse" name="getPropertyMappingsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="demoteVersion">
+      <wsdl:input message="tns:demoteVersion" name="demoteVersion">
+      </wsdl:input>
+      <wsdl:output message="tns:demoteVersionResponse" name="demoteVersionResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="addDocument">
+      <wsdl:input message="tns:addDocument" name="addDocument">
+      </wsdl:input>
+      <wsdl:output message="tns:addDocumentResponse" name="addDocumentResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="searchDocuments">
+      <wsdl:input message="tns:searchDocuments" name="searchDocuments">
+      </wsdl:input>
+      <wsdl:output message="tns:searchDocumentsResponse" name="searchDocumentsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="addItemToChoiceList">
+      <wsdl:input message="tns:addItemToChoiceList" name="addItemToChoiceList">
+      </wsdl:input>
+      <wsdl:output message="tns:addItemToChoiceListResponse" name="addItemToChoiceListResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="cancelDocumentCheckout">
+      <wsdl:input message="tns:cancelDocumentCheckout" name="cancelDocumentCheckout">
+      </wsdl:input>
+      <wsdl:output message="tns:cancelDocumentCheckoutResponse" name="cancelDocumentCheckoutResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDocumentThumbnails">
+      <wsdl:input message="tns:getDocumentThumbnails" name="getDocumentThumbnails">
+      </wsdl:input>
+      <wsdl:output message="tns:getDocumentThumbnailsResponse" name="getDocumentThumbnailsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="searchCurrentDocuments">
+      <wsdl:input message="tns:searchCurrentDocuments" name="searchCurrentDocuments">
+      </wsdl:input>
+      <wsdl:output message="tns:searchCurrentDocumentsResponse" name="searchCurrentDocumentsResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="removeItemFromChoiceList">
+      <wsdl:input message="tns:removeItemFromChoiceList" name="removeItemFromChoiceList">
+      </wsdl:input>
+      <wsdl:output message="tns:removeItemFromChoiceListResponse" name="removeItemFromChoiceListResponse">
+      </wsdl:output>
+      <wsdl:fault message="tns:P8ServiceException" name="P8ServiceException">
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="P8ServiceImplServiceSoapBinding" type="tns:P8Service">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="forceCancelDocumentCheckout">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="forceCancelDocumentCheckout">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="forceCancelDocumentCheckoutResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getSupportedMimeTypes">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getSupportedMimeTypes">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getSupportedMimeTypesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDocumentByID">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getDocumentByID">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getDocumentByIDResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="updateDocumentProperties">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updateDocumentProperties">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updateDocumentPropertiesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="exportDocumentRequestStatus">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="exportDocumentRequestStatus">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="exportDocumentRequestStatusResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="versionDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="versionDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="versionDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="refreshUserSession">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="refreshUserSession">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="refreshUserSessionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="checkoutDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="checkoutDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="checkoutDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="hasAnnotations">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="hasAnnotations">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="hasAnnotationsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getAnnotations">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getAnnotations">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getAnnotationsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getReleasedVersion">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getReleasedVersion">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getReleasedVersionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="searchReleasedDocuments">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="searchReleasedDocuments">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="searchReleasedDocumentsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="createUserSession">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createUserSession">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createUserSessionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="freezeVersion">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="freezeVersion">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="freezeVersionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDocumentVersions">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getDocumentVersions">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getDocumentVersionsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="forceVersionDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="forceVersionDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="forceVersionDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="promoteVersion">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="promoteVersion">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="promoteVersionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="unrelateCompoundDocuments">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="unrelateCompoundDocuments">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="unrelateCompoundDocumentsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getCurrentVersion">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getCurrentVersion">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getCurrentVersionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDocumentProperties">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getDocumentProperties">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getDocumentPropertiesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="relateCompoundDocuments">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="relateCompoundDocuments">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="relateCompoundDocumentsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="exportDocuments">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="exportDocuments">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="exportDocumentsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getPropertyMappings">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getPropertyMappings">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getPropertyMappingsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="demoteVersion">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="demoteVersion">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="demoteVersionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="addDocument">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="addDocument">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="addDocumentResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="searchDocuments">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="searchDocuments">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="searchDocumentsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="addItemToChoiceList">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="addItemToChoiceList">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="addItemToChoiceListResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="cancelDocumentCheckout">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="cancelDocumentCheckout">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="cancelDocumentCheckoutResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getDocumentThumbnails">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getDocumentThumbnails">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getDocumentThumbnailsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="searchCurrentDocuments">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="searchCurrentDocuments">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="searchCurrentDocumentsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="removeItemFromChoiceList">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="removeItemFromChoiceList">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="removeItemFromChoiceListResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="P8ServiceException">
+        <soap:fault name="P8ServiceException" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="P8ServiceImplService">
+    <wsdl:port name="P8ServiceImplPort" binding="tns:P8ServiceImplServiceSoapBinding">
+      <soap:address location="https://tst-gateway.berkley-bts.com/wrb/ecm/p8service"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

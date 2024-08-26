@@ -10,7 +10,7 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" >
+<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab" >
     <Tabs>
         @{
             foreach (var a in AllAddresses)
@@ -22,7 +22,7 @@
                 if (a == AllAddresses.Last())
                 {
                     <RadzenTabsItem Icon="add" Text="Add Address" >
-                        <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@(() => LoadAddresses())"></AddressCreate>
+                        <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@AddressCreated"></AddressCreate>
                     </RadzenTabsItem>
                 }
             }
@@ -35,6 +35,7 @@
     [Parameter] public Guid LegalEntityId{ get; set; }
     private RadzenTabs addressTabs { get; set; }
     private List<Address> AllAddresses { get; set; } = new List<Address>();
+    private int selectedTab { get; set; } = 0;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -46,16 +47,42 @@
 
     private async Task LoadAddresses()
     {
+        //TODO: Deal with selecting a new tab when this is fired by an Address Created event. 
         var result = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId);
 
         if (result.Errors.Any())
         {
             //TODO: Handle Errors
+            LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+        }
+        else
+        {
+            AllAddresses = result.Data;
+            selectedTab = 0;
+        }
+    }
+    private async Task AddressCreated(Guid addressToSelect)
+    {
+        var result = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId);
+
+        if (result.Errors.Any())
+        {
+            //TODO: Handle Errors
+            LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
         }
         else
         {
             AllAddresses = result.Data;
             
+            var selected = AllAddresses.FirstOrDefault(a => a.Id == addressToSelect);
+            if (null != selected)
+            {
+                selectedTab = AllAddresses.IndexOf(selected);
+            }
+            else
+            {
+                selectedTab = 0;
+            }
         }
     }
 }

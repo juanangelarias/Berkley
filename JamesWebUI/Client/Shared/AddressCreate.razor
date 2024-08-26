@@ -83,7 +83,8 @@
 
 @code {
     [Parameter] public Guid LegalEntityId { get; set; }
-    [Parameter] public EventCallback<string> AddressCreated { get; set; }
+    [Parameter] public EventCallback<Guid> AddressCreated { get; set; }
+
     private Address NewAddress { get; set; } = new Address()
         {
             Id = Guid.NewGuid()
@@ -108,7 +109,7 @@
                 var result = await DataAccess.CreateAddress(NewAddress.Id, NewAddress.Address1, NewAddress.Address2, NewAddress.Address3,
                 NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
                 LegalEntityId, addressType);
-                await AddressCreated.InvokeAsync("");
+                await AddressCreated.InvokeAsync(NewAddress.Id);
             }
             catch
             {

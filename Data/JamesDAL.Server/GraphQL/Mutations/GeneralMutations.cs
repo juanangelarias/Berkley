@@ -1,4 +1,5 @@
 ﻿using HotChocolate.Authorization;
+using Microsoft.IdentityModel.Tokens;
 
 namespace James.Data.Server.GraphQL.Mutations
 {
@@ -11,54 +12,71 @@ namespace James.Data.Server.GraphQL.Mutations
             Guid legalEntityId, string addressType, 
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            //TODO: Address Validator?
-            Address NewAddress = new Address()
+            try
             {
-                Id = addressId,
-                Address1 = address1,
-                Address2 = address2,
-                Address3 = address3,
-                City = city,
-                StateCode = stateCode,
-                PostalCode = postalCode
-            };
-            var ctx = await contextFactory.CreateDbContextAsync();
+                
+                Address NewAddress = new Address()
+                {
+                    Id = addressId,
+                    Address1 = address1,
+                    Address2 = address2,
+                    Address3 = address3,
+                    City = city,
+                    StateCode = stateCode,
+                    PostalCode = postalCode
+                };
 
-            ctx.Addresses.Add(NewAddress);
+                //TODO: Address Validator?
 
-            var newLEAddress = new LegalEntityAddress
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                ctx.Addresses.Add(NewAddress);
+
+                var newLEAddress = new LegalEntityAddress
+                {
+                    LegalEntityId = legalEntityId,
+                    AddressId = addressId,
+                    Type = addressType
+                };
+
+                ctx.LegalEntityAddresses.Add(newLEAddress);
+                await ctx.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
             {
-                LegalEntityId = legalEntityId,
-                AddressId = addressId,
-                Type = addressType
-            };
-
-            ctx.LegalEntityAddresses.Add(newLEAddress);
-            await ctx.SaveChangesAsync();
-
-            return true;
+                return false;
+            }
         }
 
         [Authorize]
         public async Task<bool> DeleteAddress(Guid addressId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            //TODO: Error Handling
-            var ctx = await contextFactory.CreateDbContextAsync();
-
-            var address = await ctx.Addresses.SingleOrDefaultAsync(x => x.Id == addressId);
-            var leAddress = await ctx.LegalEntityAddresses.SingleOrDefaultAsync(x => x.AddressId == addressId);
-
-            if (leAddress != null)
+            //TODO: Better Error Handling
+            try
             {
-                ctx.LegalEntityAddresses.Remove(leAddress);
-            }
-            if (address != null) 
-            {
-                ctx.Addresses.Remove(address);
-            }
+                var ctx = await contextFactory.CreateDbContextAsync();
 
-            await ctx.SaveChangesAsync();
-            return true;
+                var address = await ctx.Addresses.SingleOrDefaultAsync(x => x.Id == addressId);
+                var leAddress = await ctx.LegalEntityAddresses.SingleOrDefaultAsync(x => x.AddressId == addressId);
+
+                if (leAddress != null)
+                {
+                    ctx.LegalEntityAddresses.Remove(leAddress);
+                }
+                if (address != null)
+                {
+                    ctx.Addresses.Remove(address);
+                }
+
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

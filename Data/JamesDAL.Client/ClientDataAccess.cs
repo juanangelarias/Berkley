@@ -135,7 +135,7 @@ namespace James.Data.Client
                 LegalEntityId = legalEntityId,
                 AddressType = addressType
             });
-            return new SaveDataResult();
+            return GraphQLSaveResult(result);
         }
         public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
         {
@@ -144,7 +144,8 @@ namespace James.Data.Client
             {
                 AddressId = addressId
             });
-            return new SaveDataResult();
+
+            return GraphQLSaveResult(result);
         }
         public async Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId)
         {

@@ -98,6 +98,54 @@ namespace James.Data.Client
             return await ExecuteGet<Address>(
                 async () => await jamesClient.GetAddress.ExecuteAsync(addressId), "Address");
         }
+        public async Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes()
+        {
+            //TODO: Implement
+            return await ExecuteGet<List<AddressTypeDm>>(
+                async () => await jamesClient.GetAddressTypes.ExecuteAsync(), "AddressTypes");
+        }
+        public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
+        {
+            var result = await jamesClient.SetAddress.ExecuteAsync(new SetAddressInput
+            {
+                AddressId = address.Id,
+                Address1 = address.Address1,
+                Address2 = address.Address2,
+                Address3 = address.Address3,
+                City = address.City,
+                StateCode = address.StateCode,
+                PostalCode = address.PostalCode,
+                Identifier = identifier
+            });
+            return GraphQLSaveResult(result);
+        }
+        public async Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
+            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType)
+        {
+            //TODO: Error handling
+            var result = await jamesClient.CreateAddress.ExecuteAsync(new CreateAddressInput()
+            {
+                AddressId = addressId,
+                Address1 = address1,
+                Address2 = address2,
+                Address3 = address3,
+                City = city,
+                StateCode = stateCode,
+                PostalCode = postalCode,
+                LegalEntityId = legalEntityId,
+                AddressType = addressType
+            });
+            return new SaveDataResult();
+        }
+        public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
+        {
+            //TODO: Error Handling
+            var result = await jamesClient.DeleteAddress.ExecuteAsync(new DeleteAddressInput()
+            {
+                AddressId = addressId
+            });
+            return new SaveDataResult();
+        }
         public async Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId)
         {
             return await ExecuteGet<List<Address>>(
@@ -338,21 +386,7 @@ namespace James.Data.Client
             }
         }
 
-        public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
-        {
-            var result = await jamesClient.SetAddress.ExecuteAsync(new SetAddressInput
-            {
-                AddressId = address.Id,
-                Address1 = address.Address1,
-                Address2 = address.Address2,
-                Address3 = address.Address3,
-                City = address.City,
-                StateCode = address.StateCode,
-                PostalCode = address.PostalCode,
-                Identifier = identifier
-            });
-            return GraphQLSaveResult(result);
-        }
+
         public async Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus, Guid changedBy, string? comments)
         {
             var saveResult = await jamesClient.CreateAgencyStatusLog.ExecuteAsync(new CreateAgencyStatusLogInput

@@ -99,6 +99,7 @@ try
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
+    builder.Services.AddScoped<GeneralMutations>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents();

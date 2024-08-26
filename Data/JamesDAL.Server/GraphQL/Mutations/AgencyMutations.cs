@@ -67,7 +67,8 @@ namespace James.Data.Server.GraphQL.Mutations
             return new Agency();
         }
         [Authorize]
-        public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, string identifier,
+        public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, 
+            string? address3, string city, string? stateCode, string? postalCode, string identifier,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

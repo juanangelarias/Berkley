@@ -12,6 +12,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<State>>> GetAllStates();
         public Task<IDataAccessResult<List<Branch>>> GetAllBranches();
         public Task<IDataAccessResult<Address>> GetAddress(Guid addressId);
+        public Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes();
         public Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId);
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
@@ -29,6 +30,9 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
+        public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
+            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
+        public Task<ISaveDataResult> DeleteAddress(Guid addressId);
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
             Guid changedBy, string? comments);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, 

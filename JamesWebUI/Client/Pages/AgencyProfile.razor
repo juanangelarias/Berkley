@@ -160,35 +160,6 @@
                 <RadzenColumn Size="6">
                     <RadzenFieldset Text="Addresses">
                          <LegalEntityAddressEditor LegalEntityId="@_agencyToDisplay.Id" />
-                       @*  <RadzenTabs>
-                            <Tabs>
-                                <RadzenTabsItem Text="Main">
-                                    <AddressDisplay @ref="_mainAddressEditor" EditorIdentifier="@EditorIdentifier"
-                                                    Name="MainAddress" AddressId="@_mainAddress.Id" />
-                                </RadzenTabsItem>
-                                <RadzenTabsItem Text="Billing">
-                                    <AddressDisplay @ref="_billingAddressEditor" EditorIdentifier="@EditorIdentifier"
-                                                    Name="BillingAddress" AddressId="@_billingAddress.Id" />
-                                </RadzenTabsItem>
-                                <RadzenTabsItem Text="Errors & Omissions Coverage">
-                                    <RadzenStack Orientation="Orientation.Vertical">
-                                        <RadzenStack Orientation="Orientation.Horizontal">
-                                            <RadzenFormField AllowFloatingLabel="false" Text="Carrier" Variant="Variant.Text" Style="width: 400px;">
-                                                <RadzenTextBox Value="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Carrier"
-                                                               Disabled="!ErrorsAndOmissionsEditMode" />
-                                            </RadzenFormField>
-                                            <RadzenButton Icon="edit" Visible="!ErrorsAndOmissionsEditMode" Size="ButtonSize.Small" Text="Edit" Click="@(() => ErrorsAndOmissionsEditMode = !ErrorsAndOmissionsEditMode)" />
-                                        </RadzenStack>
-                                        <RadzenFormField AllowFloatingLabel="false" Text="Exp Date" Variant="Variant.Text">
-                                            <RadzenTextBox Value="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Expiration.ToShortDateString()" Disabled="!ErrorsAndOmissionsEditMode" />
-                                        </RadzenFormField>
-                                        <RadzenFormField AllowFloatingLabel="false" Text="Limit" Variant="Variant.Text">
-                                            <RadzenTextBox Value="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.CoverageLimit.ToString("c0")" Disabled="!ErrorsAndOmissionsEditMode" />
-                                        </RadzenFormField>
-                                    </RadzenStack>
-                                </RadzenTabsItem>
-                            </Tabs>
-                        </RadzenTabs> *@
                     </RadzenFieldset>
                 </RadzenColumn>
             </RadzenRow>

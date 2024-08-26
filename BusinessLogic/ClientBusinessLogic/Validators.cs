@@ -1,4 +1,5 @@
-﻿using System.Net.Mail;
+﻿using James.Shared.Model;
+using System.Net.Mail;
 
 namespace ClientBusinessLogic
 {
@@ -26,6 +27,24 @@ namespace ClientBusinessLogic
                 {
                     return false;
                 }
+            }
+        }
+        public static bool ValidateAddress(Address address)
+        {
+            if (address == null)
+            {
+                return false;
+            }
+            else if (string.IsNullOrWhiteSpace(address.Address1) ||
+                string.IsNullOrWhiteSpace(address.City) ||
+                string.IsNullOrWhiteSpace(address.StateCode) ||
+                string.IsNullOrWhiteSpace(address.PostalCode))
+            {
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
     }

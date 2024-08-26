@@ -64,3 +64,13 @@ query GetAllLegalEntityAddresses($input: UUID!) {
     }
   }
 } 
+
+query GetAddressTypes{
+  addressTypes {
+    created
+    id
+    modified
+    order
+    type
+  }
+}

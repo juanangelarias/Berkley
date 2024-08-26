@@ -20,6 +20,8 @@ type Mutation {
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
   setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
+  createAddress(input: CreateAddressInput!): CreateAddressPayload!
+  deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -59,6 +61,7 @@ type Query {
   allInventoryDocTypes: [InventoryDocumentDm!]!
   allBranches: [Branch!]!
   allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
+  addressTypes: [AddressTypeDm!]!
   allInsurers: [Insurer!]!
   obligeeById(id: UUID!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -68,6 +71,27 @@ type Query {
 type Subscription {
   onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
   onLicenseModified: AgencyLicense!
+}
+
+type Branch {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  branchKey: String!
+  name: String!
+  branchOfficeAddressId: UUID!
+  phoneId: UUID!
+  homeOffice: Boolean!
+  emailReceiver: String!
+  bccreceiver: String
+  generalLedgerCode: String
+  active: Boolean!
+  region: String!
+  headCount: Int
+  accounts: [Account!]!
+  branchOfficeAddress: Address!
+  phone: PhoneNumber!
+  regionNavigation: RegionDm!
 }
 
 type Agent {
@@ -465,27 +489,6 @@ type Account {
   emailAddresses: [LegalEntityEmail!]!
 }
 
-type Branch {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  branchKey: String!
-  name: String!
-  branchOfficeAddressId: UUID!
-  phoneId: UUID!
-  homeOffice: Boolean!
-  emailReceiver: String!
-  bccreceiver: String
-  generalLedgerCode: String
-  active: Boolean!
-  region: String!
-  headCount: Int
-  accounts: [Account!]!
-  branchOfficeAddress: Address!
-  phone: PhoneNumber!
-  regionNavigation: RegionDm!
-}
-
 type DivisionDm {
   id: UUID!
   created: DateTime!
@@ -566,6 +569,15 @@ type InventoryDocumentDm {
   modified: DateTime!
   documentType: String!
   agencyInventories: [AgencyInventory!]!
+}
+
+type AddressTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  order: Int!
+  legalEntityAddresses: [LegalEntityAddress!]!
 }
 
 type Insurer {
@@ -832,6 +844,22 @@ type LegalEntityEmail {
   typeNavigation: EmailTypeDm!
 }
 
+type Surcharge {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  state: String!
+  amount: Float!
+  effective: Date!
+  expiration: Date!
+  exclude: Boolean!
+  type: String!
+  createdBy: UUID!
+  createdByNavigation: UserProfile!
+  stateNavigation: State!
+  typeNavigation: SurchargeTypeDm!
+}
+
 type NotebookEntry {
   id: UUID!
   created: DateTime!
@@ -947,15 +975,6 @@ type ImagingCategoryTabDivision {
   categoryNavigation: ImagingCategory!
   divisionCodeNavigation: DivisionDm!
   tabNameNavigation: ImagingTab!
-}
-
-type RegionDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  region: String!
-  bondTransactions: [BondTransaction!]!
-  branches: [Branch!]!
 }
 
 type WatchStatusDm {
@@ -1717,20 +1736,13 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type Surcharge {
+type RegionDm {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  state: String!
-  amount: Float!
-  effective: Date!
-  expiration: Date!
-  exclude: Boolean!
-  type: String!
-  createdBy: UUID!
-  createdByNavigation: UserProfile!
-  stateNavigation: State!
-  typeNavigation: SurchargeTypeDm!
+  region: String!
+  bondTransactions: [BondTransaction!]!
+  branches: [Branch!]!
 }
 
 type UserLineOfAuthority {
@@ -1817,15 +1829,6 @@ type AgentSystemDm {
   onlineBondSystems: [OnlineBondSystem!]!
 }
 
-type AddressTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  order: Int!
-  legalEntityAddresses: [LegalEntityAddress!]!
-}
-
 type PhoneTypeDm {
   id: UUID!
   created: DateTime!
@@ -1858,14 +1861,6 @@ type ReferenceTypeDm {
   type: String!
   description: String
   accountReferences: [AccountReference!]!
-}
-
-type SurchargeTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  surcharges: [Surcharge!]!
 }
 
 type BidStatusDm {
@@ -2161,6 +2156,14 @@ type Notebook {
   notebookEntries: [NotebookEntry!]!
 }
 
+type SurchargeTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  surcharges: [Surcharge!]!
+}
+
 type SicratioTypeDm {
   id: UUID!
   created: DateTime!
@@ -2403,6 +2406,30 @@ input SetAgencyGeneralInfoInput {
 }
 
 type SetAgencyGeneralInfoPayload {
+  boolean: Boolean
+}
+
+input CreateAddressInput {
+  addressId: UUID!
+  address1: String!
+  address2: String
+  address3: String
+  city: String!
+  stateCode: String
+  postalCode: String
+  legalEntityId: UUID!
+  addressType: String!
+}
+
+type CreateAddressPayload {
+  boolean: Boolean
+}
+
+input DeleteAddressInput {
+  addressId: UUID!
+}
+
+type DeleteAddressPayload {
   boolean: Boolean
 }
 

@@ -12,13 +12,21 @@
 
 <RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" >
     <Tabs>
-        @foreach (var a in AllAddresses)
-        {
-            <RadzenTabsItem Text="@(a.LegalEntityAddress.Type)">
-                <AddressDisplay AddressId="a.Id" />   
-            </RadzenTabsItem>
+        @{
+            foreach (var a in AllAddresses)
+            {
+                <RadzenTabsItem Text="@(a.LegalEntityAddress.Type)" >
+                    <AddressDisplay AddressId="a.Id" StateChanged="@(() => LoadAddresses())" />
+                </RadzenTabsItem>
+                
+                if (a == AllAddresses.Last())
+                {
+                    <RadzenTabsItem Icon="add" Text="Add Address" >
+                        <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@(() => LoadAddresses())"></AddressCreate>
+                    </RadzenTabsItem>
+                }
+            }
         }
-        <RadzenTabsItem Icon="add" Text="Add Address" />
     </Tabs>
 </RadzenTabs>
 
@@ -27,17 +35,18 @@
     [Parameter] public Guid LegalEntityId{ get; set; }
     private RadzenTabs addressTabs { get; set; }
     private List<Address> AllAddresses { get; set; } = new List<Address>();
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        await LoadAddresses(LegalEntityId);
+        await LoadAddresses();
 
     }
 
-    private async Task LoadAddresses(Guid legalEntityId)
+    private async Task LoadAddresses()
     {
-        var result = await DataAccess.GetAllLegalEntityAddresses(legalEntityId);
+        var result = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId);
 
         if (result.Errors.Any())
         {
@@ -46,7 +55,7 @@
         else
         {
             AllAddresses = result.Data;
-            addressTabs.SelectedIndex = 0;
+            
         }
     }
 }

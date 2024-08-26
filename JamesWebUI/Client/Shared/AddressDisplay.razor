@@ -14,6 +14,7 @@
                 <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
                 <RadzenText Text="Detailed View" />
                 <RadzenButton Icon="edit" Visible="!EditMode" Size="ButtonSize.Small" Variant="Variant.Text" Click="ToggleEditMode" />
+                <RadzenButton Icon="delete" Visible="!EditMode" Size="ButtonSize.Small" Variant="Variant.Text" Click="DeleteAddress" />
             </RadzenStack>
         </RadzenColumn>
     </RadzenRow>
@@ -121,6 +122,7 @@
     [Parameter] public Guid AddressId { get; set; }
     [Parameter] public string Name { get; set; } = "Address";
     [Parameter] public string EditorIdentifier { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public EventCallback<string> StateChanged { get; set; }
     public Address AddressToDisplay { get; set; } = new();
     private Address? _loadedAddress;
     public bool DetailedMode { get; private set; }
@@ -177,7 +179,10 @@
             .Intersect(compareLoadedWithCurrent.DifferentProperties)
             .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
         if (autoChange.Any())
+        {
             SameOrDifferent.CopyTheseProperties(newAddress, AddressToDisplay, autoChange);
+            StateHasChanged();
+        }
         if (askAboutChange.Any())
         {
             //Open side dialog to ask user which version to take
@@ -210,7 +215,12 @@
     {
         EditMode = !EditMode;
     }
-
+    private async Task DeleteAddress()
+    {
+        //TODO: Implement
+        var result = await _dataAccess.DeleteAddress(AddressId);
+        await StateChanged.InvokeAsync("");
+    }
     private async Task Cancel()
     { EditMode = false; await LoadAddress(); }
 }

@@ -8,7 +8,7 @@ using System.Diagnostics.Contracts;
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
@@ -123,6 +123,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAddress(addressId, contextFactory));
         }
+        public async Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes()
+        {
+            return await ExecuteGet(async () => await query.GetAddressTypes(contextFactory));
+        }
         public async Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId)
         {
             return await ExecuteGet(async () => await query.GetAllLegalEntityAddresses(legalEntityId, contextFactory));
@@ -158,7 +162,21 @@ namespace James.Data.Server
                 address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
                 eventSender, contextFactory, loggingService)));
         }
-
+        public async Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
+            string? address3, string city, string? stateCode, string? postalCode,
+            Guid legalEntityId, string addressType)
+        {
+            //TODO: Error Handling?
+            return await ExecuteSave(async () =>
+                await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode, 
+                legalEntityId, addressType, contextFactory));
+        }
+        public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
+        {
+            //TODO: Implement
+            return await ExecuteSave(async () =>
+            await generalMutations.DeleteAddress(addressId, contextFactory));
+        }
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
             bool need1099, bool nasbp, string branchKey)
         {

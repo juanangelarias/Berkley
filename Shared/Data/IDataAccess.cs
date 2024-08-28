@@ -8,6 +8,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber);
         public Task<IDataAccessResult<Obligee>> GetObligeeById(Guid id);
         public Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId);
+        public Task<IDataAccessResult<List<Bond>>> GetObligeeSecondaryBonds(Guid obligeeId);
         public Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId);
         public Task<IDataAccessResult<List<Insurer>>> GetAllInsurers();
         public Task<IDataAccessResult<List<State>>> GetAllStates();

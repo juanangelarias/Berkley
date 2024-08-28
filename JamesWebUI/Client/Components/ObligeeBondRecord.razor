@@ -6,12 +6,14 @@
 
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
+
+
 <style>
     #popup-statusFilterDropDown{
         width: 200px !important;
     }
 </style>
-
+<RenderModeBackground></RenderModeBackground>
 <RadzenDataGrid TItem="Bond" @ref="@obligeePrimaryBondsGrid" Data="ObligeePrimaryBonds" EmptyText="No records to display."
                 AllowColumnPicking="true" AllowFiltering="true" AllowSorting="true" AllowGrouping="true"
                 FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"

@@ -1,0 +1,36 @@
+﻿@using James.Shared
+@inherits JamesLayoutComponentBase
+
+@inject NavigationManager NavigationManager
+
+
+@inject NotificationService NotificationService
+@inject IDataAccess _dataAccess
+
+<RadzenStack Orientation="Orientation.Horizontal">
+    <RadzenFormField Text="Country Code" AllowFloatingLabel="false" Variant="Variant.Text">
+        <RadzenTextBox />
+    </RadzenFormField>
+    <RadzenFormField Text="Phone Number" AllowFloatingLabel="false" Variant="Variant.Text">
+        <RadzenTextBox />
+    </RadzenFormField>
+    <RadzenFormField Text="Extension" AllowFloatingLabel="false" Variant="Variant.Text">
+        <RadzenTextBox />
+    </RadzenFormField>
+</RadzenStack>
+
+@code {
+    [Parameter] public Guid PhoneId { get; set; }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadPhoneNumber();
+    }
+    async Task LoadPhoneNumber()
+    {
+        //TODO: Implement graphql
+    }
+}

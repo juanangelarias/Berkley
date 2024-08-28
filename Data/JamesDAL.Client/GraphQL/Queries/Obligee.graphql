@@ -31,3 +31,22 @@ query GetObligeePrimaryBonds($input: UUID!){
     }
   }
 } 
+
+query GetObligeeSecondaryBonds($input: UUID!){
+  obligeeSecondaryBonds (obligeeId: $input){
+    status
+    bondNumber
+    sfaaclassCode
+    bondType{
+      bondType
+    }
+    effective
+    expiration
+    accountNumNavigation{
+      accountNum
+      idNavigation{
+        fullName
+      }
+    }
+  }
+} 

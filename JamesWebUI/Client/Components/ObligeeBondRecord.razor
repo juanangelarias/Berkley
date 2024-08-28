@@ -1,0 +1,129 @@
+﻿@using System.Globalization;
+@using James.Data.Client.GraphQL;
+@using James.Data.Client.GraphQL.Components;
+@using StrawberryShake;
+@using James.Shared;
+
+@inherits JamesLayoutComponentBase
+@inject IDataAccess DataAccess
+<style>
+    #popup-statusFilterDropDown{
+        width: 200px !important;
+    }
+</style>
+
+<RadzenDataGrid TItem="Bond" @ref="@obligeePrimaryBondsGrid" Data="ObligeePrimaryBonds" EmptyText="No records to display."
+                AllowColumnPicking="true" AllowFiltering="true" AllowSorting="true" AllowGrouping="true"
+                FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                Density="Density.Compact" Style="border-radius: 15px;height:400px;" IsLoading="@isLoading">
+    <Columns>
+        <RadzenDataGridColumn Title="Status" Property="Status" Width="125px" Type="typeof(List<String>)"
+            Filterable="true" FilterValue="@StatusFilter" FilterProperty="Status" FilterOperator="FilterOperator.Contains">
+            <Template Context="bond">
+                @{
+                    if (bond.Status.Trim() == "Open")
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success" />
+                        </RadzenStack>
+
+                    }
+                    else
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger" />
+                        </RadzenStack>
+                    }
+                }
+            </Template>
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@StatusFilter" @ref="statusFilterDropDown" Change="StatusFilterChange" id="statusFilterDropDown"
+                                TValue="List<String>" Multiple="true" AllowClear="true"
+                                Data="@ObligeePrimaryBonds.Select(b => b.Status).Distinct().ToList()">
+
+                </RadzenDropDown>
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Bond No." Property="BondNumber" />
+        <RadzenDataGridColumn Title="Company Name" Property="AccountNumNavigation.IdNavigation.FullName" />
+        <RadzenDataGridColumn Title="Branch" />
+        <RadzenDataGridColumn Title="SAA" Property="SfaaclassCode" Filterable="false"/>
+        <RadzenDataGridColumn Title="Type" Property="BondType.BondType" Width="150px"
+                              FilterValue="BondTypeFilter" FilterProperty="BondType.BondType" FilterOperator="FilterOperator.Contains" Type="typeof(List<String>)">
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@BondTypeFilter" @ref="bondTypeFilterDropDown" Change="BondTypeFilterChange"
+                                TValue="List<String>" Multiple="true" AllowClear="true"
+                                Data="@ObligeePrimaryBonds.Select(b=>b.BondType.BondType).Distinct().ToList()" />
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Begin Date" Property="Effective" FormatString="{0:d}" />
+        <RadzenDataGridColumn Title="End Date" Property="Expiration" FormatString="{0:d}" />
+    </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+    </LoadingTemplate>
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public Guid ObligeeId { get; set; }
+    private List<Bond> ObligeePrimaryBonds { get; set; } = new List<Bond>();
+    private bool isLoading { get; set; } = false;
+    private RadzenDataGrid<Bond> obligeePrimaryBondsGrid;
+    private RadzenDropDown<List<String>> bondTypeFilterDropDown { get; set; }
+
+    private List<String> StatusFilter = null;
+    private List<String> BondTypeFilter = null;
+    private RadzenDropDown<List<String>> statusFilterDropDown { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+        await LoadObligeeBonds();
+    }
+
+    private async Task LoadObligeeBonds()
+    {
+        var result = await DataAccess.GetObligeePrimaryBonds(ObligeeId);
+
+        if (result.Errors.Any() || null == result.Data)
+        {
+            //TODO: Error handling
+        }
+        else
+        {
+            ObligeePrimaryBonds = result.Data;
+        }
+    }
+
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
+    }
+
+    async Task StatusFilterChange()
+    {
+        await ShowLoading();
+
+        if (StatusFilter != null && !StatusFilter.Any())
+        {
+            StatusFilter = null;
+        }
+        await obligeePrimaryBondsGrid.Reload();
+    }
+    async Task BondTypeFilterChange()
+    {
+        await ShowLoading();
+
+        if (BondTypeFilter != null && !BondTypeFilter.Any())
+        {
+            BondTypeFilter = null;
+        }
+        await obligeePrimaryBondsGrid.Reload();
+    }
+}

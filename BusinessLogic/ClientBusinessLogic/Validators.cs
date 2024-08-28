@@ -31,6 +31,7 @@ namespace ClientBusinessLogic
         }
         public static bool ValidateAddress(Address address)
         {
+             
             if (address == null)
             {
                 return false;
@@ -44,6 +45,7 @@ namespace ClientBusinessLogic
             }
             else
             {
+                //TODO: Check for valid StateCode.
                 return true;
             }
         }

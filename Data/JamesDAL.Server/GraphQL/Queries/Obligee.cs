@@ -18,5 +18,14 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.ObligeeTypeDms.ToListAsync();
         }
+        [Authorize]
+        public async Task<List<Bond>> GetObligeePrimaryBonds(Guid obligeeId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.Bonds.Where(b => b.ObligeeId == obligeeId)
+                .Include(b => b.AccountNumNavigation)
+                .ThenInclude(b => b.IdNavigation)
+                .ToListAsync();
+        }
     }
 }

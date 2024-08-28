@@ -40,6 +40,10 @@ namespace James.Data.Client
             return await ExecuteGet<Obligee?>(async () => await jamesClient.GetObligeeById.ExecuteAsync(id), "ObligeeById");
             
         }
+        public async Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId)
+        {
+            return await ExecuteGet<List<Bond>>(async () => await jamesClient.GetObligeePrimaryBonds.ExecuteAsync(obligeeId), "ObligeePrimaryBonds");
+        }
         public async Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber)
         {
             var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
@@ -100,7 +104,6 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes()
         {
-            //TODO: Implement
             return await ExecuteGet<List<AddressTypeDm>>(
                 async () => await jamesClient.GetAddressTypes.ExecuteAsync(), "AddressTypes");
         }

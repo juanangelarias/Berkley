@@ -2,7 +2,6 @@
   obligeeById (id: $input){
     created
     id
-    middleInitial
     modified
     notes
     obligeeNum
@@ -10,6 +9,25 @@
     type
     idNavigation{
       fullName
+    }
+  }
+} 
+
+query GetObligeePrimaryBonds($input: UUID!){
+  obligeePrimaryBonds (obligeeId: $input){
+    status
+    bondNumber
+    sfaaclassCode
+    bondType{
+      bondType
+    }
+    effective
+    expiration
+    accountNumNavigation{
+      accountNum
+      idNavigation{
+        fullName
+      }
     }
   }
 } 

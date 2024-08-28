@@ -10,21 +10,30 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab" >
+<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab"  >
     <Tabs>
         @{
-            foreach (var a in AllAddresses)
+            if (AllAddresses.Any())
             {
-                <RadzenTabsItem Text="@(a.LegalEntityAddress.Type)" >
-                    <AddressDisplay AddressId="a.Id" StateChanged="@(() => LoadAddresses())" />
-                </RadzenTabsItem>
-                
-                if (a == AllAddresses.Last())
+                foreach (var a in AllAddresses)
                 {
-                    <RadzenTabsItem Icon="add" Text="Add Address" >
-                        <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@AddressCreated"></AddressCreate>
+                    <RadzenTabsItem Text="@(a.LegalEntityAddress.Type)" >
+                        <AddressDisplay AddressId="a.Id" StateChanged="@(() => LoadAddresses())" />
                     </RadzenTabsItem>
+                    if (a == AllAddresses.Last())
+                    {
+                        <RadzenTabsItem Icon="add" Text="Add Address" >
+                            <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@AddressCreated"></AddressCreate>
+                        </RadzenTabsItem>
+                    }
+
                 }
+            }
+            else
+            {
+                <RadzenTabsItem Icon="add" Text="Add Address">
+                    <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@AddressCreated"></AddressCreate>
+                </RadzenTabsItem>
             }
         }
     </Tabs>

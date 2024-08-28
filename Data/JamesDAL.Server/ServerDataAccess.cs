@@ -52,6 +52,24 @@ namespace James.Data.Server
                 return new DataAccessResult<Obligee?> { Errors = [ex.Message] };
             }
         }
+        public async Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId)
+        {
+            try 
+            {
+                var result = await query.GetObligeePrimaryBonds(obligeeId, contextFactory);
+                return null == result
+                    ? new DataAccessResult<List<Bond>> { Errors = ["No bonds were found for supplied ObligeeID"] }
+                    : new DataAccessResult<List<Bond>> { Data = result };
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<List<Bond>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<List<Bond>> { Errors = [ex.Message] };
+            }
+        }
         public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyInventory(agencyId, contextFactory));

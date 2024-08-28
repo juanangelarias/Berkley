@@ -13,35 +13,68 @@
 
 <Theme />
 
-<RadzenPanel Style="border-radius: 20px;">
-    <RadzenRow>
-        <RadzenColumn Size="6">
-            <RadzenFieldset Text="General Info">
-                <RadzenRow>
-                    <RadzenColumn Size="3">
-                        <RadzenFormField Text="Obligee No." AllowFloatingLabel="false">
-                            <RadzenText Text="@ObligeeToDisplay.ObligeeNum" Style="width: 95%" />
-                        </RadzenFormField>
-                    </RadzenColumn>
-                    <RadzenColumn>
-                        <RadzenFormField Text="Name" AllowFloatingLabel="false">
-                            <RadzenText Text="@ObligeeToDisplay.IdNavigation.FullName" Style="width: 95%" />
-                        </RadzenFormField>
-                    </RadzenColumn>
-                </RadzenRow>
-            </RadzenFieldset>
-        </RadzenColumn>
-        <RadzenColumn>
-            <LegalEntityAddressEditor LegalEntityId="@ObligeeToDisplay.Id" />
-        </RadzenColumn>
-    </RadzenRow>
-</RadzenPanel>
+<RadzenStack Orientation="Orientation.Vertical">
+    <RadzenPanel Style="border-radius: 20px;">
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenFieldset Text="General Info">
+                    <RadzenRow>
+                        <RadzenColumn Size="3">
+                            <RadzenFormField Variant="Variant.Text" Text="Obligee No." AllowFloatingLabel="false" Style="width: 95%">
+                                <RadzenTextBox Value="@ObligeeToDisplay.ObligeeNum" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                        <RadzenColumn>
+                            <RadzenFormField Variant="Variant.Text" Text="Name" AllowFloatingLabel="false" Style="width: 95%">
+                                <RadzenTextBox Value="@ObligeeToDisplay.IdNavigation.FullName" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="6">
+                            <RadzenFormField Variant="Variant.Text" Text="Type" AllowFloatingLabel="false" Style="width:95%">
+                                <RadzenTextBox Value="@ObligeeToDisplay.Type" />
+                            </RadzenFormField>
+                        </RadzenColumn>
+                        <RadzenColumn>
+                            <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" ToggleIcon="check"
+                                                @bind-Value="@ObligeeToDisplay.PrintStatusLetter" Text="Status Letters" Style="border-radius: 20px;" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenFieldset>
+            </RadzenColumn>
+            <RadzenColumn>
+                <RadzenFieldset Text="Addresses">
+                    <LegalEntityAddressEditor LegalEntityId="@ObligeeToDisplay.Id" />
+                </RadzenFieldset>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenPanel>
+    <RadzenPanel Style="border-radius: 20px;">
+        <RadzenRow>
+            <RadzenTabs>
+                <Tabs>
+                    <RadzenTabsItem Text="Primary">
+                        <ObligeeBondRecord ObligeeId="@ObligeeToDisplay.Id" />
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Secondary">
+
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+        </RadzenRow>
+    </RadzenPanel>
+</RadzenStack>
+
 
 
 
 @code {
-    [Parameter] public string ObligeeId { get; set; }
-    public James.Shared.Model.Obligee ObligeeToDisplay { get; set; } = new Obligee();
+    [Parameter] public string ObligeeId { get; set; } = "";
+    public James.Shared.Model.Obligee ObligeeToDisplay { get; set; } = new Obligee()
+        {
+            IdNavigation = new LegalEntity()
+        };
 
 
     protected override async Task OnParametersSetAsync()
@@ -53,15 +86,18 @@
 
     private async Task LoadObligee()
     {
-        var result = await _dataAccess.GetObligeeById(Guid.Parse(ObligeeId));
+        if (!String.IsNullOrWhiteSpace(ObligeeId))
+        {
+            var result = await _dataAccess.GetObligeeById(Guid.Parse(ObligeeId));
 
-        if (result.Errors.Any() && result.Data != null)
-        {
-            //TODO: Log errors
-        }
-        else
-        {
-            ObligeeToDisplay = result.Data;
+            if (result.Errors.Any() && result.Data != null)
+            {
+                //TODO: Log errors
+            }
+            else
+            {
+                ObligeeToDisplay = result.Data;
+            }
         }
     }
 }

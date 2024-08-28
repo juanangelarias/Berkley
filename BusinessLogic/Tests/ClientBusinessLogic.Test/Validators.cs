@@ -1,4 +1,5 @@
 using ClientBusinessLogic;
+using James.Shared.Model;
 
 namespace ClientBusinessLogic.Test
 {
@@ -21,6 +22,30 @@ namespace ClientBusinessLogic.Test
             Assert.False(ClientBusinessLogic.Validators.ValidateEmail(invalidEmail2));
             Assert.False(ClientBusinessLogic.Validators.ValidateEmail(invalidEmail3));
 
+        }
+
+        [Fact]
+        public void ValidateAddressTest()
+        {
+            Address validAddress = new Address()
+            {
+                Address1 = "Test",
+                Address2 = "Test",
+                City = "Test",
+                StateCode = "IA",
+                PostalCode = "12345"
+            };
+            Address invalidAddress1 = new Address()
+            {
+                Address1 = "",
+                Address2 = "",
+                City = "",
+                StateCode = "",
+                PostalCode = "12345"
+            };
+
+            Assert.True(ClientBusinessLogic.Validators.ValidateAddress(validAddress));
+            Assert.False(ClientBusinessLogic.Validators.ValidateAddress(invalidAddress1));
         }
     }
 }

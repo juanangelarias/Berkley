@@ -34,6 +34,29 @@ namespace James.Data.Server
                 return new DataAccessResult<Agency> { Errors = [ex.Message] };
             }
         }
+        public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)
+        {
+            try
+            {
+                //var result = await query.GetObligeeById(searchString, contextFactory);
+                //return null == result
+                //    ? new DataAccessResult<Obligee?> { Errors = ["No obligee with the supplied id was found."] }
+                //    : new DataAccessResult<Obligee?> { Data = result };
+                //TODO: Implement
+                var result = await query.SearchObligeesAsync(searchString, contextFactory);
+                return null == result
+                    ? new DataAccessResult<List<Obligee>> { Errors = ["No obligees were found."] }
+                    : new DataAccessResult<List<Obligee>> { Data = result };
+            }
+            catch (AggregateException ae)
+            {
+                return new DataAccessResult<List<Obligee>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new DataAccessResult<List<Obligee>> { Errors = [ex.Message] };
+            }
+        }
         public async Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id)
         {
             try

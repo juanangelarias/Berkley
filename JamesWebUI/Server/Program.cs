@@ -8,7 +8,6 @@ using James.Shared;
 using James.Shared.Data;
 using James.Shared.Server;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Client.Services;
 using JamesWebUI.Server;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using JamesWebUI.Server.SharedServices;

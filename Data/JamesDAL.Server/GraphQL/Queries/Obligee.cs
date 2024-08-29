@@ -19,6 +19,15 @@ namespace James.Data.Server.GraphQL.Queries
             return await ctx.ObligeeTypeDms.ToListAsync();
         }
         [Authorize]
+        public async Task<List<Obligee>> SearchObligeesAsync(string searchString, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.Obligees
+                .Include(o => o.IdNavigation)
+                .Where(o => o.IdNavigation.FullName.Contains(searchString))
+                .ToListAsync();
+        }
+        [Authorize]
         public async Task<List<Bond>> GetObligeePrimaryBonds(Guid obligeeId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

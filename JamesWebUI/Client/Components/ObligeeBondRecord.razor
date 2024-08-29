@@ -7,20 +7,22 @@
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
 
-
 <style>
-    #popup-statusFilterDropDown{
+    #popup-statusFilterDropDown {
         width: 200px !important;
     }
 </style>
-<RenderModeBackground></RenderModeBackground>
-<RadzenDataGrid TItem="Bond" @ref="@obligeePrimaryBondsGrid" Data="ObligeePrimaryBonds" EmptyText="No records to display."
+
+<RadzenDataGrid TItem="Bond" @ref="@obligeePrimaryBondsGrid" Data="ObligeeBonds" EmptyText="No records to display."
                 AllowColumnPicking="true" AllowFiltering="true" AllowSorting="true" AllowGrouping="true"
                 FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 Density="Density.Compact" Style="border-radius: 15px;height:400px;" IsLoading="@isLoading">
+    <HeaderTemplate>
+        <RadzenButton Text="Export XLS" Icon="grid_on" Click="@(args => Export("excel"))"/>
+    </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn Title="Status" Property="Status" Width="125px" Type="typeof(List<String>)"
-            Filterable="true" FilterValue="@StatusFilter" FilterProperty="Status" FilterOperator="FilterOperator.Contains">
+                              Filterable="true" FilterValue="@StatusFilter" FilterProperty="Status" FilterOperator="FilterOperator.Contains">
             <Template Context="bond">
                 @{
                     if (bond.Status.Trim() == "Open")
@@ -41,7 +43,7 @@
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@StatusFilter" @ref="statusFilterDropDown" Change="StatusFilterChange" id="statusFilterDropDown"
                                 TValue="List<String>" Multiple="true" AllowClear="true"
-                                Data="@ObligeePrimaryBonds.Select(b => b.Status).Distinct().ToList()">
+                                Data="@ObligeeBonds.Select(b => b.Status).Distinct().ToList()">
 
                 </RadzenDropDown>
             </FilterTemplate>
@@ -49,13 +51,13 @@
         <RadzenDataGridColumn Title="Bond No." Property="BondNumber" />
         <RadzenDataGridColumn Title="Company Name" Property="AccountNumNavigation.IdNavigation.FullName" />
         <RadzenDataGridColumn Title="Branch" />
-        <RadzenDataGridColumn Title="SAA" Property="SfaaclassCode" Filterable="false"/>
+        <RadzenDataGridColumn Title="SAA" Property="SfaaclassCode" Filterable="false" />
         <RadzenDataGridColumn Title="Type" Property="BondType.BondType" Width="150px"
                               FilterValue="BondTypeFilter" FilterProperty="BondType.BondType" FilterOperator="FilterOperator.Contains" Type="typeof(List<String>)">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@BondTypeFilter" @ref="bondTypeFilterDropDown" Change="BondTypeFilterChange"
                                 TValue="List<String>" Multiple="true" AllowClear="true"
-                                Data="@ObligeePrimaryBonds.Select(b=>b.BondType.BondType).Distinct().ToList()" />
+                                Data="@ObligeeBonds.Select(b=>b.BondType.BondType).Distinct().ToList()" />
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Begin Date" Property="Effective" FormatString="{0:d}" />
@@ -68,7 +70,9 @@
 
 @code {
     [Parameter] public Guid ObligeeId { get; set; }
-    private List<Bond> ObligeePrimaryBonds { get; set; } = new List<Bond>();
+    [Parameter] public ObligeeBondTypes BondTypesToDisplay { get; set; } = ObligeeBondTypes.Primary;
+
+    private List<Bond> ObligeeBonds { get; set; } = new List<Bond>();
     private bool isLoading { get; set; } = false;
     private RadzenDataGrid<Bond> obligeePrimaryBondsGrid;
     private RadzenDropDown<List<String>> bondTypeFilterDropDown { get; set; }
@@ -87,7 +91,16 @@
 
     private async Task LoadObligeeBonds()
     {
-        var result = await DataAccess.GetObligeePrimaryBonds(ObligeeId);
+        IDataAccessResult<List<Bond>> result;
+
+        if (BondTypesToDisplay == ObligeeBondTypes.Primary)
+        {
+            result = await DataAccess.GetObligeePrimaryBonds(ObligeeId);
+        }
+        else
+        {
+            result = await DataAccess.GetObligeeSecondaryBonds(ObligeeId);
+        }
 
         if (result.Errors.Any() || null == result.Data)
         {
@@ -95,7 +108,7 @@
         }
         else
         {
-            ObligeePrimaryBonds = result.Data;
+            ObligeeBonds = result.Data;
         }
     }
 
@@ -127,5 +140,14 @@
             BondTypeFilter = null;
         }
         await obligeePrimaryBondsGrid.Reload();
+    }
+    public void Export(string type)
+    {
+        
+    }
+    public enum ObligeeBondTypes
+    {
+        Primary,
+        Secondary
     }
 }

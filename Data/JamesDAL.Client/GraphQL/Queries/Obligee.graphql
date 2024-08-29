@@ -1,4 +1,20 @@
-﻿query GetObligeeById ($input: UUID!){
+﻿query SearchObligees($input: String!){
+  searchObligees (searchString: $input) {
+    created
+    editedBy
+    id
+    modified
+    notes
+    obligeeNum
+    printStatusLetter
+    type
+    idNavigation{
+      fullName
+    }
+  }
+}
+
+query GetObligeeById ($input: UUID!){
   obligeeById (id: $input){
     created
     id

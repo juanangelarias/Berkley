@@ -35,6 +35,10 @@ namespace James.Data.Client
             //    throw;
             //}
         }
+        public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)
+        {
+            return await ExecuteGet<List<Obligee>>(async () => await jamesClient.SearchObligees.ExecuteAsync(searchString), "SearchObligee");
+        }
         public async Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id)
         {
             return await ExecuteGet<Obligee?>(async () => await jamesClient.GetObligeeById.ExecuteAsync(id), "ObligeeById");

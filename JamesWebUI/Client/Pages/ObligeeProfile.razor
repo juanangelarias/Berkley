@@ -15,6 +15,9 @@
 
 <RadzenStack Orientation="Orientation.Vertical">
     <RadzenPanel Style="border-radius: 20px;">
+        <ObligeeSearch/>
+    </RadzenPanel>
+    <RadzenPanel Style="border-radius: 20px;">
         <RadzenRow>
             <RadzenColumn Size="6">
                 <RadzenFieldset Text="General Info">
@@ -44,21 +47,31 @@
                 </RadzenFieldset>
             </RadzenColumn>
             <RadzenColumn>
-                <RadzenFieldset Text="Addresses">
-                    <LegalEntityAddressEditor LegalEntityId="@ObligeeToDisplay.Id" />
-                </RadzenFieldset>
+                <RadzenTabs>
+                    <Tabs>
+                        <RadzenTabsItem Text="Addresses">
+                            <LegalEntityAddressEditor LegalEntityId="@ObligeeToDisplay.Id" />
+                        </RadzenTabsItem>
+                        <RadzenTabsItem Text="Phone Numbers">
+                            <PhoneDisplay />
+                        </RadzenTabsItem>
+                    </Tabs>
+                </RadzenTabs>
             </RadzenColumn>
         </RadzenRow>
     </RadzenPanel>
     <RadzenPanel Style="border-radius: 20px;">
         <RadzenRow>
+            <RadzenText Text="Bond Record" TextStyle="TextStyle.DisplayH5" />
+        </RadzenRow>
+        <RadzenRow>
             <RadzenTabs>
                 <Tabs>
                     <RadzenTabsItem Text="Primary">
-                        <ObligeeBondRecord ObligeeId="@ObligeeToDisplay.Id" />
+                        <ObligeeBondRecord ObligeeId="@ObligeeToDisplay.Id" BondTypesToDisplay="ObligeeBondRecord.ObligeeBondTypes.Primary" />
                     </RadzenTabsItem>
                     <RadzenTabsItem Text="Secondary">
-
+                        <ObligeeBondRecord ObligeeId="@ObligeeToDisplay.Id" BondTypesToDisplay="ObligeeBondRecord.ObligeeBondTypes.Secondary" />
                     </RadzenTabsItem>
                 </Tabs>
             </RadzenTabs>

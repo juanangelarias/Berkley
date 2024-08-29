@@ -65,6 +65,7 @@ type Query {
   allInsurers: [Insurer!]!
   obligeeById(id: UUID!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
+  searchObligees(searchString: String!): [Obligee!]!
   obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!
   obligeeSecondaryBonds(obligeeId: UUID!): [Bond!]!
   allStates: [State!]!

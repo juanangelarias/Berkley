@@ -24,7 +24,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 EntityType = "Agency",
                 IsIndividual = false
             };
-            //TODO: Figure out Agency Number
+            
             Agency newAgency = new Agency()
             {
                 Id = newId,

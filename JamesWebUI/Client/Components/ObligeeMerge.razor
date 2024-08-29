@@ -12,19 +12,17 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenDropZone TItem="Obligee">
-<ChildContent>
-    <RadzenStack Orientation="Orientation.Horizontal">
-            <RadzenDropZone TItem="Obligee" Style="flex: 1; gap: 1rem;">
-            <RadzenText Text="Search Results"/>
-        </RadzenDropZone>
-            <RadzenDropZone TItem="Obligee" class="rz-display-flex rz-flex-column rz-background-color-success-lighter rz-border-success-light rz-border-radius-2 rz-p-4" Style="flex: 1; gap: 1rem;">
-                <RadzenText Text="Obligees To Merge" />
-            </RadzenDropZone>
-    </RadzenStack>
-</ChildContent>
-</RadzenDropZone>
+
+<RadzenPickList @bind-Source="@SourceObligees" @bind-Target="@TargetObligees" />
 
 @code {
+    private IEnumerable<Obligee> SourceObligees { get; set; } = new List<Obligee>();
+    private IEnumerable<Obligee> TargetObligees { get; set; } = new List<Obligee>();
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        //TODO: Load data
+    }
 }

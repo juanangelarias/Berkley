@@ -21,4 +21,8 @@ public partial class AgencyCommission
     public int? Maximum { get; set; }
 
     public double Rate { get; set; }
+
+    public DateTime Effective { get; set; }
+
+    public DateTime? Expires { get; set; }
 }

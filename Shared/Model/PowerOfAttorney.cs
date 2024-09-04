@@ -18,7 +18,7 @@ public partial class PowerOfAttorney
 
     public int? Limit { get; set; }
 
-    public string? Serial { get; set; }
+    public string? ReferenceNumber { get; set; }
 
     public DateOnly? FirstIssued { get; set; }
 

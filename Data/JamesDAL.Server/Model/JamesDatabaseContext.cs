@@ -214,6 +214,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<Obligee> Obligees { get; set; }
 
+    public virtual DbSet<ObligeeContact> ObligeeContacts { get; set; }
+
     public virtual DbSet<ObligeeTypeDm> ObligeeTypeDms { get; set; }
 
     public virtual DbSet<OnlineBondSystem> OnlineBondSystems { get; set; }
@@ -411,6 +413,7 @@ public partial class JamesDatabaseContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.GeographicSpread).HasMaxLength(255);
             entity.Property(e => e.HomeOfficeReviewed).HasColumnType("datetime");
+            entity.Property(e => e.IndemnityComments).HasMaxLength(100);
             entity.Property(e => e.InterimWips).HasColumnName("InterimWIPs");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
@@ -942,6 +945,10 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Effective)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Expires).HasColumnType("datetime");
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
@@ -3019,7 +3026,7 @@ public partial class JamesDatabaseContext : DbContext
                 .HasName("PK_KeyPersonel")
                 .IsClustered(false);
 
-            entity.ToTable("KeyPersonnel", tb => tb.HasTrigger("trgKeyPersonnelModified"));
+            entity.ToTable(tb => tb.HasTrigger("trgKeyPersonnelModified"));
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.AccountNum)
@@ -3488,6 +3495,27 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_Obligee_ObligeeTypeDM");
         });
 
+        modelBuilder.Entity<ObligeeContact>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.ToTable("ObligeeContact");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(40);
+
+            entity.HasOne(d => d.IdNavigation).WithOne(p => p.ObligeeContact)
+                .HasForeignKey<ObligeeContact>(d => d.Id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ObligeeContact_LegalEntity");
+        });
+
         modelBuilder.Entity<ObligeeTypeDm>(entity =>
         {
             entity.HasKey(e => e.Type).IsClustered(false);
@@ -3862,9 +3890,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Serial)
-                .HasMaxLength(200)
-                .IsUnicode(false);
+            entity.Property(e => e.ReferenceNumber).HasMaxLength(100);
 
             entity.HasOne(d => d.Agency).WithMany(p => p.PowerOfAttorneys)
                 .HasPrincipalKey(p => p.Id)

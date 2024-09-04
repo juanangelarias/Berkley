@@ -84,7 +84,9 @@ public partial class LegalEntity
 
     public virtual Obligee? Obligee { get; set; }
 
-    public virtual LegalEntity? ParentNavigation { get; set; } = null;
+    public virtual ObligeeContact? ObligeeContact { get; set; }
+
+    public virtual LegalEntity? ParentNavigation { get; set; } = null!;
 
     public virtual ICollection<PersonalFinancialHeader> PersonalFinancialHeaders { get; set; } = new List<PersonalFinancialHeader>();
 }

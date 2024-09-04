@@ -1,9 +1,6 @@
 ﻿query SearchObligees($input: String!){
   searchObligees (searchString: $input) {
-    created
-    editedBy
     id
-    modified
     notes
     obligeeNum
     printStatusLetter

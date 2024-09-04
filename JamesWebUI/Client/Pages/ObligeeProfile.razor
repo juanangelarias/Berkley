@@ -10,6 +10,7 @@
 
 @inject IDataAccess _dataAccess
 @attribute [Authorize]
+
 <RenderModeBackground></RenderModeBackground>
 <Theme />
 
@@ -84,6 +85,8 @@
 
 @code {
     [Parameter] public string ObligeeId { get; set; } = "";
+    private bool PossibleDuplicates { get; set; } = false;
+
     public James.Shared.Model.Obligee ObligeeToDisplay { get; set; } = new Obligee()
         {
             IdNavigation = new LegalEntity()
@@ -112,5 +115,9 @@
                 ObligeeToDisplay = result.Data;
             }
         }
+    }
+    private async Task LoadPossibleDuplicates()
+    {
+        
     }
 }

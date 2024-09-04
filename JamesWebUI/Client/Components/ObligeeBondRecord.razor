@@ -16,7 +16,7 @@
 <RadzenDataGrid TItem="Bond" @ref="@obligeePrimaryBondsGrid" Data="ObligeeBonds" EmptyText="No records to display."
                 AllowColumnPicking="true" AllowFiltering="true" AllowSorting="true" AllowGrouping="true"
                 FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                Density="Density.Compact" Style="border-radius: 15px;height:400px;" IsLoading="@isLoading">
+                Density="Density.Compact" Style="border-radius: 10px;height:400px;" IsLoading="@isLoading">
     <HeaderTemplate>
         <RadzenButton Text="Export XLS" Icon="grid_on" Click="@(args => Export("excel"))"/>
     </HeaderTemplate>

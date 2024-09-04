@@ -38,11 +38,6 @@ namespace James.Data.Server
         {
             try
             {
-                //var result = await query.GetObligeeById(searchString, contextFactory);
-                //return null == result
-                //    ? new DataAccessResult<Obligee?> { Errors = ["No obligee with the supplied id was found."] }
-                //    : new DataAccessResult<Obligee?> { Data = result };
-                //TODO: Implement
                 var result = await query.SearchObligeesAsync(searchString, contextFactory);
                 return null == result
                     ? new DataAccessResult<List<Obligee>> { Errors = ["No obligees were found."] }

@@ -9,15 +9,17 @@
 
 
 <RadzenStack Orientation="Orientation.Horizontal">
-    <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 420px;" TextProperty="IdNavigation.FullName"
-        Placeholder="Search..." Data="@SearchResults" LoadData="SearchObligee" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
+    <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 420px;" 
+                        ValueChanged="ResultSelected"
+                        Placeholder="Search..." Data="@SearchResults" LoadData="SearchObligee" 
+                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
         <Template Context="obligee">
-            <RadzenStack Orientation="Orientation.Horizontal" Style="width:400px;">
-                <RadzenIcon Icon="person"/>
+            <RadzenStack Orientation="Orientation.Horizontal" Style="width:500px;">
+                <RadzenIcon Icon="person" />
                 <RadzenText Text="@obligee.ObligeeNum" Style="width: 100px;" />
-                <RadzenText Text="@obligee.IdNavigation.FullName" Style="width: 300px;" />
+                <RadzenText Text="@obligee.IdNavigation.FullName" Style="width: 400px;" />
             </RadzenStack>
-        </Template>    
+        </Template>
     </RadzenAutoComplete>
 </RadzenStack>
 
@@ -31,13 +33,23 @@
     private async Task SearchObligee(LoadDataArgs args)
     {
         var result = await _dataAccess.SearchObligees(args.Filter);
+
         if (result.Errors.Any())
         {
-            //TODO: Error Handling   
+            //TODO: Error Handling
         }
         else
         {
-            SearchResults = result.Data; 
+            SearchResults = result.Data;
+        }
+    }
+    private async Task ResultSelected(dynamic args)
+    {
+
+        if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Obligee))
+        {
+            NavigationManager.NavigateTo("/Obligee/" + ((Obligee)autoComplete.Value).Id.ToString());
+            autoComplete.Value = "";
         }
     }
 }

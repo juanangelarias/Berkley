@@ -16,7 +16,17 @@
 
 <RadzenStack Orientation="Orientation.Vertical">
     <RadzenPanel Style="border-radius: 20px;">
-        <ObligeeSearch/>
+        <RadzenRow>
+            <RadzenColumn Size="3">
+                <RadzenText TextStyle="TextStyle.DisplayH5" Text="@ObligeeToDisplay.IdNavigation.FullName" />
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <ObligeeSearch />
+            </RadzenColumn>
+            <RadzenColumn Size="3">
+
+            </RadzenColumn>
+        </RadzenRow>
     </RadzenPanel>
     <RadzenPanel Style="border-radius: 20px;">
         <RadzenRow>
@@ -118,6 +128,6 @@
     }
     private async Task LoadPossibleDuplicates()
     {
-        
+
     }
 }

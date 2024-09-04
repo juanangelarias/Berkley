@@ -41,7 +41,7 @@ namespace James.Data.Server.GraphQL.Queries
         public async Task<List<Bond>> GetObligeeSecondaryBonds(Guid obligeeId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.AdditionalObligees.Where(o => o.ObligeeNum == obligeeId).Select(o => o.BondNumber)
+            var result = await ctx.AdditionalObligees.Where(o => o.ObligeeId == obligeeId).Select(o => o.BondNumber)
                 .ToListAsync();
 
             return await ctx.Bonds.Where(b => result.Contains(b.BondNumber))

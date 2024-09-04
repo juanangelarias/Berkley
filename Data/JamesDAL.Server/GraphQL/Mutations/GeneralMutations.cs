@@ -26,8 +26,6 @@ namespace James.Data.Server.GraphQL.Mutations
                     PostalCode = postalCode
                 };
 
-                //TODO: Address Validator?
-
                 var ctx = await contextFactory.CreateDbContextAsync();
 
                 ctx.Addresses.Add(NewAddress);
@@ -53,7 +51,6 @@ namespace James.Data.Server.GraphQL.Mutations
         [Authorize]
         public async Task<bool> DeleteAddress(Guid addressId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            //TODO: Better Error Handling
             try
             {
                 var ctx = await contextFactory.CreateDbContextAsync();

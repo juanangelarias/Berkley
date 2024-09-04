@@ -21,7 +21,6 @@ namespace James.Shared.Model
             {
                 if (value != null)
                 {
-                    //UNDONE: Below is sample code for Bryan to clean up an finish
                     var lea = IdNavigation?.LegalEntityAddresses?.SingleOrDefault(l => l.Type == "Main");
                     //TODO: handle value == null
                     Debug.Assert(value != null, nameof(value) + " != null");

@@ -11,7 +11,6 @@ namespace James.Data.Server.GraphQL.Mutations
             string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            //TODO: Validate input (check for nulls)
             var ctx = await contextFactory.CreateDbContextAsync();
 
             LegalEntity newLegalEntity = new LegalEntity()

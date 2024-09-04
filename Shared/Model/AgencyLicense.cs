@@ -32,7 +32,7 @@ public partial class AgencyLicense
 
     public DateOnly? Termination { get; set; }
 
-    public bool? AppointingState { get; set; }
+    public bool AppointingState { get; set; }
 
     public bool IsActive { get; set; }
 

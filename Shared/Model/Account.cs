@@ -140,6 +140,8 @@ public partial class Account
 
     public bool InterimWips { get; set; }
 
+    public string? IndemnityComments { get; set; }
+
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();

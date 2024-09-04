@@ -64,7 +64,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Ref #" Property="Serial">
             <EditTemplate Context="poa">
-                <RadzenTextBox @bind-Value="poa.Serial" Style="width: 95%" />
+                <RadzenTextBox @bind-Value="poa.ReferenceNumber" Style="width: 95%" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" Width="200px">
@@ -239,7 +239,7 @@
             var result = await DataAccess.SetPowerOfAttorney(poaToUpdate.Id,
                 poaToUpdate.Insurer.Id,
                 poaToUpdate.Limit,
-                poaToUpdate.Serial,
+                poaToUpdate.ReferenceNumber,
                 poaToUpdate.FirstIssued,
                 poaToUpdate.CurrentIssued,
                 poaToUpdate.Comments,
@@ -264,7 +264,7 @@
             powerOfAttorney.Insurer.Id,
             AgencyID,
             (int)powerOfAttorney.Limit,
-            powerOfAttorney.Serial,
+            powerOfAttorney.ReferenceNumber,
             powerOfAttorney.FirstIssued,
             powerOfAttorney.CurrentIssued,
             powerOfAttorney.Comments,

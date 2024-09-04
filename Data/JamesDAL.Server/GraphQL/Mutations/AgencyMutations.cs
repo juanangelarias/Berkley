@@ -137,7 +137,7 @@ namespace James.Data.Server.GraphQL.Mutations
 
             return oldInventory;
         }
-        public async Task<AgencyLicense> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, 
+        public async Task<AgencyLicense> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState, 
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -166,7 +166,7 @@ namespace James.Data.Server.GraphQL.Mutations
             return oldLicense;
         }
         [Authorize]
-        public async Task<bool> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+        public async Task<bool> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
@@ -235,7 +235,7 @@ namespace James.Data.Server.GraphQL.Mutations
 
         }
         [Authorize]
-        public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
+        public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? ReferenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
             [Service]ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -247,7 +247,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     InsurerId = insurerId,
                     AgencyId = agencyId,
                     Limit = limit,
-                    Serial = serial,
+                    ReferenceNumber = ReferenceNumber,
                     FirstIssued = firstIssued,
                     CurrentIssued = currentIssued,
                     Status = status,

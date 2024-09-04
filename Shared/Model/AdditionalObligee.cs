@@ -12,7 +12,7 @@ public partial class AdditionalObligee
 
     public DateTime Modified { get; set; }
 
-    public Guid ObligeeNum { get; set; }
+    public Guid ObligeeId { get; set; }
 
     public bool PrintStatusLetter { get; set; }
 

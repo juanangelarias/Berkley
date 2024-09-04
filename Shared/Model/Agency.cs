@@ -14,7 +14,7 @@ public partial class Agency
 
     public string AgencyNumber { get; set; } = null!;
 
-    public string? Branch { get; set; }
+    public string Branch { get; set; } = null!;
 
     public string Status { get; set; } = null!;
 

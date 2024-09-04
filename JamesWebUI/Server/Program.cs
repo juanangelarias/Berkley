@@ -14,6 +14,7 @@ using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Serilog;
@@ -102,6 +103,11 @@ try
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents();
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders =
+            ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    });
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<TokenHandler>();
@@ -134,6 +140,11 @@ try
 
     var app = builder.Build();
     
+    app.UseForwardedHeaders(new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    });
+
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {

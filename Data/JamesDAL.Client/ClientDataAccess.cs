@@ -456,7 +456,8 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(saveResult);
         }
-        public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState,
+        public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId,
+            bool appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state,
             bool isActive)
@@ -518,7 +519,8 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(saveResult);
         }
-        public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments,
+        public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId,
+            Guid? agentId, bool appointingState, string? comments,
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
             string? licenseNumber, string state, bool isActive)
         {

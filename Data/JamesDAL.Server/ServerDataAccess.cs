@@ -315,8 +315,9 @@ namespace James.Data.Server
                 return new SaveDataResult { Errors = [ex.Message] };
             }
         }
-        public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
-        Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive)
+        public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId,
+            bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive)
         {
             try
             {
@@ -371,7 +372,7 @@ namespace James.Data.Server
                 return new DataAccessResult<bool> { Errors = [ex.Message] };
             }
         }
-        public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool? appointingState, string? comments,
+        public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState, string? comments,
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
             string? licenseNumber, string state, bool isActive)
         {

@@ -49,6 +49,8 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
         public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
         public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
+        public Task<IDataAccessResult<string>> GetBondRequestNumber(string bondNumber);
+        public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
     }
@@ -69,12 +71,20 @@ namespace James.Shared.Data
 
         public bool Success => Errors.Length==0;
     }
-    public class DataAccessResult<T>: IDataAccessResult<T>
+    public class DataAccessResult<T> : IDataAccessResult<T>
     {
         public T? Data { get; init; }
 
         public string[] Errors { get; init; } = [];
 
-        public bool Success => Errors.Length==0;
+        public bool Success => Errors.Length == 0;
+    }
+    public class DataAccessResultString : IDataAccessResult<string?>
+    {
+        public string? Data { get; init; }
+
+        public string[] Errors { get; init; } = [];
+
+        public bool Success => Errors.Length == 0;
     }
 }

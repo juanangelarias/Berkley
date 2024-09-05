@@ -43,7 +43,7 @@ public abstract class LoggingServiceBase : ILoggingService
         Log(MessageEventId, message, details, Severity.Error, category, data: data);
     }
 
-    public void LogException(Exception exception, string message, string details, Severity severity = Severity.Error, string category = "General",
+    public void LogException(Exception exception, string message, string details="", Severity severity = Severity.Error, string category = "General",
         Dictionary<string, string>? data = null)
     {
         details = string.IsNullOrEmpty(details) ? "See exception details" : details;

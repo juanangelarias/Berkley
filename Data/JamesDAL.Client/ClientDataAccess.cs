@@ -4,8 +4,10 @@ using James.Shared.Data;
 using James.Shared.Model;
 using Microsoft.Win32.SafeHandles;
 using StrawberryShake;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 using Severity = James.Shared.Model.Severity;
 #pragma warning disable CA1305
 
@@ -274,6 +276,20 @@ namespace James.Data.Client
             return GraphQLSaveResult(saveResult);
         }
 
+        public async Task<IDataAccessResult<string>> GetBondRequestNumber(string bondNumber)
+        {
+            throw new NotImplementedException();
+            //return await ExecuteGetString(async () =>
+            //await jamesClient.GetBondRequestNumber.ExecuteAsync(bondNumber));
+        }
+
+        public async Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber)
+        {
+            throw new NotImplementedException();
+            //return await ExecuteGetString(async () =>
+            //    await jamesClient.GetBondNumber.ExecuteAsync(bondRequestNumber));
+        }
+
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
             var subscriptionToWatch = jamesClient.AddressModified.Watch(addressId.ToString());
@@ -298,7 +314,7 @@ namespace James.Data.Client
             //}
             public IDisposable SubscribeTo(Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
             {
-                 //conversionFunction(IOperationResult<IAddressModifiedResult> onNextResult)=> onNext.Result
+                //conversionFunction(IOperationResult<IAddressModifiedResult> onNextResult)=> onNext.Result
                 if (null == onError && null == onComplete)
                     return graphQlSubscription.Subscribe(Conversion(onNext));
                 //If onComplete is not null, OnError is required.
@@ -495,6 +511,16 @@ namespace James.Data.Client
                 $"Message: {error.Message}\r\nCode: {error.Code}\r\nException: {error.Exception}\r\nPath: {error.Path}\r\nExtensions: {error.Extensions}";
         }
 
+        private static DataAccessResultString GraphQLResultString(IOperationResult? graphQLResult)
+        {
+            var resultData = graphQLResult?.Data;
+            if (null == resultData)
+                return new DataAccessResultString
+                { Errors = graphQLResult?.Errors.Select(ErrorToString).ToArray() ?? [] };
+            var data = graphQLResult?.Data?.ToString();
+            return new DataAccessResultString
+            { Data = data, Errors = graphQLResult?.Errors.Select(ErrorToString).ToArray() ?? [] };
+        }
         private static DataAccessResult<T> GraphQLResult<T>(IOperationResult? graphQLResult, string subProperty = "")
             where T : new()
         {
@@ -542,6 +568,24 @@ namespace James.Data.Client
                 logging.LogException(ex, graphQlFunctionName + " returned exception",
                     exceptionDetail, Severity.Error, "GraphQl");
                 return new DataAccessResult<T> { Data = defaultValue, Errors = [ex.Message] };
+            }
+        }
+
+        private async Task<DataAccessResultString> ExecuteGetString(Func<Task<IOperationResult>> dataFunc,
+            [CallerMemberName] string graphQlFunctionName = "GraphQL call", string? defaultValue = null)
+        {
+            try
+            {
+                var result = await dataFunc();
+                var gqlResult = GraphQLResultString(result);
+                return gqlResult;
+            }
+            catch (Exception ex)
+            {
+                var exceptionDetail = ex.ToText();
+                logging.LogException(ex, graphQlFunctionName + " returned exception",
+                    exceptionDetail, Severity.Error, "GraphQl");
+                return new DataAccessResultString { Data = defaultValue, Errors = [ex.Message] };
             }
         }
 

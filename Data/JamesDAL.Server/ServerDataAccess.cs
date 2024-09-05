@@ -221,7 +221,6 @@ namespace James.Data.Server
             string? address3, string city, string? stateCode, string? postalCode,
             Guid legalEntityId, string addressType)
         {
-            //TODO: Error Handling?
             return await ExecuteSave(async () =>
                 await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode, 
                 legalEntityId, addressType, contextFactory));
@@ -229,7 +228,7 @@ namespace James.Data.Server
         }
         public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
         {
-            //TODO: Implement
+
             return await ExecuteSave(async () =>
             await generalMutations.DeleteAddress(addressId, contextFactory));
         }

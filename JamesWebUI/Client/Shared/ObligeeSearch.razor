@@ -10,7 +10,7 @@
 
 <RadzenStack Orientation="Orientation.Horizontal">
     <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 100%;" 
-                        ValueChanged="ResultSelected"
+                        ValueChanged="ResultSelected" 
                         Placeholder="Search..." Data="@SearchResults" LoadData="SearchObligee" 
                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
         <Template Context="obligee">

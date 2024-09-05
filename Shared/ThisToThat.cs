@@ -47,6 +47,9 @@ namespace James.Shared
                         var sList = (IEnumerable)propMatch.sProp.GetValue(source)!;
                         propMatch.dProp.SetValue(result, CopyIEnumerable(sList, destEnumerableType));
                     }
+                    else if(propMatch.dProp.PropertyType == typeof(string))
+                        //Simply cast source to string
+                        propMatch.dProp.SetValue(result, propMatch.sProp.GetValue(source)?.ToString());
                     else if (propMatch.dProp.PropertyType.IsClass)
                     {
                         //Object to Object: Try to convert recursively

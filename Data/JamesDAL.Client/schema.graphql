@@ -54,6 +54,8 @@ type Query {
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   agentByAgentId(agentId: UUID!): Agent!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
+  bondRequestNumber(bondNumber: String!): String!
+  bondNumber(bondRequestNumber: String!): String
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
@@ -133,6 +135,8 @@ type AgencyCommission {
   minimum: Int!
   maximum: Int
   rate: Float!
+  effective: DateTime!
+  expires: DateTime
 }
 
 type PowerOfAttorneyStatusDm {
@@ -158,7 +162,7 @@ type PowerOfAttorney {
   insurerId: UUID!
   agencyId: UUID!
   limit: Int
-  serial: String
+  referenceNumber: String
   firstIssued: Date
   currentIssued: Date
   comments: String
@@ -192,7 +196,7 @@ type AgencyLicense {
   comments: String
   appointment: Date
   termination: Date
-  appointingState: Boolean
+  appointingState: Boolean!
   isActive: Boolean!
   agency: Agency!
   agent: Agent
@@ -338,7 +342,7 @@ type Agency {
   created: DateTime!
   modified: DateTime!
   agencyNumber: String!
-  branch: String
+  branch: String!
   status: String!
   comments: String
   nasbp: Boolean!
@@ -446,6 +450,7 @@ type Account {
   accountingSystem: String
   pocinterims: Boolean!
   interimWips: Boolean!
+  indemnityComments: String
   accountPrograms: [AccountProgram!]!
   accountStatusLogs: [AccountStatusLog!]!
   additionalRelatedParties: [AdditionalRelatedParty!]!
@@ -691,6 +696,8 @@ input AgencyCommissionInput {
   minimum: Int!
   maximum: Int
   rate: Float!
+  effective: DateTime!
+  expires: DateTime
 }
 
 enum Severity {
@@ -748,6 +755,7 @@ type LegalEntity {
   legalEntityEmails: [LegalEntityEmail!]!
   legalEntityPhones: [LegalEntityPhone!]!
   obligee: Obligee
+  obligeeContact: ObligeeContact
   parentNavigation: LegalEntity
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
@@ -1732,7 +1740,7 @@ type AdditionalObligee {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  obligeeNum: UUID!
+  obligeeId: UUID!
   printStatusLetter: Boolean!
   interest: String
   bondNumber: String!
@@ -1799,6 +1807,14 @@ type LegalEntityTypeDm {
   modified: DateTime!
   entityType: String!
   legalEntities: [LegalEntity!]!
+}
+
+type ObligeeContact {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  title: String!
+  idNavigation: LegalEntity!
 }
 
 type PersonalFinancialHeader {
@@ -2250,7 +2266,7 @@ input SetAgencyLicenseInput {
   licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
-  appointingState: Boolean
+  appointingState: Boolean!
   comments: String
   appointment: Date
   expiration: Date
@@ -2270,7 +2286,7 @@ input CreateLicenseInput {
   licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
-  appointingState: Boolean
+  appointingState: Boolean!
   comments: String
   appointment: Date
   expiration: Date
@@ -2305,7 +2321,7 @@ input CreateAgencyPOAInput {
   insurerId: UUID!
   agencyId: UUID!
   limit: Int!
-  serial: String
+  referenceNumber: String
   firstIssued: Date
   currentIssued: Date
   comments: String

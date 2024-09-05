@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Shared.Server", "Jame
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Data.Server.Test", "Tests\James.Data.Server\James.Data.Server.Test.csproj", "{672B2F5C-406D-40A4-87A1-22EDD3AB3540}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Data.Imaging", "Data\JamesDAL.Imaging\James.Data.Imaging.csproj", "{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientBusinessLogic", "BusinessLogic\ClientBusinessLogic\ClientBusinessLogic.csproj", "{E9E5C99C-0427-4A45-AED3-2505B127D7B8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedBusinessLogic", "BusinessLogic\SharedBusinessLogic\SharedBusinessLogic.csproj", "{AA1AE19C-961D-4DFD-951B-F388D4733807}"
@@ -110,6 +112,10 @@ Global
 		{5CBA2E3A-9485-4359-8547-F217989DD8DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CBA2E3A-9485-4359-8547-F217989DD8DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CBA2E3A-9485-4359-8547-F217989DD8DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +133,7 @@ Global
 		{AA1AE19C-961D-4DFD-951B-F388D4733807} = {15F9E100-B307-4CB4-B4D4-0FC6D27AB22C}
 		{E97D079E-9977-43A3-94B3-0BDD9BB6DCD8} = {15F9E100-B307-4CB4-B4D4-0FC6D27AB22C}
 		{5CBA2E3A-9485-4359-8547-F217989DD8DA} = {E97D079E-9977-43A3-94B3-0BDD9BB6DCD8}
+		{9E31103D-3EB5-4CBA-8268-29EEF52C1DBA} = {C60478F9-28B0-415F-9FC6-39D8506F7B62}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C162C589-90F1-41BB-A1C8-5C250EDB98A3}

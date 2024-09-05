@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using HotChocolate.Data;
 using HotChocolate.Execution.Configuration;
 using HotChocolate.Subscriptions;
@@ -16,24 +17,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Runtime.CompilerServices;
 using Xunit.Abstractions;
 
-namespace James.Data.Server
+namespace James.Data.Server.Test
 {
-    public class SubscriptionTests
+    public class SubscriptionTests(ITestOutputHelper output)
     {
-        private readonly ITestOutputHelper _output;
-
-        public SubscriptionTests(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
         [Fact]
-        public async void OnAddressModified()
+        public async Task OnAddressModified()
         {
-            await using var services = CreateServer<Subscription>();
+            await using var services = CreateServer();
             var dataAccess = (IDataAccess)services.GetService(typeof(IDataAccess))!;
             var didSubscriptionFire = false;
             var subscriptionFireCount = 0;
@@ -62,9 +55,9 @@ namespace James.Data.Server
         }
 
         [Fact]
-        public async void OnAddressModifiedTwoChannels()
+        public async Task OnAddressModifiedTwoChannels()
         {
-            await using var services = CreateServer<Subscription>();
+            await using var services = CreateServer();
             var dataAccess = (IDataAccess)services.GetService(typeof(IDataAccess))!;
             var didSubscription1Fire = false;
             var subscriptionFireCount = 0;
@@ -99,7 +92,7 @@ namespace James.Data.Server
             if (subscriptionFireCount < 2)
             {
                 await Task.Delay(10); //Give subscriptions time to fire, if needed
-                _output.WriteLine("Waited for 2nd subscription to fire.");
+                output.WriteLine("Waited for 2nd subscription to fire.");
             }
             Assert.NotNull(subscription1Payload);
             Assert.Equal(unusedAddress1.Id, subscription1Payload.Result.Id);
@@ -115,7 +108,7 @@ namespace James.Data.Server
                 maxWaits--;
                 await Task.Delay(10 * (5 - maxWaits));
             } //Give subscriptions time to fire, if needed
-            _output.WriteLine($"Waited for 4th subscription to fire {5 - maxWaits} times.");
+            output.WriteLine($"Waited for 4th subscription to fire {5 - maxWaits} times.");
             Assert.Equal(unusedAddress2.Id, subscription2Payload?.Result.Id);
             Assert.Equal(orig2Address3, subscription2Payload?.Result.Address3);
             //NOTE:  Testing the fire count not only confirms that it fired all 4 times, but that it never double fired.
@@ -159,14 +152,14 @@ ORDER BY cnt, a.Modified, a.Created");
             var identifier = Guid.NewGuid().ToString();
             var changeAddress = await dataAccess.SetAddress(newAddress, identifier);
             Assert.True(changeAddress.Success);
-            _output.WriteLine("Address ID {0} changed", unusedAddress.Id);
+            output.WriteLine("Address ID {0} changed", unusedAddress.Id);
             var resetAddress = await dataAccess.SetAddress(unusedAddress, identifier);
             Assert.True(resetAddress.Success);
-            _output.WriteLine($"Address ID {unusedAddress.Id} changed back");
+            output.WriteLine($"Address ID {unusedAddress.Id} changed back");
             return origAddress3;
         }
 
-        protected ServiceProvider CreateServer<TSubscriptionType>(SubscriptionOptions? options = null) where TSubscriptionType : class
+        protected ServiceProvider CreateServer(SubscriptionOptions? options = null)
         {
             //var config = new ConfigurationBuilder()
             //    .AddJsonFile("appsettings.json")

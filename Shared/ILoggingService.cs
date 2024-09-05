@@ -15,6 +15,6 @@ public interface ILoggingService
     void LogWarning(string message, string details = "", string category = "General", Dictionary<string, string>? data = null);
     void LogError(string message, string details = "", string category = "General", Dictionary<string, string>? data = null);
 
-    void LogException(Exception exception, string message, string details, Severity severity = Severity.Error, string category = "General",
+    void LogException(Exception exception, string message, string details="", Severity severity = Severity.Error, string category = "General",
         Dictionary<string, string>? data = null);
 }

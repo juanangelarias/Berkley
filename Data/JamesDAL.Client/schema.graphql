@@ -52,6 +52,8 @@ type Query {
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   agentByAgentId(agentId: UUID!): Agent!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
+  bondRequestNumber(bondNumber: String!): String!
+  bondNumber(bondRequestNumber: String!): String
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
@@ -104,6 +106,8 @@ type AgencyCommission {
   minimum: Int!
   maximum: Int
   rate: Float!
+  effective: DateTime!
+  expires: DateTime
 }
 
 type PowerOfAttorneyStatusDm {
@@ -129,7 +133,7 @@ type PowerOfAttorney {
   insurerId: UUID!
   agencyId: UUID!
   limit: Int
-  serial: String
+  referenceNumber: String
   firstIssued: Date
   currentIssued: Date
   comments: String
@@ -163,7 +167,7 @@ type AgencyLicense {
   comments: String
   appointment: Date
   termination: Date
-  appointingState: Boolean
+  appointingState: Boolean!
   isActive: Boolean!
   agency: Agency!
   agent: Agent
@@ -309,7 +313,7 @@ type Agency {
   created: DateTime!
   modified: DateTime!
   agencyNumber: String!
-  branch: String
+  branch: String!
   status: String!
   comments: String
   nasbp: Boolean!
@@ -417,6 +421,7 @@ type Account {
   accountingSystem: String
   pocinterims: Boolean!
   interimWips: Boolean!
+  indemnityComments: String
   accountPrograms: [AccountProgram!]!
   accountStatusLogs: [AccountStatusLog!]!
   additionalRelatedParties: [AdditionalRelatedParty!]!
@@ -649,6 +654,8 @@ input AgencyCommissionInput {
   minimum: Int!
   maximum: Int
   rate: Float!
+  effective: DateTime!
+  expires: DateTime
 }
 
 enum Severity {
@@ -731,6 +738,7 @@ type LegalEntity {
   legalEntityEmails: [LegalEntityEmail!]!
   legalEntityPhones: [LegalEntityPhone!]!
   obligee: Obligee
+  obligeeContact: ObligeeContact
   parentNavigation: LegalEntity
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
@@ -828,6 +836,24 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type NotebookEntry {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  notebookId: UUID!
+  type: String!
+  createdBy: UUID!
+  category: String
+  note: String!
+  completed: Boolean!
+  completion: DateTime
+  reminderTime: DateTime
+  columnName: Boolean!
+  createdByNavigation: UserProfile!
+  notebook: Notebook!
+  typeNavigation: NotebookEntryTypeDm!
 }
 
 type BondBlock {
@@ -1690,29 +1716,11 @@ type AdditionalObligee {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  obligeeNum: UUID!
+  obligeeId: UUID!
   printStatusLetter: Boolean!
   interest: String
   bondNumber: String!
   bondNumberNavigation: Bond!
-}
-
-type NotebookEntry {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  notebookId: UUID!
-  type: String!
-  createdBy: UUID!
-  category: String
-  note: String!
-  completed: Boolean!
-  completion: DateTime
-  reminderTime: DateTime
-  columnName: Boolean!
-  createdByNavigation: UserProfile!
-  notebook: Notebook!
-  typeNavigation: NotebookEntryTypeDm!
 }
 
 type Surcharge {
@@ -1782,6 +1790,14 @@ type LegalEntityTypeDm {
   modified: DateTime!
   entityType: String!
   legalEntities: [LegalEntity!]!
+}
+
+type ObligeeContact {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  title: String!
+  idNavigation: LegalEntity!
 }
 
 type PersonalFinancialHeader {
@@ -1864,22 +1880,6 @@ type SurchargeTypeDm {
   modified: DateTime!
   type: String!
   surcharges: [Surcharge!]!
-}
-
-type NotebookEntryTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  notebookEntries: [NotebookEntry!]!
-}
-
-type Notebook {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  sourceTable: String!
-  notebookEntries: [NotebookEntry!]!
 }
 
 type BidStatusDm {
@@ -2159,6 +2159,22 @@ type CommercialRegionDm {
   profitCenters: [ProfitCenter!]!
 }
 
+type NotebookEntryTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  notebookEntries: [NotebookEntry!]!
+}
+
+type Notebook {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  sourceTable: String!
+  notebookEntries: [NotebookEntry!]!
+}
+
 type SicratioTypeDm {
   id: UUID!
   created: DateTime!
@@ -2242,7 +2258,7 @@ input SetAgencyLicenseInput {
   licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
-  appointingState: Boolean
+  appointingState: Boolean!
   comments: String
   appointment: Date
   expiration: Date
@@ -2262,7 +2278,7 @@ input CreateLicenseInput {
   licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
-  appointingState: Boolean
+  appointingState: Boolean!
   comments: String
   appointment: Date
   expiration: Date
@@ -2297,7 +2313,7 @@ input CreateAgencyPOAInput {
   insurerId: UUID!
   agencyId: UUID!
   limit: Int!
-  serial: String
+  referenceNumber: String
   firstIssued: Date
   currentIssued: Date
   comments: String
@@ -2356,7 +2372,7 @@ input SetPowerOfAttorneyInput {
   poaId: UUID!
   insurerId: UUID!
   limit: Int
-  serial: String
+  referenceNumber: String
   firstIssued: Date
   currentIssued: Date
   comments: String

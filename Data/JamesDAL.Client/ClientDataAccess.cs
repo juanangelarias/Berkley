@@ -205,7 +205,7 @@ namespace James.Data.Client
             return await ExecuteGet<UserProfile>(async () => await jamesClient.GetUserProfileByUserName.ExecuteAsync(userName),
                 "UserProfileByUserName");
         }
-        public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial,
+        public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
         {
             return await ExecuteGet<PowerOfAttorney>(async () =>
@@ -214,7 +214,7 @@ namespace James.Data.Client
                     PoaId = poaId,
                     InsurerId = insurerId,
                     Limit = limit,
-                    Serial = serial,
+                    ReferenceNumber = referenceNumber,
                     FirstIssued = firstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
                     CurrentIssued = currentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
                     Comments = comments,
@@ -373,7 +373,7 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(saveResult);
         }
-        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued,
+        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
             var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
@@ -382,7 +382,7 @@ namespace James.Data.Client
                 InsurerId = insurerId,
                 AgencyId = agencyId,
                 Limit = limit,
-                Serial = serial,
+                ReferenceNumber = referenceNumber,
                 FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
                 CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
                 Status = status,

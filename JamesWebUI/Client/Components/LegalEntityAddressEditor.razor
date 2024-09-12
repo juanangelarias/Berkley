@@ -55,8 +55,7 @@
     }
 
     private async Task LoadAddresses()
-    {
-        //TODO: Deal with selecting a new tab when this is fired by an Address Created event. 
+    { 
         var result = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId);
 
         if (result.Errors.Any())

@@ -12,7 +12,6 @@ namespace James.Data.Server.GraphQL.Mutations
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-
             LegalEntity newLegalEntity = new LegalEntity()
             {
                 Id = id,

@@ -149,14 +149,14 @@
     private List<State> AllStates { get; set; }
 
     private Obligee NewObligee { get; set; } = new Obligee()
+    {
+        PrintStatusLetter = true,
+        Type = "Unknown",
+        IdNavigation = new LegalEntity()
         {
-            PrintStatusLetter = true,
-            Type = "Unknown",
-            IdNavigation = new LegalEntity()
-            {
-                EntityType = "Obligee"
-            }
-        };
+            EntityType = "Obligee"
+        }
+    };
 
     private LegalEntityAddress LegalEntityAddress { get; set; } = new LegalEntityAddress()
         {

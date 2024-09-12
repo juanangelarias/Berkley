@@ -342,7 +342,7 @@ type Agency {
   created: DateTime!
   modified: DateTime!
   agencyNumber: String!
-  branch: String!
+  branch: String
   status: String!
   comments: String
   nasbp: Boolean!
@@ -2266,7 +2266,7 @@ input SetAgencyLicenseInput {
   licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
-  appointingState: Boolean!
+  appointingState: Boolean
   comments: String
   appointment: Date
   expiration: Date
@@ -2286,7 +2286,7 @@ input CreateLicenseInput {
   licenseId: UUID!
   agencyId: UUID!
   agentId: UUID
-  appointingState: Boolean!
+  appointingState: Boolean
   comments: String
   appointment: Date
   expiration: Date
@@ -2491,14 +2491,14 @@ input CreateObligeeInput {
   fullName: String!
   obligeeType: String!
   printStatusLetter: Boolean!
-  notes: String
+  notes: String!
   address1: String!
-  address2: String
+  address2: String!
   city: String!
   state: String!
   postalCode: String!
-  phoneNumber: String
-  email: String
+  phoneNumber: String!
+  email: String!
 }
 
 type CreateObligeePayload {

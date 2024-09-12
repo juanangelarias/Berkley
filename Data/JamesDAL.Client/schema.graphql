@@ -855,22 +855,6 @@ type LegalEntityEmail {
   typeNavigation: EmailTypeDm!
 }
 
-type Surcharge {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  state: String!
-  amount: Float!
-  effective: Date!
-  expiration: Date!
-  exclude: Boolean!
-  type: String!
-  createdBy: UUID!
-  createdByNavigation: UserProfile!
-  stateNavigation: State!
-  typeNavigation: SurchargeTypeDm!
-}
-
 type NotebookEntry {
   id: UUID!
   created: DateTime!
@@ -1747,13 +1731,20 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type RegionDm {
+type Surcharge {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  region: String!
-  bondTransactions: [BondTransaction!]!
-  branches: [Branch!]!
+  state: String!
+  amount: Float!
+  effective: Date!
+  expiration: Date!
+  exclude: Boolean!
+  type: String!
+  createdBy: UUID!
+  createdByNavigation: UserProfile!
+  stateNavigation: State!
+  typeNavigation: SurchargeTypeDm!
 }
 
 type UserLineOfAuthority {
@@ -1880,6 +1871,14 @@ type ReferenceTypeDm {
   type: String!
   description: String
   accountReferences: [AccountReference!]!
+}
+
+type SurchargeTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  surcharges: [Surcharge!]!
 }
 
 type BidStatusDm {
@@ -2175,14 +2174,6 @@ type Notebook {
   notebookEntries: [NotebookEntry!]!
 }
 
-type SurchargeTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  surcharges: [Surcharge!]!
-}
-
 type SicratioTypeDm {
   id: UUID!
   created: DateTime!
@@ -2380,7 +2371,7 @@ input SetPowerOfAttorneyInput {
   poaId: UUID!
   insurerId: UUID!
   limit: Int
-  serial: String
+  referenceNumber: String
   firstIssued: Date
   currentIssued: Date
   comments: String

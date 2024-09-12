@@ -63,7 +63,7 @@ try
         });
 
     //ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
-    var kong0TokenUrl = new Uri(config["Kong0:Imaging:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
+    var kong0TokenUrl = new Uri(config["Kong0:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
     var tokenClientBuilder = builder.Services.AddHttpClient("P8FileNetTokens").ConfigureHttpClient(
         client =>
         {

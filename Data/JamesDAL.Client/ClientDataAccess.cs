@@ -417,23 +417,35 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(saveResult);
         }
-        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued,
+        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
-            //var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
-            //{
-            //    PoaId = poaId,
-            //    InsurerId = insurerId,
-            //    AgencyId = agencyId,
-            //    Limit = limit,
-            //    Serial = serial,
-            //    FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
-            //    CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
-            //    Status = status,
-            //    Comments = comments
-            //});
-            //return GraphQLSaveResult(saveResult);
-            return new SaveDataResult();
+            var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
+            {
+                PoaId = poaId,
+                InsurerId = insurerId,
+                AgencyId = agencyId,
+                Limit = limit,
+                ReferenceNumber = referenceNumber,
+                FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
+                CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
+                Status = status,
+                Comments = comments
+            });
+            return GraphQLSaveResult(saveResult);
+            var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
+            {
+                PoaId = poaId,
+                InsurerId = insurerId,
+                AgencyId = agencyId,
+                Limit = limit,
+                ReferenceNumber = referenceNumber,
+                FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
+                CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
+                Status = status,
+                Comments = comments
+            });
+            return GraphQLSaveResult(saveResult);
         }
         public async Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId)
         {

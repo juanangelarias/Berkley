@@ -2655,7 +2655,7 @@ namespace James.Data.Server.Migrations
                     InsurerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AgencyId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Limit = table.Column<int>(type: "int", nullable: false),
-                    Serial = table.Column<int>(type: "int", nullable: false),
+                    ReferenceNumber = table.Column<int>(type: "nvarchar(100)", nullable: false),
                     FirstIssued = table.Column<DateTime>(type: "date", nullable: true),
                     CurrentIssued = table.Column<DateTime>(type: "date", nullable: true),
                     Comments = table.Column<string>(type: "nvarchar(max)", nullable: true),

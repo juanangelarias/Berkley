@@ -88,7 +88,7 @@ mutation SetPowerOfAttorney ($input: SetPowerOfAttorneyInput!) {
         id,
         insurerId,
         limit,
-        serial,
+        referenceNumber,
         firstIssued,
         currentIssued,
         comments,

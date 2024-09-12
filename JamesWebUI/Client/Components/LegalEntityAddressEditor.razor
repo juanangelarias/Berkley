@@ -1,0 +1,106 @@
+﻿@using System.Globalization
+@using James.Shared;
+@using ClientBusinessLogic
+
+
+@inherits JamesLayoutComponentBase
+
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+@inject IDataAccess DataAccess
+
+<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab"  >
+    <Tabs>
+        @{
+            if (AllAddresses.Any())
+            {
+                foreach (var a in AllAddresses)
+                {
+                    <RadzenTabsItem Text="@(a.LegalEntityAddress.Type)" >
+                        <AddressDisplay AddressId="a.Id" StateChanged="@(() => LoadAddresses())" />
+                    </RadzenTabsItem>
+                    if (a == AllAddresses.Last())
+                    {
+                        <RadzenTabsItem Icon="add" Text="Add Address" >
+                            <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@AddressCreated"></AddressCreate>
+                        </RadzenTabsItem>
+                    }
+
+                }
+            }
+            else
+            {
+                <RadzenTabsItem Icon="add" Text="Add Address">
+                    <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@AddressCreated"></AddressCreate>
+                </RadzenTabsItem>
+            }
+        }
+    </Tabs>
+</RadzenTabs>
+
+
+@code {
+    [Parameter] public Guid LegalEntityId{ get; set; }
+    private RadzenTabs addressTabs { get; set; }
+    private List<Address> AllAddresses { get; set; } = new List<Address>();
+    private int selectedTab { get; set; } = 0;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadAddresses();
+
+    }
+
+    private async Task LoadAddresses()
+    { 
+        var result = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId);
+
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+            NotificationService.Notify(new NotificationMessage()
+                {
+                    Severity = NotificationSeverity.Error,
+                    Detail = "Error loading addresses.",
+                    Duration = 4000
+                });
+        }
+        else
+        {
+            AllAddresses = result.Data;
+            selectedTab = 0;
+        }
+    }
+    private async Task AddressCreated(Guid addressToSelect)
+    {
+        var result = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId);
+
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+            NotificationService.Notify(new NotificationMessage()
+                {
+                    Severity = NotificationSeverity.Error,
+                    Detail = "Error creating new address.",
+                    Duration = 4000
+                });
+        }
+        else
+        {
+            AllAddresses = result.Data;
+            
+            var selected = AllAddresses.FirstOrDefault(a => a.Id == addressToSelect);
+            if (null != selected)
+            {
+                selectedTab = AllAddresses.IndexOf(selected);
+            }
+            else
+            {
+                selectedTab = 0;
+            }
+        }
+    }
+}

@@ -44,7 +44,7 @@
         </RadzenRow>
         <RadzenRow RowGap="2" JustifyContent="JustifyContent.Center">
             @{
-                if (!String.IsNullOrEmpty(txtAgencyNameSearch?.Value))
+                if (!String.IsNullOrWhiteSpace(txtAgencyNameSearch?.Value))
                 {
                     <RadzenColumn Size="10">
                         <UseSearchAgencies SearchString="@AgencySearchString" Context="agencyResults" Strategy="ExecutionStrategy.CacheFirst">

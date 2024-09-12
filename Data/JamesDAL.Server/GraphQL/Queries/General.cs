@@ -12,6 +12,7 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No address found with AddressID {addressId}.");
         }
+
         [Authorize]
         public async Task<UserProfile> GetUserProfileByUserName(string userName, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -49,6 +50,41 @@ namespace James.Data.Server.GraphQL.Queries
             catch (Exception ex)
             {
                 throw new GraphQLException($"Error when retrieving Branches.", ex);
+            }
+        }
+        [Authorize]
+        public async Task<List<Address>> GetAllLegalEntityAddresses(Guid legalEntityId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var result = await ctx.Addresses
+                    .Include(a => a.LegalEntityAddress)
+                    .ThenInclude(a => a.TypeNavigation)
+                    .Where(a => a.LegalEntityAddress.LegalEntityId == legalEntityId)
+                    .OrderBy(a => a.LegalEntityAddress.TypeNavigation.Order)
+                    .ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retrieving Addresses.", ex);
+            }
+        }
+        [Authorize]
+        public async Task<List<AddressTypeDm>> GetAddressTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var result = await ctx.AddressTypeDms.OrderBy(a => a.Order).ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retrieving Address Types.", ex);
             }
         }
     }

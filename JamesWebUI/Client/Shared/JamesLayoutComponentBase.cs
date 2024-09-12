@@ -10,6 +10,10 @@ namespace JamesWebUI.Client.Shared
         protected Task<AuthenticationState>? AuthenticationState { get; set; }
         [Inject]
         public JamesWebUI.Client.Services.ThemeService JamesThemeService { get; set; }
+        [Inject]
+        public James.Shared.ILoggingService LoggingService { get; set; }
+        [Inject]
+        public Radzen.DialogService DialogService { get; set; }
         private Task<AuthenticationState> _loadAuthenticationStateAsync { get; set; }
         //TODO: Discuss whether to allow only synchronous or asynchronous access to values.
         //Synchronous access properties

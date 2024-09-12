@@ -10,6 +10,7 @@ using James.Shared.Data;
 using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using JamesWebUI.Client.Components;
+using JamesWebUI.Server;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
@@ -62,7 +63,7 @@ try
         });
 
     //ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
-    var kong0TokenUrl = new Uri(config["Kong0:Imaging:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
+    var kong0TokenUrl = new Uri(config["Kong0:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
     var tokenClientBuilder = builder.Services.AddHttpClient("P8FileNetTokens").ConfigureHttpClient(
         client =>
         {
@@ -123,6 +124,7 @@ try
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
+    builder.Services.AddScoped<GeneralMutations>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents();

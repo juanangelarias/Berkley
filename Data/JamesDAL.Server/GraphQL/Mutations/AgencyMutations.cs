@@ -24,7 +24,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 EntityType = "Agency",
                 IsIndividual = false
             };
-            //TODO: Figure out Agency Number
+            
             Agency newAgency = new Agency()
             {
                 Id = newId,
@@ -67,7 +67,8 @@ namespace James.Data.Server.GraphQL.Mutations
             return new Agency();
         }
         [Authorize]
-        public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, string identifier,
+        public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, 
+            string? address3, string city, string? stateCode, string? postalCode, string identifier,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -357,7 +358,7 @@ namespace James.Data.Server.GraphQL.Mutations
             return success;
         }
         [Authorize]
-        public async Task<PowerOfAttorney> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
+        public async Task<PowerOfAttorney> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
 
@@ -373,6 +374,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 oldPowerOfAttorney.CurrentIssued = currentIssued;
                 oldPowerOfAttorney.Comments = comments;
                 oldPowerOfAttorney.Status = status;
+                oldPowerOfAttorney.ReferenceNumber = referenceNumber;
                 oldPowerOfAttorney.StatusNavigation = ctx.PowerOfAttorneyStatusDms.First(s => s.Id == status);
 
                 ctx.Update(oldPowerOfAttorney);

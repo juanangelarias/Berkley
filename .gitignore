@@ -400,3 +400,4 @@ FodyWeavers.xsd
 /.graphqlrc.json
 /schema.graphql
 /Data/JamesDAL.Server/TempServer
+*.bak

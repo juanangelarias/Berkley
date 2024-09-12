@@ -26,11 +26,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="GraphQL\Mutations\GeneralMutations.graphql" />
     <None Remove="GraphQL\Mutations\ObligeeMutations.graphql" />
+    <None Remove="GraphQL\Queries\Obligee.graphql" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="GraphQL\Subscriptions\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GenerateGraphQLCodeItems Remove="GraphQL\Queries\Obligee.graphql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GenerateGraphQLCodeItems Remove="GraphQL\Mutations\GeneralMutations.graphql" />
   </ItemGroup>
 
 </Project>

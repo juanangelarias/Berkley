@@ -10,24 +10,27 @@
 <Theme />
 
 <PageTitle>BasisTNG</PageTitle>
+<style>
+    .rz-sidebar{
+        background: #FCFCFC !important;
+        border-color: #FCFCFC !important;
+    }
+    .rz-header{
+        background: #F1F1F1 !important;
+        border-color: #F1F1F1 !important;
+    }
+    .rz-body {
+        background: #F1F1F1 !important;
+        border-color: #F1F1F1 !important;
+    }
 
-<RadzenLayout Style="width:100%; grid-template-areas: 'rz-header rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
-    <RadzenHeader>
+</style>
+<RadzenLayout Style="width:100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
+    <RadzenHeader class="rz-shadow-0">
         <ChildContent>
             <RadzenRow>
-                <RadzenColumn Size="5">
-                    <RadzenRow>
-                        <AccessControl />
-                    </RadzenRow>
-                    <RadzenRow>
-                        <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenButton Variant="Variant.Text" Icon="note" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)" />
-                            <RadzenButton Variant="Variant.Text" Icon="notifications" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)">
-                                @* <RadzenBadge Variant="Variant.Outlined" BadgeStyle="BadgeStyle.Secondary" Text="15" title="You have new notifications." /> *@
-                            </RadzenButton>
-                            <RadzenButton Variant="Variant.Text" Icon="mail" Size="ButtonSize.Small" />
-                        </RadzenStack>
-                    </RadzenRow>
+                <RadzenColumn Size="5" >
+                    <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040" />
                 </RadzenColumn>
                 <RadzenColumn Size="7">
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">                         
@@ -65,8 +68,24 @@
         </ChildContent>
     </RadzenHeader>
     <RadzenSidebar Style="width: max-content" Responsive="false">
+        <RadzenRow>
+            <AccessControl />
+        </RadzenRow>
+        <RadzenRow AlignItems="AlignItems.End">
         <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-        <RadzenPanelMenu DisplayStyle="@(sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)">
+        </RadzenRow>
+        <RadzenRow>
+
+            <RadzenStack Orientation="@(sidebarExpanded ? Orientation.Horizontal : Orientation.Vertical)" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+                <RadzenButton Variant="Variant.Text" Icon="note" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)" />
+                <RadzenButton Variant="Variant.Text" Icon="notifications" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)">
+                    <RadzenBadge Variant="Variant.Outlined" BadgeStyle="BadgeStyle.Secondary" Text="15" title="You have new notifications." />
+                </RadzenButton>
+                <RadzenButton Variant="Variant.Text" Icon="mail" Size="ButtonSize.Small" />
+            </RadzenStack>
+        </RadzenRow>
+        <RadzenPanelMenu DisplayStyle="@(sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)" 
+        Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
             <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard" />
             <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds"/>
             <RadzenPanelMenuItem Text="Accounts" Icon="account_balance" Path="Accounts" />

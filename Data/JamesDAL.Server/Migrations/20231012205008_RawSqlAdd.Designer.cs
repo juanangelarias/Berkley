@@ -6485,8 +6485,8 @@ namespace James.Data.Server.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<int>("Serial")
-                        .HasColumnType("int");
+                    b.Property<string>("ReferenceNumber")
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Status")
                         .IsRequired()

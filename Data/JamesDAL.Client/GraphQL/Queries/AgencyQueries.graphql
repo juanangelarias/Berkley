@@ -227,7 +227,7 @@ query GetAgencyPOAs($agencyId: UUID!){
             status
         }
         limit,
-        serial,
+        referenceNumber,
         currentIssued,
         firstIssued,
         insurerId,

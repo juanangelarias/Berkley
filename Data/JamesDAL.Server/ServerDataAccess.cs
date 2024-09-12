@@ -123,10 +123,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetUserProfileByUserName(userName, contextFactory));
         }
-        public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued,
+        public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
-            return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, serial, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
+            return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
@@ -187,11 +187,11 @@ namespace James.Data.Server
                 return new SaveDataResult { Errors = [ex.Message] };
             }
         }
-        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
+        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
         {
             try
             {
-                var result = await agencyMutation.CreateAgencyPOA(poaId, insurerId, agencyId, limit, serial, firstIssued, currentIssued, comments, status, eventSender, contextFactory);
+                var result = await agencyMutation.CreateAgencyPOA(poaId, insurerId, agencyId, limit, referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory);
                 return new SaveDataResult();
             }
             catch (AggregateException ae)

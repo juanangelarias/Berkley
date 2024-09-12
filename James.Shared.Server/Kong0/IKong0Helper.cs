@@ -22,7 +22,7 @@ namespace James.Shared.Server.Kong0
 
         public async Task<T?> ExecuteMethodAsync<T, TClientInterface>(ClientBase<TClientInterface> client, Func<ClientBase<TClientInterface>, Task<T>> clientFunc) where TClientInterface : class
         {
-            var token = await GetTokenASync();
+            var token = await GetTokenAsync();
             if (token == null)
             {
                 loggingService.LogError("Kong0 Token could not be attained.", "See previous error.", "Kong0");
@@ -45,7 +45,7 @@ namespace James.Shared.Server.Kong0
             }
         }
         //Cache token for all users
-        protected async Task<KongToken?> GetTokenASync()
+        protected async Task<KongToken?> GetTokenAsync()
         {
             //TODO: Build in resiliency for when Kong0 service is down.
             var cachedToken = credentialCache.TokenCache.Keys.Contains(GetType()) ? credentialCache.TokenCache[GetType()] : null;

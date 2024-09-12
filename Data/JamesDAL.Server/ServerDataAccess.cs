@@ -10,102 +10,35 @@ namespace James.Data.Server
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
+        public async Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber)
+        {
+            return await ExecuteGet(async () => await query.GetAccountByNumber(accountNumber, contextFactory));
+            
+        }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
             return await ExecuteGet(async () => await query.GetAgencyAccounts(agencyNumber, contextFactory));
         }
 
-        public async Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber)
+        public async Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber)
         {
-            //TODO: Port this to ExecuteGet
-            try
-            {
-                var result = await query.GetAgencyByAgencyNumber(agencyNumber, contextFactory);
-                return null == result
-                    ? new DataAccessResult<Agency> { Errors = ["No agency With that agency number was found."] }
-                    : new DataAccessResult<Agency> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<Agency> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<Agency> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetAgencyByAgencyNumber(agencyNumber, contextFactory));
         }
         public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)
         {
-            try
-            {
-                var result = await query.SearchObligeesAsync(searchString, contextFactory);
-                return null == result
-                    ? new DataAccessResult<List<Obligee>> { Errors = ["No obligees were found."] }
-                    : new DataAccessResult<List<Obligee>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Obligee>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Obligee>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.SearchObligeesAsync(searchString, contextFactory));
         }
         public async Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id)
         {
-            try
-            {
-                var result = await query.GetObligeeById(id, contextFactory);
-                return null == result
-                    ? new DataAccessResult<Obligee?> { Errors = ["No obligee with the supplied id was found."] }
-                    : new DataAccessResult<Obligee?> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<Obligee?> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<Obligee?> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetObligeeById(id, contextFactory));
         }
         public async Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId)
         {
-            try 
-            {
-                var result = await query.GetObligeePrimaryBonds(obligeeId, contextFactory);
-                return null == result
-                    ? new DataAccessResult<List<Bond>> { Errors = ["No primary bonds were found for supplied ObligeeID"] }
-                    : new DataAccessResult<List<Bond>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Bond>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Bond>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetObligeePrimaryBonds(obligeeId, contextFactory));
         }
         public async Task<IDataAccessResult<List<Bond>>> GetObligeeSecondaryBonds(Guid obligeeId)
         {
-            try
-            {
-                var result = await query.GetObligeeSecondaryBonds(obligeeId, contextFactory);
-                return null == result
-                    ? new DataAccessResult<List<Bond>> { Errors = ["No secondary bonds were found for supplied ObligeeID"] }
-                    : new DataAccessResult<List<Bond>> { Data = result };
-
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Bond>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Bond>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.GetObligeeSecondaryBonds(obligeeId, contextFactory));
         }
         public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId)
         {
@@ -205,10 +138,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetUserProfileByUserName(userName, contextFactory));
         }
-        public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? serial, DateOnly? firstIssued,
+        public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
-            return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, serial, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
+            return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
@@ -283,11 +216,11 @@ namespace James.Data.Server
                 return new SaveDataResult { Errors = [ex.Message] };
             }
         }
-        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? serial, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
+        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
         {
             try
             {
-                var result = await agencyMutation.CreateAgencyPOA(poaId, insurerId, agencyId, limit, serial, firstIssued, currentIssued, comments, status, eventSender, contextFactory);
+                var result = await agencyMutation.CreateAgencyPOA(poaId, insurerId, agencyId, limit, referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory);
                 return new SaveDataResult();
             }
             catch (AggregateException ae)

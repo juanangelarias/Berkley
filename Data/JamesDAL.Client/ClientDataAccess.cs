@@ -43,7 +43,7 @@ namespace James.Data.Client
         {
             return await ExecuteGet<List<Bond>>(async () => await jamesClient.GetObligeeSecondaryBonds.ExecuteAsync(obligeeId), "ObligeeSecondaryBonds");
         }
-        public async Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber)
+        public async Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber)
         {
             var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber");

@@ -2,9 +2,9 @@
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-@inject DialogService DialogService
 
 
+@inject NotificationService NotificationService
 @inject IDataAccess _dataAccess
 
 <RadzenPanel Visible="!EditMode" Name="@(Name+"Display")">
@@ -13,7 +13,8 @@
             <RadzenStack Orientation="Orientation.Horizontal">
                 <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
                 <RadzenText Text="Detailed View" />
-                
+                <RadzenButton Icon="edit" Visible="!EditMode" Size="ButtonSize.Small" Variant="Variant.Text" Click="ToggleEditMode" />
+                <RadzenButton Icon="delete" Visible="!EditMode" Size="ButtonSize.Small" Variant="Variant.Text" Click="DeleteAddress" />
             </RadzenStack>
         </RadzenColumn>
     </RadzenRow>
@@ -55,7 +56,7 @@
             </RadzenFormField>
         </RadzenColumn>
         <RadzenColumn>
-            <RadzenButton Icon="edit" Visible="!EditMode" Size="ButtonSize.Small" Text="Edit" Click="ToggleEditMode" />
+
         </RadzenColumn>
     </RadzenRow>
 </RadzenPanel>
@@ -67,7 +68,6 @@
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenSwitch @bind-Value="@DetailedMode" Text="Detailed Mode" />
                     <RadzenText Text="Detailed View" />
-                    
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -111,8 +111,7 @@
             <RadzenColumn>
                 <RadzenStack JustifyContent="JustifyContent.End" AlignItems="AlignItems.End" Orientation="Orientation.Horizontal">
                     <RadzenButton Icon="save" Visible="EditMode" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
-                    <RadzenButton Icon="cancel" Visible="EditMode" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary"
-                                  Click="@Cancel" />
+                    <RadzenButton Icon="cancel" Visible="EditMode" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary" Click="@Cancel" />
                 </RadzenStack>
             </RadzenColumn>
         </RadzenRow>
@@ -123,6 +122,8 @@
     [Parameter] public Guid AddressId { get; set; }
     [Parameter] public string Name { get; set; } = "Address";
     [Parameter] public string EditorIdentifier { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] public EventCallback<Guid> StateChanged { get; set; }
+
     public Address AddressToDisplay { get; set; } = new();
     private Address? _loadedAddress;
     public bool DetailedMode { get; private set; }
@@ -176,25 +177,28 @@
         var compareLoadedWithCurrent = SameOrDifferent.Compare(_loadedAddress, AddressToDisplay);
         var autoChange = compareWithCurrent.DifferentProperties.Intersect(compareLoadedWithCurrent.SameProperties).ToList();
         var askAboutChange = compareWithCurrent.DifferentProperties
-            .Intersect(compareLoadedWithCurrent.DifferentProperties)
-            .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
+        .Intersect(compareLoadedWithCurrent.DifferentProperties)
+        .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
         if (autoChange.Any())
+        {
             SameOrDifferent.CopyTheseProperties(newAddress, AddressToDisplay, autoChange);
+            StateHasChanged();
+        }
         if (askAboutChange.Any())
         {
             //Open side dialog to ask user which version to take
             if (true == await DialogService.OpenSideAsync<ConflictResolverDialog>(
-                    "Conflicting edits", new Dictionary<string, object>()
-                        {
+                "Conflicting edits", new Dictionary<string, object>()
+                            {
                         {"DataFriendlyName", "Address"}, {"Conflicts", askAboutChange},
                         {"OurData", AddressToDisplay}, {"TheirData", newAddress}
-                        }, new SideDialogOptions
-                        {
-                            ShowClose = false,
-                            CloseDialogOnOverlayClick = false,
-                            Position = DialogPosition.Right,
-                            ShowMask = true
-                        }))
+                            }, new SideDialogOptions
+                            {
+                                ShowClose = false,
+                                CloseDialogOnOverlayClick = false,
+                                Position = DialogPosition.Right,
+                                ShowMask = true
+                            }))
             {
                 StateHasChanged();//Check value of AddressToDisplay
                 return false;
@@ -212,7 +216,45 @@
     {
         EditMode = !EditMode;
     }
-
+    private async Task DeleteAddress()
+    {
+        var result = await DialogService.OpenAsync("Confirm Address Deletion", ds =>
+        @<RadzenStack Orientation="Orientation.Vertical">
+            <p>Are you sure you want to delete this address?</p>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenButton Text="Yes" Click="() => ds.Close(true)" Style="width:80px;"/>
+                <RadzenButton Text="No" Click="() => ds.Close(false)" Style="width:80px;" />
+            </RadzenStack>
+        </RadzenStack>
+    );
+        if (result)
+        {
+            var deleteResult = await _dataAccess.DeleteAddress(AddressId);
+            //TODO: Error Handling
+            if (deleteResult.Errors.Any())
+            {
+                LoggingService.LogError("DeleteAddress return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+                ShowNotification(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Error,
+                        Detail = "Error when deleting this address.",
+                        Duration = 4000
+                    });
+            }
+            else
+            {
+                await StateChanged.InvokeAsync(AddressId);
+            }
+        }
+    }
     private async Task Cancel()
-    { EditMode = false; await LoadAddress(); }
+    { 
+        EditMode = false; 
+        await LoadAddress(); 
+    }
+    
+    void ShowNotification(NotificationMessage message)
+    {
+        NotificationService.Notify(message);
+    }
 }

@@ -6,11 +6,17 @@ namespace James.Shared.Data
     {
         public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
         public Task<IDataAccessResult<Agency>> GetAgencyByAgencyNumber(string agencyNumber);
+        public Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString);
+        public Task<IDataAccessResult<Obligee>> GetObligeeById(Guid id);
+        public Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId);
+        public Task<IDataAccessResult<List<Bond>>> GetObligeeSecondaryBonds(Guid obligeeId);
         public Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId);
         public Task<IDataAccessResult<List<Insurer>>> GetAllInsurers();
         public Task<IDataAccessResult<List<State>>> GetAllStates();
         public Task<IDataAccessResult<List<Branch>>> GetAllBranches();
         public Task<IDataAccessResult<Address>> GetAddress(Guid addressId);
+        public Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes();
+        public Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId);
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
@@ -27,13 +33,16 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
+        public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
+            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
+        public Task<ISaveDataResult> DeleteAddress(Guid addressId);
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
             Guid changedBy, string? comments);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
         public Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
-            string address1, string address2, string city, string state, string postalCode, string phoneNumber, string email);
+            string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email);
         public Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, 
             string addressee, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId);
         public Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,

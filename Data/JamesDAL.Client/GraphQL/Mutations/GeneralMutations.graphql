@@ -1,0 +1,11 @@
+﻿mutation CreateAddress($input: CreateAddressInput!){
+  createAddress (input: $input){
+    boolean
+  }
+} 
+
+mutation DeleteAddress ($input: DeleteAddressInput!) {
+  deleteAddress (input: $input) {
+    boolean
+  }
+}

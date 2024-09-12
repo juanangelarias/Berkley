@@ -7,7 +7,7 @@
 
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
-@inject DialogService DialogService
+
 @inject IDataAccess _dataAccess
 @inject ILoggingService _logging
 @attribute [Authorize]
@@ -17,6 +17,9 @@
 <PageTitle>Agency Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
  @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
+
+
+
 <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
     <RadzenPanel Style="border-radius: 20px;" Collapsed="_summaryView" class="rz-shadow-7">
         <FooterTemplate>
@@ -59,6 +62,9 @@
             <RadzenRow JustifyContent="JustifyContent.End">
                 <RadzenColumn>
                     <RadzenText TextStyle="TextStyle.DisplayH5" Text="@_agencyToDisplay?.IdNavigation?.FullName" />
+                </RadzenColumn>
+                <RadzenColumn>
+                    <ObligeeSearch />
                 </RadzenColumn>
                 <RadzenColumn Size="2">
                     <RadzenStack Orientation="Orientation.Horizontal">
@@ -139,11 +145,11 @@
                                         <RadzenColumn Size="12">
                                             <RadzenStack Orientation="Orientation.Horizontal" Gap="5px">
                                                 <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" @bind-Value="@_agencyToDisplay.W9"
-                                                                    Text="W-9" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" />
+                                                                    Text="W-9" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" />
                                                 <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" @bind-Value="@_agencyToDisplay.Need1099"
-                                                                    Text="Need 1099" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" />
+                                                                    Text="Need 1099" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" />
                                                 <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" @bind-Value="@_agencyToDisplay.Nasbp"
-                                                                    Text="NASBP" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" />
+                                                                    Text="NASBP" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" />
                                                 <RadzenButton Text="Edit" Icon="edit" Visible="!EditMode" Click="@(() => EditMode = !EditMode)" />
                                                 <RadzenButton Text="Save" Icon="save" Visible="EditMode" Click="SaveAgencyChanges" />
                                             </RadzenStack>
@@ -155,36 +161,8 @@
                     </RadzenFieldset>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
-                    <RadzenFieldset Text="Addresses and Coverages">
-                        <RadzenTabs>
-                            <Tabs>
-                                <RadzenTabsItem Text="Main">
-                                    <AddressDisplay @ref="_mainAddressEditor" EditorIdentifier="@EditorIdentifier"
-                                                    Name="MainAddress" AddressId="@_mainAddress.Id" />
-                                </RadzenTabsItem>
-                                <RadzenTabsItem Text="Billing">
-                                    <AddressDisplay @ref="_billingAddressEditor" EditorIdentifier="@EditorIdentifier"
-                                                    Name="BillingAddress" AddressId="@_billingAddress.Id" />
-                                </RadzenTabsItem>
-                                <RadzenTabsItem Text="Errors & Omissions Coverage">
-                                    <RadzenStack Orientation="Orientation.Vertical">
-                                        <RadzenStack Orientation="Orientation.Horizontal">
-                                            <RadzenFormField AllowFloatingLabel="false" Text="Carrier" Variant="Variant.Text" Style="width: 400px;">
-                                                <RadzenTextBox Value="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Carrier"
-                                                               Disabled="!ErrorsAndOmissionsEditMode" />
-                                            </RadzenFormField>
-                                            <RadzenButton Icon="edit" Visible="!ErrorsAndOmissionsEditMode" Size="ButtonSize.Small" Text="Edit" Click="@(() => ErrorsAndOmissionsEditMode = !ErrorsAndOmissionsEditMode)" />
-                                        </RadzenStack>
-                                        <RadzenFormField AllowFloatingLabel="false" Text="Exp Date" Variant="Variant.Text">
-                                            <RadzenTextBox Value="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.Expiration.ToShortDateString()" Disabled="!ErrorsAndOmissionsEditMode" />
-                                        </RadzenFormField>
-                                        <RadzenFormField AllowFloatingLabel="false" Text="Limit" Variant="Variant.Text">
-                                            <RadzenTextBox Value="@_agencyToDisplay?.AgencyErrorAndOmissions?.FirstOrDefault()?.CoverageLimit.ToString("c0")" Disabled="!ErrorsAndOmissionsEditMode" />
-                                        </RadzenFormField>
-                                    </RadzenStack>
-                                </RadzenTabsItem>
-                            </Tabs>
-                        </RadzenTabs>
+                    <RadzenFieldset Text="Addresses">
+                         <LegalEntityAddressEditor LegalEntityId="@_agencyToDisplay.Id" />
                     </RadzenFieldset>
                 </RadzenColumn>
             </RadzenRow>

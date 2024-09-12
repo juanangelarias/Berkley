@@ -20,6 +20,8 @@ type Mutation {
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
   setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
+  createAddress(input: CreateAddressInput!): CreateAddressPayload!
+  deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -60,14 +62,41 @@ type Query {
   userProfileByUserName(userName: String!): UserProfile!
   allInventoryDocTypes: [InventoryDocumentDm!]!
   allBranches: [Branch!]!
+  allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
+  addressTypes: [AddressTypeDm!]!
   allInsurers: [Insurer!]!
+  obligeeById(id: UUID!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
+  searchObligees(searchString: String!): [Obligee!]!
+  obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!
+  obligeeSecondaryBonds(obligeeId: UUID!): [Bond!]!
   allStates: [State!]!
 }
 
 type Subscription {
   onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
   onLicenseModified: AgencyLicense!
+}
+
+type Branch {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  branchKey: String!
+  name: String!
+  branchOfficeAddressId: UUID!
+  phoneId: UUID!
+  homeOffice: Boolean!
+  emailReceiver: String!
+  bccreceiver: String
+  generalLedgerCode: String
+  active: Boolean!
+  region: String!
+  headCount: Int
+  accounts: [Account!]!
+  branchOfficeAddress: Address!
+  phone: PhoneNumber!
+  regionNavigation: RegionDm!
 }
 
 type Agent {
@@ -468,27 +497,6 @@ type Account {
   emailAddresses: [LegalEntityEmail!]!
 }
 
-type Branch {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  branchKey: String!
-  name: String!
-  branchOfficeAddressId: UUID!
-  phoneId: UUID!
-  homeOffice: Boolean!
-  emailReceiver: String!
-  bccreceiver: String
-  generalLedgerCode: String
-  active: Boolean!
-  region: String!
-  headCount: Int
-  accounts: [Account!]!
-  branchOfficeAddress: Address!
-  phone: PhoneNumber!
-  regionNavigation: RegionDm!
-}
-
 type DivisionDm {
   id: UUID!
   created: DateTime!
@@ -571,6 +579,15 @@ type InventoryDocumentDm {
   agencyInventories: [AgencyInventory!]!
 }
 
+type AddressTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  order: Int!
+  legalEntityAddresses: [LegalEntityAddress!]!
+}
+
 type Insurer {
   id: UUID!
   created: DateTime!
@@ -594,6 +611,31 @@ type Insurer {
   phoneNumbers: [LegalEntityPhone!]!
   mainEmailAddress: String
   emailAddresses: [LegalEntityEmail!]!
+}
+
+type Obligee {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  obligeeNum: String!
+  type: String
+  editedBy: UUID
+  printStatusLetter: Boolean!
+  notes: String
+  bondRequests: [BondRequest!]!
+  editedByNavigation: UserProfile
+  idNavigation: LegalEntity!
+  typeNavigation: ObligeeTypeDm
+  fullName: String!
+  mainAddress: Address
+  addresses: [LegalEntityAddress!]!
+  mainPhoneNumber: PhoneNumber
+  phoneNumbers: [LegalEntityPhone!]!
+  mainEmailAddress: String
+  emailAddresses: [LegalEntityEmail!]!
+  givenName: String
+  middleInitial: String
+  familyName: String
 }
 
 type ObligeeTypeDm {
@@ -671,31 +713,6 @@ enum Severity {
 input KeyValuePairOfStringAndStringInput {
   key: String!
   value: String!
-}
-
-type Obligee {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  obligeeNum: String!
-  type: String
-  editedBy: UUID
-  printStatusLetter: Boolean!
-  notes: String
-  bondRequests: [BondRequest!]!
-  editedByNavigation: UserProfile
-  idNavigation: LegalEntity!
-  typeNavigation: ObligeeTypeDm
-  fullName: String!
-  mainAddress: Address
-  addresses: [LegalEntityAddress!]!
-  mainPhoneNumber: PhoneNumber
-  phoneNumbers: [LegalEntityPhone!]!
-  mainEmailAddress: String
-  emailAddresses: [LegalEntityEmail!]!
-  givenName: String
-  middleInitial: String
-  familyName: String
 }
 
 type LegalEntity {
@@ -953,15 +970,6 @@ type ImagingCategoryTabDivision {
   categoryNavigation: ImagingCategory!
   divisionCodeNavigation: DivisionDm!
   tabNameNavigation: ImagingTab!
-}
-
-type RegionDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  region: String!
-  bondTransactions: [BondTransaction!]!
-  branches: [Branch!]!
 }
 
 type WatchStatusDm {
@@ -1723,6 +1731,15 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
+type RegionDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  region: String!
+  bondTransactions: [BondTransaction!]!
+  branches: [Branch!]!
+}
+
 type Surcharge {
   id: UUID!
   created: DateTime!
@@ -1829,15 +1846,6 @@ type AgentSystemDm {
   modified: DateTime!
   systemName: String!
   onlineBondSystems: [OnlineBondSystem!]!
-}
-
-type AddressTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  order: Int!
-  legalEntityAddresses: [LegalEntityAddress!]!
 }
 
 type PhoneTypeDm {
@@ -2420,6 +2428,30 @@ type SetAgencyGeneralInfoPayload {
   boolean: Boolean
 }
 
+input CreateAddressInput {
+  addressId: UUID!
+  address1: String!
+  address2: String
+  address3: String
+  city: String!
+  stateCode: String
+  postalCode: String
+  legalEntityId: UUID!
+  addressType: String!
+}
+
+type CreateAddressPayload {
+  boolean: Boolean
+}
+
+input DeleteAddressInput {
+  addressId: UUID!
+}
+
+type DeleteAddressPayload {
+  boolean: Boolean
+}
+
 input LogInformationInput {
   eventId: Int!
   message: String!
@@ -2459,14 +2491,14 @@ input CreateObligeeInput {
   fullName: String!
   obligeeType: String!
   printStatusLetter: Boolean!
-  notes: String!
+  notes: String
   address1: String!
-  address2: String!
+  address2: String
   city: String!
   state: String!
   postalCode: String!
-  phoneNumber: String!
-  email: String!
+  phoneNumber: String
+  email: String
 }
 
 type CreateObligeePayload {

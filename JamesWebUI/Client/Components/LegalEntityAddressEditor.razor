@@ -60,8 +60,13 @@
 
         if (result.Errors.Any())
         {
-            //TODO: Handle Errors
             LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+            NotificationService.Notify(new NotificationMessage()
+                {
+                    Severity = NotificationSeverity.Error,
+                    Detail = "Error loading addresses.",
+                    Duration = 4000
+                });
         }
         else
         {
@@ -75,8 +80,13 @@
 
         if (result.Errors.Any())
         {
-            //TODO: Handle Errors
             LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+            NotificationService.Notify(new NotificationMessage()
+                {
+                    Severity = NotificationSeverity.Error,
+                    Detail = "Error creating new address.",
+                    Duration = 4000
+                });
         }
         else
         {

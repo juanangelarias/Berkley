@@ -1731,6 +1731,15 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
+type RegionDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  region: String!
+  bondTransactions: [BondTransaction!]!
+  branches: [Branch!]!
+}
+
 type Surcharge {
   id: UUID!
   created: DateTime!

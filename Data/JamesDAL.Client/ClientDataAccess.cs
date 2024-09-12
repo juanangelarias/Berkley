@@ -15,12 +15,6 @@ namespace James.Data.Client
 {
     public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging) : IDataAccess
     {
-        public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
-        {
-            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber),
-                "AccountByNumber");
-            //return new DataAccessResult<Account>();
-        }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
             return await ExecuteGet<List<Account>>(async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),
@@ -420,19 +414,6 @@ namespace James.Data.Client
         public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
-            var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
-            {
-                PoaId = poaId,
-                InsurerId = insurerId,
-                AgencyId = agencyId,
-                Limit = limit,
-                ReferenceNumber = referenceNumber,
-                FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
-                CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
-                Status = status,
-                Comments = comments
-            });
-            return GraphQLSaveResult(saveResult);
             var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
             {
                 PoaId = poaId,

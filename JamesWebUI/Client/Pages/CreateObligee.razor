@@ -36,7 +36,7 @@
                 <RadzenColumn Size="6">
                     <RadzenFormField Text="Address 1" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
                         <ChildContent>
-                        <RadzenTextBox Name="Address1" @bind-Value="@NewAddress.Address1" />
+                            <RadzenTextBox Name="Address1" @bind-Value="@NewAddress.Address1" />
                         </ChildContent>
                         <Helper>
                             <RadzenRequiredValidator Component="Address1" Text="Address 1 is required." />
@@ -49,7 +49,7 @@
 
                     <RadzenFormField Text="Address 2" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
                         <ChildContent>
-                        <RadzenTextBox Name="Address2" @bind-Value="@NewAddress.Address2" />
+                            <RadzenTextBox Name="Address2" @bind-Value="@NewAddress.Address2" />
                         </ChildContent>
                     </RadzenFormField>
                 </RadzenColumn>
@@ -59,7 +59,7 @@
                     <RadzenStack Orientation="Orientation.Horizontal">
                         <RadzenFormField Text="City" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:250px;">
                             <ChildContent>
-                            <RadzenTextBox Name="City" @bind-Value="@NewAddress.City" />
+                                <RadzenTextBox Name="City" @bind-Value="@NewAddress.City" />
                             </ChildContent>
                             <Helper>
                                 <RadzenRequiredValidator Component="City" Text="City is required." />
@@ -78,7 +78,7 @@
                         </RadzenFormField>
                         <RadzenFormField Text="Postal Code" AllowFloatingLabel="true" Variant="Variant.Text">
                             <ChildContent>
-                            <RadzenTextBox Name="Postal Code" @bind-Value="@NewAddress.PostalCode" />
+                                <RadzenTextBox Name="Postal Code" @bind-Value="@NewAddress.PostalCode" />
                             </ChildContent>
                             <Helper>
                                 <RadzenRequiredValidator Component="Postal Code" Text="Postal Code is required." />
@@ -115,13 +115,13 @@
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <RadzenStack Orientation="Orientation.Vertical">
-                    <RadzenFormField Text="Type" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
-                        <RadzenDropDown TValue="Guid" Name="Type" />
-                    </RadzenFormField>
-                    <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenCheckBox Name="ReceiveLetters" TriState="false" TValue="bool" @bind-Value="@NewObligee.PrintStatusLetter" />
-                        <RadzenText Text="Receive Status Letters" />
-                    </RadzenStack>
+                        <RadzenFormField Text="Type" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
+                            <RadzenDropDown TValue="Guid" Name="Type" />
+                        </RadzenFormField>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="ReceiveLetters" TriState="false" TValue="bool" @bind-Value="@NewObligee.PrintStatusLetter" />
+                            <RadzenText Text="Receive Status Letters" />
+                        </RadzenStack>
                     </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
@@ -149,14 +149,14 @@
     private List<State> AllStates { get; set; }
 
     private Obligee NewObligee { get; set; } = new Obligee()
-        {
-            PrintStatusLetter = true,
-            Type = "Unknown",
-            IdNavigation = new LegalEntity()
+    {
+        PrintStatusLetter = true,
+        Type = "Unknown",
+        IdNavigation = new LegalEntity()
         {
             EntityType = "Obligee"
-            }
-        };
+        }
+    };
 
     private LegalEntityAddress LegalEntityAddress { get; set; } = new LegalEntityAddress()
         {

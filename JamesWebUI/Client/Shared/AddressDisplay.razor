@@ -177,8 +177,8 @@
         var compareLoadedWithCurrent = SameOrDifferent.Compare(_loadedAddress, AddressToDisplay);
         var autoChange = compareWithCurrent.DifferentProperties.Intersect(compareLoadedWithCurrent.SameProperties).ToList();
         var askAboutChange = compareWithCurrent.DifferentProperties
-            .Intersect(compareLoadedWithCurrent.DifferentProperties)
-            .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
+        .Intersect(compareLoadedWithCurrent.DifferentProperties)
+        .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
         if (autoChange.Any())
         {
             SameOrDifferent.CopyTheseProperties(newAddress, AddressToDisplay, autoChange);
@@ -188,17 +188,17 @@
         {
             //Open side dialog to ask user which version to take
             if (true == await DialogService.OpenSideAsync<ConflictResolverDialog>(
-                    "Conflicting edits", new Dictionary<string, object>()
-                        {
+                "Conflicting edits", new Dictionary<string, object>()
+                            {
                         {"DataFriendlyName", "Address"}, {"Conflicts", askAboutChange},
                         {"OurData", AddressToDisplay}, {"TheirData", newAddress}
-                        }, new SideDialogOptions
-                        {
-                            ShowClose = false,
-                            CloseDialogOnOverlayClick = false,
-                            Position = DialogPosition.Right,
-                            ShowMask = true
-                        }))
+                            }, new SideDialogOptions
+                            {
+                                ShowClose = false,
+                                CloseDialogOnOverlayClick = false,
+                                Position = DialogPosition.Right,
+                                ShowMask = true
+                            }))
             {
                 StateHasChanged();//Check value of AddressToDisplay
                 return false;

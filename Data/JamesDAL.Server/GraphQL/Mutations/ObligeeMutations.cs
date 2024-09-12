@@ -12,7 +12,6 @@ namespace James.Data.Server.GraphQL.Mutations
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            
             LegalEntity newLegalEntity = new LegalEntity()
             {
                 Id = id,
@@ -53,32 +52,32 @@ namespace James.Data.Server.GraphQL.Mutations
 
             if (null != email)
             {
-            LegalEntityEmail NewEmail = new LegalEntityEmail()
-            {
-                Id = Guid.NewGuid(),
-                LegalEntityId = id,
-                EmailAddress = email,
-                Type = "Main"
-            };
+                LegalEntityEmail NewEmail = new LegalEntityEmail()
+                {
+                    Id = Guid.NewGuid(),
+                    LegalEntityId = id,
+                    EmailAddress = email,
+                    Type = "Main"
+                };
                 ctx.LegalEntityEmails.Add(NewEmail);
             }
             if (null != phoneNumber)
             {
-            PhoneNumber newPhoneNumber = new PhoneNumber()
-            {
-                Id = Guid.NewGuid(),
-                CountryCode = "1",
-                MainNumber = phoneNumber
-            };
+                PhoneNumber newPhoneNumber = new PhoneNumber()
+                {
+                    Id = Guid.NewGuid(),
+                    CountryCode = "1",
+                    MainNumber = phoneNumber
+                };
 
-            LegalEntityPhone newLEPhone = new LegalEntityPhone()
-            {
-                LegalEntityId = id,
+                LegalEntityPhone newLEPhone = new LegalEntityPhone()
+                {
+                    LegalEntityId = id,
                     PhoneNumberId = newPhoneNumber.Id,
                     Type = "Main"
-            };
-            ctx.PhoneNumbers.Add(newPhoneNumber);
-            ctx.LegalEntityPhones.Add(newLEPhone);
+                };
+                ctx.PhoneNumbers.Add(newPhoneNumber);
+                ctx.LegalEntityPhones.Add(newLEPhone);
             }
 
             var result = await ctx.SaveChangesAsync();

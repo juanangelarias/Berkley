@@ -35,7 +35,7 @@ enum ApplyPolicy {
 }
 
 type Query {
-  account(accountNumber: String): Account
+  accountByNumber(accountNumber: String): Account
   accountOnly(accountNumber: String): Account
   searchAgencies(stringToSearch: String): [Agency!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency

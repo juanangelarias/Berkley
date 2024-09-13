@@ -5,7 +5,7 @@ namespace James.Data.Server.GraphQL.Queries
     public partial class Query
     {
         [Authorize]
-        public async Task<Account?> GetAccount(string? accountNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<Account?> GetAccountByNumber(string? accountNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             if (accountNumber == null)
                 return null;

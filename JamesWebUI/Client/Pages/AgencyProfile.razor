@@ -60,14 +60,14 @@
         </SummaryTemplate>
         <ChildContent>
             <RadzenRow JustifyContent="JustifyContent.End">
-                <RadzenColumn>
+                <RadzenColumn Size="4">
                     <RadzenText TextStyle="TextStyle.DisplayH5" Text="@_agencyToDisplay?.IdNavigation?.FullName" />
                 </RadzenColumn>
-                <RadzenColumn>
-                    <ObligeeSearch />
+                <RadzenColumn Size="4">
+                    <AgencySearch />
                 </RadzenColumn>
-                <RadzenColumn Size="2">
-                    <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenColumn Size="4">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
                         <RadzenText Text="Status:" />
                         <RadzenText Text="@_agencyToDisplay?.Status" />
                         <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.Small" Click="ShowStatusDialog" />

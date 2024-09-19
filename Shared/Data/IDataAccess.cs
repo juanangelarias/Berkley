@@ -4,6 +4,10 @@ namespace James.Shared.Data
 {
     public interface IDataAccess
     {
+        public Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber);
+        public Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber);
+        public Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber);
+        public Task<IDataAccessResult<List<Account>>> SearchAccounts(string searchString);
         public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber);
         public Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString);

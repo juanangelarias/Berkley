@@ -1,0 +1,53 @@
+﻿@using James.Shared
+@inherits JamesLayoutComponentBase
+
+@inject NavigationManager NavigationManager
+
+
+@inject NotificationService NotificationService
+@inject IDataAccess _dataAccess
+
+<RadzenStack Orientation="Orientation.Horizontal">
+    <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 100%;"
+                        ValueChanged="ResultSelected"
+                        Placeholder="Search..." Data="@SearchResults" LoadData="SearchAccount"
+                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
+        <Template Context="account">
+            <RadzenStack Orientation="Orientation.Horizontal" Style="width:500px;">
+                <RadzenIcon Icon="person" />
+                <RadzenText Text="@account.AccountNum" Style="width: 100px;" />
+                <RadzenText Text="@account.IdNavigation.FullName" Style="width: 400px;" />
+            </RadzenStack>
+        </Template>
+    </RadzenAutoComplete>
+</RadzenStack>
+
+@code {
+    private List<Account> SearchResults { get; set; } = new List<Account>();
+    private Account SelectedAccount { get; set; } = new Account();
+    private RadzenAutoComplete autoComplete { get; set; }
+
+
+    private async Task SearchAccount(LoadDataArgs args)
+    {
+        var result = await _dataAccess.SearchAccounts(args.Filter);
+
+        if (result.Errors.Any())
+        {
+            //TODO: Error Handling
+        }
+        else
+        {
+            SearchResults = result.Data;
+        }
+    }
+    private async Task ResultSelected(dynamic args)
+    {
+
+        if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Account))
+        {
+            NavigationManager.NavigateTo("/Account/" + ((Account)autoComplete.Value).AccountNum.ToString());
+            autoComplete.Value = "";
+        }
+    }
+}

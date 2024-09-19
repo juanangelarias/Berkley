@@ -24,7 +24,7 @@
                     <RadzenText TextStyle="TextStyle.DisplayH5" Text="@AccountToDisplay?.IdNavigation?.FullName" />
                 </RadzenColumn>
                 <RadzenColumn Size="4">
-                    <RadzenTextBox Value="Search..." Style="width:100%;" />
+                    <AccountSearch />
                 </RadzenColumn>
                 <RadzenColumn Size="4">
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
@@ -110,6 +110,29 @@
             </RadzenRow>
         </ChildContent>
     </RadzenPanel>
+    <RadzenPanel Style="border-radius: 20px;" class="rz-shadow-7">
+        <ChildContent>
+            <RadzenTabs>
+                <Tabs>
+                    <RadzenTabsItem Text="General Information">
+                        <AccountGeneralInformation AccountToDisplay="@AccountToDisplay" />
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Account Program">
+                        <AccountProgramDisplay AccountNumber="@AccountToDisplay?.AccountNum" />
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Account References">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Commercial Credit Information">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Key Personnel">
+
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+        </ChildContent>    
+    </RadzenPanel>
 </RadzenStack>
 
 @code {
@@ -140,6 +163,7 @@
             else
             {
                 AccountToDisplay = result.Data;
+                StateHasChanged();
             }
         }
     }

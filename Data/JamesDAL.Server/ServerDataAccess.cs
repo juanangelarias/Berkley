@@ -9,7 +9,19 @@ namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
-    { 
+    {
+        public async Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber)
+        {
+            return await ExecuteGet(async () => await query.GetAccountByNumber(accountNumber, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber)
+        {
+            return await ExecuteGet(async () => await query.GetAccountProgramHistory(accountNumber, contextFactory));
+        }
+        public async Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber)
+        {
+            return await ExecuteGet(async() => await query.GetAccountActiveLinesOfAuthority(accountNumber, contextFactory));
+        }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
             return await ExecuteGet(async () => await query.GetAgencyAccounts(agencyNumber, contextFactory));
@@ -22,6 +34,10 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)
         {
             return await ExecuteGet(async () => await query.SearchObligeesAsync(searchString, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<Account>>> SearchAccounts(string searchString)
+        {
+            return await ExecuteGet(async () => await query.SearchAccounts(searchString, contextFactory));
         }
         public async Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id)
         {

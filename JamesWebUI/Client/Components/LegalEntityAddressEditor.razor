@@ -72,6 +72,7 @@
         {
             AllAddresses = result.Data;
             selectedTab = 0;
+            StateHasChanged();
         }
     }
     private async Task AddressCreated(Guid addressToSelect)

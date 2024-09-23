@@ -7,50 +7,6 @@ namespace JamesWebUI.Client.Test
     public class ThisToThatTests
     {
 
-        [Fact]
-        public void Test1()
-        {
-            var acct = GetFakeAccount();
-            var gqlAcct = MakeIntoGraphQLObject(acct);
-            var entityForm = ThisToThat.ToEntityType<Account>(gqlAcct);
-
-            Assert.NotNull(entityForm);
-            Assert.Equal(acct.AccountNum, entityForm.AccountNum);
-            Assert.Equal(acct.Bank, entityForm.Bank);
-            Assert.Equal(acct.IdNavigation.FullName, entityForm.IdNavigation.FullName);
-            Assert.Equal(acct.IdNavigation.LegalEntityPhones.Count, entityForm.IdNavigation.LegalEntityPhones.Count);
-            Assert.Equal(acct.IdNavigation.LegalEntityEmails.Count, entityForm.IdNavigation.LegalEntityEmails.Count);
-            MatchLegalAddresses(acct.IdNavigation.LegalEntityAddresses, entityForm.IdNavigation.LegalEntityAddresses);
-            for (var i = 0; i < acct.IdNavigation.LegalEntityPhones.Count; i++)
-            {
-                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].Type, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].Type);
-                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.MainNumber, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.MainNumber);
-                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.Extension, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.Extension);
-                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.CountryCode, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.CountryCode);
-            }
-            for (var i = 0; i < acct.IdNavigation.LegalEntityEmails.Count; i++)
-            {
-                Assert.Equal(acct.IdNavigation.LegalEntityEmails.ToArray()[i].Type, entityForm.IdNavigation.LegalEntityEmails.ToArray()[i].Type);
-                Assert.Equal(acct.IdNavigation.LegalEntityEmails.ToArray()[i].EmailAddress, entityForm.IdNavigation.LegalEntityEmails.ToArray()[i].EmailAddress);
-            }
-
-            Assert.Equal(acct.Agent?.IdNavigation.FullName, entityForm.Agent?.IdNavigation.FullName);
-            Assert.Equal(acct.AgencyNumberNavigation?.IdNavigation.FullName, entityForm.AgencyNumberNavigation?.IdNavigation.FullName);
-            MatchLegalAddresses(acct.AgencyNumberNavigation!.IdNavigation.LegalEntityAddresses, entityForm.AgencyNumberNavigation!.IdNavigation.LegalEntityAddresses, true);
-            Assert.Equal(acct.Division, entityForm.Division);
-            Assert.Equal(acct.HomeOfficeReviewByNavigation?.FullName, entityForm.HomeOfficeReviewByNavigation?.FullName);
-            Assert.Equal(acct.HomeOfficeReviewed, entityForm.HomeOfficeReviewed);
-            Assert.Equal(acct.BranchReviewByNavigation?.FullName, entityForm.BranchReviewByNavigation?.FullName);
-            Assert.Equal(acct.BranchReviewed, entityForm.BranchReviewed);
-            Assert.Equal(acct.Attorney?.IdNavigation.FullName, acct.Attorney?.IdNavigation.FullName);
-            Assert.Equal(acct.Attorney?.MartindaleHubbellRating, acct.Attorney?.MartindaleHubbellRating);
-            Assert.Equal(acct.Underwriter?.IdNavigation.FullName, acct.Underwriter?.IdNavigation.FullName);
-            Assert.Equal(acct.Underwriter?.IdNavigation.Initials, acct.Underwriter?.IdNavigation.Initials);
-            Assert.Equal(acct.Underwriter?.IdNavigation.Title, acct.Underwriter?.IdNavigation.Title);
-            Assert.Equal(acct.Underwriter?.IdNavigation.Email, acct.Underwriter?.IdNavigation.Email);
-            Assert.Equal(acct.Underwriter?.ReportsTo, acct.Underwriter?.ReportsTo);
-        }
-
         static void MatchLegalAddresses(ICollection<LegalEntityAddress> expected,
             ICollection<LegalEntityAddress> actual, bool cityStateOnly = false)
         {

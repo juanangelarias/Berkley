@@ -34,6 +34,7 @@
             </RadzenColumn>
             <RadzenColumn Size="4">
                 <RadzenTextBox Placeholder="Name" Style="width: 100%" @ref="@txtAgencyNameSearch" Change="@OnAgencySearchChange" />
+                @* <RadzenAutoComplete @ref="@txtAgencyNameSearch" Placeholder="Name" Style="width: 100%;" ValueChanged="@OnAgencySearchChange" FilterDelay="200" /> *@
             </RadzenColumn>
             <RadzenColumn Style="vertical-align: middle">
                 <RadzenButton Icon="search" Size="ButtonSize.Small" Click="SearchAgencies" />
@@ -139,6 +140,17 @@
             _logging.LogError("Error searching agencies in AgencySearch");
         }
     }
+    // async Task SearchAgencies(string searchString)
+    // {
+    //     var results = await DataAccess.SearchAgencies(searchString);
+    //     if (results.Success)
+    //         agencyResults = results.Data;
+    //     else
+    //     {
+    //         //TODO:Add error details
+    //         _logging.LogError("Error searching agencies in AgencySearch");
+    //     }
+    // }
     async Task OpenAgency(DataGridRowMouseEventArgs<ISearchAgencies_SearchAgencies> args)
     {
         NavigationManager.NavigateTo("Agency/" + args.Data.AgencyNumber, true);

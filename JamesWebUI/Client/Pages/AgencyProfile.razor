@@ -1,4 +1,4 @@
-﻿@page "/Agency/{Id}"
+﻿@page "/Agency/{Id?}"
 @using System.Diagnostics
 @using James.Shared
 
@@ -60,14 +60,14 @@
         </SummaryTemplate>
         <ChildContent>
             <RadzenRow JustifyContent="JustifyContent.End">
-                <RadzenColumn>
+                <RadzenColumn Size="4">
                     <RadzenText TextStyle="TextStyle.DisplayH5" Text="@_agencyToDisplay?.IdNavigation?.FullName" />
                 </RadzenColumn>
-                <RadzenColumn>
-                    <ObligeeSearch />
+                <RadzenColumn Size="4">
+                    <AgencySearch />
                 </RadzenColumn>
-                <RadzenColumn Size="2">
-                    <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenColumn Size="4">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
                         <RadzenText Text="Status:" />
                         <RadzenText Text="@_agencyToDisplay?.Status" />
                         <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.Small" Click="ShowStatusDialog" />
@@ -233,36 +233,37 @@
     {
         await base.OnParametersSetAsync();
         await LoadBranches();
-        if (null == Id)
-            throw new ArgumentNullException(nameof(Id));
-        var result = await _dataAccess.GetAgencyByAgencyNumber(Id);
-        if (result.Success)
+        if (null != Id)
         {
-            Debug.Assert(result.Data != null, "result.Data != null if result.Success == true");
-            _agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
+            var result = await _dataAccess.GetAgencyByAgencyNumber(Id);
+            if (result.Success)
+            {
+                Debug.Assert(result.Data != null, "result.Data != null if result.Success == true");
+                _agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
 
-            _mainAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
-            _billingAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
-            if (_mainAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
-                _mainAddressSubscription = _dataAccess.AddressModified(_mainAddress.Id, async sra =>
-                {
-                    if (EditorIdentifier == sra.Identifier) return;
-                    //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
-                    if (_mainAddressEditor == null || await _mainAddressEditor.SubscriptionUpdate(sra.Result))
-                        ShowNotification("Main address");
-                });
-            if (_billingAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
-                _billingAddressSubscription = _dataAccess.AddressModified(_billingAddress.Id, async sra =>
-                {
-                    if (EditorIdentifier == sra.Identifier) return;
-                    //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
-                    if (_billingAddressEditor == null || await _billingAddressEditor.SubscriptionUpdate(sra.Result))
-                        ShowNotification("Billing Address");
-                });
-        }
-        else
-        {
-            _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors), "GraphQl");
+                _mainAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
+                _billingAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
+                if (_mainAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
+                    _mainAddressSubscription = _dataAccess.AddressModified(_mainAddress.Id, async sra =>
+                    {
+                        if (EditorIdentifier == sra.Identifier) return;
+                        //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
+                        if (_mainAddressEditor == null || await _mainAddressEditor.SubscriptionUpdate(sra.Result))
+                            ShowNotification("Main address");
+                    });
+                if (_billingAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
+                    _billingAddressSubscription = _dataAccess.AddressModified(_billingAddress.Id, async sra =>
+                    {
+                        if (EditorIdentifier == sra.Identifier) return;
+                        //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
+                        if (_billingAddressEditor == null || await _billingAddressEditor.SubscriptionUpdate(sra.Result))
+                            ShowNotification("Billing Address");
+                    });
+            }
+            else
+            {
+                _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors), "GraphQl");
+            }
         }
     }
     private async Task LoadBranches()

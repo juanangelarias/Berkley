@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <GraphQL Remove="GraphQL\Queries\AccountQueries.graphql" />
     <GraphQL Remove="GraphQL\Queries\BondQueries.graphql" />
     <GraphQL Remove="GraphQL\Queries\General.graphql" />
   </ItemGroup>

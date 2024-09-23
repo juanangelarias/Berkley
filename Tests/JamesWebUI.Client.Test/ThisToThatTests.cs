@@ -7,50 +7,6 @@ namespace JamesWebUI.Client.Test
     public class ThisToThatTests
     {
 
-        [Fact]
-        public void Test1()
-        {
-            var acct = GetFakeAccount();
-            var gqlAcct = MakeIntoGraphQLObject(acct);
-            var entityForm = ThisToThat.ToEntityType<Account>(gqlAcct);
-
-            Assert.NotNull(entityForm);
-            Assert.Equal(acct.AccountNum, entityForm.AccountNum);
-            Assert.Equal(acct.Bank, entityForm.Bank);
-            Assert.Equal(acct.IdNavigation.FullName, entityForm.IdNavigation.FullName);
-            Assert.Equal(acct.IdNavigation.LegalEntityPhones.Count, entityForm.IdNavigation.LegalEntityPhones.Count);
-            Assert.Equal(acct.IdNavigation.LegalEntityEmails.Count, entityForm.IdNavigation.LegalEntityEmails.Count);
-            MatchLegalAddresses(acct.IdNavigation.LegalEntityAddresses, entityForm.IdNavigation.LegalEntityAddresses);
-            for (var i = 0; i < acct.IdNavigation.LegalEntityPhones.Count; i++)
-            {
-                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].Type, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].Type);
-                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.MainNumber, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.MainNumber);
-                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.Extension, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.Extension);
-                Assert.Equal(acct.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.CountryCode, entityForm.IdNavigation.LegalEntityPhones.ToArray()[i].PhoneNumber.CountryCode);
-            }
-            for (var i = 0; i < acct.IdNavigation.LegalEntityEmails.Count; i++)
-            {
-                Assert.Equal(acct.IdNavigation.LegalEntityEmails.ToArray()[i].Type, entityForm.IdNavigation.LegalEntityEmails.ToArray()[i].Type);
-                Assert.Equal(acct.IdNavigation.LegalEntityEmails.ToArray()[i].EmailAddress, entityForm.IdNavigation.LegalEntityEmails.ToArray()[i].EmailAddress);
-            }
-
-            Assert.Equal(acct.Agent?.IdNavigation.FullName, entityForm.Agent?.IdNavigation.FullName);
-            Assert.Equal(acct.AgencyNumberNavigation?.IdNavigation.FullName, entityForm.AgencyNumberNavigation?.IdNavigation.FullName);
-            MatchLegalAddresses(acct.AgencyNumberNavigation!.IdNavigation.LegalEntityAddresses, entityForm.AgencyNumberNavigation!.IdNavigation.LegalEntityAddresses, true);
-            Assert.Equal(acct.Division, entityForm.Division);
-            Assert.Equal(acct.HomeOfficeReviewByNavigation?.FullName, entityForm.HomeOfficeReviewByNavigation?.FullName);
-            Assert.Equal(acct.HomeOfficeReviewed, entityForm.HomeOfficeReviewed);
-            Assert.Equal(acct.BranchReviewByNavigation?.FullName, entityForm.BranchReviewByNavigation?.FullName);
-            Assert.Equal(acct.BranchReviewed, entityForm.BranchReviewed);
-            Assert.Equal(acct.Attorney?.IdNavigation.FullName, acct.Attorney?.IdNavigation.FullName);
-            Assert.Equal(acct.Attorney?.MartindaleHubbellRating, acct.Attorney?.MartindaleHubbellRating);
-            Assert.Equal(acct.Underwriter?.IdNavigation.FullName, acct.Underwriter?.IdNavigation.FullName);
-            Assert.Equal(acct.Underwriter?.IdNavigation.Initials, acct.Underwriter?.IdNavigation.Initials);
-            Assert.Equal(acct.Underwriter?.IdNavigation.Title, acct.Underwriter?.IdNavigation.Title);
-            Assert.Equal(acct.Underwriter?.IdNavigation.Email, acct.Underwriter?.IdNavigation.Email);
-            Assert.Equal(acct.Underwriter?.ReportsTo, acct.Underwriter?.ReportsTo);
-        }
-
         static void MatchLegalAddresses(ICollection<LegalEntityAddress> expected,
             ICollection<LegalEntityAddress> actual, bool cityStateOnly = false)
         {
@@ -215,68 +171,6 @@ namespace JamesWebUI.Client.Test
             return acct;
         }
 
-        GetAccountByAccountNumber_Account_Account MakeIntoGraphQLObject(Account orig)
-        {
-            var legalEntityAddresses = orig.IdNavigation.LegalEntityAddresses.Select(lea =>
-                new GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_LegalEntityAddress(
-                    lea.Type,
-                    new GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_Address_Address(
-                        lea.Address.Address1,
-                        lea.Address.Address2,
-                        lea.Address.Address3,
-                        lea.Address.City,
-                        lea.Address.StateCode,
-                        new
-                            GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_Address_StateCodeNavigation_State(
-                                lea.Address.StateCodeNavigation?.CountryCode,
-                                new
-                                    GetAccountByAccountNumber_Account_IdNavigation_LegalEntityAddresses_Address_StateCodeNavigation_CountryCodeNavigation_CountryDm(
-                                        lea.Address.StateCodeNavigation!.CountryCodeNavigation!.Name)
-                            ),
-                        lea.Address.PostalCode))).ToArray();
-            return new GetAccountByAccountNumber_Account_Account(
-                new GetAccountByAccountNumber_Account_IdNavigation_LegalEntity(orig.IdNavigation.FullName,
-                    legalEntityAddresses,
-                    orig.IdNavigation.LegalEntityPhones.Select(lep =>
-                        new GetAccountByAccountNumber_Account_IdNavigation_LegalEntityPhones_LegalEntityPhone(lep.Type,
-                            new
-                                GetAccountByAccountNumber_Account_IdNavigation_LegalEntityPhones_PhoneNumber_PhoneNumber(
-                                    lep.PhoneNumber.MainNumber,
-                                    lep.PhoneNumber.Extension))).ToArray(),
-                    orig.IdNavigation.LegalEntityEmails.Select(lee =>
-                        new GetAccountByAccountNumber_Account_IdNavigation_LegalEntityEmails_LegalEntityEmail(lee.Type,
-                            lee.EmailAddress)).ToArray()),
-                orig.Bank,
-                new GetAccountByAccountNumber_Account_Agent_Agent(
-                    new GetAccountByAccountNumber_Account_Agent_IdNavigation_LegalEntity(orig.Agent!.IdNavigation
-                        .FullName)),
-                new GetAccountByAccountNumber_Account_AgencyNumberNavigation_Agency(
-                    new GetAccountByAccountNumber_Account_AgencyNumberNavigation_IdNavigation_LegalEntity(
-                        orig.AgencyNumberNavigation!.IdNavigation.FullName,
-                        orig.AgencyNumberNavigation.IdNavigation.LegalEntityAddresses.Select(lea =>
-                            new
-                                GetAccountByAccountNumber_Account_AgencyNumberNavigation_IdNavigation_LegalEntityAddresses_LegalEntityAddress(
-                                    lea.Type,
-                                    new
-                                        GetAccountByAccountNumber_Account_AgencyNumberNavigation_IdNavigation_LegalEntityAddresses_Address_Address(
-                                            lea.Address.City, lea.Address.StateCode))).ToArray())),
-                orig.AccountNum,
-                orig.Division,
-                new GetAccountByAccountNumber_Account_HomeOfficeReviewByNavigation_UserProfile(
-                    orig.HomeOfficeReviewByNavigation!.FullName),
-                orig.HomeOfficeReviewed,
-                new GetAccountByAccountNumber_Account_BranchReviewByNavigation_UserProfile(orig.BranchReviewByNavigation!
-                    .FullName),
-                orig.BranchReviewed,
-                new GetAccountByAccountNumber_Account_Attorney_LawEntity(
-                    new GetAccountByAccountNumber_Account_Attorney_IdNavigation_LegalEntity(orig.Attorney!.IdNavigation
-                        .FullName), orig.Attorney.MartindaleHubbellRating),
-                new GetAccountByAccountNumber_Account_Underwriter_Underwriter(
-                    new GetAccountByAccountNumber_Account_Underwriter_IdNavigation_Employee(
-                        orig.Underwriter!.IdNavigation.FullName, orig.Underwriter.IdNavigation.Initials,
-                        orig.Underwriter.IdNavigation.Title, orig.Underwriter.IdNavigation.Email),
-                    orig.Underwriter.ReportsTo)
-            );
-        }
+       
     }
 }

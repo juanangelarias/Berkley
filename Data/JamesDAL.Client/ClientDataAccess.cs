@@ -13,8 +13,24 @@ using Severity = James.Shared.Model.Severity;
 
 namespace James.Data.Client
 {
+
     public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging) : IDataAccess
     {
+        public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
+        {
+            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber),
+                "AccountByNumber");
+         
+        }
+        public async Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber)
+        {
+            return await ExecuteGet<List<AccountProgram>>(async () => await jamesClient.GetAccountProgramHistory.ExecuteAsync(accountNumber),
+                "AccountProgramHistory");
+        }
+        public async Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber)
+        {
+            return await ExecuteGet<InforceAccountLOA>(async () => await jamesClient.GetAccountActiveLinesOfAuthority.ExecuteAsync(accountNumber));
+        }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
             return await ExecuteGet<List<Account>>(async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),
@@ -24,10 +40,17 @@ namespace James.Data.Client
         {
             return await ExecuteGet<List<Obligee>>(async () => await jamesClient.SearchObligees.ExecuteAsync(searchString), "SearchObligees");
         }
+        public async Task<IDataAccessResult<List<Account>>> SearchAccounts(string searchString)
+        {
+            return await ExecuteGet<List<Account>>(async () => await jamesClient.SearchAccounts.ExecuteAsync(searchString), "SearchAccounts");
+        }
         public async Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id)
         {
             return await ExecuteGet<Obligee?>(async () => await jamesClient.GetObligeeById.ExecuteAsync(id), "ObligeeById");
-            
+        }
+        public async Task<IDataAccessResult<Obligee?>> GetObligeeByObligeeNumber(string obligeeNumber)
+        {
+            return await ExecuteGet<Obligee?>(async () => await jamesClient.GetObligeeByObligeeNumber.ExecuteAsync(obligeeNumber), "ObligeeByObligeeNumber");
         }
         public async Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId)
         {

@@ -7,32 +7,30 @@
 @inject NotificationService NotificationService
 @inject IDataAccess _dataAccess
 
-
 <RadzenStack Orientation="Orientation.Horizontal">
-    <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 100%;" 
-                        ValueChanged="ResultSelected" 
-                        Placeholder="Search..." Data="@SearchResults" LoadData="SearchObligee" 
+    <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 100%;"
+                        ValueChanged="ResultSelected"
+                        Placeholder="Search..." Data="@SearchResults" LoadData="SearchAgency"
                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
-        <Template Context="obligee">
+        <Template Context="agency">
             <RadzenStack Orientation="Orientation.Horizontal" Style="width:500px;">
                 <RadzenIcon Icon="person" />
-                <RadzenText Text="@obligee.ObligeeNum" Style="width: 100px;" />
-                <RadzenText Text="@obligee.IdNavigation.FullName" Style="width: 400px;" />
+                <RadzenText Text="@agency.AgencyNumber" Style="width: 100px;" />
+                <RadzenText Text="@agency.IdNavigation.FullName" Style="width: 400px;" />
             </RadzenStack>
         </Template>
     </RadzenAutoComplete>
 </RadzenStack>
 
 
-
 @code {
-    private List<Obligee> SearchResults { get; set; } = new List<Obligee>();
-    private Obligee SelectedObligee { get; set; }
+    private List<Agency> SearchResults { get; set; } = new List<Agency>();
+    private Agency SelectedAgency { get; set; }
     private RadzenAutoComplete autoComplete { get; set; }
 
-    private async Task SearchObligee(LoadDataArgs args)
+    private async Task SearchAgency(LoadDataArgs args)
     {
-        var result = await _dataAccess.SearchObligees(args.Filter);
+        var result = await _dataAccess.SearchAgencies(args.Filter);
 
         if (result.Errors.Any())
         {
@@ -46,9 +44,9 @@
     private async Task ResultSelected(dynamic args)
     {
 
-        if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Obligee))
+        if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Agency))
         {
-            NavigationManager.NavigateTo("/Obligee/" + ((Obligee)autoComplete.Value).ObligeeNum);
+            NavigationManager.NavigateTo("/Agency/" + ((Agency)autoComplete.Value).AgencyNumber); 
             autoComplete.Value = "";
         }
     }

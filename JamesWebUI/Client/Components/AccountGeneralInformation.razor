@@ -1,0 +1,351 @@
+﻿@using James.Shared
+@inherits JamesLayoutComponentBase
+
+@inject NavigationManager NavigationManager
+
+
+@inject NotificationService NotificationService
+@inject IDataAccess _dataAccess
+
+<RadzenRow>
+    <RadzenColumn Size="6">
+        <RadzenStack Orientation="Orientation.Vertical">
+            <RadzenFieldset Text="General Information">
+                <RadzenRow JustifyContent="JustifyContent.End">
+                    <RadzenColumn Size="4">
+                        <RadzenFormField Text="Year Started" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.YearOpened" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <RadzenFormField Text="Curr. Mgt Year" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.CurrentManagementYear" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <RadzenButton Icon="edit" Variant="Variant.Text" Size="ButtonSize.Small" Visible="!GenInfoEditMode" Click="@(() => GenInfoEditMode = true)" />
+                        <RadzenButton Icon="save" Variant="Variant.Text" Size="ButtonSize.Small" Visible="GenInfoEditMode" Click="SaveGenInfoChanges" />
+                        <RadzenButton Icon="cancel" Variant="Variant.Text" Size="ButtonSize.Small" Visible="GenInfoEditMode" Click="() => GenInfoEditMode = false" />
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="4">
+                        <RadzenFormField Text="Business Class" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="Placeholder" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="8">
+                        <RadzenFormField Text="Business Type" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.BusinessType" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenFormField Text="Prior Surety" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="@AccountToDisplay?.PriorSuretyCompany" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                    </RadzenFormField>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenFormField Text="Est. Annual Premium" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="Placeholder" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                    </RadzenFormField>
+                </RadzenRow>
+            </RadzenFieldset>
+            <RadzenFieldset Text="Systems">
+                <RadzenRow>
+                    <RadzenFormField Text="Estimating System" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="@AccountToDisplay?.EstimatingSystem" />
+                    </RadzenFormField>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenFormField Text="Estimating Sign-Off" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="@AccountToDisplay?.EstimatingSignoff" />
+                    </RadzenFormField>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenFormField Text="Internal Accounting System" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="@AccountToDisplay?.AccountingSystem" />
+                    </RadzenFormField>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenCheckBox Name="chkInterimWIPs" Value="@AccountToDisplay?.InterimWips" />
+                        <RadzenLabel Text="Can Create Interim WIPs" Component="chkInterimWIPs" />
+                    </RadzenStack>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenCheckBox Name="chkInterimPOCs" Value="@AccountToDisplay.Pocinterims" />
+                        <RadzenLabel Text="Can Create POC Interims" Component="chkInterimPOCs" />
+                    </RadzenStack>
+                </RadzenRow>
+            </RadzenFieldset>
+            <RadzenFieldset Text="Credit Report">
+                <RadzenRow>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="Credit Report" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.CreditReport" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="Report Date" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="Placeholder" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="Rating" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="Placeholder" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="Paydex/Intelliscore" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.PaydexIntelliscore?.ToString()" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="SIC Code" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Placeholder="SIC Code" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenFormField Text="SIC Name" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Placeholder="SIC Name" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="NAICS" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.Naics" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn>
+                        <RadzenFormField Text="NAICS Name" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Placeholder="NAICS Name" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenFieldset>
+            <RadzenFieldset Text="Job Mix">
+                <RadzenRow>
+                    <RadzenFormField Text="Public" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="@AccountToDisplay?.PublicPercent.ToString()" />
+                    </RadzenFormField>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenFormField Text="Private" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="@AccountToDisplay?.PrivatePercent.ToString()" />
+                    </RadzenFormField>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenFormField Text="Subbed" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="@AccountToDisplay?.SubcontractPercent.ToString()" />
+                    </RadzenFormField>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenFormField Text="Sub Protection" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="@AccountToDisplay?.SubcontractProtection" />
+                    </RadzenFormField>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenFormField Text="Geographic Spread of Work" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 50%;">
+                        <RadzenTextBox Value="@AccountToDisplay?.GeographicSpread" />
+                    </RadzenFormField>
+                </RadzenRow>
+            </RadzenFieldset>
+        </RadzenStack>
+    </RadzenColumn>
+    <RadzenColumn Size="6">
+        <RadzenFieldset Text="Additional Information">
+            <RadzenRow>
+                <RadzenColumn Size="6">
+                    <RadzenRow>
+                        <RadzenText Text="Indemnity" />
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkFullIndemnity" Value="@AccountToDisplay?.IndemnityFull" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Full Indemnity" Component="chkFullIndemnity" />
+                        </RadzenStack>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkCorporation" Value="@AccountToDisplay?.IndemnityCorp" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Corp." Component="chkCorporation" />
+                        </RadzenStack>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkPersonal" Value="@AccountToDisplay?.IndemnityPerson" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Pers." Component="chkPersonal" />
+                        </RadzenStack>
+                    </RadzenRow>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <RadzenRow>
+                        <RadzenColumn Size="12">
+                            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+                                <RadzenText Text="Continuity" Style="width:85%" />
+                                <RadzenButton Icon="edit" Variant="Variant.Text" Size="ButtonSize.Small" Visible="!AddlInfoEditMode" Click="() => AddlInfoEditMode = true" />
+                                <RadzenButton Icon="save" Variant="Variant.Text" Size="ButtonSize.Small" Visible="AddlInfoEditMode" Click="SaveAdditionalInformationChanges" />
+                                <RadzenButton Icon="cancel" Variant="Variant.Text" Size="ButtonSize.Small" Visible="AddlInfoEditMode" Click="() => AddlInfoEditMode = false" />
+                            </RadzenStack>
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkKeyManagementLifeInsurance" Value="@AccountToDisplay?.ContinuityKeyManagementLifeInsurance" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Key Management Life Insurance" Component="chkKeyManagement" />
+                        </RadzenStack>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkManagementIncentives" Value="@AccountToDisplay?.ContinuityManagementIncentives" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Management Incentives" Component="chkManagementIncentives" />
+                        </RadzenStack>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkFundedBuySell" Value="@AccountToDisplay?.ContinuityFundedBuySell" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Funded Buy/Sell" Component="chkFundedBuySell" />
+                        </RadzenStack>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkActiveMultipleOwners" Value="@AccountToDisplay?.ContinuityActiveMultipleOwners" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Active Multiple Owners/Indemnitors" Component="chkActiveMultipleOwners" />
+                        </RadzenStack>
+                    </RadzenRow>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="6">
+                    <RadzenRow>
+                        <RadzenColumn Size="12">
+                            <RadzenText Text="More" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkTrackCommAccount" TValue="bool" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Track Comm. Acct." Component="chkTrackCommAccount" />
+                        </RadzenStack>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenCheckBox Name="chkBerkleyAffiliate" Value="@AccountToDisplay?.BerkleyAffiliate" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenLabel Text="Berkley Affiliate" Component="chkBerkleyAffiliate" />
+                        </RadzenStack>
+                    </RadzenRow>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <RadzenFormField Text="Comments" AllowFloatingLabel="true" Variant="Variant.Outlined">
+                        <RadzenTextArea Rows="3" Style="width: 95%" Value="@AccountToDisplay.IndemnityComments" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenFieldset>
+        <RadzenFieldset Text="LOA Summary">
+            <RadzenRow>
+                <RadzenColumn Size="3">
+
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    Single
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    Aggregate
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    Expiration
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="3">
+                    Contract LOA
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="3">
+                    Commercial LOA
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenText Text="Notes: Yellow labels indicate the LOA is Expired. Red labels indicate LOA is not approved." />
+            </RadzenRow>
+        </RadzenFieldset>
+        <RadzenFieldset Text="Most Recent Cost to Complete">
+            <RadzenRow>
+                <RadzenFormField Text="Cost to Complete" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <RadzenTextBox Placeholder="Placeholder" />
+                </RadzenFormField>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenFormField Text="As of" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <RadzenTextBox Placeholder="Placeholder" />
+                </RadzenFormField>
+            </RadzenRow>
+        </RadzenFieldset>
+        <RadzenFieldset Text="Tax Basis and Business Structure">
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenFormField Text="Tax Basis" Variant="Variant.Text" AllowFloatingLabel="false">
+                        <RadzenDropDown TValue="string" Value="@AccountToDisplay?.TaxBasis" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenFormField Text="Business Structure" Variant="Variant.Text" AllowFloatingLabel="false">
+                        <RadzenDropDown TValue="string" Placeholder="placeholder" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenFieldset>
+    </RadzenColumn>
+</RadzenRow>
+
+@code {
+    [Parameter] public Account AccountToDisplay { get; set; }
+
+    private bool MasterEditMode { get; set; } = false;
+    private bool GenInfoEditMode { get; set; } = false;
+    private bool AddlInfoEditMode { get; set; } = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        StateHasChanged();
+    }
+
+    async Task SaveGenInfoChanges()
+    {
+
+    }
+
+    async Task SaveAdditionalInformationChanges()
+    {
+
+    }
+}

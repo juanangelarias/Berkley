@@ -1,0 +1,127 @@
+﻿@using James.Shared
+@inherits JamesLayoutComponentBase
+
+@inject NavigationManager NavigationManager
+
+
+@inject NotificationService NotificationService
+@inject IDataAccess DataAccess
+
+<RadzenRow>
+    <RadzenText Text="Account Program" />
+</RadzenRow>
+<RadzenRow>
+    <RadzenDataGrid @ref="@programGrid" TItem="AccountProgram" Data="ProgramsToDisplay"
+                    Style="border-radius: 15px;"
+                    RowUpdate="UpdateProgramRow" IsLoading="@isLoading">
+        <Template Context="program">
+            <RadzenDataGrid Data="program?.AccountProgramStatusHistories" TItem="AccountProgramStatusHistory">
+                <Columns>
+                    <RadzenDataGridColumn Title="Old Status" Property="OldStatus"/>
+                    <RadzenDataGridColumn Title="New Status" Property="NewStatus" />
+                    <RadzenDataGridColumn Title="Old Single" Property="OldSingle" />
+                    <RadzenDataGridColumn Title="New Single" Property="NewSingle" />
+                    <RadzenDataGridColumn Title="Old Aggregate" Property="OldAggregate" />
+                    <RadzenDataGridColumn Title="New Aggregate" Property="NewAggregate" />
+                    <RadzenDataGridColumn Title="Change Date" Property="StatusDate" FormatString="{0:d}" />
+                </Columns>
+            </RadzenDataGrid>
+
+        </Template>
+        <Columns>
+            <RadzenDataGridColumn TItem="AccountProgram" Title="Effective"
+                                  Property="Effective" FormatString="{0:d}" />
+            <RadzenDataGridColumn TItem="AccountProgram" Title="Expiration"
+                                  Property="Expiration" FormatString="{0:d}" />
+            <RadzenDataGridColumn TItem="AccountProgram" Title="Single"
+                                  Property="Single" FormatString="{0:c0}" />
+            <RadzenDataGridColumn TItem="AccountProgram" Title="Aggregate"
+                                  Property="Aggregate" FormatString="{0:c0}" />
+            <RadzenDataGridColumn TItem="AccountProgram" Title="Edit">
+                <Template Context="program">
+                    <RadzenButton Icon="edit" Variant="Variant.Text" Size="ButtonSize.Small" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+        <LoadingTemplate>
+            <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        </LoadingTemplate>
+    </RadzenDataGrid>
+</RadzenRow>
+
+@code {
+    [Parameter] public string AccountNumber { get; set; }
+    private List<AccountProgram> ProgramsToDisplay { get; set; } = new List<AccountProgram>();
+    private RadzenDataGrid<AccountProgram> programGrid { get; set; }
+
+    private List<AccountProgram> programsToInsert = new List<AccountProgram>();
+    private List<AccountProgram> programsToUpdate = new List<AccountProgram>();
+
+    private bool isLoading = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+        await LoadPrograms();
+        StateHasChanged();
+    }
+
+    private async Task LoadPrograms()
+    {
+        if (!string.IsNullOrWhiteSpace(AccountNumber))
+        {
+            var result = await DataAccess.GetAccountProgramHistory(AccountNumber);
+
+            if (result.Errors.Any())
+            {
+                //TODO: Handle Errors
+            }
+            else
+            {
+                ProgramsToDisplay = result.Data;
+            }
+        }
+    }
+    protected async Task ShowLoading()
+    {
+        isLoading = true;
+
+        await Task.Yield();
+
+        isLoading = false;
+    }
+    void Reset()
+    {
+        programsToInsert.Clear();
+        programsToUpdate.Clear();
+    }
+
+    void Reset(AccountProgram program)
+    {
+        programsToInsert.Remove(program);
+        programsToUpdate.Remove(program);
+    }
+    async Task EditProgramRow(AccountProgram program)
+    {
+        await ShowLoading();
+        Reset();
+        programsToUpdate.Add(program);
+        await programGrid.EditRow(program);
+    }
+    async Task UpdateProgramRow(AccountProgram program)
+    {
+        Reset(program);
+        //This is where we handle row Updates.
+        //TODO: Implement the update
+    }
+    async Task SaveLicenseRow(AccountProgram program)
+    {
+        //This is where we handle the status change of the grid (edit mode or not).
+        //The actual Update/Insert is done in those methods.
+        await ShowLoading();
+        await programGrid.UpdateRow(program);
+        StateHasChanged();
+    }
+}

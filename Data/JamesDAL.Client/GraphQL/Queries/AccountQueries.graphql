@@ -1,0 +1,233 @@
+﻿query GetAccountByNumber($accountNumber: String){
+  accountByNumber(accountNumber: $accountNumber){
+    idNavigation{
+      fullName,
+      legalEntityAddresses {
+        type,
+        address{
+          address1,
+          address2,
+          address3,
+          city,
+          stateCode,
+          stateCodeNavigation{
+            countryCode,
+            countryCodeNavigation{
+              name
+            }     
+          },
+          postalCode
+        }
+      },
+      legalEntityPhones{
+        type,
+        phoneNumber {
+          mainNumber,
+          extension
+        }
+      },
+      legalEntityEmails{
+        type, 
+        emailAddress
+      }
+    }
+    bank,
+    agent {
+      idNavigation{
+        fullName
+      }
+    },
+    agencyNumberNavigation{
+      idNavigation{
+        fullName,
+        legalEntityAddresses{
+          type,
+          address{
+            city,
+            stateCode
+          }
+        }
+      }
+    }
+    accountNum,
+    division,
+    homeOfficeReviewByNavigation{
+      fullName
+    },
+    homeOfficeReviewed,
+    branchReviewByNavigation{
+      fullName
+    },
+    branchReviewed,
+    attorney{
+      idNavigation {
+        fullName
+      },
+      martindaleHubbellRating
+    },
+    underwriter{
+      idNavigation{
+        fullName,
+        initials,
+        title,
+        email
+      },
+      reportsTo
+    }
+  } 
+}
+
+query SearchAccounts($input: String!) {
+  searchAccounts (searchString: $input) {
+    accountingSystem
+    accountNum
+    affiliateCompany
+    agencyNumber
+    agentId
+    attorneyId
+    bank
+    bankAverageBalance
+    bankLastContacted
+    bankLoc
+    bankLocexpires
+    bankLochigh
+    bankLochighDate
+    bankLocsecurity
+    bankLocused
+    bankPhoneId
+    bankReferenceName
+    berkleyAffiliate
+    branch
+    branchReviewBy
+    branchReviewed
+    businessType
+    businessTypeClass
+    continuityActiveMultipleOwners
+    continuityFundedBuySell
+    continuityKeyManagementLifeInsurance
+    continuityManagementIncentives
+    cpacontactId
+    cpafirmId
+    created
+    creditReport
+    currentManagementYear
+    division
+    dunBradstreetDate
+    dunBradstreetRate
+    dunBradstreetSic
+    estimatingSignoff
+    estimatingSystem
+    fiscalYearEnd
+    fullName
+    fundsControl
+    geographicSpread
+    homeOfficeLock
+    homeOfficeReviewBy
+    homeOfficeReviewed
+    id
+    indemnityComments
+    indemnityCorp
+    indemnityFull
+    indemnityPerson
+    interimWips
+    lawFirmId
+    mainEmailAddress
+    modified
+    naics
+    openClaim
+    paydexIntelliscore
+    pocinterims
+    polutionLiabilityCarrier
+    polutionLiabilityExpires
+    priorSuretyCompany
+    privatePercent
+    publicPercent
+    rateModifier
+    subcontractPercent
+    subcontractProtection
+    taxBasis
+    underwriterId
+    watchStatus
+    yearOpened
+  }
+}
+
+query GetAccountActiveLinesOfAuthority($input: String!) {
+  accountActiveLinesOfAuthority(accountNumber: $input) {
+    accountNum
+    commercialLOA {
+      accountNum
+      approved
+      approvedBy
+      bondType
+      comments
+      conditions
+      created
+      createdBy
+      division
+      effective
+      expiration
+      homeOfficeApproved
+      id
+      loaaggregate
+      loasingle
+      modified
+      sequenceNumber
+      status
+    }
+    contractLOA {
+      accountNum
+      approved
+      approvedBy
+      bondType
+      comments
+      conditions
+      created
+      createdBy
+      division
+      effective
+      expiration
+      homeOfficeApproved
+      id
+      loaaggregate
+      loasingle
+      modified
+      sequenceNumber
+      status
+    }
+  }
+} 
+
+query GetAccountProgramHistory($input: String!) {
+  accountProgramHistory(accountNumber: $input) {
+    accountNum
+    aggregate
+    approvedBy
+    approvedDate
+    comments
+    created
+    createdBy
+    effective
+    expiration
+    homeOfficeApproved
+    id
+    modified
+    single
+    statusId
+    accountProgramStatusHistories {
+      accountProgramId
+      companyId
+      created
+      id
+      modified
+      newAggregate
+      newSingle
+      newStatus
+      oldAggregate
+      oldSingle
+      oldStatus
+      statusChangeBy
+      statusDate
+    }
+  }
+} 

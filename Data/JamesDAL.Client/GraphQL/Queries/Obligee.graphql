@@ -11,6 +11,21 @@
   }
 }
 
+query GetObligeeByObligeeNumber ($input: String!){
+  obligeeByObligeeNumber (obligeeNumber: $input){
+    created
+    id
+    modified
+    notes
+    obligeeNum
+    printStatusLetter
+    type
+    idNavigation{
+      fullName
+    }
+  }
+} 
+
 query GetObligeeById ($input: UUID!){
   obligeeById (id: $input){
     created
@@ -25,6 +40,8 @@ query GetObligeeById ($input: UUID!){
     }
   }
 } 
+
+
 
 query GetObligeePrimaryBonds($input: UUID!){
   obligeePrimaryBonds (obligeeId: $input){

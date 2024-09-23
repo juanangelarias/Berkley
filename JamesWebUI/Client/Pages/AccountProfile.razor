@@ -1,4 +1,4 @@
-﻿@page "/Account/{AccountNumber}"
+﻿@page "/Account/{AccountNumber?}"
 @using System.Diagnostics
 @using James.Shared
 
@@ -136,12 +136,12 @@
 </RadzenStack>
 
 @code {
-    [Parameter] public string? AccountNumber { get; set; }
+        [Parameter] public string? AccountNumber { get; set; }
     private Account AccountToDisplay { get; set; } = new Account()
         {
             IdNavigation = new LegalEntity()
         };
-
+    private InforceAccountLOA inForceLOAs { get; set; } = new InforceAccountLOA();
     private bool ShowTaxId { get; set; }
 
     protected override async Task OnParametersSetAsync()
@@ -164,6 +164,22 @@
             {
                 AccountToDisplay = result.Data;
                 StateHasChanged();
+            }
+        }
+    }
+    private async Task LoadInforceLOAs()
+    {
+        if (!string.IsNullOrWhiteSpace(AccountNumber))
+        {
+            var result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber);
+            if (result.Errors.Any())
+            {
+                _logging.LogError("Unable to retrieve Account Inforce LOAs.", result.Errors.ToString());
+            }
+            else
+            {
+                //TODO: Display them
+                inForceLOAs = result.Data;
             }
         }
     }

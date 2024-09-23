@@ -1,4 +1,4 @@
-﻿@page "/Obligee/{ObligeeId}"
+﻿@page "/Obligee/{ObligeeNumber?}"
 
 @using System.Diagnostics
 @using James.Shared
@@ -24,7 +24,7 @@
                 <ObligeeSearch />
             </RadzenColumn>
             <RadzenColumn Size="3">
-
+                <RadzenButton Text="Create Obligee" Variant="Variant.Filled" ButtonStyle="ButtonStyle.Primary" Click="CreateObligeeClicked"/>
             </RadzenColumn>
         </RadzenRow>
     </RadzenPanel>
@@ -94,7 +94,7 @@
 
 
 @code {
-    [Parameter] public string ObligeeId { get; set; } = "";
+    [Parameter] public string ObligeeNumber { get; set; } = "";
     private bool PossibleDuplicates { get; set; } = false;
 
     public James.Shared.Model.Obligee ObligeeToDisplay { get; set; } = new Obligee()
@@ -112,9 +112,9 @@
 
     private async Task LoadObligee()
     {
-        if (!String.IsNullOrWhiteSpace(ObligeeId))
+        if (!String.IsNullOrWhiteSpace(ObligeeNumber))
         {
-            var result = await _dataAccess.GetObligeeById(Guid.Parse(ObligeeId));
+            var result = await _dataAccess.GetObligeeByObligeeNumber(ObligeeNumber);
 
             if (result.Errors.Any() && result.Data != null)
             {
@@ -129,5 +129,10 @@
     private async Task LoadPossibleDuplicates()
     {
 
+    }
+
+    void CreateObligeeClicked()
+    {
+        NavigationManager.NavigateTo("CreateObligee");
     }
 }

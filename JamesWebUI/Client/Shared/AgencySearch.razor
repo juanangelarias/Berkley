@@ -46,7 +46,7 @@
 
         if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Agency))
         {
-            NavigationManager.NavigateTo("/Agency/" + ((Agency)autoComplete.Value).Id.ToString());
+            NavigationManager.NavigateTo("/Agency/" + ((Agency)autoComplete.Value).AgencyNumber); 
             autoComplete.Value = "";
         }
     }

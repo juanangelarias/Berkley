@@ -13,6 +13,14 @@ namespace James.Data.Server.GraphQL.Queries
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
         [Authorize]
+        public async Task<Obligee?> GetObligeeByObligeeNumber(string obligeeNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.Obligees
+                .Include(o => o.IdNavigation)
+                .FirstOrDefaultAsync(o => o.ObligeeNum == obligeeNumber);
+        }
+        [Authorize]
         public async Task<List<ObligeeTypeDm>> GetObligeeTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

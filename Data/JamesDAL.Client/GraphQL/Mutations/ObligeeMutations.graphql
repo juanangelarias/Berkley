@@ -1,7 +1,8 @@
 ﻿mutation CreateObligee ($input: CreateObligeeInput!){
 	createObligee(input: $input){
 		obligee{
-			id
+			id,
+			obligeeNum
 		}
 	}
 }

@@ -43,6 +43,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetObligeeById(id, contextFactory));
         }
+        public async Task<IDataAccessResult<Obligee?>> GetObligeeByObligeeNumber(string obligeeNumber)
+        {
+            return await ExecuteGet(async () => await query.GetObligeeByObligeeNumber(obligeeNumber, contextFactory));
+        }
         public async Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId)
         {
             return await ExecuteGet(async () => await query.GetObligeePrimaryBonds(obligeeId, contextFactory));

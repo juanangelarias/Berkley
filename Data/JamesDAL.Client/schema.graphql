@@ -69,6 +69,7 @@ type Query {
   addressTypes: [AddressTypeDm!]!
   allInsurers: [Insurer!]!
   obligeeById(id: UUID!): Obligee
+  obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
   searchObligees(searchString: String!): [Obligee!]!
   obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!

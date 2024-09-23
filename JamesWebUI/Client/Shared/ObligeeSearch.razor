@@ -48,7 +48,7 @@
 
         if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Obligee))
         {
-            NavigationManager.NavigateTo("/Obligee/" + ((Obligee)autoComplete.Value).Id.ToString());
+            NavigationManager.NavigateTo("/Obligee/" + ((Obligee)autoComplete.Value).ObligeeNum);
             autoComplete.Value = "";
         }
     }

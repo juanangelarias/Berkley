@@ -47,7 +47,10 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id)
         {
             return await ExecuteGet<Obligee?>(async () => await jamesClient.GetObligeeById.ExecuteAsync(id), "ObligeeById");
-            
+        }
+        public async Task<IDataAccessResult<Obligee?>> GetObligeeByObligeeNumber(string obligeeNumber)
+        {
+            return await ExecuteGet<Obligee?>(async () => await jamesClient.GetObligeeByObligeeNumber.ExecuteAsync(obligeeNumber), "ObligeeByObligeeNumber");
         }
         public async Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId)
         {

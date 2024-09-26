@@ -26,6 +26,7 @@ SET DestPath=%server%%DestinationPath%
 ECHO Destination path = %DestPath%
 
 ECHO Compiling and Publishing
+dotnet restore
 c:
 pushd JamesWebUI\Server
 REM Choose debug or release for the environment

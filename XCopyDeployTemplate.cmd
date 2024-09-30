@@ -26,12 +26,14 @@ SET DestPath=%server%%DestinationPath%
 ECHO Destination path = %DestPath%
 
 ECHO Compiling and Publishing
+dotnet restore
 c:
 pushd JamesWebUI\Server
 REM Choose debug or release for the environment
 SET Env=debug
 dotnet publish -c %Env%  --self-contained -nologo -f %NetVersion% -r win-x64
 
+:BackupAppSettingsJson
 if "%server:~0,5%" neq "wrbts" (
 	ECHO Deploying to %server%
 	ECHO Stopping services
@@ -40,7 +42,7 @@ if "%server:~0,5%" neq "wrbts" (
 	sc \\%server:"=% stop JamesTheBondSystem
 
 	ECHO Backing up appsettings.json files to "\\%DestPath%%DestinationSubFolder%\appsettings.json" and "\\%DestPath%%DestinationSubFolder%\client.appsettings.json"
-	robocopy "\\%DestPath%%DestinationSubFolder%\" "\\%DestPath%\" appsettings.json /w:5 /r:100000
+	robocopy "\\%DestPath%%DestinationSubFolder%\." "\\%DestPath%\." appsettings.json /w:5 /r:100000
 	copy /Y "\\%DestPath%%DestinationSubFolder%\wwwroot\appsettings.json" /A \\$DestPath\client.appsettings.json /A
 )
 
@@ -51,7 +53,7 @@ popd
 
 if /I "%server:~0,5%" neq "wrbts" (
 	ECHO Restoring appsettings.json files
-	robocopy "\\%DestPath%\." "\\%DestPath%%DestinationSubFolder%" appsettings.json /w:5 /r:100000
+	robocopy "\\%DestPath%\." "\\%DestPath%%DestinationSubFolder%\." appsettings.json /w:5 /r:100000
 	copy /Y \\$DestPath\client.appsettings.json /A "\\%DestPath%%DestinationSubFolder%\wwwroot\appsettings.json" /A
 
 	ECHO Restarting Services

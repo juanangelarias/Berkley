@@ -1,0 +1,93 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using James.Shared.Imaging
+@inject TooltipService TooltipService
+<h3>@Title</h3>
+<RadzenCard Variant="Variant.Outlined">
+    <RadzenRow Gap="2rem" RowGap="2rem" class="rz-m-0 rz-m-md-12">
+        <RadzenColumn Size="12">
+            <RadzenUpload id="ddUpload" @ref="uploadDD"
+                          ChooseText="Drag and drop here or click to choose document"
+                          Auto="false" Multiple="false" Url="upload/multiple"
+                          InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
+                          Change=@UploadFileChanged
+                          Progress=@(args => OnProgress(args, "Drag and drop file to upload")) Style="width: 100%" />
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow Gap="2rem" RowGap="2rem" class="rz-m-0 rz-m-md-12">
+        <RadzenColumn Size="3">
+            <RadzenText MouseEnter="@(args =>ShowTooltip(args))">Name:</RadzenText>
+        </RadzenColumn>
+        <RadzenColumn Size="9">
+            <RadzenTextBox id="tbFileName" @ref="tbFilename" bind-Value=@currentFileName/>
+        </RadzenColumn>
+    </RadzenRow>
+    @if (progress > 0)
+    {
+        <RadzenRow>
+            <RadzenColumn Size="12">
+                <RadzenProgressBar Value=@progress />
+                <RadzenText ref="@uploadedBytes" />
+                <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Secondary"
+                              Text="Cancel" />
+                @* TODO: Add cancel button *@
+            </RadzenColumn>
+        </RadzenRow>
+    }
+    <RadzenRow>
+        <RadzenColumn Size="12">
+            <RadzenButton Text="Upload" Click=@(args => upload.Upload()) class="rz-mt-4" />
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenCard>
+@code {
+    RadzenUpload upload;
+    RadzenUpload uploadDD;
+    RadzenTextBox tbFilename;
+    RadzenText uploadedBytes;
+    [Parameter] public string Title { get; set; } = "UploadFile";
+    [Parameter] public Action<object[]> UploadAction { get; set; }
+    [Required]
+    [Parameter] public ImagingDocumentCategory DocumentCategory { get; set; }
+
+    string currentFileName, bytesUploade;
+    FileInfo? currentFile;
+    int progress;
+    void ShowTooltip(ElementReference elementReference, TooltipOptions options = null) => TooltipService.Open(elementReference, "Name as it will be saved in Virtual File", options);
+    void OnChange(UploadChangeEventArgs args, string name)
+    {
+        //TODO:Handle if user switches files with the
+        var file = args.Files.SingleOrDefault();
+        if (null == file) return;
+        if (string.IsNullOrWhiteSpace(currentFileName) || null != currentFile)
+        {
+            //Should allow user to type the file name and then select the file without wiping out what they typed.
+            currentFileName = file.Name;
+            currentFile = file;
+        }
+    }
+
+    void OnProgress(UploadProgressArgs args, string name)
+    {
+        progress = args.Progress;
+        uploadedBytes.Text = $"({args.Loaded.ToScreenBytes()}/{args.Total.ToScreenBytes()})";
+        if (progress == 100)
+        {
+            //TODO: Auto-close pop-up, possibly after a success animation
+        }
+    }
+
+    private async Task UploadFileChanged(UploadChangeEventArgs args)
+    {
+        //TODO:Handle if user switches files with the
+        var file = args.Files.SingleOrDefault();
+        if (null == file) return;
+        if (string.IsNullOrWhiteSpace(currentFileName) || null != currentFile)
+        {
+            //Should allow user to type the file name and then select the file without wiping out what they typed.
+            currentFileName = file.Name;
+            // StateHasChanged();
+            currentFile = file;
+        }
+    }
+
+}

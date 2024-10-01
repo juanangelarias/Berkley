@@ -12,9 +12,19 @@ namespace James.Data.Server.GraphQL.Queries
             return await ctx.Agents
                 .Include(a => a.IdNavigation)
                 .Include(a => a.AgencyLicenses)
+                .ThenInclude(a => a.Insurer.IdNavigation)
                 .Where(a => a.Id == agentId).FirstOrDefaultAsync();
         }
+        [Authorize]
+        public async Task<List<Agent>> SearchAgents(string searchString, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
 
+            return await ctx.Agents
+                .Include(a => a.IdNavigation)
+                .Where(a => a.IdNavigation.FullName.Contains(searchString))
+                .ToListAsync(); ;
+        }
         [Authorize]
         public async Task<List<AgencyLicense>> GetAgentLicenses(Guid agentId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

@@ -37,8 +37,8 @@ namespace James.Data.Server.GraphQL.Queries
                 //TODO: Improve search with fuzzy logic.
                 var ctx = await contextFactory.CreateDbContextAsync();
                 return await ctx.Accounts
+                    .Where(a => a.IdNavigation.FullName.Contains(searchString) || a.AccountNum.Contains(searchString))
                     .Include(a => a.IdNavigation)
-                    .Where(a => a.IdNavigation.FullName.Contains(searchString))
                     .ToListAsync();
             }
             else
@@ -64,10 +64,11 @@ namespace James.Data.Server.GraphQL.Queries
             InforceAccountLOA inforceLOAs = new InforceAccountLOA()
             {
                 AccountNum = accountNumber,
-                ContractLOA = contractLOA,
-                CommercialLOA = commercialLOA
+                ContractLOA = contractLOA ?? new LineOfAuthorityLog(),
+                CommercialLOA = commercialLOA ?? new LineOfAuthorityLog()
             };
 
+            
             return inforceLOAs;
         }
         [Authorize]

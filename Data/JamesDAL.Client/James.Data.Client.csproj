@@ -27,8 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="GraphQL\Mutations\AccountProfile.graphql" />
     <None Remove="GraphQL\Mutations\GeneralMutations.graphql" />
     <None Remove="GraphQL\Mutations\ObligeeMutations.graphql" />
+    <None Remove="GraphQL\Queries\AgentQueries.graphql" />
     <None Remove="GraphQL\Queries\Obligee.graphql" />
   </ItemGroup>
 
@@ -42,6 +44,14 @@
 
   <ItemGroup>
     <GenerateGraphQLCodeItems Remove="GraphQL\Mutations\GeneralMutations.graphql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GenerateGraphQLCodeItems Remove="GraphQL\Mutations\AccountProfile.graphql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <GenerateGraphQLCodeItems Remove="GraphQL\Queries\AgentQueries.graphql" />
   </ItemGroup>
 
 </Project>

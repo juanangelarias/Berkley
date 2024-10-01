@@ -73,6 +73,19 @@ namespace James.Data.Server.GraphQL.Queries
             }
         }
         [Authorize]
+        public async Task<List<PhoneNumber>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.PhoneNumbers
+                .Include(a => a.LegalEntityPhone)
+                .ThenInclude(a => a.TypeNavigation)
+                .Where(a => a.LegalEntityPhone.LegalEntityId == legalEntityId)
+                .OrderBy(a => a.LegalEntityPhone.TypeNavigation.Order)
+                .ToListAsync();
+
+            return result;
+        }
+        [Authorize]
         public async Task<List<AddressTypeDm>> GetAddressTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try

@@ -8,7 +8,7 @@ using System.Diagnostics.Contracts;
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, AccountMutations acccountMutations, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
         public async Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber)
         {
@@ -46,6 +46,10 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<Obligee?>> GetObligeeByObligeeNumber(string obligeeNumber)
         {
             return await ExecuteGet(async () => await query.GetObligeeByObligeeNumber(obligeeNumber, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<ObligeeTypeDm>>> GetObligeeTypes()
+        {
+            return await ExecuteGet(async () => await query.GetObligeeTypes(contextFactory));
         }
         public async Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId)
         {
@@ -99,7 +103,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgentByAgentId(agentId, contextFactory));
         }
-
+        public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
+        {
+            return await ExecuteGet(async () => await query.SearchAgents(searchString, contextFactory));
+        }
         public async Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyRelatedParties(agencyId, contextFactory));
@@ -108,19 +115,7 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search)
         {
             //TODO: Port to Execute Get
-            try
-            {
-                var result = await query.SearchAgencies(search, contextFactory);
-                return new DataAccessResult<List<Agency>> { Data = result };
-            }
-            catch (AggregateException ae)
-            {
-                return new DataAccessResult<List<Agency>> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
-            }
-            catch (Exception ex)
-            {
-                return new DataAccessResult<List<Agency>> { Errors = [ex.Message] };
-            }
+            return await ExecuteGet(async () => await query.SearchAgencies(search, contextFactory));
         }
         public async Task<IDataAccessResult<Address>> GetAddress(Guid addressId)
         {
@@ -153,6 +148,11 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetUserProfileByUserName(userName, contextFactory));
         }
+        public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
+            string? comments, Guid statusId)
+        {
+            return await ExecuteGet(async () => await acccountMutations.SetAccountProgram(programId, effective, expritation, single, aggregate, comments, statusId, contextFactory));
+        }
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, Guid status)
         {
@@ -161,9 +161,9 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
-            return await ExecuteSave((async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2,
+            return await ExecuteSave(async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2,
                 address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
-                eventSender, contextFactory, loggingService)));
+                eventSender, contextFactory, loggingService));
         }
         public async Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode,

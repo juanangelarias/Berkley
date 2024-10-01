@@ -17,7 +17,7 @@
         <Template Context="program">
             <RadzenDataGrid Data="program?.AccountProgramStatusHistories" TItem="AccountProgramStatusHistory">
                 <Columns>
-                    <RadzenDataGridColumn Title="Old Status" Property="OldStatus"/>
+                    <RadzenDataGridColumn Title="Old Status" Property="OldStatus" />
                     <RadzenDataGridColumn Title="New Status" Property="NewStatus" />
                     <RadzenDataGridColumn Title="Old Single" Property="OldSingle" />
                     <RadzenDataGridColumn Title="New Single" Property="NewSingle" />
@@ -30,17 +30,49 @@
         </Template>
         <Columns>
             <RadzenDataGridColumn TItem="AccountProgram" Title="Effective"
-                                  Property="Effective" FormatString="{0:d}" />
+                                  Property="Effective" FormatString="{0:d}">
+                <Template Context="program">
+                    <RadzenText Text="@program.Effective.ToShortDateString()" />
+                </Template>
+                <EditTemplate Context="program">
+                    <RadzenDatePicker ShowTime="false" DateFormat="MM/dd/yyyy" @bind-Value="@program.Effective" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="AccountProgram" Title="Expiration"
-                                  Property="Expiration" FormatString="{0:d}" />
+                                  Property="Expiration" FormatString="{0:d}">
+                <Template Context="program">
+                    <RadzenText Text="@program.Expiration.ToShortDateString()" />
+                </Template>
+                <EditTemplate Context="program">
+                    <RadzenDatePicker ShowTime="false" DateFormat="MM/dd/yyyy" @bind-Value="@program.Expiration" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="AccountProgram" Title="Single"
-                                  Property="Single" FormatString="{0:c0}" />
+                                  Property="Single" FormatString="{0:c0}">
+                <Template Context="program">
+                    <RadzenText Text="@program.Single.ToString("c0")" />
+                </Template>
+                <EditTemplate Context="program">
+                    <RadzenNumeric @bind-Value="@program.Single" Format="c0" />
+                </EditTemplate>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="AccountProgram" Title="Aggregate"
-                                  Property="Aggregate" FormatString="{0:c0}" />
+                                  Property="Aggregate" FormatString="{0:c0}">
+                <Template Context="program">
+                    <RadzenText Text="@program.Aggregate.ToString("c0")" />
+                </Template>
+                <EditTemplate Context="program">
+                    <RadzenNumeric @bind-Value="@program.Aggregate" Format="c0"  />
+                </EditTemplate>
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="AccountProgram" Title="Edit">
                 <Template Context="program">
-                    <RadzenButton Icon="edit" Variant="Variant.Text" Size="ButtonSize.Small" />
+                    <RadzenButton Icon="edit" Variant="Variant.Text" Size="ButtonSize.Small" Click="@((args) => EditProgramRow(program))" />
                 </Template>
+                <EditTemplate Context="program">
+                    <RadzenButton Icon="save" Variant="Variant.Text" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Success" Click="@((args) => SaveProgramRow(program))" />
+                    <RadzenButton Icon="close" Variant="Variant.Text" Size="ButtonSize.Small" Click="@((args) => CancelProgramEdit(program))" />
+                </EditTemplate>
             </RadzenDataGridColumn>
         </Columns>
         <LoadingTemplate>
@@ -110,11 +142,46 @@
         programsToUpdate.Add(program);
         await programGrid.EditRow(program);
     }
+    async Task SaveProgramRow(AccountProgram program)
+    {
+        await ShowLoading();
+        await programGrid.UpdateRow(program);
+        await LoadPrograms();
+    }
     async Task UpdateProgramRow(AccountProgram program)
     {
+        await ShowLoading();
         Reset(program);
         //This is where we handle row Updates.
-        //TODO: Implement the update
+        var result = await DataAccess.SetAccountProgram(program.Id, program.Effective, program.Expiration, program.Single, program.Aggregate, program.Comments,
+            program.StatusId);
+
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError("Error saving account program changes", result.Errors.ToString());
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Detail = "Error saving account program.",
+                    Duration = 4000,
+                    Severity = NotificationSeverity.Error
+                });
+        }
+        else
+        {
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Detail = "Changes saved successfully.",
+                    Duration = 4000,
+                    Severity = NotificationSeverity.Success
+                });
+        }
+    }
+    async Task CancelProgramEdit(AccountProgram program)
+    {
+        await ShowLoading();
+        Reset(program);
+        programGrid.CancelEditRow(program);
+        await LoadPrograms();
     }
     async Task SaveLicenseRow(AccountProgram program)
     {

@@ -122,6 +122,7 @@ try
         builder.Services.SetupImagingForKong(config["Kong0:Imaging:client_id"]!, config["Kong0:Imaging:client_secret"]!, config["Kong0:Imaging:audience"]!);
     }
     builder.Services.AddScoped<Query>();
+    builder.Services.AddScoped<AccountMutations>();
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
     builder.Services.AddScoped<GeneralMutations>();

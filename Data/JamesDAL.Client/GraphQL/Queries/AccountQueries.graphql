@@ -78,77 +78,11 @@
 }
 
 query SearchAccounts($input: String!) {
-  searchAccounts (searchString: $input) {
-    accountingSystem
+  searchAccounts(searchString: $input) {
     accountNum
-    affiliateCompany
-    agencyNumber
-    agentId
-    attorneyId
-    bank
-    bankAverageBalance
-    bankLastContacted
-    bankLoc
-    bankLocexpires
-    bankLochigh
-    bankLochighDate
-    bankLocsecurity
-    bankLocused
-    bankPhoneId
-    bankReferenceName
-    berkleyAffiliate
-    branch
-    branchReviewBy
-    branchReviewed
-    businessType
-    businessTypeClass
-    continuityActiveMultipleOwners
-    continuityFundedBuySell
-    continuityKeyManagementLifeInsurance
-    continuityManagementIncentives
-    cpacontactId
-    cpafirmId
-    created
-    creditReport
-    currentManagementYear
-    division
-    dunBradstreetDate
-    dunBradstreetRate
-    dunBradstreetSic
-    estimatingSignoff
-    estimatingSystem
-    fiscalYearEnd
-    fullName
-    fundsControl
-    geographicSpread
-    homeOfficeLock
-    homeOfficeReviewBy
-    homeOfficeReviewed
-    id
-    indemnityComments
-    indemnityCorp
-    indemnityFull
-    indemnityPerson
-    interimWips
-    lawFirmId
-    mainEmailAddress
-    modified
-    naics
-    openClaim
-    paydexIntelliscore
-    pocinterims
-    polutionLiabilityCarrier
-    polutionLiabilityExpires
-    priorSuretyCompany
-    privatePercent
-    publicPercent
-    rateModifier
-    subcontractPercent
-    subcontractProtection
-    taxBasis
-    underwriterId
-    watchStatus
-    yearOpened
+    idNavigation {
+      fullName
+    }
   }
 }
 

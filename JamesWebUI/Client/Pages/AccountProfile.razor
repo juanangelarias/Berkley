@@ -13,7 +13,7 @@
 
 <Theme />
 
-<PageTitle>Account Profile</PageTitle>
+<PageTitle>BasisTNG - Account Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
@@ -136,7 +136,7 @@
 </RadzenStack>
 
 @code {
-        [Parameter] public string? AccountNumber { get; set; }
+    [Parameter] public string? AccountNumber { get; set; }
     private Account AccountToDisplay { get; set; } = new Account()
         {
             IdNavigation = new LegalEntity()

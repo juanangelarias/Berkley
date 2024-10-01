@@ -14,7 +14,7 @@
 
 <Theme />
 
-<PageTitle>Agency Profile</PageTitle>
+<PageTitle>BasisTNG - Agency Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
  @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
 
@@ -152,6 +152,7 @@
                                                                     Text="NASBP" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" />
                                                 <RadzenButton Text="Edit" Icon="edit" Visible="!EditMode" Click="@(() => EditMode = !EditMode)" />
                                                 <RadzenButton Text="Save" Icon="save" Visible="EditMode" Click="SaveAgencyChanges" />
+                                                <RadzenButton Text="Cancel" Icon="cancel" Visible="EditMode" Click="@(() => EditMode = !EditMode)" />
                                             </RadzenStack>
                                         </RadzenColumn>
                                     </RadzenRow>

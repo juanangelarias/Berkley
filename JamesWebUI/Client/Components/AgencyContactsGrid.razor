@@ -118,8 +118,7 @@
         }
         else
         {
-            //TODO:Add error details
-            LoggingService.LogError("Error loading agents in AgencyContactsGrid");
+            LoggingService.LogError("Error loading agents in AgencyContactsGrid", result.Errors.ToString());
         }
     }
     private async Task LoadSelectInsurerDropDown()
@@ -131,8 +130,7 @@
         var result = await DataAccess.GetAllInsurers();
         if (result.Success == false)
         {
-            //TODO:Add error details
-            LoggingService.LogError("Error getting insurers in Agency Contract Grid");
+            LoggingService.LogError("Error getting insurers in Agency Contract Grid", result.Errors.ToString());
         }
 
         Debug.Assert(result.Data != null, "result.Data != null");

@@ -1,0 +1,66 @@
+﻿query agentByAgentId($agentId: UUID!) {
+  agentByAgentId(agentId: $agentId) {
+    id
+    idNavigation {
+      created
+      entityType
+      familyName
+      fullName
+      givenName
+      id
+      isIndividual
+      middleInitial
+      modified
+      parent
+      taxIdEncrypted
+      website
+    }
+    nationalProducerNumber
+    agentsInAgencies {
+      active
+      agencyId
+      agentId
+      attorneyInFact
+      comments
+      created
+      id
+      modified
+      portalUser
+    }
+    licenses {
+      agencyId
+      agentId
+      appointingState
+      appointment
+      comments
+      created
+      expiration
+      id
+      insurerId
+      isActive
+      isResident
+      licenseNumber
+      modified
+      state
+      termination
+      insurer {
+        idNavigation {
+          fullName
+        }
+      }
+    }
+  }
+}
+
+
+query SearchAgents($input: String!) {
+  searchAgents(searchString: $input) {
+    defaultCellNumber
+    defaultEmail
+    defaultPhoneNumber
+    id
+    idNavigation {
+      fullName
+    }
+  }
+} 

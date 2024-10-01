@@ -5,7 +5,7 @@
 
 
 @inject NotificationService NotificationService
-@inject IDataAccess _dataAccess
+@inject IDataAccess DataAccess
 
 <RadzenRow>
     <RadzenColumn Size="6">
@@ -267,13 +267,13 @@
                     Contract LOA
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric @bind-Value="@inforceLOAs.ContractLOA.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric @bind-Value="@inforceLOAs.ContractLOA.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenTextBox Value="@(inforceLOAs?.ContractLOA?.Expiration.ToShortDateString())" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -281,13 +281,13 @@
                     Commercial LOA
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric @bind-Value="@inforceLOAs.CommercialLOA.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric @bind-Value="@inforceLOAs.CommercialLOA.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenTextBox Value="@(inforceLOAs?.CommercialLOA?.Expiration.ToShortDateString())" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -327,6 +327,11 @@
 
 @code {
     [Parameter] public Account AccountToDisplay { get; set; }
+    public InforceAccountLOA inforceLOAs { get; set; } = new InforceAccountLOA()
+    {
+        ContractLOA = new LineOfAuthorityLog(),
+        CommercialLOA = new LineOfAuthorityLog()
+    };
 
     private bool MasterEditMode { get; set; } = false;
     private bool GenInfoEditMode { get; set; } = false;
@@ -336,7 +341,12 @@
     {
         await base.OnParametersSetAsync();
 
-        StateHasChanged();
+        if (AccountToDisplay != null)
+        {
+            //TODO: Reenable this once data port is complete.
+            await LoadInforceLOAs();
+            StateHasChanged();
+        }
     }
 
     async Task SaveGenInfoChanges()
@@ -347,5 +357,28 @@
     async Task SaveAdditionalInformationChanges()
     {
 
+    }
+
+    async Task LoadInforceLOAs()
+    {
+        if (!string.IsNullOrWhiteSpace(AccountToDisplay.AccountNum))
+        {
+            var result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountToDisplay.AccountNum);
+
+            if (result.Errors.Any() || null == result.Data)
+            {
+                LoggingService.LogError("Error loading inforce LOAs for this account.", result.Errors.ToString());
+                NotificationService.Notify(new NotificationMessage
+                    {
+                        Detail = "Error loading Account LOAs.",
+                        Duration = 4000,
+                        Severity = NotificationSeverity.Error
+                    });
+            }
+            else
+            {
+                inforceLOAs = result.Data;
+            }
+        }
     }
 }

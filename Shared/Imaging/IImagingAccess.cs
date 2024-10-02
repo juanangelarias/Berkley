@@ -7,7 +7,7 @@ namespace James.Shared.Imaging
     /// </summary>
     public interface IImagingAccess
     {
-        public Task UploadDocument(string docType, string filename, Stream fileContentStream,
+        public Task<Guid?> UploadDocument(string docType, string filename, Stream fileContentStream,
             string contentType, ImagingDocumentCategory category, string id, 
             string batchName, DateTime scanDate, CancellationToken cancellationToken = default);
 
@@ -22,7 +22,7 @@ namespace James.Shared.Imaging
     }
     public abstract class ImagingAccessBase : IImagingAccess
     {
-        public abstract Task UploadDocument(string docType, string filename, 
+        public abstract Task<Guid?> UploadDocument(string docType, string filename, 
                                             Stream fileContentStream,
             string contentType,
             ImagingDocumentCategory category, string id, string batchName, DateTime scanDate, CancellationToken cancellationToken = default);

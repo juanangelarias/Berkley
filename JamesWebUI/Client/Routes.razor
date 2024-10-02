@@ -8,7 +8,11 @@
                 </Authorizing>
                 <NotAuthorized>
                     <h1>Sorry</h1>
-                    <p>You're not authorized to reach this page. You need to <a href="@JamesConstants.LOG_IN_PATH?redirectUri=@Navigation.Page()">log in</a>.</p>
+                    <p>
+                        You're not authorized to reach this page. You need to
+                        <RadzenButton Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
+                                      Text="Log in" Click="BeginLogin" />
+                    </p>
                 </NotAuthorized>
             </AuthorizeRouteView>
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
@@ -21,3 +25,11 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+@code
+{
+    private async Task BeginLogin()
+    {
+        //Force load is required so that the login is processed on the server
+        Navigation.NavigateTo(JamesConstants.LOG_IN_PATH + "?redirectUri=" + Navigation.Page(), true);
+    }
+}

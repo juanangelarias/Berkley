@@ -1,5 +1,6 @@
 ﻿using James.Shared.Model;
 using System.Net.Mail;
+using SharedBusinessLogic;
 
 namespace ClientBusinessLogic
 {
@@ -48,6 +49,17 @@ namespace ClientBusinessLogic
                 //TODO: Check for valid StateCode.
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Validates if a filename is a valid Windows filename with an extension
+        /// </summary>
+        /// <param name="filename">The filename</param>
+        /// <returns>True if valid</returns>
+        /// <remarks>Ignores any path before the file name.</remarks>
+        public static bool ValidateFileName(string filename)
+        {
+            return ImagingBusinessLogic.ValidWindowsFilenamePattern.IsMatch(filename);
         }
     }
 }

@@ -82,7 +82,7 @@ namespace James.Data.Imaging
             return parms.ToArray();
         }
 
-        public override async Task UploadDocument(string docType, string filename, Stream fileContentStream, string contentType,
+        public override async Task<Guid?> UploadDocument(string docType, string filename, Stream fileContentStream, string contentType,
             ImagingDocumentCategory category, string id, string batchName, DateTime scanDate, CancellationToken cancellationToken = default)
         {
             try
@@ -151,15 +151,20 @@ namespace James.Data.Imaging
                 };
                 if (cancellationToken.IsCancellationRequested == false)
                 {
-                    async Task<string> P8Call(ClientBase<P8Service> client) => await ((P8Service)client).addDocumentAsync(
-                        string.Empty, string.Empty,
-                        doc, batchName, DefaultAdditionalParams.Select(ap => ap.ToEntry()).ToArray());
+                    async Task<string> P8Call(ClientBase<P8Service> client) =>
+                        await ((P8Service)client).addDocumentAsync(
+                            string.Empty, string.Empty,
+                            doc, batchName, DefaultAdditionalParams.Select(ap => ap.ToEntry()).ToArray());
+
                     doc.guid = await kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
+                    return Guid.Parse(doc.guid);
                 }
+                return null;
             }
             catch (Exception ex)
             {
                 loggingService.LogException(ex, "Error uploading to BTS controlled P8 servers.", category: "Imaging");
+                return null;
             }
         }
 

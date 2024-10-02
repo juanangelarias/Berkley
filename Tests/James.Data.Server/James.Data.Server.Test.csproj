@@ -33,10 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\JApplicationLog\ApplicationLog.csproj" />
     <ProjectReference Include="..\..\Data\JamesDAL.Imaging\James.Data.Imaging.csproj" />
     <ProjectReference Include="..\..\Data\JamesDAL.Server\James.Data.Server.csproj" />
     <ProjectReference Include="..\..\JamesWebUI\Server\JamesWebUI.Server.csproj" />
+    <ProjectReference Include="..\..\JApplicationLog\ApplicationLog.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -57,7 +57,7 @@ type Query {
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   agentByAgentId(agentId: UUID!): Agent!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
-  bondRequestNumber(bondNumber: String!): String!
+  bondRequestNumberType(bondNumber: String!): BondRequestNumberType
   bondNumber(bondRequestNumber: String!): String
   branches: [Branch!]!
   divisions: [DivisionDm!]!
@@ -67,6 +67,8 @@ type Query {
   allBranches: [Branch!]!
   allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
   addressTypes: [AddressTypeDm!]!
+  searchDocuments(id: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
+  imagingSearchCriteria(id: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
   allInsurers: [Insurer!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
@@ -123,6 +125,7 @@ type PowerOfAttorney {
   currentIssued: Date
   comments: String
   status: UUID!
+  imagingId: UUID!
   agency: Agency!
   insurer: Insurer!
   onlineBondSystems: [OnlineBondSystem!]!
@@ -505,6 +508,11 @@ type Agent {
   familyName: String
 }
 
+type BondRequestNumberType {
+  bondRequestNumber: String!
+  type: String!
+}
+
 type Branch {
   id: UUID!
   created: DateTime!
@@ -615,6 +623,33 @@ type AddressTypeDm {
   type: String!
   order: Int!
   legalEntityAddresses: [LegalEntityAddress!]!
+}
+
+type ImagingDocument {
+  guid: String!
+  documentClass: String!
+  folderPath: String
+  properties: [ImagingProperty!]
+  contentList: [ImagingContent!]
+}
+
+enum ImagingDocumentCategory {
+  INVALID
+  ACCOUNT
+  BOND
+  AGENCY
+  COMM_BID
+  CONT_BID
+  BILLING
+}
+
+type ImagingSearchCriteria {
+  contentSearchString: String!
+  docClass: String!
+  fields: String!
+  maxResults: Int!
+  searchTimeoutSeconds: Int!
+  whereClause: String!
 }
 
 type Insurer {
@@ -884,6 +919,16 @@ type LegalEntityEmail {
   typeNavigation: EmailTypeDm!
 }
 
+type InsurerState {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  insurerId: UUID!
+  state: String!
+  insurer: Insurer!
+  stateNavigation: State!
+}
+
 type CountryDm {
   code: String!
   created: DateTime!
@@ -891,6 +936,33 @@ type CountryDm {
   name: String!
   insurers: [Insurer!]!
   states: [State!]!
+}
+
+type ImagingContent {
+  filename: String!
+  mimeType: String!
+}
+
+type ImagingProperty {
+  choiceOption: [ImagingChoice!]
+  dataType: ImagingPropertyDataType!
+  dataTypeSpecified: Boolean!
+  dateListValue: [DateTime]!
+  dateValue: DateTime!
+  dateValueSpecified: Boolean!
+  displayName: String!
+  description: String!
+  listValue: [String!]!
+  name: String!
+  readOnly: Boolean!
+  readOnlySpecified: Boolean!
+  required: Boolean!
+  requiredSpecified: Boolean!
+  requiredFormat: String!
+  requiredFormatRegex: String!
+  systemGenerated: Boolean!
+  systemGeneratedSpecified: Boolean!
+  value: String
 }
 
 type UserLineOfAuthority {
@@ -1809,16 +1881,6 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type InsurerState {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  insurerId: UUID!
-  state: String!
-  insurer: Insurer!
-  stateNavigation: State!
-}
-
 type AccountReference {
   id: UUID!
   created: DateTime!
@@ -2191,6 +2253,29 @@ type SurchargeTypeDm {
   modified: DateTime!
   type: String!
   surcharges: [Surcharge!]!
+}
+
+enum ImagingPropertyDataType {
+  STRING
+  STRING_LIST
+  DATE
+  DATE_LIST
+  INTEGER
+  INTEGER_LIST
+  DOUBLE
+  DOUBLE_LIST
+  CHOICE_LIST_STRING
+  CHOICE_LIST_INTEGER
+  CHOICE_LIST_STRING_MULTI
+  CHOICE_LIST_INTEGER_MULTI
+  BOOLEAN
+  BOOLEAN_LIST
+  UNKOWN
+}
+
+type ImagingChoice {
+  displayValue: String!
+  value: String!
 }
 
 type SicratioTypeDm {

@@ -13,19 +13,6 @@ namespace James.Data.Client
 {
     public class ClientImagingAccess: ImagingAccessBase
     {
-        public override Task<ImagingDocument[]> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory,
-            string? documentType = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task<ImagingDocument[]> SearchDocumentsAsync(ImagingSearchCriteria criteria,
-            KeyValuePair<string, string>[]? searchOptions = null,
-            KeyValuePair<string, string>[]? additionalParams = null)
-        {
-            throw new NotImplementedException();
-        }
-
         public override Task<Guid?> UploadDocument(string docType, string filename, Stream fileContentStream, string contentType, ImagingDocumentCategory category, string id, string batchName, DateTime scanDate, CancellationToken cancellationToken = default)
         {
             //UNDONE:Send file to ImagingRepository/UploadDocument 

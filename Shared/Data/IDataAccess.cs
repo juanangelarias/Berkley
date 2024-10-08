@@ -1,4 +1,5 @@
-﻿using James.Shared.Model;
+﻿using James.Shared.Imaging;
+using James.Shared.Model;
 
 namespace James.Shared.Data
 {
@@ -11,7 +12,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber);
         public Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString);
-        public Task<IDataAccessResult<Obligee>> GetObligeeById(Guid id);
+        public Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id);
         public Task<IDataAccessResult<Obligee?>> GetObligeeByObligeeNumber(string obligeeNumber);
         public Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId);
         public Task<IDataAccessResult<List<Bond>>> GetObligeeSecondaryBonds(Guid obligeeId);
@@ -63,10 +64,18 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
         public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
         public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
-        public Task<IDataAccessResult<string>> GetBondRequestNumber(string bondNumber);
+        public Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber);
         public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
+
+        public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
+            bool useDocCategoryAsCriteria = true);
+        public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory,
+            string? documentType = null);
+        //public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(ImagingSearchCriteria criteria,
+        //    KeyValuePair<string, string>[]? searchOptions = null,
+        //    KeyValuePair<string, string>[]? additionalParams = null);
     }
 
     public interface ISaveDataResult

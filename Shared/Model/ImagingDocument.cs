@@ -10,12 +10,19 @@ namespace James.Shared.Model
     {
         public string Guid { get; set; }
         public string DocumentClass { get; set; }
-        public string FolderPath { get; set; }
+        public string? FolderPath { get; set; }
         public ImagingProperty[]? Properties { get; set; }
+        public ImagingContent[]? ContentList { get; set; }
         public override string ToString()
         {
             return $"Doc Class: {DocumentClass}\\r\\nFolder Path = {FolderPath}\\r\\nGuid = {Guid}";
         }
+    }
+
+    public class ImagingContent
+    {
+        public string Filename { get; set; }
+        public string MimeType { get; set; }
     }
 
     public class ImagingSearchCriteria
@@ -54,7 +61,7 @@ namespace James.Shared.Model
         public string RequiredFormatRegex { get; set; }
         public bool SystemGenerated { get; set; }
         public bool SystemGeneratedSpecified { get; set; }
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 }
 

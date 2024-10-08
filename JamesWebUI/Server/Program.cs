@@ -22,6 +22,7 @@ using Radzen;
 using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using James.Shared.Imaging;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
@@ -110,6 +111,8 @@ try
     builder.Services.AddScoped<IUserShared, UserShared>();
     builder.Services.AddScoped<ILoggingShared, LoggingShared>();
     builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
+    builder.Services.AddScoped<ImagingKong0Helper>();
+    builder.Services.AddScoped<ServerImagingAccess>();
     builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
     if (OperatingSystem.IsWindows())
     {
@@ -119,7 +122,7 @@ try
         ConfirmAppSettingsEntry("Kong0:Imaging:client_id");
         ConfirmAppSettingsEntry("Kong0:Imaging:client_secret");
         ConfirmAppSettingsEntry("Kong0:Imaging:service_url");
-        builder.Services.SetupImagingForKong(config["Kong0:Imaging:client_id"]!, config["Kong0:Imaging:client_secret"]!, config["Kong0:Imaging:audience"]!);
+        builder.Services.SetupImagingForKong(config);
     }
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AgencyMutation>();

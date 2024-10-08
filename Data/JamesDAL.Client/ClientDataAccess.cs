@@ -1,13 +1,13 @@
 ﻿using James.Data.Client.GraphQL;
 using James.Shared;
 using James.Shared.Data;
+using James.Shared.Imaging;
 using James.Shared.Model;
-using Microsoft.Win32.SafeHandles;
 using StrawberryShake;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
+using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory;
 using Severity = James.Shared.Model.Severity;
 #pragma warning disable CA1305
 
@@ -351,11 +351,11 @@ namespace James.Data.Client
             return GraphQLSaveResult(saveResult);
         }
 
-        public async Task<IDataAccessResult<string>> GetBondRequestNumber(string bondNumber)
+        public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
         {
             throw new NotImplementedException();
             //return await ExecuteGetString(async () =>
-            //await jamesClient.GetBondRequestNumber.ExecuteAsync(bondNumber));
+            //await jamesClient.GetBondRequestNumberType.ExecuteAsync(bondNumber));
         }
 
         public async Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber)
@@ -371,6 +371,28 @@ namespace James.Data.Client
             var addressModifiedWatch = new AddressModifiedWatchClass(subscriptionToWatch).SubscribeTo(onNext, onError, onComplete);
             return addressModifiedWatch;
         }
+
+        public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory, bool useDocCategoryAsCriteria = true)
+        {
+            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), Enum.GetName(typeof(ImagingDocumentCategory), docCategory)!);
+            return await ExecuteGet<ImagingSearchCriteria>(async () =>
+                await jamesClient.GetImagingSearchCriteria.ExecuteAsync(id, category, useDocCategoryAsCriteria));
+        }
+
+        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory, string? documentType = null)
+        {
+            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), Enum.GetName(typeof(ImagingDocumentCategory), docCategory)!);
+            var result =  await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(id, category, documentType),"SearchDocuments", "GetImagingDocuments");
+            return result;
+            throw new NotImplementedException();
+        }
+
+        //public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(ImagingSearchCriteria criteria, KeyValuePair<string, string>[]? searchOptions = null,
+        //    KeyValuePair<string, string>[]? additionalParams = null)
+        //{
+        //    //UNDONE:
+        //    throw new NotImplementedException();
+        //}
 
         //private AddressModifiedWatchClass AddressModifiedWatch(
         //    IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription)

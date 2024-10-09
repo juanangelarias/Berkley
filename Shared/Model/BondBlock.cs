@@ -26,5 +26,7 @@ public partial class BondBlock
 
     public string? Comments { get; set; }
 
+    public Guid? AgencyId { get; set; }
+
     public virtual UserProfile? IssuedByNavigation { get; set; }
 }

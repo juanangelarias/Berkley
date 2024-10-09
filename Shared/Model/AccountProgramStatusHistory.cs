@@ -12,8 +12,6 @@ public partial class AccountProgramStatusHistory
 
     public DateTime Modified { get; set; }
 
-    public int CompanyId { get; set; }
-
     public Guid? OldStatus { get; set; }
 
     public Guid NewStatus { get; set; }
@@ -31,6 +29,8 @@ public partial class AccountProgramStatusHistory
     public Guid StatusChangeBy { get; set; }
 
     public Guid AccountProgramId { get; set; }
+
+    public string AccountNum { get; set; } = null!;
 
     public virtual AccountProgram AccountProgram { get; set; } = null!;
 }

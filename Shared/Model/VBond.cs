@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class Bond
+public partial class VBond
 {
     public Guid Id { get; set; }
 
@@ -18,7 +18,7 @@ public partial class Bond
 
     public string AccountNum { get; set; } = null!;
 
-    public Guid? BondTypeId { get; set; }
+    public string BondType { get; set; } = null!;
 
     public DateTime Effective { get; set; }
 
@@ -35,8 +35,6 @@ public partial class Bond
     public bool? Cancellable { get; set; }
 
     public Guid InsurerId { get; set; }
-
-    public Guid AgencyId { get; set; }
 
     public string State { get; set; } = null!;
 
@@ -120,51 +118,21 @@ public partial class Bond
 
     public string? SfaabondType { get; set; }
 
-    public virtual Account AccountNumNavigation { get; set; } = null!;
+    public string AgencyNumber { get; set; } = null!;
 
-    public virtual ICollection<AdditionalObligee> AdditionalObligeesNavigation { get; set; } = new List<AdditionalObligee>();
+    public string AgencyName { get; set; } = null!;
 
-    public virtual LegalEntity Agency { get; set; } = null!;
+    public string Branch { get; set; } = null!;
 
-    public virtual LegalEntity? Agent { get; set; }
+    public int BondAmount { get; set; }
 
-    public virtual LawEntity? AttorneyInFact { get; set; }
+    public int SfaaCode { get; set; }
 
-    public virtual BondRequest? BondRequest { get; set; }
+    public bool NmlsclassCode { get; set; }
 
-    public virtual BondRequestCommercial? BondRequestCommercial { get; set; }
+    public string? RateClass { get; set; }
 
-    public virtual ICollection<BondStatusLetter> BondStatusLetters { get; set; } = new List<BondStatusLetter>();
+    public DateTime CurrentTermEffective { get; set; }
 
-    public virtual ICollection<BondTransactionPurpose> BondTransactionPurposes { get; set; } = new List<BondTransactionPurpose>();
-
-    public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
-
-    public virtual BondTypeDm? BondType { get; set; }
-
-    public virtual ICollection<CoPrincipal> CoPrincipals { get; set; } = new List<CoPrincipal>();
-
-    public virtual ICollection<Collateral> Collaterals { get; set; } = new List<Collateral>();
-
-    public virtual Address? DirectBillAddress { get; set; }
-
-    public virtual ICollection<EmailHistory> EmailHistories { get; set; } = new List<EmailHistory>();
-
-    public virtual Insurer Insurer { get; set; } = null!;
-
-    public virtual LegalEntity? Obligee { get; set; }
-
-    public virtual ICollection<OpenClaim> OpenClaims { get; set; } = new List<OpenClaim>();
-
-    public virtual LegalEntity? ResponsibleParty { get; set; }
-
-    public virtual SfaabondTypeDm? SfaabondTypeNavigation { get; set; }
-
-    public virtual Sic? SiccodeNavigation { get; set; }
-
-    public virtual State StateNavigation { get; set; } = null!;
-
-    public virtual Underwriter UnderWriter { get; set; } = null!;
-
-    public virtual ICollection<WorkInProgressJob> WorkInProgressJobs { get; set; } = new List<WorkInProgressJob>();
+    public DateTime CurrentTermExpiration { get; set; }
 }

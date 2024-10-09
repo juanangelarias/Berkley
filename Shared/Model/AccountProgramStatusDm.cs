@@ -15,4 +15,6 @@ public partial class AccountProgramStatusDm
     public string Description { get; set; } = null!;
 
     public int? OldId { get; set; }
+
+    public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 }

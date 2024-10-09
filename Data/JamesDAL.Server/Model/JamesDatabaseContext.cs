@@ -324,6 +324,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<UserProfile> UserProfiles { get; set; }
 
+    public virtual DbSet<VAccount> VAccounts { get; set; }
+
     public virtual DbSet<VAccountRateDatum> VAccountRateData { get; set; }
 
     public virtual DbSet<VAccountRateEmail> VAccountRateEmails { get; set; }
@@ -331,6 +333,8 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<VAccountRateParent> VAccountRateParents { get; set; }
 
     public virtual DbSet<VAgencyParent> VAgencyParents { get; set; }
+
+    public virtual DbSet<VBond> VBonds { get; set; }
 
     public virtual DbSet<VConfiguration> VConfigurations { get; set; }
 
@@ -558,6 +562,11 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.AccountNum)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AccountProgram_Account");
+
+            entity.HasOne(d => d.Status).WithMany(p => p.AccountPrograms)
+                .HasForeignKey(d => d.StatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccountProgram_AccountProgramStatusDM");
         });
 
         modelBuilder.Entity<AccountProgramEmailNotificationGroup>(entity =>
@@ -599,6 +608,9 @@ public partial class JamesDatabaseContext : DbContext
             entity.ToTable("AccountProgramStatusHistory", tb => tb.HasTrigger("trgAccountProgramStatusHistoryModified"));
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.AccountNum)
+                .HasMaxLength(12)
+                .IsUnicode(false);
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -1670,6 +1682,10 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.ToTable("BondRequest");
 
+            entity.HasIndex(e => e.BondNumber, "UQ_BondRequest_BondNumber")
+                .IsUnique()
+                .HasFilter("([BondNumber] IS NOT NULL)");
+
             entity.HasIndex(e => e.Id, "UQ_BondRequest_Id").IsUnique();
 
             entity.Property(e => e.BondRequestNumber)
@@ -1725,8 +1741,8 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.BidResult)
                 .HasConstraintName("FK_BondRequest_BidResultDM");
 
-            entity.HasOne(d => d.BondNumberNavigation).WithMany(p => p.BondRequests)
-                .HasForeignKey(d => d.BondNumber)
+            entity.HasOne(d => d.BondNumberNavigation).WithOne(p => p.BondRequest)
+                .HasForeignKey<BondRequest>(d => d.BondNumber)
                 .HasConstraintName("FK_BondRequest_Bond");
 
             entity.HasOne(d => d.CctoNavigation).WithMany(p => p.BondRequestCctoNavigations).HasForeignKey(d => d.Ccto);
@@ -1754,6 +1770,10 @@ public partial class JamesDatabaseContext : DbContext
             entity.HasKey(e => e.BondRequestNumber).IsClustered(false);
 
             entity.ToTable("BondRequestCommercial");
+
+            entity.HasIndex(e => e.BondNumber, "UQ_BondRequestCommercial_BondNumber")
+                .IsUnique()
+                .HasFilter("([BondNumber] IS NOT NULL)");
 
             entity.HasIndex(e => e.Id, "UQ_BondRequestCommercial_Id").IsUnique();
 
@@ -1788,8 +1808,8 @@ public partial class JamesDatabaseContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_BondRequestCommercial_Account");
 
-            entity.HasOne(d => d.BondNumberNavigation).WithMany(p => p.BondRequestCommercials)
-                .HasForeignKey(d => d.BondNumber)
+            entity.HasOne(d => d.BondNumberNavigation).WithOne(p => p.BondRequestCommercial)
+                .HasForeignKey<BondRequestCommercial>(d => d.BondNumber)
                 .HasConstraintName("FK_BondRequestCommercial_Bond");
 
             entity.HasOne(d => d.CctoNavigation).WithMany(p => p.BondRequestCommercialCctoNavigations).HasForeignKey(d => d.Ccto);
@@ -2829,7 +2849,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.TabName)
+            entity.Property(e => e.ImagingTabId)
                 .HasMaxLength(50)
                 .IsUnicode(false);
 
@@ -2844,55 +2864,55 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_ImagingCategoryTabDivision_DivisionDM");
 
             entity.HasOne(d => d.TabNameNavigation).WithMany(p => p.ImagingCategoryTabDivisions)
-                .HasForeignKey(d => d.TabName)
+                .HasForeignKey(d => d.ImagingTabId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ImagingCategoryTabDivision_ImagingTab");
         });
 
         modelBuilder.Entity<ImagingTab>(entity =>
         {
-            entity.HasKey(e => e.TabName).IsClustered(false);
+            entity.HasKey(e => e.Id).IsClustered(false);
 
             entity.ToTable("ImagingTab", tb => tb.HasTrigger("trgImagingTabModified"));
 
             entity.HasIndex(e => e.Id, "UQ_ImagingTab_Id").IsUnique();
 
-            entity.Property(e => e.TabName)
-                .HasMaxLength(50)
-                .IsUnicode(false);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Description)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.TabName)
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<ImagingType>(entity =>
         {
-            entity.HasKey(e => e.Type).IsClustered(false);
+            entity.HasKey(e => e.Id).IsClustered(false);
 
             entity.ToTable("ImagingType", tb => tb.HasTrigger("trgImagingTypeModified"));
 
             entity.HasIndex(e => e.Id, "UQ_ImagingType_Id").IsUnique();
 
-            entity.Property(e => e.Type)
-                .HasMaxLength(10)
-                .IsUnicode(false);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.Description)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Type)
+                .HasMaxLength(10)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<Indemnitor>(entity =>
@@ -3253,7 +3273,7 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<LineOfAuthorityLog>(entity =>
         {
-            entity.HasKey(e => e.AccountNum)
+            entity.HasKey(e => e.Id)
                 .HasName("PK_LineOFAuthorityLog")
                 .IsClustered(false);
 
@@ -3261,6 +3281,7 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.HasIndex(e => e.Id, "UQ_LineOFAuthorityLog_Id").IsUnique();
 
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.AccountNum)
                 .HasMaxLength(8)
                 .IsUnicode(false);
@@ -3277,7 +3298,6 @@ public partial class JamesDatabaseContext : DbContext
                 .IsFixedLength();
             entity.Property(e => e.Effective).HasColumnType("datetime");
             entity.Property(e => e.Expiration).HasColumnType("datetime");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Loaaggregate).HasColumnName("LOAAggregate");
             entity.Property(e => e.Loasingle).HasColumnName("LOASingle");
             entity.Property(e => e.Modified)
@@ -4896,6 +4916,107 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Username).HasMaxLength(20);
         });
 
+        modelBuilder.Entity<VAccount>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vAccount");
+
+            entity.Property(e => e.AccountNum)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.AccountStatus)
+                .HasMaxLength(24)
+                .IsUnicode(false);
+            entity.Property(e => e.AccountingSystem).HasMaxLength(255);
+            entity.Property(e => e.Address1).HasMaxLength(60);
+            entity.Property(e => e.Address2).HasMaxLength(60);
+            entity.Property(e => e.Address3).HasMaxLength(60);
+            entity.Property(e => e.AgencyNumber)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.Bank).HasMaxLength(60);
+            entity.Property(e => e.BankLoc).HasColumnName("BankLOC");
+            entity.Property(e => e.BankLocexpires).HasColumnName("BankLOCExpires");
+            entity.Property(e => e.BankLochigh).HasColumnName("BankLOCHigh");
+            entity.Property(e => e.BankLochighDate).HasColumnName("BankLOCHighDate");
+            entity.Property(e => e.BankLocsecurity)
+                .HasMaxLength(50)
+                .HasColumnName("BankLOCSecurity");
+            entity.Property(e => e.BankLocused).HasColumnName("BankLOCUsed");
+            entity.Property(e => e.BankReferenceName).HasMaxLength(30);
+            entity.Property(e => e.Branch)
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.BranchReviewed).HasColumnType("datetime");
+            entity.Property(e => e.BusinessType)
+                .HasMaxLength(24)
+                .IsUnicode(false);
+            entity.Property(e => e.BusinessTypeClass)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.City).HasMaxLength(50);
+            entity.Property(e => e.CountryCode)
+                .HasMaxLength(3)
+                .IsUnicode(false);
+            entity.Property(e => e.Created).HasColumnType("datetime");
+            entity.Property(e => e.CreditReport)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.CurrentManagementYear)
+                .HasMaxLength(4)
+                .IsUnicode(false);
+            entity.Property(e => e.Division)
+                .HasMaxLength(4)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.DunBradstreetRate).HasMaxLength(10);
+            entity.Property(e => e.DunBradstreetSic)
+                .HasMaxLength(4)
+                .IsUnicode(false)
+                .HasColumnName("DunBradstreetSIC");
+            entity.Property(e => e.EstimatingSignoff).HasMaxLength(255);
+            entity.Property(e => e.EstimatingSystem).HasMaxLength(255);
+            entity.Property(e => e.Extension)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.FiscalYearEnd)
+                .HasMaxLength(5)
+                .IsUnicode(false);
+            entity.Property(e => e.GeographicSpread).HasMaxLength(255);
+            entity.Property(e => e.HomeOfficeReviewed).HasColumnType("datetime");
+            entity.Property(e => e.InterimWips).HasColumnName("InterimWIPs");
+            entity.Property(e => e.MainNumber)
+                .HasMaxLength(12)
+                .IsUnicode(false);
+            entity.Property(e => e.Modified).HasColumnType("datetime");
+            entity.Property(e => e.Naics)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("NAICS");
+            entity.Property(e => e.Pocinterims).HasColumnName("POCInterims");
+            entity.Property(e => e.PolutionLiabilityCarrier).HasMaxLength(100);
+            entity.Property(e => e.PostalCode)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.PriorSuretyCompany).HasMaxLength(50);
+            entity.Property(e => e.StateCode)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.SubcontractProtection).HasMaxLength(20);
+            entity.Property(e => e.TaxBasis)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.WatchStatus)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.YearOpened)
+                .HasMaxLength(4)
+                .IsUnicode(false);
+        });
+
         modelBuilder.Entity<VAccountRateDatum>(entity =>
         {
             entity
@@ -4924,6 +5045,81 @@ public partial class JamesDatabaseContext : DbContext
             entity
                 .HasNoKey()
                 .ToView("vAgencyParents");
+        });
+
+        modelBuilder.Entity<VBond>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vBond");
+
+            entity.Property(e => e.AccountNum)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.AgencyName).HasMaxLength(255);
+            entity.Property(e => e.AgencyNumber)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.BondClass).HasMaxLength(40);
+            entity.Property(e => e.BondNumber)
+                .HasMaxLength(12)
+                .IsUnicode(false);
+            entity.Property(e => e.BondPostalCode)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.BondType)
+                .HasMaxLength(12)
+                .IsUnicode(false);
+            entity.Property(e => e.Branch)
+                .HasMaxLength(3)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.CeritifiedMailNumber).HasMaxLength(60);
+            entity.Property(e => e.Created).HasColumnType("datetime");
+            entity.Property(e => e.CurrentTermEffective).HasColumnType("datetime");
+            entity.Property(e => e.CurrentTermExpiration).HasColumnType("datetime");
+            entity.Property(e => e.Effective).HasColumnType("datetime");
+            entity.Property(e => e.Expiration).HasColumnType("datetime");
+            entity.Property(e => e.HomeOfficeAction)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.HomeOfficeApproved).HasColumnType("datetime");
+            entity.Property(e => e.HomeOfficeApprovedBy)
+                .HasMaxLength(4)
+                .IsUnicode(false);
+            entity.Property(e => e.LineOfAuthorityExceptionDescription).HasMaxLength(100);
+            entity.Property(e => e.LineOfAuthorityExpiration).HasColumnType("datetime");
+            entity.Property(e => e.Modified).HasColumnType("datetime");
+            entity.Property(e => e.Municipality).HasMaxLength(70);
+            entity.Property(e => e.NmlsclassCode).HasColumnName("NMLSClassCode");
+            entity.Property(e => e.NonrenewalLetterMailed).HasColumnType("datetime");
+            entity.Property(e => e.RateClass).HasMaxLength(6);
+            entity.Property(e => e.RateGroup)
+                .HasMaxLength(4)
+                .IsUnicode(false);
+            entity.Property(e => e.RenewalProvision)
+                .HasMaxLength(1)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Risk).HasMaxLength(80);
+            entity.Property(e => e.SfaabondType)
+                .HasMaxLength(30)
+                .IsUnicode(false)
+                .HasColumnName("SFAABondType");
+            entity.Property(e => e.SfaaclassCode).HasColumnName("SFAAClassCode");
+            entity.Property(e => e.ShortRiskDescription).HasMaxLength(100);
+            entity.Property(e => e.Siccode)
+                .HasMaxLength(4)
+                .IsUnicode(false)
+                .HasColumnName("SICCode");
+            entity.Property(e => e.State)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Status)
+                .HasMaxLength(14)
+                .IsUnicode(false);
+            entity.Property(e => e.TerminationType).HasMaxLength(20);
         });
 
         modelBuilder.Entity<VConfiguration>(entity =>

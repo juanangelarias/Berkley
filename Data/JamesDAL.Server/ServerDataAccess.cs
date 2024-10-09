@@ -121,6 +121,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAddress(addressId, contextFactory));
         }
+        public async Task<IDataAccessResult<PhoneNumber>> GetPhoneNumber(Guid phoneId)
+        {
+            return await ExecuteGet(async () => await query.GetPhoneNumber(phoneId, contextFactory));
+        }
         public async Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes()
         {
             return await ExecuteGet(async () => await query.GetAddressTypes(contextFactory));
@@ -129,6 +133,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllLegalEntityAddresses(legalEntityId, contextFactory));
             
+        }
+        public async Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId)
+        {
+            return await ExecuteGet(async () => await query.GetAllLegalEntityPhoneNumbers(legalEntityId, contextFactory));
         }
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
         {

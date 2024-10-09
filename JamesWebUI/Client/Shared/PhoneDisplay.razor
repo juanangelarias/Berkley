@@ -5,23 +5,26 @@
 
 
 @inject NotificationService NotificationService
-@inject IDataAccess _dataAccess
+@inject IDataAccess DataAccess
 
 <RadzenStack Orientation="Orientation.Horizontal">
     <RadzenFormField Text="Country Code" AllowFloatingLabel="false" Variant="Variant.Text">
-        <RadzenTextBox />
+        <RadzenTextBox Value="@PhoneNumberToDisplay.CountryCode" />
     </RadzenFormField>
     <RadzenFormField Text="Phone Number" AllowFloatingLabel="false" Variant="Variant.Text">
-        <RadzenTextBox />
+        <RadzenMask Mask="(***) ***-****" CharacterPattern="[0-9]" Placeholder="(000) 000-0000" Value="@PhoneNumberToDisplay.MainNumber" />
     </RadzenFormField>
+    <RadzenMask Mask="(***) ***-****" Placeholder="(000) 000-0000" Name="Phone" CharacterPattern="[0-9]" @bind-Value="@PhoneNumberToDisplay.MainNumber" />
     <RadzenFormField Text="Extension" AllowFloatingLabel="false" Variant="Variant.Text">
-        <RadzenTextBox />
+        <RadzenTextBox Value="@PhoneNumberToDisplay.Extension" />
     </RadzenFormField>
 </RadzenStack>
 
 @code {
     [Parameter] public Guid PhoneId { get; set; }
+    [Parameter] public EventCallback<Guid> StateChanged { get; set; }
 
+    private PhoneNumber PhoneNumberToDisplay { get; set; } = new();
 
     protected override async Task OnParametersSetAsync()
     {
@@ -31,6 +34,26 @@
     }
     async Task LoadPhoneNumber()
     {
-        //TODO: Implement graphql
+        if (PhoneId != Guid.Empty)
+        {
+            var result = await DataAccess.GetPhoneNumber(PhoneId);
+
+            if (result.Errors.Any() || result.Data == null)
+            {
+                LoggingService.LogError($"Error loading phone number with PhoneId {PhoneId}.", result.Errors.ToString());
+                NotificationService.Notify(new NotificationMessage
+                    {
+                        Severity = NotificationSeverity.Error,
+                        Summary = "Error loading phone number.",
+                        Duration = 5000,
+                        CloseOnClick = true,
+                        Payload = DateTime.Now
+                    });
+            }
+            else
+            {
+                PhoneNumberToDisplay = result.Data;
+            }
+        }
     }
 }

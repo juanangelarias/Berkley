@@ -27,7 +27,7 @@
       modified
       portalUser
     }
-    licenses {
+    agencyLicenses {
       agencyId
       agentId
       appointingState
@@ -36,7 +36,6 @@
       created
       expiration
       id
-      insurerId
       isActive
       isResident
       licenseNumber
@@ -44,14 +43,33 @@
       state
       termination
       insurer {
+        active
+        created
+        currencyCountry
+        defaultRateGroup
+        fullName
+        id
+        lenumPeopleSoft
+        mainEmailAddress
+        modified
         idNavigation {
+          created
+          entityType
+          familyName
           fullName
+          givenName
+          id
+          isIndividual
+          middleInitial
+          modified
+          parent
+          taxIdEncrypted
+          website
         }
       }
     }
   }
 }
-
 
 query SearchAgents($input: String!) {
   searchAgents(searchString: $input) {

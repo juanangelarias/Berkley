@@ -52,8 +52,21 @@
                     </RadzenFieldset>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
-                    <RadzenFieldset Text="Addresses">
-                        <LegalEntityAddressEditor LegalEntityId="@AgentToDisplay.Id" />
+                    <RadzenFieldset Text="Contact Info">
+                        <RadzenTabs>
+                            <Tabs>
+                                <RadzenTabsItem Text="Address">
+                                    <LegalEntityAddressManager LegalEntityId="@AgentToDisplay.Id" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Phone">
+                                    <LegalEntityPhoneNumberManager LegalEntityId="@AgentToDisplay.Id" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Email">
+
+                                </RadzenTabsItem>
+                            </Tabs>
+                        </RadzenTabs>
+                        
                     </RadzenFieldset>
                 </RadzenColumn>
             </RadzenRow>
@@ -61,7 +74,8 @@
             <RadzenFieldset Text="Licenses">
                 <RadzenRow>
                     <RadzenColumn>
-                        <RadzenDataGrid Data="@AgentToDisplay?.AgencyLicenses" TItem="AgencyLicense" Density="Density.Compact"
+                        <AgentLicenseGrid AgentId="@AgentToDisplay.Id" />
+@*                         <RadzenDataGrid Data="@AgentToDisplay?.AgencyLicenses" TItem="AgencyLicense" Density="Density.Compact"
                                         Style="height:500px; border-radius:15px;"  AllowVirtualization="true"
                                         AllowFiltering="true" AllowColumnPicking="true" AllowGrouping="true">
                             <HeaderTemplate>
@@ -102,7 +116,7 @@
                                     </EditTemplate>
                                 </RadzenDataGridColumn>
                             </Columns>
-                        </RadzenDataGrid>
+                        </RadzenDataGrid> *@
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenFieldset>

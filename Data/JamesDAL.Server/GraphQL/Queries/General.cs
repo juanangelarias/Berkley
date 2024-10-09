@@ -12,7 +12,14 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No address found with AddressID {addressId}.");
         }
+        [Authorize]
+        public async Task<PhoneNumber> GetPhoneNumber(Guid phoneId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.PhoneNumbers.Where(p => p.Id == phoneId).FirstOrDefaultAsync();
 
+            return result ?? throw new GraphQLException($"No phone number found with PhoneID {phoneId}.");
+        }
         [Authorize]
         public async Task<UserProfile> GetUserProfileByUserName(string userName, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

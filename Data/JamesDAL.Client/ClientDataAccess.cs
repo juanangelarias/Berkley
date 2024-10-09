@@ -105,6 +105,11 @@ namespace James.Data.Client
             return await ExecuteGet<Address>(
                 async () => await jamesClient.GetAddress.ExecuteAsync(addressId), "Address");
         }
+        public async Task<IDataAccessResult<PhoneNumber>> GetPhoneNumber(Guid phoneId)
+        {
+            return await ExecuteGet<PhoneNumber>(
+                async () => await jamesClient.GetPhoneNumber.ExecuteAsync(phoneId), "PhoneNumber");
+        }
         public async Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes()
         {
             return await ExecuteGet<List<AddressTypeDm>>(
@@ -155,7 +160,11 @@ namespace James.Data.Client
         {
             return await ExecuteGet<List<Address>>(
                 async () => await jamesClient.GetAllLegalEntityAddresses.ExecuteAsync(legalEntityId), "AllLegalEntityAddresses");
-            
+        }
+        public async Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId)
+        {
+            return await ExecuteGet<List<PhoneNumber>>(
+                async () => await jamesClient.GetAllLegalEntityPhoneNumbers.ExecuteAsync(legalEntityId), "AllLegalEntityPhoneNumbers");
         }
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
@@ -182,7 +191,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             return await ExecuteGet<Agent>(
-                async () => await jamesClient.AgentByAgentId.ExecuteAsync(agentId), "AgentByAgentId", "AgentByAgentId");
+                async () => await jamesClient.AgentByAgentId.ExecuteAsync(agentId), "AgentByAgentId");
         }
         public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
         {

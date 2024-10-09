@@ -9,7 +9,7 @@ namespace JamesWebUI.Client.Classes
 
         public IAnimation Direction { get; set; } = Animations.SlideUp;
 
-        public async Task HandleChangeDirection(int arg)
+        public void HandleChangeDirection(int arg)
         {
             if (currentIndex < arg)
             {

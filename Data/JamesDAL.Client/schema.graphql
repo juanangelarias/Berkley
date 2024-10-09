@@ -64,10 +64,12 @@ type Query {
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
+  phoneNumber(phoneId: UUID!): PhoneNumber!
   userProfileByUserName(userName: String!): UserProfile!
   allInventoryDocTypes: [InventoryDocumentDm!]!
   allBranches: [Branch!]!
   allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
+  allLegalEntityPhoneNumbers(legalEntityId: UUID!): [PhoneNumber!]!
   addressTypes: [AddressTypeDm!]!
   allInsurers: [Insurer!]!
   obligeeById(id: UUID!): Obligee
@@ -562,6 +564,20 @@ type Address {
   countryCode: String!
 }
 
+type PhoneNumber {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  countryCode: String!
+  mainNumber: String!
+  extension: String
+  accounts: [Account!]!
+  agentDefaultCellNumberNavigations: [Agent!]!
+  agentDefaultPhoneNumberNavigations: [Agent!]!
+  branches: [Branch!]!
+  legalEntityPhone: LegalEntityPhone
+}
+
 type UserProfile {
   id: UUID!
   created: DateTime!
@@ -850,20 +866,6 @@ type LegalEntityAddress {
   address: Address!
   legalEntity: LegalEntity!
   typeNavigation: AddressTypeDm!
-}
-
-type PhoneNumber {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  countryCode: String!
-  mainNumber: String!
-  extension: String
-  accounts: [Account!]!
-  agentDefaultCellNumberNavigations: [Agent!]!
-  agentDefaultPhoneNumberNavigations: [Agent!]!
-  branches: [Branch!]!
-  legalEntityPhone: LegalEntityPhone
 }
 
 type LegalEntityPhone {

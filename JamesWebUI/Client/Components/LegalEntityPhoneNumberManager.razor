@@ -1,0 +1,76 @@
+﻿@using System.Globalization
+@using James.Shared;
+@using ClientBusinessLogic
+
+
+@inherits JamesLayoutComponentBase
+
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+@inject IDataAccess DataAccess
+
+<RadzenTabs @ref="@phoneTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab" >
+    <Tabs>
+        @{
+            if (AllPhoneNumbers.Any())
+            {
+                foreach (var a in AllPhoneNumbers)
+                {
+                    <RadzenTabsItem Text="@(a.LegalEntityPhone.Type)">
+                        <PhoneDisplay PhoneId="a.Id" StateChanged="@(() => LoadPhoneNumbers())" />
+                    </RadzenTabsItem>
+                    if (a == AllPhoneNumbers.Last())
+                    {
+                        <RadzenTabsItem Icon="add" Text="Add Address">
+                            
+                        </RadzenTabsItem>
+                    }
+
+                }
+            }
+            else
+            {
+                <RadzenTabsItem Icon="add" Text="Add Address">
+                    
+                </RadzenTabsItem>
+            }
+        }
+    </Tabs>
+</RadzenTabs>
+
+@code {
+    [Parameter] public Guid LegalEntityId { get; set; }
+    private List<PhoneNumber> AllPhoneNumbers {get;set;} = new List<PhoneNumber>();
+
+    private RadzenTabs phoneTabs { get; set; }
+    private int selectedTab { get; set; } = 0;
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadPhoneNumbers();
+    }
+
+    private async Task LoadPhoneNumbers()
+    {
+        var result = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId);
+
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError("GetAllLegalEntityPhoneNumbers returned error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+            NotificationService.Notify(new NotificationMessage()
+                    {
+                        Severity = NotificationSeverity.Error,
+                        Detail = "Error loading Phone Numbers.",
+                        Duration = 4000
+                    });
+        }
+        else
+        {
+            AllPhoneNumbers = result.Data;
+        }
+    }
+}

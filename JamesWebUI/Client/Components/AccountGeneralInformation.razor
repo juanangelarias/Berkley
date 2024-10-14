@@ -267,10 +267,10 @@
                     Contract LOA
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenNumeric @bind-Value="@inforceLOAs.ContractLOA.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs?.ContractLOA?.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenNumeric @bind-Value="@inforceLOAs.ContractLOA.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs?.ContractLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
                     <RadzenTextBox Value="@(inforceLOAs?.ContractLOA?.Expiration.ToShortDateString())" Style="width: 95%" Disabled="true" />
@@ -281,10 +281,10 @@
                     Commercial LOA
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenNumeric @bind-Value="@inforceLOAs.CommercialLOA.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs?.CommercialLOA?.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenNumeric @bind-Value="@inforceLOAs.CommercialLOA.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs?.CommercialLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
                     <RadzenTextBox Value="@(inforceLOAs?.CommercialLOA?.Expiration.ToShortDateString())" Style="width: 95%" Disabled="true" />

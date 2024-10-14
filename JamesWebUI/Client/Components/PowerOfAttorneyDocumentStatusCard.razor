@@ -7,7 +7,7 @@
 
 @inject NavigationManager NavigationManager
 
-@inject JamesClient JamesClient
+@inject IDataAccess DataAccess
 @inject NotificationService NotificationService
 
 <Theme />
@@ -70,15 +70,18 @@
 
     private async Task LoadDocumentTypes()
     {
-        var result = await JamesClient.GetPOADocumentNames.ExecuteAsync();
-        List<PowerOfAttorneyDocumentNameDm> results = new List<PowerOfAttorneyDocumentNameDm>();
+        var result = await DataAccess.GetPOADocumentNames();
 
-        foreach (var docName in result.Data.PoaDocumentNames)
+        if (result.Errors.Any() || result.Data == null)
         {
-            results.Add(James.Shared.ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>(docName));
+            LoggingService.LogError("Error loading POA Document Names.", result.Errors.ToString());
+        }
+        else
+        {
+            docTypes = result.Data;
         }
 
-        docTypes = results;
+        
     }
     private async Task SaveChanges()
     {
@@ -89,16 +92,17 @@
         input.Comments = poaDocumentStatus?.Comments;
         input.DocumentTypeId = (Guid)poaDocumentStatus?.DocumentTypeId;
 
-        var result = await JamesClient.SetPowerOfAttorneyDocumentStatus.ExecuteAsync(input);
-        if (result.Errors.Count == 0)
-        {
-            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
-            ToggleEditMode();
-        }
-        else
-        {
-            //TODO: Deal with errors
-        }
+        //TODO: Reimplement with new DataAccess methods. 
+        // var result = await DataAccess.SetPowerOfAttorneyDocumentStatus;
+        // if (result.Errors.Count == 0)
+        // {
+        //     NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
+        //     ToggleEditMode();
+        // }
+        // else
+        // {
+        //     //TODO: Deal with errors
+        // }
 
     }
     private void ToggleEditMode()

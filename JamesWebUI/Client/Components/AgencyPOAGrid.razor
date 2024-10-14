@@ -103,7 +103,7 @@
 
     private RadzenDataGrid<PowerOfAttorney> poaGrid { get; set; }
 
-    private List<PowerOfAttorney> powerOfAttorneys { get; set; }
+    private List<PowerOfAttorney> powerOfAttorneys { get; set; } = new List<PowerOfAttorney>();
 
     private List<PowerOfAttorney> poasToInsert { get; set; } = new List<PowerOfAttorney>();
     private List<PowerOfAttorney> poasToUpdate { get; set; } = new List<PowerOfAttorney>();
@@ -246,7 +246,7 @@
             {
                 NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
 
-                Reset(poaToUpdate);
+                await Reset(poaToUpdate);
                 await poaGrid.Reload();
             }
             else

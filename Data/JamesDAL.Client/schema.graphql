@@ -154,6 +154,7 @@ type PowerOfAttorney {
   currentIssued: Date
   comments: String
   status: UUID!
+  imagingId: UUID
   agency: Agency!
   insurer: Insurer!
   onlineBondSystems: [OnlineBondSystem!]!
@@ -267,8 +268,8 @@ type Bond {
   additionalObligeesNavigation: [AdditionalObligee!]!
   agent: LegalEntity
   attorneyInFact: LawEntity
-  bondRequestCommercials: [BondRequestCommercial!]!
-  bondRequests: [BondRequest!]!
+  bondRequest: BondRequest
+  bondRequestCommercial: BondRequestCommercial
   bondStatusLetters: [BondStatusLetter!]!
   bondTransactionPurposes: [BondTransactionPurpose!]!
   bondTransactions: [BondTransaction!]!
@@ -386,6 +387,7 @@ type AccountProgram {
   homeOfficeApproved: Boolean!
   accountNumNavigation: Account!
   accountProgramStatusHistories: [AccountProgramStatusHistory!]!
+  status: AccountProgramStatusDm!
 }
 
 type InforceAccountLOA {
@@ -888,15 +890,6 @@ type LegalEntityEmail {
   typeNavigation: EmailTypeDm!
 }
 
-type CountryDm {
-  code: String!
-  created: DateTime!
-  modified: DateTime!
-  name: String!
-  insurers: [Insurer!]!
-  states: [State!]!
-}
-
 type UserLineOfAuthority {
   id: UUID!
   created: DateTime!
@@ -959,6 +952,7 @@ type BondBlock {
   agencyRestricted: Boolean!
   issuedBy: UUID
   comments: String
+  agencyId: UUID
   issuedByNavigation: UserProfile
 }
 
@@ -1015,10 +1009,10 @@ type ImagingCategoryTabDivision {
   created: DateTime!
   modified: DateTime!
   category: String!
-  tabName: String!
-  divisionCode: String!
+  imagingTabId: UUID!
+  divisionCode: String
   categoryNavigation: ImagingCategory!
-  divisionCodeNavigation: DivisionDm!
+  divisionCodeNavigation: DivisionDm
   tabNameNavigation: ImagingTab!
 }
 
@@ -1424,11 +1418,19 @@ type LineOfAuthorityLog {
   statusNavigation: LineOfAuthorityStatusDm
 }
 
+type AccountProgramStatusDm {
+  id: UUID!
+  created: DateTime
+  modified: DateTime
+  description: String!
+  oldId: Int
+  accountPrograms: [AccountProgram!]!
+}
+
 type AccountProgramStatusHistory {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  companyId: Int!
   oldStatus: UUID
   newStatus: UUID!
   oldSingle: Int
@@ -1438,6 +1440,7 @@ type AccountProgramStatusHistory {
   statusDate: DateTime!
   statusChangeBy: UUID!
   accountProgramId: UUID!
+  accountNum: String!
   accountProgram: AccountProgram!
 }
 
@@ -1668,6 +1671,49 @@ type BondStatusLetter {
   bondNumberNavigation: Bond!
 }
 
+type BondRequestCommercial {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  bondRequestNumber: String!
+  accountNum: String!
+  requested: Date!
+  legacyBidNumber: Int
+  status: String!
+  estimatedStart: Date
+  estimatedFinish: Date
+  obligeeId: UUID
+  amount: Int
+  recordedBy: UUID
+  recorded: Date
+  recordedMessageSent: DateTime
+  homeOfficeAction: String
+  homeOfficeActionDate: DateTime
+  homeOfficeApprovedBy: UUID
+  homeOfficeConditions: String
+  bondNumber: String
+  description: String
+  underWriterId: UUID
+  sfaaCode: Int
+  ccto: UUID
+  lineOfCreditSingle: Int
+  lineOfCreditAggregate: Int
+  lineOfCreditExpiration: Date
+  exposure: Int
+  adjustments: Int
+  totalExposure: Int
+  approvedBidAmount: Int
+  accountNumNavigation: Account!
+  bondNumberNavigation: Bond
+  cctoNavigation: UserProfile
+  homeOfficeApprovedByNavigation: UserProfile
+  obligee: LegalEntity
+  recordedByNavigation: UserProfile
+  sfaaCodeNavigation: Sfaa
+  statusNavigation: BidStatusDm!
+  underWriter: Underwriter
+}
+
 type BondRequest {
   id: UUID!
   created: DateTime!
@@ -1737,49 +1783,6 @@ type BondRequest {
   underWriter: Underwriter
 }
 
-type BondRequestCommercial {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  bondRequestNumber: String!
-  accountNum: String!
-  requested: Date!
-  legacyBidNumber: Int
-  status: String!
-  estimatedStart: Date
-  estimatedFinish: Date
-  obligeeId: UUID
-  amount: Int
-  recordedBy: UUID
-  recorded: Date
-  recordedMessageSent: DateTime
-  homeOfficeAction: String
-  homeOfficeActionDate: DateTime
-  homeOfficeApprovedBy: UUID
-  homeOfficeConditions: String
-  bondNumber: String
-  description: String
-  underWriterId: UUID
-  sfaaCode: Int
-  ccto: UUID
-  lineOfCreditSingle: Int
-  lineOfCreditAggregate: Int
-  lineOfCreditExpiration: Date
-  exposure: Int
-  adjustments: Int
-  totalExposure: Int
-  approvedBidAmount: Int
-  accountNumNavigation: Account!
-  bondNumberNavigation: Bond
-  cctoNavigation: UserProfile
-  homeOfficeApprovedByNavigation: UserProfile
-  obligee: LegalEntity
-  recordedByNavigation: UserProfile
-  sfaaCodeNavigation: Sfaa
-  statusNavigation: BidStatusDm!
-  underWriter: Underwriter
-}
-
 type LawEntity {
   id: UUID!
   created: DateTime!
@@ -1811,6 +1814,15 @@ type AdditionalObligee {
   interest: String
   bondNumber: String!
   bondNumberNavigation: Bond!
+}
+
+type CountryDm {
+  code: String!
+  created: DateTime!
+  modified: DateTime!
+  name: String!
+  insurers: [Insurer!]!
+  states: [State!]!
 }
 
 type InsurerState {
@@ -1913,16 +1925,6 @@ type ReferenceTypeDm {
   accountReferences: [AccountReference!]!
 }
 
-type BidStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  status: String!
-  order: Int!
-  bondRequestCommercials: [BondRequestCommercial!]!
-  bondRequests: [BondRequest!]!
-}
-
 type OtherBid {
   id: UUID!
   created: DateTime!
@@ -1951,6 +1953,16 @@ type BidResultDm {
   modified: DateTime!
   description: String!
   order: Int!
+  bondRequests: [BondRequest!]!
+}
+
+type BidStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  status: String!
+  order: Int!
+  bondRequestCommercials: [BondRequestCommercial!]!
   bondRequests: [BondRequest!]!
 }
 

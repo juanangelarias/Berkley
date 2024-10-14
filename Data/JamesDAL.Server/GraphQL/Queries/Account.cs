@@ -64,8 +64,8 @@ namespace James.Data.Server.GraphQL.Queries
             InforceAccountLOA inforceLOAs = new InforceAccountLOA()
             {
                 AccountNum = accountNumber,
-                ContractLOA = contractLOA ?? new LineOfAuthorityLog(),
-                CommercialLOA = commercialLOA ?? new LineOfAuthorityLog()
+                ContractLOA = contractLOA,
+                CommercialLOA = commercialLOA
             };
 
             
@@ -79,6 +79,7 @@ namespace James.Data.Server.GraphQL.Queries
             return await ctx.AccountPrograms
                 .Where(a => a.AccountNum == accountNumber)
                 .Include(a => a.AccountProgramStatusHistories)
+                .Include(a => a.Status)
                 .OrderByDescending(a => a.Expiration)
                 .ToListAsync();
         }

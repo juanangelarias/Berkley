@@ -215,7 +215,10 @@ namespace James.Data.Client
             return await ExecuteGet<List<PowerOfAttorney>>(async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId),
                 "AgencyPOAs");
         }
-
+        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPOADocumentNames()
+        {
+            return await ExecuteGet<List<PowerOfAttorneyDocumentNameDm>>(async () => await jamesClient.GetPOADocumentNames.ExecuteAsync());
+        }
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
             //var result = await jamesClient.GetAllPoaStatuses.ExecuteAsync();
@@ -429,7 +432,7 @@ namespace James.Data.Client
             return GraphQLSaveResult(saveResult);
         }
 
-        public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
+        public async Task<IDataAccessResult<Obligee>> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
             string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email)
         {
             var saveResult = await jamesClient.CreateObligee.ExecuteAsync(new CreateObligeeInput
@@ -447,7 +450,8 @@ namespace James.Data.Client
                 PhoneNumber = phoneNumber,
                 Email = email
             });
-            return GraphQLSaveResult(saveResult);
+            return new DataAccessResult<Obligee>() { Data = ThisToThat.ToEntityType<Obligee>(saveResult.Data.CreateObligee.Obligee) };
+            //return new DataAccessResult<Obligee>();
         }
         public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId,
             bool appointingState,

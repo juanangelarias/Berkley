@@ -13,7 +13,7 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "Agents",
+      "launchUrl": "Account/1001",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

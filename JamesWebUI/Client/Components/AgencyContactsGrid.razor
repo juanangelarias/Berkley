@@ -56,7 +56,7 @@
                         <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
                     </Template>
                     <EditTemplate Context="license">
-                        <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" LoadData="LoadSelectInsurerDropDown" Style="width:95%"
+                        <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" Data="AllInsurers" Style="width:95%"
                                         TextProperty="IdNavigation.FullName" ValueProperty="Id" @bind-Value="@license.InsurerId" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
@@ -90,9 +90,10 @@
 
 @code {
     [Parameter] public Guid AgencyId { get; set; }
-    private List<Agent> agents { get; set; }
+    private List<Agent> agents { get; set; } = new List<Agent>();
     private RadzenDataGrid<Agent> agentsGrid { get; set; }
     private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
+    private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -112,8 +113,7 @@
 
         if (result.Data?.Any() ==true)
         {
-            agentsGrid.Data = agents = result.Data.Select(aia=>aia.Agent).ToList();
-            agentsGrid.Reload();
+            agents = result.Data.Select(aia=>aia.Agent).ToList();
         }
         else
         {
@@ -122,7 +122,7 @@
     }
     private async Task LoadSelectInsurerDropDown()
     {
-        dropSelectInsurer.Data = await GetInsurers();
+        AllInsurers = await GetInsurers();
     }
     private async Task<List<Insurer>> GetInsurers()
     {

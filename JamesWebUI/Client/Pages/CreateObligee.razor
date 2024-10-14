@@ -19,7 +19,7 @@
         <RadzenText Text="Create New Obligee" TextStyle="TextStyle.DisplayH4" />
     </HeaderTemplate>
     <ChildContent>
-        <RadzenTemplateForm TItem="Obligee" Submit="@((Obligee args) => { SubmitObligee(args);})" Data="NewObligee">
+        <RadzenTemplateForm TItem="Obligee" Submit="@(async (Obligee args) => { await SubmitObligee(args);})" Data="NewObligee">
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
@@ -241,8 +241,8 @@
                 });
 
             //HACK: Need to make the CreateObligee call return the obligee number instead of pulling the data from another data call. 
-            var createdObligee = await DataAccess.GetObligeeById(newObligee.Id);
-            NavigationManager.NavigateTo("/Obligee/" + createdObligee.Data.ObligeeNum);
+            // var createdObligee = await DataAccess.GetObligeeById(newObligee.Id);
+            NavigationManager.NavigateTo("/Obligee/" + result.Data.ObligeeNum);
         }
     }
 }

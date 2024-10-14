@@ -142,7 +142,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));
         }
-
+        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPOADocumentNames()
+        {
+            return await ExecuteGet(async () => await query.GetPOADocumentNames(contextFactory));
+        }
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
             return await ExecuteGet(async () => await query.GetAllPoaStatuses(contextFactory));
@@ -309,22 +312,22 @@ namespace James.Data.Server
             }
         }
 
-        public async Task<ISaveDataResult> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
+        public async Task<IDataAccessResult<Obligee>> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
             string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email)
         {
             try
             {
                 var result = await obligeeMutation.CreateObligee(id, fullName, obligeeType, printStatusLetter, notes,
                     address1, address2, city, state, postalCode, phoneNumber, email, eventSender, contextFactory);
-                return new DataAccessResult<bool>() { Data = true };
+                return new DataAccessResult<Obligee>() { Data = result };
             }
             catch (AggregateException ae)
             {
-                return new DataAccessResult<bool> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+                return new DataAccessResult<Obligee> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
             }
             catch (Exception ex)
             {
-                return new DataAccessResult<bool> { Errors = [ex.Message] };
+                return new DataAccessResult<Obligee> { Errors = [ex.Message] };
             }
         }
         public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState, string? comments,

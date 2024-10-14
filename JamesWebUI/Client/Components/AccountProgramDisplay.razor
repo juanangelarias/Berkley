@@ -12,10 +12,10 @@
 </RadzenRow>
 <RadzenRow>
     <RadzenDataGrid @ref="@programGrid" TItem="AccountProgram" Data="ProgramsToDisplay"
-                    Style="border-radius: 15px;"
+                    Style="border-radius: 15px; --rz-grid-header-background-color: grey;" 
                     RowUpdate="UpdateProgramRow" IsLoading="@isLoading">
-        <Template Context="program">
-            <RadzenDataGrid Data="program?.AccountProgramStatusHistories" TItem="AccountProgramStatusHistory">
+            <Template Context="program">
+            <RadzenDataGrid Data="program?.AccountProgramStatusHistories" TItem="AccountProgramStatusHistory" Style="border-radius: 15px;">
                 <Columns>
                     <RadzenDataGridColumn Title="Old Status" Property="OldStatus" />
                     <RadzenDataGridColumn Title="New Status" Property="NewStatus" />
@@ -29,6 +29,21 @@
 
         </Template>
         <Columns>
+            <RadzenDataGridColumn TItem="AccountProgram" Title="Status"
+                Property="Status.Description">
+                <Template Context="program">
+                    @{
+                        if (program.Status.Description == "APPROVED")
+                        {
+                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success" />
+                        }
+                        else
+                        {
+                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger" />
+                        }
+                    }
+                </Template>    
+            </RadzenDataGridColumn>
             <RadzenDataGridColumn TItem="AccountProgram" Title="Effective"
                                   Property="Effective" FormatString="{0:d}">
                 <Template Context="program">

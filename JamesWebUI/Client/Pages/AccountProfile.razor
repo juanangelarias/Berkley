@@ -103,8 +103,17 @@
                     </RadzenFieldset>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
-                    <RadzenFieldset Text="Addresses">
-                        <LegalEntityAddressManager LegalEntityId="@AccountToDisplay.Id" />
+                    <RadzenFieldset Text="Contact Info">
+                        <RadzenTabs>
+                            <Tabs>
+                                <RadzenTabsItem Text="Addresses">
+                                    <LegalEntityAddressManager LegalEntityId="@AccountToDisplay.Id" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Phone Numbers">
+                                    <LegalEntityPhoneNumberManager LegalEntityId="@AccountToDisplay.Id"/>
+                                </RadzenTabsItem>
+                            </Tabs>
+                        </RadzenTabs>
                     </RadzenFieldset>
                 </RadzenColumn>
             </RadzenRow>
@@ -114,23 +123,51 @@
         <ChildContent>
             <RadzenTabs>
                 <Tabs>
-                    <RadzenTabsItem Text="General Information">
-                        <AccountGeneralInformation AccountToDisplay="@AccountToDisplay" />
+                    <RadzenTabsItem Text="Account Info">
+                        <RadzenTabs>
+                            <Tabs>
+                                <RadzenTabsItem Text="General Information">
+                                    <AccountGeneralInformation AccountToDisplay="@AccountToDisplay" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Account Program">
+                                    <AccountProgramDisplay AccountNumber="@AccountToDisplay?.AccountNum" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Account References">
+
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Commercial Credit Information">
+
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Key Personnel">
+
+                                </RadzenTabsItem>
+                            </Tabs>
+                        </RadzenTabs>
                     </RadzenTabsItem>
-                    <RadzenTabsItem Text="Account Program">
-                        <AccountProgramDisplay AccountNumber="@AccountToDisplay?.AccountNum" />
-                    </RadzenTabsItem>
-                    <RadzenTabsItem Text="Account References">
+                    <RadzenTabsItem Text="Bank and Security">
 
                     </RadzenTabsItem>
-                    <RadzenTabsItem Text="Commercial Credit Information">
+                    <RadzenTabsItem Text="Bond Requests">
 
                     </RadzenTabsItem>
-                    <RadzenTabsItem Text="Key Personnel">
+                    <RadzenTabsItem Text="Bonds">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Financial">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="WIP">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Line of Authority">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Virtual File">
 
                     </RadzenTabsItem>
                 </Tabs>
             </RadzenTabs>
+            
         </ChildContent>    
     </RadzenPanel>
 </RadzenStack>

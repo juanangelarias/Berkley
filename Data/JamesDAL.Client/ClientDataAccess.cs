@@ -123,6 +123,12 @@ namespace James.Data.Client
             return await ExecuteGet<List<AddressTypeDm>>(
                 async () => await jamesClient.GetAddressTypes.ExecuteAsync(), "AddressTypes");
         }
+
+        public async Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetPoaDocumentLink.ExecuteAsync(new CreateAgencyPOADocumentLinkInput{ImagingDocumentId = imagingDocumentId, PoaId = poaId}));
+        }
+
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
             var result = await jamesClient.SetAddress.ExecuteAsync(new SetAddressInput
@@ -379,15 +385,40 @@ namespace James.Data.Client
                 await jamesClient.GetImagingSearchCriteria.ExecuteAsync(id, category, useDocCategoryAsCriteria));
         }
 
-        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory, string? documentType = null)
+        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory, string? documentType = null)
         {
             var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), Enum.GetName(typeof(ImagingDocumentCategory), docCategory)!);
-            var result =  await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(id, category, documentType),"SearchDocuments", "GetImagingDocuments");
+            var result = await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(id, category, documentType), "SearchDocuments", "GetImagingDocuments");
             return result;
             throw new NotImplementedException();
         }
 
-        //public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(ImagingSearchCriteria criteria, KeyValuePair<string, string>[]? searchOptions = null,
+        public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
+            ImagingDocumentCategory docCategory, Guid documentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
+        {
+            return await ExecuteGet< List<PowerOfAttorneyDocumentNameDm>>(async ()=>await jamesClient.GetPOADocumentNames.ExecuteAsync(), "PoaDocumentNames");
+        }
+
+        public async Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
+            DateTime? requested, DateTime? received, Guid documentTypeId, string? comments)
+        {
+            return await ExecuteGet<PowerOfAttorneyDocumentStatus>(async () => await jamesClient.SetPowerOfAttorneyDocumentStatus.ExecuteAsync(
+                new SetPowerOfAttorneyDocumentStatusInput
+                {
+                    Id = id,
+                    Requested = requested,
+                    Received = received,
+                    DocumentTypeId = documentTypeId,
+                    Comments = comments
+                }));
+        }
+
+        //public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(ImagingSearchCriteria criteria, KeyValuePair<string, string>[]? searchOptions = null,
         //    KeyValuePair<string, string>[]? additionalParams = null)
         //{
         //    //UNDONE:

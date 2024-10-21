@@ -160,6 +160,11 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
         }
 
+        public async Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId)
+        {
+            return await ExecuteSave(async()=> await agencyMutation.CreateAgencyPOADocumentLink(poaId, imagingDocumentId, eventSender, contextFactory));
+        }
+
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
             return await ExecuteSave((async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2,
@@ -369,6 +374,24 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetBondNumber(bondRequestNumber, contextFactory));
         }
 
+        public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
+            ImagingDocumentCategory docCategory, Guid documentId)
+        {
+            return await ExecuteGet(async () => await query.GetDocumentDetails(docCategory, documentId, imagingAccess));
+        }
+
+        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
+        {
+            return await ExecuteGet(async ()=> await query.GetPOADocumentNames(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId,
+            string? comments)
+        {
+            return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorneyDocumentStatus(id, requested,
+                received, documentTypeId, comments, eventSender, contextFactory));
+        }
+
         //UNDONE:  Refactor to DRY out the code
         private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<T>> dataFunc)
         {
@@ -408,14 +431,11 @@ namespace James.Data.Server
             return OnAddressModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Address>>(onNext, onError, onComplete));
         }
 
-        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory, string? documentType = null)
+        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory, string? documentType = null)
         {
-            var searchCriteria = (await GetImagingSearchCriteria(id, docCategory)).Data!;
-            //TODO: Handle errors
-            if (null != documentType)
-                searchCriteria.WhereClause += " AND " + ImagingAccessBase.DocType + " = '" + documentType + "'";
-
-            return await ExecuteGet(async () => await imagingAccess.SearchDocumentsAsync(searchCriteria));
+            return await ExecuteGet(async () =>
+                await query.SearchDocumentsAsync(id, docCategory, documentType, contextFactory,
+                    imagingAccess));
         }
 
         ///// <summary>
@@ -425,10 +445,10 @@ namespace James.Data.Server
         ///// <param name="docCategory">The <see cref="document"/> category.</param>
         ///// <param name="documentType">Document type (optional).</param>
         ///// <returns>All found documents</returns>
-        //public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(ImagingSearchCriteria criteria, KeyValuePair<string, string>[]? searchOptions = null,
+        //public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(ImagingSearchCriteria criteria, KeyValuePair<string, string>[]? searchOptions = null,
         //    KeyValuePair<string, string>[]? additionalParams = null)
         //{
-        //    return await ExecuteGet(async ()=> await imagingAccess.SearchDocumentsAsync(criteria, searchOptions, additionalParams));
+        //    return await ExecuteGet(async ()=> await imagingAccess.SearchDocuments(criteria, searchOptions, additionalParams));
         //}
 
         public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id,

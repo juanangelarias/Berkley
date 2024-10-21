@@ -25,9 +25,17 @@ query GetImagingDocuments($id: String!, $category: ImagingDocumentCategory!, $ty
     documentClass
     folderPath
     guid
+    entryDate
     properties{
-      displayName,
+      name
+      displayName
       value
     }
+  }
+}
+
+query GetImagingDocumentProperties($docCategory:ImagingDocumentCategory!, $guid:UUID!){
+  documentDetails(docCategory: $docCategory, documentId: $guid){
+    filename
   }
 }

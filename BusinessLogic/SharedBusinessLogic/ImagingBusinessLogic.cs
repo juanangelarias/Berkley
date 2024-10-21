@@ -5,7 +5,7 @@ namespace SharedBusinessLogic
     public static class ImagingBusinessLogic
     {
         public static Regex ValidWindowsFilenamePattern =
-            new(@"^(?:.*\\)?(?<filename>[a-zA-Z0-9](?:[a-zA-Z0-9 ._-]*[a-zA-Z0-9])?)\.(?<extension>[a-z]+)$",
+            new(@"^(?:.*\\)?(?<filename>[a-zA-Z0-9](?:[a-zA-Z0-9 \._-]*[a-zA-Z0-9])?)\.(?<extension>[a-z0-9]+)$",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
         /// <summary>
         /// Validates that a filename is valid to be uploaded to the P8 imaging system

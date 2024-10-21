@@ -11,14 +11,14 @@ using static James.Shared.Imaging.IImagingAccess;
 
 namespace James.Data.Client
 {
-    public class ClientImagingAccess: ImagingAccessBase
-    {
-        public override Task<Guid?> UploadDocument(string docType, string filename, Stream fileContentStream, string contentType, ImagingDocumentCategory category, string id, string batchName, DateTime scanDate, CancellationToken cancellationToken = default)
-        {
-            //UNDONE:Send file to ImagingRepository/UploadDocument 
-            var url = $"ImagingRepository/UploadDocument/{docType}/{(int)category}?filename={filename};documentId={id}";
+    //public class ClientImagingAccess: ImagingAccessBase
+    //{
+    //    public override Task<Guid?> UploadDocument(string docType, string filename, Stream fileContentStream, string contentType, ImagingDocumentCategory category, string id, string batchName, DateTime scanDate, CancellationToken cancellationToken = default)
+    //    {
+    //        //UNDONE:Send file to ImagingRepository/UploadDocument 
+    //        var url = $"ImagingRepository/UploadDocument/{docType}/{(int)category}?filename={filename};documentId={id}";
             
-            throw new NotImplementedException();
-        }
-    }
+    //        throw new NotImplementedException();
+    //    }
+    //}
 }

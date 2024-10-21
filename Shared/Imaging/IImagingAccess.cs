@@ -100,7 +100,7 @@
             DocRemarks
         };
 
-        protected static readonly KeyValuePair<string, string>[] DefaultSearchOptions = { };
+        protected static readonly KeyValuePair<string, string>[] DefaultSearchOptions = [];
 
         protected static readonly KeyValuePair<string, string>[] DefaultAdditionalParams =
         [

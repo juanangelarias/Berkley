@@ -39,8 +39,9 @@ namespace James.Data.Imaging
             return new ImagingDocument
             {
                 Guid = doc.guid, DocumentClass = doc.documentClass, FolderPath = doc.folderPath,
-                ContentList = doc.contentList?.Select(c=>c.ToImagingContent()).ToArray(),
-                Properties = doc.properties?.Select(p=>p.ToImagingProperty()).ToArray(),
+                ContentList = doc.contentList?.Select(c=>c.ToImagingContent()).ToList(),
+                Properties = doc.properties?.Select(p=>p.ToImagingProperty()).ToList(),
+                EntryDate = doc.EntryDate()
             };
         }
 

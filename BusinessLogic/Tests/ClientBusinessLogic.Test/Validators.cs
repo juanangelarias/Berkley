@@ -1,5 +1,6 @@
 using ClientBusinessLogic;
 using James.Shared.Model;
+using SharedBusinessLogic;
 
 namespace ClientBusinessLogic.Test
 {
@@ -47,5 +48,42 @@ namespace ClientBusinessLogic.Test
             Assert.True(ClientBusinessLogic.Validators.ValidateAddress(validAddress));
             Assert.False(ClientBusinessLogic.Validators.ValidateAddress(invalidAddress1));
         }
+
+        [Theory]
+        [InlineData("_test")]
+        [InlineData("t/est")]
+        [InlineData("t#est")]
+        [InlineData("t%est")]
+        [InlineData("te&st")]
+        [InlineData("tes{t")]
+        [InlineData("t}est")]
+        [InlineData("t<est")]
+        [InlineData("t>est")]
+        [InlineData("te*st")]
+        [InlineData("tes?t")]
+        [InlineData("t$est")]
+        [InlineData("te!st")]
+        [InlineData("tes't")]
+        [InlineData("t\"est")]
+        [InlineData("te@st")]
+        [InlineData("tes+t")]
+        [InlineData("t|est")]
+        [InlineData("te=st")]
+        public async Task InvalidFileNameCharacters(string filenameWithoutExtension)
+        {
+            Assert.False(ClientBusinessLogic.Validators.ValidateFileName(filenameWithoutExtension + ".doc"));
+        }
+        [Theory]
+        [InlineData("test")]
+        [InlineData("t\\st")]
+        [InlineData("t.est")]
+        [InlineData("te_st")]
+        [InlineData("tes-t")]
+        public async Task ValidFileNameCharacters(string filenameWithoutExtension)
+        {
+            Assert.True(ClientBusinessLogic.Validators.ValidateFileName(filenameWithoutExtension + ".doc"));
+        }
+
+
     }
 }

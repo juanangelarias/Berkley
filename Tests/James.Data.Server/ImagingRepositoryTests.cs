@@ -287,7 +287,7 @@ namespace James.Data.Server.Test
                 return;
             var services = CreateServer();
             var serverDataAccess = (ServerDataAccess)services.GetService(typeof(IDataAccess))!;
-            var searchResult = await serverDataAccess.SearchDocumentsAsync("322", ImagingDocumentCategory.Agency);
+            var searchResult = await serverDataAccess.SearchDocuments("322", ImagingDocumentCategory.Agency);
             Assert.NotNull(searchResult.Data);
             Assert.True(searchResult.Data.Any());
         }

@@ -1,24 +1,29 @@
 ﻿@using System.ComponentModel.DataAnnotations
+@using System.Diagnostics
 @using James.Shared.Imaging
-@using FileNetP8SoapService
-@using James.Data.Imaging
+@inherits JamesLayoutComponentBase
+@inject IDataAccess DataAccess
 @* @inject TooltipService TooltipService *@
 
-<RadzenTemplateForm TItem="string" Submit=@StartUpload>
+<RadzenTemplateForm TItem="string" Data="currentFileName">
+    @* Submit="@(args=>StartUpload(args))"> *@
     <RadzenPanel Variant="Variant.Outlined">
         <h3>@Title</h3>
         <RadzenPanel Visible=@(!linkingToExisting)>
             <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
                 <RadzenColumn Size="9">
-                    <RadzenUpload id="ddUpload" @ref="uploadDD"
+                    <RadzenUpload id="ddUpload" @ref="@uploadDD"
                                   ChooseText="Drag and drop here or click to choose document"
-                                  Auto="false" Multiple="false" Url="upload/multiple"
+                                  Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?filename={currentFileName};documentId={DocumentId}")
                                   InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
                                   Change=@UploadFileChanged
+                                  Error=@UploadErrorHandler
+                                  Complete=@UploadComplete
+                                  Icon="upload_file"
                                   Progress=@(args => OnProgress(args, "Drag and drop file to upload")) Style="width: 100%" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenButton Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary"
+                    <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Secondary"
                                   Text="Link to existing document" Click=@ToggleWorkflow />
                 </RadzenColumn>
             </RadzenRow>
@@ -29,12 +34,13 @@
                     </ChildContent>
                     <Helper>
                         <RadzenRequiredValidator Component="tbFileName" Text="Name is required." />
-                        <RadzenRegexValidator Text="Must be a filename without path"
-                                              Pattern="[\\/]" />
-                        <RadzenCustomValidator Text="Must be a valid filename"
+                        <RadzenRegexValidator Component="tbFileName" Text="Must be a filename without path"
+                                              Pattern="^[^\\/]+$" />
+                        <RadzenCustomValidator Component="tbFileName" Text="Must be a valid filename"
                                                Validator="@(()=>ClientBusinessLogic.Validators.ValidateFileName(currentFileName))" />
-                        <RadzenCustomValidator Text="File extension is not allowed by BTS"
-                                               Validator="@(()=>!ClientBusinessLogic.Validators.ValidateFileName(currentFileName)|| SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(currentFileName))" />
+                        <RadzenCustomValidator Component="tbFileName" Text="File extension is not allowed by BTS"
+                                               Validator="@(()=>!ClientBusinessLogic.Validators.ValidateFileName(currentFileName)||
+                                                                SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(currentFileName))" />
                     </Helper>
                 </RadzenFormField>
             </RadzenRow>
@@ -48,36 +54,90 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="12">
-                    <RadzenButton Text="Upload" Disabled="@fileSelected"
-                                  ButtonType="ButtonType.Submit" class="rz-mt-4" />
+                    <RadzenButton Text="Upload" Disabled="@waitingForFileSelection"
+                                  class="rz-mt-4" Click="(args=>StartUpload(args))" />
+                    @* ButtonType="ButtonType.Submit" /> *@
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow Visible="@(!string.IsNullOrWhiteSpace(uploadError))">
+                <RadzenColumn Size="12">
+                    <RadzenText Text=@uploadError Style="color:red;font-weight:bold" />
                 </RadzenColumn>
             </RadzenRow>
         </RadzenPanel>
-        <RadzenPanel Visible=@linkingToExisting>
+        <RadzenPanel Visible=@linkingToExisting Style="width:400px">
             <RadzenRow>
-                <RadzenColumn>
-                    <RadzenButton Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary"
+                <RadzenColumn Size="4">
+                    <RadzenButton Variant="Variant.Text" Icon="info" Text="Can't see the file?" />
+                </RadzenColumn>
+                <RadzenColumn Size="6">&nbsp;</RadzenColumn>
+                <RadzenColumn Size="2">
+                    <RadzenButton Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Secondary"
                                   Text="Upload a new document" Click=@ToggleWorkflow />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn>
-                    @*UNDONE: Pull real data*@
-                    <RadzenDataList TItem="document" Data=@FakeDocList>
+                    <RadzenText Text="POA Forms" Style="font-weight:700;font-size:1.5em;" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenDataList @ref=@existingList Data=@existingDocuments
+                                    TItem="ImagingDocument"
+                                    LoadData=@(args=>LoadExistingDocumentOptions(args))
+                                    IsLoading="@existingLoading">
                         <Template Context="doc">
                             <RadzenRow>
                                 <RadzenColumn>
-                                    <RadzenText Text=@doc.contentList[0].fileName/>
+                                    <RadzenIcon Icon="Description" />
                                 </RadzenColumn>
                                 <RadzenColumn>
-                                    <RadzenText Text=@doc.EntryDate().ToShortDateString()/>
+                                    <RadzenText Text=@doc.Filename Style="font-size:17px;font-weight:700" />
                                 </RadzenColumn>
                                 <RadzenColumn>
-                                    <RadzenButton Variant="Variant.Text" Text="Link" Click=@(() => LinkExistingAndClose(doc.guid))/>
+                                    <RadzenText Text=@doc.EntryDate.ToShortDateString() />
+                                </RadzenColumn>
+                                <RadzenColumn>
+                                    <RadzenButton Variant="Variant.Text" Text="Link document" Icon="link"
+                                                  Click=@(() => LinkExistingAndClose(doc.Guid)) />
                                 </RadzenColumn>
                             </RadzenRow>
                         </Template>
                     </RadzenDataList>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenDataGrid TItem="ImagingDocument" IsLoading="@existingLoading"
+                                    Data=@existingDocuments Style="min-width:600px">
+                        <Columns>
+                            <RadzenDataGridColumn Width="50px" >
+                                <Template Context="doc">
+                                    <RadzenIcon Icon="Description" />
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn Property="@nameof(ImagingDocument.Filename)"
+                                                  Title="Documents Uploaded"/>
+                            <RadzenDataGridColumn Property="@nameof(ImagingDocument.EntryDate)"
+                                                  Title="Uploaded" FormatString="{0:d}"/>
+                            <RadzenDataGridColumn >
+                                <Template Context="doc">
+                                    @* Text="Link document" Icon="link" *@
+                                    <RadzenButton Variant="Variant.Text"
+                                                  Click=@(() => LinkExistingAndClose(doc.Guid))>
+                                        <RadzenText Text="Link document"/>
+                                        <RadzenIcon Icon="link"/>
+                                    </RadzenButton>
+                                </Template>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenText Text=@searchError Style="color:red;font-weight:bold" />
                 </RadzenColumn>
             </RadzenRow>
         </RadzenPanel>
@@ -89,57 +149,34 @@
     RadzenUpload uploadDD;
     RadzenTextBox tbFilename;
     RadzenText uploadedBytes;
-    [Parameter] public string Title { get; set; } = "UploadFile";
-    [Parameter] public Action<Guid>? UploadAction { get; set; }
+    bool existingLoading = true;
+    RadzenDataList<ImagingDocument> existingList;
+    ImagingDocument[] existingDocuments = [];
+    string uploadError = "", searchError = "";
+    [Parameter] public string Title { get; set; } = "Upload File To Imaging";
+    [Parameter] public Action<Guid?>? UploadAction { get; set; }
+    [Parameter] public Action<string>? ErrorAction { get; set; }
     [Required]
-    [Parameter] public ImagingDocumentCategory DocumentCategory { get; set; }
+    [Parameter] public required ImagingDocumentCategory DocumentCategory { get; set; }
     [Required]
-    [Parameter] public string DocumentType { get; set; }
-    [Parameter] public Guid DocumentId { get; set; } = new Guid();
+    [Parameter] public required string DocumentType { get; set; }
+    [Parameter] public Guid? DocumentId { get; set; }
 
-    document[] FakeDocList =
-    [
-        new()
-        {
-            guid = new Guid().ToString(), documentClass = "BSG_AGENCY",
-            contentList =
-            [
-                new() { fileName = "FakeDoc.pdf" }
-            ],
-            properties = [
-                new(){name = ImagingAccessBase.ScanDate, displayName = ImagingAccessBase.ScanDate},
-                new(){name=ImagingAccessBase.EntryDate, displayName = ImagingAccessBase.EntryDate, dateValue = new DateTime(2024,1,1,8,53,0)}
-            ]
-        },
-    new()
-        {
-            guid = new Guid().ToString(), documentClass = "BSG_AGENCY",
-            contentList =
-            [
-                new() { fileName = "FakeDoc.docx" }
-            ],
-            properties = [
-                new(){name = ImagingAccessBase.ScanDate, displayName = ImagingAccessBase.ScanDate},
-                new(){name=ImagingAccessBase.EntryDate, displayName = ImagingAccessBase.EntryDate, dateValue = new DateTime(2023, 3,1,9,53,0)}
-            ]
-        },
-    new()
-        {
-            guid = new Guid().ToString(), documentClass = "BSG_AGENCY",
-            contentList =
-            [
-                new() { fileName = "FakeSpreadsheet.xlsx" }
-            ],
-            properties = [
-                new(){name = ImagingAccessBase.ScanDate, displayName = ImagingAccessBase.ScanDate},
-                new(){name=ImagingAccessBase.EntryDate, displayName = ImagingAccessBase.EntryDate, dateValue = new DateTime(2022,5,4,14,14,0) }
-            ]
-        }
-    ];
+    [Required]
+    [Parameter]
+    public required string ImagingId
+    {
 
-    string currentFileName;
+        get; set;
+    }
+
+    string currentFileName
+    {
+        get;
+        set;
+    }
     FileInfo? currentFile;
-    bool fileSelected;
+    bool waitingForFileSelection = true;
     bool linkingToExisting;
     int progress;
     //void ShowTooltip(ElementReference elementReference, TooltipOptions options = null!) => TooltipService.Open(elementReference, "Name as it will be saved in Virtual File", options);
@@ -147,7 +184,14 @@
     void OnProgress(UploadProgressArgs args, string name)
     {
         progress = args.Progress;
-        uploadedBytes.Text = $"({args.Loaded.ToScreenBytes()}/{args.Total.ToScreenBytes()})";
+        if (0 < progress && 100 > progress)
+        {
+            if (null != uploadedBytes)
+                uploadedBytes.Text = $"({args.Loaded.ToScreenBytes()}/{args.Total.ToScreenBytes()})";
+            else
+                LoggingService.LogWarning("uploadedBytes control not instantiated", "uploadedBytes == null", "UI");
+        }
+
         if (progress == 100)
         {
             //TODO: Auto-close pop-up, possibly after a success animation
@@ -156,9 +200,16 @@
 
     private void LinkExistingAndClose(string guid)
     {
-        //TODO: handle invalid guid strings
-        UploadAction?.Invoke(DocumentId);
-        //TODO: Autoclose
+        if (Guid.TryParse(guid, out var linkDocGuid))
+        {
+            DocumentId = linkDocGuid;
+            UploadAction?.Invoke(linkDocGuid);
+            //Autoclose
+            DialogService.Close(DocumentId);
+        } else
+            LoggingService.LogError("Invalid Guid", 
+                "String passed to LinkExistingAndClose was not a valid guid.", 
+                "Virtual File", new Dictionary<string, string>{{"invalidGuid", guid }});
     }
 
     private void UploadFileChanged(UploadChangeEventArgs args)
@@ -166,6 +217,7 @@
         var file = args.Files.SingleOrDefault();
         if (null == file)
         {
+            waitingForFileSelection = true;
             currentFileName = string.Empty;
             if (currentFile != file)
             {
@@ -176,6 +228,11 @@
             return;
         }
 
+        Debug.Assert(uploadDD.HasValue, "upload control shows .HasValue==false");
+
+        DocumentId = Guid.NewGuid();
+        waitingForFileSelection = false;
+
         if (string.IsNullOrWhiteSpace(currentFileName) || null != currentFile)
             //Should allow user to type the file name and then select the file without wiping out what they typed.
             currentFileName = file.Name;
@@ -183,29 +240,78 @@
             //Keep the name the user has already inputted, but make sure it's file extension matches the selected file.
             currentFileName = Path.ChangeExtension(currentFileName, Path.GetExtension(file.Name));
         currentFile = file;
+
         StateHasChanged();
     }
 
-    private void StartUpload()
+    // private async Task StartUpload(string args)
+    private async Task StartUpload(MouseEventArgs args)
     {
         if (null == currentFile) return;
+        if (!uploadDD.HasValue)
+        {
+            NotifySaveError(["upload control has no value"], "imaging file");
+            return;
+        }
+        uploadError = "";//Clear and previous errors
+        
         //TODO:Exit if values aren't valid
-        uploadDD.Url = $"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}?filename={currentFileName};documentId={DocumentId}";
-        uploadDD.Upload();
+        await uploadDD.Upload();
         //TODO:Handle imaging upload failure
-        UploadAction?.Invoke(DocumentId);
-        //TODO: Autoclose
     }
 
-    // private void LinkExisting()
-    // {
-    //     throw new NotImplementedException();
-    // }
+    private void UploadComplete(UploadCompleteEventArgs args)
+    {
+        if (string.IsNullOrWhiteSpace(uploadError))
+            UploadAction?.Invoke(DocumentId);
+        if (!args.Cancelled && Guid.TryParse(args.RawResponse, out var guid))
+        {
+            DocumentId = guid;
+            //Autoclose
+            DialogService.Close(guid);
+        }
+    }
 
-    private void ToggleWorkflow()
+    private void UploadErrorHandler(UploadErrorEventArgs args)
+    {
+        uploadError = "There was an error uploading the file.";
+        if (!string.IsNullOrWhiteSpace(args.Message))
+            uploadError += "   " + args.Message;
+    }
+
+    private async Task ToggleWorkflow()
     {
         linkingToExisting = !linkingToExisting;
+        if (linkingToExisting)
+            await LoadExistingDocumentOptions(new LoadDataArgs());
         //TODO:Animate the transition if time allows
+    }
+
+    private async Task<ImagingDocument[]> LoadExistingDocumentOptions(LoadDataArgs obj)
+    {
+        existingLoading = true;
+        searchError = "";//Clear any previous errors
+        try
+        {
+            var existingResult = await DataAccess.SearchDocuments(ImagingId, DocumentCategory, DocumentType);
+            if (existingResult.Success)
+            {
+                existingDocuments = existingResult.Data!.ToArray();
+                return existingDocuments;
+            }
+            else
+            {
+                searchError = $"There {(existingResult.Errors.Length == 1 ? "was an error" : "were errors")} loading existing documents: {string.Join("  ", existingResult.Errors)}";
+            }
+        }
+        finally
+        {
+            existingLoading = false;
+        }
+
+        existingDocuments = [];
+
+        return existingDocuments;
     }
 
 }

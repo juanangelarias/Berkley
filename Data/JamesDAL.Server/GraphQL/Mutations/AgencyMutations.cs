@@ -237,7 +237,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
         [Authorize]
         public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? ReferenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status,
-            [Service]ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             try
@@ -258,7 +258,25 @@ namespace James.Data.Server.GraphQL.Mutations
                 await ctx.SaveChangesAsync();
                 return true;
             }
-            catch {
+            catch
+            {
+                return false;
+            }
+        }
+        [Authorize]
+        public async Task<bool> CreateAgencyPOADocumentLink(Guid poaId, Guid? imagingDocumentId,
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var poa = ctx.PowerOfAttorneys.FirstOrDefault(p => p.Id == poaId);
+                poa.ImagingId = imagingDocumentId;
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
                 return false;
             }
         }

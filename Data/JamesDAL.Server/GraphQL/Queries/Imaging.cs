@@ -24,11 +24,27 @@ namespace James.Data.Server.GraphQL.Queries
 
         [Authorize]
         public async Task<List<ImagingDocument>> SearchDocumentsAsync(ImagingSearchCriteria criteria,
-                                                                [Service] ServerImagingAccess imagingAccess,
-                                                                KeyValuePair<string, string>[]? searchOptions = null,
-                                                                KeyValuePair<string, string>[]? additionalParams = null)
+            [Service] ServerImagingAccess imagingAccess,
+            KeyValuePair<string, string>[]? searchOptions = null,
+            KeyValuePair<string, string>[]? additionalParams = null)
         {
             return await imagingAccess.SearchDocumentsAsync(criteria, searchOptions, additionalParams);
+        }
+
+        [Authorize]
+        public async Task<ImagingDocument?> GetDocumentDetails(ImagingDocumentCategory docCategory, Guid documentId,
+            [Service] ServerImagingAccess imagingAccess)
+        {
+            //TODO:  Cache these results
+            var searchCriteria = new ImagingSearchCriteria
+            {
+                DocClass = docCategory.DocumentCategory(),
+                WhereClause = $"Id = '{documentId}'",
+                MaxResults = 1,
+                Fields = string.Join(",", ImagingAccessBase.DocumentPropertyFields)
+            };
+            var results = await imagingAccess.SearchDocumentsAsync(searchCriteria);
+            return results?.SingleOrDefault();
         }
 
         [Authorize]

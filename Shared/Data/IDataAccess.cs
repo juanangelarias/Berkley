@@ -38,6 +38,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
+        public Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
@@ -71,11 +72,16 @@ namespace James.Shared.Data
 
         public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true);
-        public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory,
+
+        public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory,
             string? documentType = null);
-        //public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocumentsAsync(ImagingSearchCriteria criteria,
-        //    KeyValuePair<string, string>[]? searchOptions = null,
-        //    KeyValuePair<string, string>[]? additionalParams = null);
+        public Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(ImagingDocumentCategory docCategory,
+            Guid documentId);
+
+        public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames();
+
+        public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
+            DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
     }
 
     public interface ISaveDataResult

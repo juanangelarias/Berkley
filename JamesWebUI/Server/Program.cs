@@ -10,7 +10,6 @@ using James.Shared.Data;
 using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Server;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
@@ -22,7 +21,6 @@ using Radzen;
 using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using James.Shared.Imaging;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
@@ -43,11 +41,6 @@ try
     ConfirmAppSettingsEntry("Auth0:ClientId");
     ConfirmAppSettingsEntry("Auth0:ClientSecret");
     var auth0Authority = config["Auth0:Authority"]!;
-    //builder.Services.AddHttpClient("Auth0UserInfo",
-    //client => client.BaseAddress = new Uri(auth0Authority))
-    //    .AddHttpMessageHandler<TokenHandler>();
-    //builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
-    //    .CreateClient("Auth0UserInfo"));
 
 
     var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
@@ -247,7 +240,7 @@ try
         .AddInteractiveWebAssemblyRenderMode();
     //.AddAdditionalAssemblies(typeof(App).Assembly)
 
-    app.MapGraphQL("/graphql");
+    app.MapGraphQL();
 
     app.Run();
 }

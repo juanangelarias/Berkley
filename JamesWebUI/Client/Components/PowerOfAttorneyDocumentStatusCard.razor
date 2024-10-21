@@ -1,20 +1,15 @@
-﻿@using System.Globalization;
-@using James.Data.Client.GraphQL;
-@using James.Data.Client.GraphQL.Components;
-@using StrawberryShake;
-@using James.Shared;
+﻿@using James.Shared;
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
-@inject JamesClient JamesClient
-@inject NotificationService NotificationService
+@inject IDataAccess DataAccess
 
 <Theme />
 
 <RadzenCard Style="width: 100%; padding: 0px;" Variant="Variant.Text">
     <RadzenRow Style="background: lightgrey;">
-        <RadzenColumn Size="4">
+        <RadzenColumn Size="5">
             <RadzenText Text="Document Name" />
         </RadzenColumn>
         <RadzenColumn Size="3">
@@ -23,41 +18,38 @@
         <RadzenColumn Size="3">
             <RadzenText Text="Date Received" />
         </RadzenColumn>
-        <RadzenColumn>
+        <RadzenColumn Size="1">
             <RadzenButton Variant="Variant.Text" Icon="edit" Click="ToggleEditMode" Size="ButtonSize.ExtraSmall" Visible="!editMode" />
             <RadzenButton Variant="Variant.Text" Icon="save" Click="SaveChanges" Size="ButtonSize.ExtraSmall" Visible="editMode" />
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow>
-        <RadzenColumn Size="4">
-            <RadzenText Text="@poaDocumentStatus.DocumentType.Name" Visible="!editMode" Style="width: 95%" />
-            <RadzenDropDown Multiple="false" Data="@docTypes" @bind-Value="@poaDocumentStatus.DocumentType" TextProperty="Name" Visible="editMode" Style="width: 95%" />
+        <RadzenColumn Size="5">
+            <RadzenText Text="@PoaDocumentStatus.DocumentType.Name" Visible="!editMode" Style="width: 95%" />
+            <RadzenDropDown Multiple="false" Data="@docTypes" @bind-Value="@PoaDocumentStatus.DocumentType" TextProperty="Name" Visible="editMode" Style="width: 95%" />
         </RadzenColumn>
         <RadzenColumn Size="3">
-            <RadzenText Text="@poaDocumentStatus.Requested.ToString()" Visible="!editMode" />
-            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poaDocumentStatus.Requested" Visible="editMode" AllowClear="true" />
+            <RadzenText Text="@PoaDocumentStatus.Requested.ToString()" Visible="!editMode" />
+            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@PoaDocumentStatus.Requested" Visible="editMode" AllowClear="true" />
         </RadzenColumn>
         <RadzenColumn Size="3">
-            <RadzenText Text="@poaDocumentStatus.Received.ToString()" Visible="!editMode" />
-            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poaDocumentStatus.Received" Visible="editMode" AllowClear="true" />
-        </RadzenColumn>
-        <RadzenColumn>
-            <RadzenButton Variant="Variant.Text" Icon="picture_as_pdf" Size="ButtonSize.ExtraSmall" />
+            <RadzenText Text="@PoaDocumentStatus.Received.ToString()" Visible="!editMode" />
+            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@PoaDocumentStatus.Received" Visible="editMode" AllowClear="true" />
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-        <RadzenColumn>
+        <RadzenColumn Size="12">
             <RadzenFormField AllowFloatingLabel="false" Text="Comments" Variant="Variant.Outlined" Style="width:95%">
                 <ChildContent>
-                    <RadzenTextBox @bind-Value="@poaDocumentStatus.Comments" ReadOnly="!editMode" />
+                    <RadzenTextBox @bind-Value="@PoaDocumentStatus.Comments" ReadOnly="!editMode" />
                 </ChildContent>
             </RadzenFormField>
         </RadzenColumn>
     </RadzenRow>
 </RadzenCard>
 @code {
-    [Parameter] public PowerOfAttorneyDocumentStatus poaDocumentStatus { get; set; }
-    private List<PowerOfAttorneyDocumentNameDm> docTypes { get; set; }
+    [Parameter] public required PowerOfAttorneyDocumentStatus PoaDocumentStatus { get; set; }
+    private List<PowerOfAttorneyDocumentNameDm>? docTypes { get; set; } = null;
 
     private bool editMode { get; set; } = false;
 
@@ -70,34 +62,38 @@
 
     private async Task LoadDocumentTypes()
     {
-        var result = await JamesClient.GetPOADocumentNames.ExecuteAsync();
-        List<PowerOfAttorneyDocumentNameDm> results = new List<PowerOfAttorneyDocumentNameDm>();
-
-        foreach (var docName in result.Data.PoaDocumentNames)
+        if (null == docTypes || docTypes.Count==0)
         {
-            results.Add(James.Shared.ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>(docName));
-        }
+            var result = await DataAccess.GetPoaDocumentNames();
+            List<PowerOfAttorneyDocumentNameDm> results = new List<PowerOfAttorneyDocumentNameDm>();
+            if (result.Success)
+                foreach (var docName in result.Data)
+                {
+                    results.Add(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>(docName));
+                }
+            else
+                LoggingService.LogError("Could not load POA document types.", string.Join("; ", result.Errors));
 
-        docTypes = results;
+            docTypes = results;
+        }
     }
     private async Task SaveChanges()
     {
-        var input = new SetPowerOfAttorneyDocumentStatusInput();
-        input.Id = poaDocumentStatus.Id;
-        input.Requested = poaDocumentStatus?.Requested?.ToDateTime(TimeOnly.Parse("12:00 AM"));
-        input.Received = poaDocumentStatus?.Received?.ToDateTime(TimeOnly.Parse("12:00 AM"));
-        input.Comments = poaDocumentStatus?.Comments;
-        input.DocumentTypeId = (Guid)poaDocumentStatus?.DocumentTypeId;
-
-        var result = await JamesClient.SetPowerOfAttorneyDocumentStatus.ExecuteAsync(input);
-        if (result.Errors.Count == 0)
+        ArgumentNullException.ThrowIfNull(PoaDocumentStatus, nameof(PoaDocumentStatus));
+        var result = await DataAccess.SetPowerOfAttorneyDocumentStatus(PoaDocumentStatus.Id,
+                        PoaDocumentStatus.Requested?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                        PoaDocumentStatus.Received?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                        PoaDocumentStatus.DocumentTypeId,
+                        PoaDocumentStatus.Comments);
+        if (result.Success)
         {
-            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
+            NotifySuccessfulSave();
             ToggleEditMode();
         }
         else
         {
-            //TODO: Deal with errors
+            NotifySaveError(result.Errors);
+            LoggingService.LogError("Could not save POA changes.", string.Join("; ", result.Errors));
         }
 
     }

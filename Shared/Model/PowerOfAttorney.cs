@@ -26,7 +26,9 @@ public partial class PowerOfAttorney
 
     public string? Comments { get; set; }
 
-    public Guid Status { get; set; }
+    public Guid? ImagingId { get; set; }
+
+    public string Status { get; set; } = null!;
 
     public virtual Agency Agency { get; set; } = null!;
 

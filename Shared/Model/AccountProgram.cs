@@ -37,4 +37,6 @@ public partial class AccountProgram
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual ICollection<AccountProgramStatusHistory> AccountProgramStatusHistories { get; set; } = new List<AccountProgramStatusHistory>();
+
+    public virtual AccountProgramStatusDm Status { get; set; } = null!;
 }

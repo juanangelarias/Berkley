@@ -36,7 +36,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
         public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
-            DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status);
+            DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
@@ -51,7 +51,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, 
             string addressee, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId);
         public Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
-            DateOnly? currentIssued, string? comments, Guid status);
+            DateOnly? currentIssued, string? comments, string status);
         public Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId);
         public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,

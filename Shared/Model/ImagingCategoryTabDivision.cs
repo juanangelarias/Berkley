@@ -14,13 +14,13 @@ public partial class ImagingCategoryTabDivision
 
     public string Category { get; set; } = null!;
 
-    public string TabName { get; set; } = null!;
+    public Guid ImagingTabId { get; set; }
 
-    public string DivisionCode { get; set; } = null!;
+    public string? DivisionCode { get; set; }
 
     public virtual ImagingCategory CategoryNavigation { get; set; } = null!;
 
-    public virtual DivisionDm DivisionCodeNavigation { get; set; } = null!;
+    public virtual DivisionDm? DivisionCodeNavigation { get; set; }
 
-    public virtual ImagingTab TabNameNavigation { get; set; } = null!;
+    public virtual ImagingTab ImagingTab { get; set; } = null!;
 }

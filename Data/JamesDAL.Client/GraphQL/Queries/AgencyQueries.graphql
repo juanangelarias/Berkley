@@ -223,9 +223,6 @@ query GetAgencyPOAs($agencyId: UUID!){
         id,
         comments,
         status,
-        statusNavigation{
-            status
-        }
         limit,
         referenceNumber,
         currentIssued,

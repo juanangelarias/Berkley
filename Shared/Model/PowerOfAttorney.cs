@@ -30,6 +30,8 @@ public partial class PowerOfAttorney
 
     public string Status { get; set; } = null!;
 
+    public Guid? ImagingId { get; set; }
+
     public virtual Agency Agency { get; set; } = null!;
 
     public virtual Insurer Insurer { get; set; } = null!;

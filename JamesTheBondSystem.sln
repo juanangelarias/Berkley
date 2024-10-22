@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "James.Data.Server", "Data\J
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{9D840E97-D1E6-4AA1-BD8F-FCFF04617E3B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationLog", "..\JApplicationLog\ApplicationLog.csproj", "{E1B4E482-161C-4C82-84FE-EA754A308A6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationLog", "JApplicationLog\ApplicationLog.csproj", "{E1B4E482-161C-4C82-84FE-EA754A308A6C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JamesWebUI.Client.Test", "Tests\JamesWebUI.Client.Test\JamesWebUI.Client.Test.csproj", "{B6DFFAA5-460B-4100-AF21-8FD4BB6316F5}"
 EndProject

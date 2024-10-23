@@ -120,6 +120,8 @@ public partial class Bond
 
     public string? SfaabondType { get; set; }
 
+    public bool? EnforceNmls { get; set; }
+
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual ICollection<AdditionalObligee> AdditionalObligeesNavigation { get; set; } = new List<AdditionalObligee>();

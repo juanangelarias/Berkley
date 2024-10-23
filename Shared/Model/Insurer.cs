@@ -20,6 +20,8 @@ public partial class Insurer
 
     public string? LenumPeopleSoft { get; set; }
 
+    public string? WritingCompany { get; set; }
+
     public virtual ICollection<AgencyLicense> AgencyLicenses { get; set; } = new List<AgencyLicense>();
 
     public virtual ICollection<BondHold> BondHolds { get; set; } = new List<BondHold>();
@@ -35,4 +37,6 @@ public partial class Insurer
     public virtual ICollection<OnlineBondSystem> OnlineBondSystems { get; set; } = new List<OnlineBondSystem>();
 
     public virtual ICollection<PowerOfAttorney> PowerOfAttorneys { get; set; } = new List<PowerOfAttorney>();
+
+    public virtual WritingCompanyDm? WritingCompanyNavigation { get; set; }
 }

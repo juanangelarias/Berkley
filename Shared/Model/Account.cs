@@ -142,6 +142,8 @@ public partial class Account
 
     public string? IndemnityComments { get; set; }
 
+    public Guid? CreditReportImagingId { get; set; }
+
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();

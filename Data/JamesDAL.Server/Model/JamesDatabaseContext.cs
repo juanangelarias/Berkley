@@ -346,6 +346,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<WorkInProgressSummary> WorkInProgressSummaries { get; set; }
 
+    public virtual DbSet<WritingCompanyDm> WritingCompanyDms { get; set; }
+
     //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //    => optionsBuilder.UseSqlServer(_connectionString);
 
@@ -2849,9 +2851,6 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.ImagingTabId)
-                .HasMaxLength(50)
-                .IsUnicode(false);
 
             entity.HasOne(d => d.CategoryNavigation).WithMany(p => p.ImagingCategoryTabDivisions)
                 .HasForeignKey(d => d.Category)
@@ -2863,7 +2862,7 @@ public partial class JamesDatabaseContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ImagingCategoryTabDivision_DivisionDM");
 
-            entity.HasOne(d => d.TabNameNavigation).WithMany(p => p.ImagingCategoryTabDivisions)
+            entity.HasOne(d => d.ImagingTab).WithMany(p => p.ImagingCategoryTabDivisions)
                 .HasForeignKey(d => d.ImagingTabId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ImagingCategoryTabDivision_ImagingTab");
@@ -2979,6 +2978,9 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.WritingCompany)
+                .HasMaxLength(15)
+                .IsUnicode(false);
 
             entity.HasOne(d => d.CurrencyCountryNavigation).WithMany(p => p.Insurers)
                 .HasForeignKey(d => d.CurrencyCountry)
@@ -2989,6 +2991,10 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey<Insurer>(d => d.Id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Insurer_LegalEntity");
+
+            entity.HasOne(d => d.WritingCompanyNavigation).WithMany(p => p.Insurers)
+                .HasForeignKey(d => d.WritingCompany)
+                .HasConstraintName("FK_Insurer_WritingCompanyDM");
         });
 
         modelBuilder.Entity<InsurerState>(entity =>
@@ -3911,6 +3917,9 @@ public partial class JamesDatabaseContext : DbContext
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.ReferenceNumber).HasMaxLength(100);
+            entity.Property(e => e.Status)
+                .HasMaxLength(15)
+                .IsUnicode(false);
 
             entity.HasOne(d => d.Agency).WithMany(p => p.PowerOfAttorneys)
                 .HasPrincipalKey(p => p.Id)
@@ -3924,7 +3933,6 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_PowerOfAttorney_Insurer");
 
             entity.HasOne(d => d.StatusNavigation).WithMany(p => p.PowerOfAttorneys)
-                .HasPrincipalKey(p => p.Id)
                 .HasForeignKey(d => d.Status)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_PowerOfAttorney_PowerOfAttorneyStatusDM");
@@ -5257,6 +5265,28 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.GrossProfitPercent)
                 .HasComputedColumnSql("(case when [ContractPrice]=(0) OR [EstimatedCost]=(0) then (0) else ((100.0)*[EstimatedGrossProfit])/[ContractPrice] end)", false)
                 .HasColumnType("numeric(38, 15)");
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<WritingCompanyDm>(entity =>
+        {
+            entity.HasKey(e => e.Name)
+                .HasName("PK_WritingCompany")
+                .IsClustered(false);
+
+            entity.ToTable("WritingCompanyDM");
+
+            entity.HasIndex(e => e.Id, "UQ_WritingCompany_Id").IsUnique();
+
+            entity.Property(e => e.Name)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")

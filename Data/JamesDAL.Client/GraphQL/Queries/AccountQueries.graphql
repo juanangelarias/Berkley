@@ -216,7 +216,7 @@ query GetAccountProgramHistory($input: String!) {
     statusId
     accountProgramStatusHistories {
       accountProgramId
-      companyId
+      accountNum
       created
       id
       modified

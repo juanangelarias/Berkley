@@ -36,6 +36,8 @@ public partial class AgencyLicense
 
     public bool IsActive { get; set; }
 
+    public Guid? ImagingId { get; set; }
+
     public virtual Agency Agency { get; set; } = null!;
 
     public virtual Agent? Agent { get; set; }

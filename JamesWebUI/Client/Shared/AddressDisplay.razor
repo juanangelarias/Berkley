@@ -230,7 +230,7 @@
         if (result)
         {
             var deleteResult = await _dataAccess.DeleteAddress(AddressId);
-            //TODO: Error Handling
+            
             if (deleteResult.Errors.Any())
             {
                 LoggingService.LogError("DeleteAddress return error(s)", string.Join("\r\n", result.Errors), "GraphQL");

@@ -9,12 +9,12 @@ namespace James.Data.Server.GraphQL.Mutations
         [Authorize]
         public async Task<bool> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode,
-            Guid legalEntityId, string addressType, 
+            Guid legalEntityId, string addressType,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try
             {
-                
+
                 Address NewAddress = new Address()
                 {
                     Id = addressId,
@@ -47,7 +47,40 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+        [Authorize]
+        public async Task<bool> CreatePhoneNumber(Guid phoneId, string countryCode, string mainNumber, string? extension,
+            Guid legalEntityId, string phoneType, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                PhoneNumber newNumber = new PhoneNumber()
+                {
+                    Id = phoneId,
+                    CountryCode = countryCode,
+                    MainNumber = mainNumber,
+                    Extension = extension
+                };
 
+                LegalEntityPhone lePhone = new LegalEntityPhone()
+                {
+                    LegalEntityId = legalEntityId,
+                    PhoneNumberId = phoneId,
+                    Type = phoneType
+                };
+
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                ctx.PhoneNumbers.Add(newNumber);
+                ctx.LegalEntityPhones.Add(lePhone);
+                await ctx.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
         [Authorize]
         public async Task<bool> DeleteAddress(Guid addressId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -65,6 +98,33 @@ namespace James.Data.Server.GraphQL.Mutations
                 if (address != null)
                 {
                     ctx.Addresses.Remove(address);
+                }
+
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        [Authorize]
+        public async Task<bool> DeletePhoneNumber(Guid phoneId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                var phone = await ctx.PhoneNumbers.SingleOrDefaultAsync(x => x.Id == phoneId);
+                var lePhone = await ctx.LegalEntityPhones.SingleOrDefaultAsync(x => x.PhoneNumberId == phoneId);
+
+                if (lePhone != null)
+                {
+                    ctx.LegalEntityPhones.Remove(lePhone);
+                }
+                if (phone != null)
+                {
+                    ctx.PhoneNumbers.Remove(phone);
                 }
 
                 await ctx.SaveChangesAsync();

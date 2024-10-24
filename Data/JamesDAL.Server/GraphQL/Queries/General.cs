@@ -93,6 +93,21 @@ namespace James.Data.Server.GraphQL.Queries
             return result;
         }
         [Authorize]
+        public async Task<List<PhoneTypeDm>> GetPhoneTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var result = await ctx.PhoneTypeDms.OrderBy(a => a.Order).ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retrieving Phone Types.", ex);
+            }
+        }
+        [Authorize]
         public async Task<List<AddressTypeDm>> GetAddressTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try

@@ -129,6 +129,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAddressTypes(contextFactory));
         }
+        public async Task<IDataAccessResult<List<PhoneTypeDm>>> GetPhoneTypes()
+        {
+            return await ExecuteGet(async () => await query.GetPhoneTypes(contextFactory));
+        }
         public async Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId)
         {
             return await ExecuteGet(async () => await query.GetAllLegalEntityAddresses(legalEntityId, contextFactory));
@@ -185,11 +189,19 @@ namespace James.Data.Server
                 legalEntityId, addressType, contextFactory));
 
         }
+        public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
+            Guid legalEntityId, string phoneType)
+        {
+            return await ExecuteSave(async () => await generalMutations.CreatePhoneNumber(phoneId, countryCode, mainNumber, extension, legalEntityId, phoneType, contextFactory));
+        }
         public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
         {
 
-            return await ExecuteSave(async () =>
-            await generalMutations.DeleteAddress(addressId, contextFactory));
+            return await ExecuteSave(async () => await generalMutations.DeleteAddress(addressId, contextFactory));
+        }
+        public async Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId)
+        {
+            return await ExecuteSave(async () => await generalMutations.DeletePhoneNumber(phoneId, contextFactory));
         }
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
             bool need1099, bool nasbp, string branchKey)

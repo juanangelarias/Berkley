@@ -24,6 +24,15 @@ query GetPhoneNumber($input: UUID!) {
     }
   }
 } 
+query GetPhoneTypes {
+  phoneTypes {
+    created
+    id
+    modified
+    order
+    type
+  }
+}
 query GetAllInventoryDocTypes {
   allInventoryDocTypes {
     documentType

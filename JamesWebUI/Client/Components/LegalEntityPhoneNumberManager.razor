@@ -22,8 +22,8 @@
                     </RadzenTabsItem>
                     if (a == AllPhoneNumbers.Last())
                     {
-                        <RadzenTabsItem Icon="add" Text="Add Address">
-                            
+                        <RadzenTabsItem Icon="add" Text="Add Phone">
+                            <PhoneNumberCreate LegalEntityId="@LegalEntityId" PhoneNumberCreated="@PhoneNumberCreated" />
                         </RadzenTabsItem>
                     }
 
@@ -31,8 +31,8 @@
             }
             else
             {
-                <RadzenTabsItem Icon="add" Text="Add Address">
-                    
+                <RadzenTabsItem Icon="add" Text="Add Phone">
+                    <PhoneNumberCreate LegalEntityId="@LegalEntityId" PhoneNumberCreated="@PhoneNumberCreated" />
                 </RadzenTabsItem>
             }
         }
@@ -71,6 +71,36 @@
         else
         {
             AllPhoneNumbers = result.Data;
+        }
+    }
+
+    private async Task PhoneNumberCreated(Guid phoneToSelect)
+    {
+        var result = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId);
+
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError("GetAllLegalEntityPhoneNumbers return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+            NotificationService.Notify(new NotificationMessage()
+                {
+                    Severity = NotificationSeverity.Error,
+                    Detail = "Error creating new phone number.",
+                    Duration = 4000
+                });
+        }
+        else
+        {
+            AllPhoneNumbers = result.Data;
+
+            var selected = AllPhoneNumbers.FirstOrDefault(a => a.Id == phoneToSelect);
+            if (null != selected)
+            {
+                selectedTab = AllPhoneNumbers.IndexOf(selected);
+            }
+            else
+            {
+                selectedTab = 0;
+            }
         }
     }
 }

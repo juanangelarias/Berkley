@@ -22,6 +22,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Branch>>> GetAllBranches();
         public Task<IDataAccessResult<Address>> GetAddress(Guid addressId);
         public Task<IDataAccessResult<PhoneNumber>> GetPhoneNumber(Guid phoneId);
+        public Task<IDataAccessResult<List<PhoneTypeDm>>> GetPhoneTypes();
         public Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes();
         public Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId);
         public Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId);
@@ -48,7 +49,10 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
+        public Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
+            Guid legalEntityId, string phoneType);
         public Task<ISaveDataResult> DeleteAddress(Guid addressId);
+        public Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId);
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
             Guid changedBy, string? comments);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,

@@ -115,6 +115,11 @@ namespace James.Data.Client
             return await ExecuteGet<List<AddressTypeDm>>(
                 async () => await jamesClient.GetAddressTypes.ExecuteAsync(), "AddressTypes");
         }
+        public async Task<IDataAccessResult<List<PhoneTypeDm>>> GetPhoneTypes()
+        {
+            return await ExecuteGet<List<PhoneTypeDm>>(
+                async () => await jamesClient.GetPhoneTypes.ExecuteAsync(), "PhoneTypes");
+        }
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
             var result = await jamesClient.SetAddress.ExecuteAsync(new SetAddressInput
@@ -147,12 +152,32 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(result);
         }
+        public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
+            Guid legalEntityId, string phoneType)
+        {
+            var result = await jamesClient.CreatePhoneNumber.ExecuteAsync(new CreatePhoneNumberInput()
+            {
+                PhoneId = phoneId,
+                CountryCode = countryCode,
+                MainNumber = mainNumber,
+                Extension = extension,
+                LegalEntityId = legalEntityId,
+                PhoneType = phoneType
+            });
+            return GraphQLSaveResult(result);
+        }
         public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
         {
             var result = await jamesClient.DeleteAddress.ExecuteAsync(new DeleteAddressInput()
             {
                 AddressId = addressId
             });
+
+            return GraphQLSaveResult(result);
+        }
+        public async Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId)
+        {
+            var result = await jamesClient.DeletePhoneNumber.ExecuteAsync(new DeletePhoneNumberInput() { PhoneId = phoneId });
 
             return GraphQLSaveResult(result);
         }

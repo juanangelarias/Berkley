@@ -1,0 +1,117 @@
+﻿@using James.Shared
+@inherits JamesLayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject NotificationService NotificationService
+@inject IDataAccess DataAccess
+
+<RadzenTemplateForm TItem="PhoneNumber" Data="@NewPhoneNumber" Submit="@SubmitNewPhoneNumber" >
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenFormField Variant="Variant.Text" Text="Country Code" Style="width:90%" AllowFloatingLabel="false">
+                <ChildContent>
+                    <RadzenTextBox @bind-Value="@NewPhoneNumber.CountryCode" Name="CountryCode" AutoComplete="false"/>
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="CountryCode" Text="Country Code is required" />
+                </Helper>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenFormField Variant="Variant.Text" Text="Main Number" Style="width:90%" AllowFloatingLabel="false">
+                <ChildContent>
+                    <RadzenTextBox @bind-Value="@NewPhoneNumber.MainNumber" Name="MainNumber" AutoComplete="false" />
+                </ChildContent>
+                <Helper>
+                    <RadzenRequiredValidator Component="MainNumber" Text="Main Number is required" />
+                </Helper>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenFormField Variant="Variant.Text" Text="Extension" Style="width:90%" AllowFloatingLabel="false">
+                <ChildContent>
+                    <RadzenTextBox @bind-Value="@NewPhoneNumber.Extension" Name="Extension" AutoComplete="false" />
+                </ChildContent>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenFormField Variant="Variant.Text" Text="Type" AllowFloatingLabel="false" Style="width: 50%">
+                    <RadzenDropDown @ref="phoneTypeDropDown" TValue="string" @bind-Value="@phoneNumberType" Data="PhoneNumberTypes" ValueProperty="Type" TextProperty="Type" />
+                </RadzenFormField>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
+                    <RadzenButton Icon="save" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
+                    <RadzenButton Icon="cancel" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary" Click="@Cancel" />
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+
+</RadzenTemplateForm>
+
+@code {
+    [Parameter] public Guid LegalEntityId { get; set; }
+    [Parameter] public EventCallback<Guid> PhoneNumberCreated { get; set; }
+
+    private PhoneNumber NewPhoneNumber { get; set; } = new PhoneNumber()
+        {
+            Id = Guid.NewGuid()
+        };
+
+    private RadzenDropDown<string> phoneTypeDropDown { get; set; }
+    private string phoneNumberType { get; set; }
+    private List<PhoneTypeDm> PhoneNumberTypes { get; set; } = new List<PhoneTypeDm>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadPhoneNumberTypes();
+    }
+
+    async Task Cancel()
+    {
+
+    }
+    async Task LoadPhoneNumberTypes()
+    {
+        var result = await DataAccess.GetPhoneTypes();
+
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError($"Error loading phone types.", result.Errors.ToString());
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Severity = NotificationSeverity.Error,
+                    Summary = "Error loading phone types.",
+                    Duration = 5000,
+                    CloseOnClick = true,
+                    Payload = DateTime.Now
+                });
+        }
+        else
+        {
+            PhoneNumberTypes = result.Data!;
+        }
+    }
+    async Task SubmitNewPhoneNumber(PhoneNumber NewPhoneNumber)
+    {
+        try
+        {
+            //TODO: Validator
+            var result = await DataAccess.CreatePhoneNumber(NewPhoneNumber.Id, NewPhoneNumber.CountryCode, NewPhoneNumber.MainNumber, 
+                NewPhoneNumber.Extension, LegalEntityId, phoneNumberType);
+            await PhoneNumberCreated.InvokeAsync(NewPhoneNumber.Id);
+        }
+        catch
+        {
+            //TODO: Error Handling
+        }
+    }
+}

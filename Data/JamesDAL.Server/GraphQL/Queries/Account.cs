@@ -27,6 +27,12 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(ag => ag!.IdNavigation)
                 .Include(a => a.HomeOfficeReviewByNavigation)
                 .Include(a => a.BranchReviewByNavigation)
+                .Include(a => a.BankPhone)
+                .Include(a => a.Cpafirm)
+                .ThenInclude(c => c.LegalEntityPhones)
+                .Include(a => a.Cpacontact)
+                .Include(a => a.BusinessTypeNavigation)
+                .Include(a => a.BusinessTypeClassNavigation)
                 .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim());
         }
         [Authorize]
@@ -52,12 +58,12 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
 
             var contractLOA = await ctx.LineOfAuthorityLogs
-                .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.Expiration >= DateTime.Today && l.BondType == "Contract")
+                .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.BondType == "Contract")
                 .OrderByDescending(l => l.Created)
                 .FirstOrDefaultAsync();
 
             var commercialLOA = await ctx.LineOfAuthorityLogs
-                .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.Expiration >= DateTime.Today && l.BondType == "Commercial")
+                .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.BondType == "Commercial")
                 .OrderByDescending(l => l.Created)
                 .FirstOrDefaultAsync();
 

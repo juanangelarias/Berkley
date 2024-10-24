@@ -145,7 +145,16 @@
                         </RadzenTabs>
                     </RadzenTabsItem>
                     <RadzenTabsItem Text="Bank and Security">
+                        <RadzenTabs>
+                            <Tabs>
+                                <RadzenTabsItem Text="Bank/CPA/Legal">
+                                    <AccountBankCPALegal AccountToDisplay="@AccountToDisplay" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Security">
 
+                                </RadzenTabsItem>
+                            </Tabs>
+                        </RadzenTabs>
                     </RadzenTabsItem>
                     <RadzenTabsItem Text="Bond Requests">
 
@@ -200,7 +209,7 @@
             else
             {
                 AccountToDisplay = result.Data;
-                StateHasChanged();
+                //StateHasChanged();
             }
         }
     }
@@ -215,7 +224,6 @@
             }
             else
             {
-                //TODO: Display them
                 inForceLOAs = result.Data;
             }
         }

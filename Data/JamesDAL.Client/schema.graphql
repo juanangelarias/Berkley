@@ -22,7 +22,9 @@ type Mutation {
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
   setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
   createAddress(input: CreateAddressInput!): CreateAddressPayload!
+  createPhoneNumber(input: CreatePhoneNumberInput!): CreatePhoneNumberPayload!
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
+  deletePhoneNumber(input: DeletePhoneNumberInput!): DeletePhoneNumberPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -70,6 +72,7 @@ type Query {
   allBranches: [Branch!]!
   allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
   allLegalEntityPhoneNumbers(legalEntityId: UUID!): [PhoneNumber!]!
+  phoneTypes: [PhoneTypeDm!]!
   addressTypes: [AddressTypeDm!]!
   allInsurers: [Insurer!]!
   obligeeById(id: UUID!): Obligee
@@ -628,6 +631,15 @@ type InventoryDocumentDm {
   agencyInventories: [AgencyInventory!]!
 }
 
+type PhoneTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+  order: Int!
+  legalEntityPhones: [LegalEntityPhone!]!
+}
+
 type AddressTypeDm {
   id: UUID!
   created: DateTime!
@@ -888,6 +900,15 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type CountryDm {
+  code: String!
+  created: DateTime!
+  modified: DateTime!
+  name: String!
+  insurers: [Insurer!]!
+  states: [State!]!
 }
 
 type UserLineOfAuthority {
@@ -1816,15 +1837,6 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type CountryDm {
-  code: String!
-  created: DateTime!
-  modified: DateTime!
-  name: String!
-  insurers: [Insurer!]!
-  states: [State!]!
-}
-
 type InsurerState {
   id: UUID!
   created: DateTime!
@@ -1889,15 +1901,6 @@ type AgentSystemDm {
   modified: DateTime!
   systemName: String!
   onlineBondSystems: [OnlineBondSystem!]!
-}
-
-type PhoneTypeDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  type: String!
-  order: Int!
-  legalEntityPhones: [LegalEntityPhone!]!
 }
 
 type EmailTypeDm {
@@ -2484,11 +2487,32 @@ type CreateAddressPayload {
   boolean: Boolean
 }
 
+input CreatePhoneNumberInput {
+  phoneId: UUID!
+  countryCode: String!
+  mainNumber: String!
+  extension: String
+  legalEntityId: UUID!
+  phoneType: String!
+}
+
+type CreatePhoneNumberPayload {
+  boolean: Boolean
+}
+
 input DeleteAddressInput {
   addressId: UUID!
 }
 
 type DeleteAddressPayload {
+  boolean: Boolean
+}
+
+input DeletePhoneNumberInput {
+  phoneId: UUID!
+}
+
+type DeletePhoneNumberPayload {
   boolean: Boolean
 }
 

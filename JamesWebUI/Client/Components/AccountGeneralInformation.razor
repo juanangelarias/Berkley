@@ -31,7 +31,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Business Class" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="Placeholder" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox Value="@AccountToDisplay?.BusinessTypeClassNavigation?.BusinessType" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="8">
@@ -89,12 +89,12 @@
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Report Date" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="Placeholder" />
+                            <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay?.DunBradstreetDate" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Rating" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="Placeholder" />
+                            <RadzenTextBox Value="@AccountToDisplay?.DunBradstreetRate" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
@@ -106,7 +106,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="SIC Code" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Placeholder="SIC Code" />
+                            <RadzenTextBox Placeholder="@AccountToDisplay?.DunBradstreetSic" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn>
@@ -273,7 +273,8 @@
                     <RadzenNumeric Value="@inforceLOAs?.ContractLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Value="@(inforceLOAs?.ContractLOA?.Expiration.ToShortDateString())" Style="width: 95%" Disabled="true" />
+                    <RadzenTextBox Value="@(inforceLOAs?.ContractLOA?.Expiration.ToShortDateString())" 
+                    Style="@($"width: 95%; background-color: {(@inforceLOAs?.ContractLOA?.Expiration < DateTime.Today ? "yellow": "white")}")" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -287,7 +288,8 @@
                     <RadzenNumeric Value="@inforceLOAs?.CommercialLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Value="@(inforceLOAs?.CommercialLOA?.Expiration.ToShortDateString())" Style="width: 95%" Disabled="true" />
+                    <RadzenTextBox Value="@(inforceLOAs?.CommercialLOA?.Expiration.ToShortDateString())"
+                                   Style="@($"width: 95%; background-color: {(@inforceLOAs?.CommercialLOA?.Expiration < DateTime.Today ? "yellow": "white")}")" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -326,7 +328,7 @@
 </RadzenRow>
 
 @code {
-    [Parameter] public Account AccountToDisplay { get; set; }
+    [Parameter] public Account? AccountToDisplay { get; set; }
     public InforceAccountLOA inforceLOAs { get; set; } = new InforceAccountLOA()
     {
         ContractLOA = new LineOfAuthorityLog(),
@@ -345,7 +347,7 @@
         {
             //TODO: Reenable this once data port is complete.
             await LoadInforceLOAs();
-            StateHasChanged();
+            //StateHasChanged();
         }
     }
 

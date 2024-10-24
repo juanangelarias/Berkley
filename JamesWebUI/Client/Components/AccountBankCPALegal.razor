@@ -1,0 +1,160 @@
+﻿@using System.Globalization
+@using James.Shared;
+
+
+@inherits JamesLayoutComponentBase
+
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+@inject IDataAccess DataAccess
+
+<RadzenRow>
+    <RadzenColumn Size="6">
+        <RadzenStack Orientation="Orientation.Vertical">
+            <RadzenFieldset Text="Bank Information">
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Bank" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay.Bank" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="1">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text" />
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Reference Name" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay.BankReferenceName" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Average Cash Balance" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenNumeric Value="@AccountToDisplay.BankAverageBalance" Format="c0" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Phone No." AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            @* <RadzenTextBox Value="@AccountToDisplay.BankPhone" /> *@
+                            <RadzenText Text="Placeholder" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Last Contacted" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay.BankLastContacted.ToString()" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenFieldset>
+            <RadzenFieldset Text="CPA Information">
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="CPA Firm Name" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenText Text="@AccountToDisplay.Cpafirm.FullName" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="1">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text" />
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Contact Person" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay.Cpacontact.FullName" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Phone" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenText Text="Placeholder" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Email" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenText Text="Placeholder" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenFieldset>
+            <RadzenFieldset Text="Attorney Information">
+
+            </RadzenFieldset>
+        </RadzenStack>
+    </RadzenColumn>
+    <RadzenColumn Size="6">
+        <RadzenStack Orientation="Orientation.Vertical">
+            <RadzenFieldset Text="Bank Line of Credit">
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Amount" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenNumeric Format="c0" Value="@AccountToDisplay.BankLoc" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="1">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text" />
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Expires" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay.BankLocexpires" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Amount in Use" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenNumeric Format="c0" Value="@AccountToDisplay.BankLoc" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="When" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay.BankLocexpires" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Most Used" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenNumeric Format="c0" Value="@AccountToDisplay.BankLochigh" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="11">
+                        <RadzenFormField Text="Security" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenText Text="@AccountToDisplay.BankLocsecurity" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenFieldset>
+            <RadzenFieldset Text="Law Firm Information">
+
+            </RadzenFieldset>
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenRow>
+
+
+@code {
+    [Parameter] public Account AccountToDisplay { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+
+    }
+}

@@ -1,26 +1,31 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Radzen;
 
 namespace JamesWebUI.Client.Shared
 {
-    public abstract class JamesLayoutComponentBase:LayoutComponentBase
+    public abstract class JamesLayoutComponentBase : LayoutComponentBase
     {
+        [Inject]
+        public required JamesWebUI.Client.Services.ThemeService JamesThemeService { get; set; }
+        [Inject]
+        public required James.Shared.ILoggingService LoggingService { get; set; }
+        [Inject]
+        public required Radzen.DialogService DialogService { get; set; }
+        [Inject]
+        public required Radzen.NotificationService NotificationService { get; set; }
+
+        #region Authentication Code
         [CascadingParameter]
         protected Task<AuthenticationState>? AuthenticationState { get; set; }
-        [Inject]
-        public JamesWebUI.Client.Services.ThemeService JamesThemeService { get; set; }
-        [Inject]
-        public James.Shared.ILoggingService LoggingService { get; set; }
-        [Inject]
-        public Radzen.DialogService DialogService { get; set; }
         private Task<AuthenticationState> _loadAuthenticationStateAsync { get; set; }
         //TODO: Discuss whether to allow only synchronous or asynchronous access to values.
         //Synchronous access properties
-        protected AuthenticationState ? State { get; private set; }
+        protected AuthenticationState? State { get; private set; }
         protected ClaimsPrincipal? UserPrincipal => State?.User;
         protected bool IsAuthenticationStateLoaded { get; private set; }
-        protected bool IsAuthenticated=>IsAuthenticationStateLoaded && State!.User.Identity != null;
+        protected bool IsAuthenticated => IsAuthenticationStateLoaded && State!.User.Identity != null;
 
         //Asynchronous access to properties
         protected async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -44,6 +49,8 @@ namespace JamesWebUI.Client.Shared
             return null != (await _loadAuthenticationStateAsync).User.Identity;
         }
 
+        #endregion
+
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
@@ -58,6 +65,26 @@ namespace JamesWebUI.Client.Shared
                     IsAuthenticationStateLoaded = true;
                 });
         }
+
+        #region Common Client Actions
+        /// <summary>
+        /// Generates standard notification that changes were saved successfully.
+        /// </summary>
+        /// <param name="itemSaved">The item being saved, default is "Changes".  Should be title cased.</param>
+        protected void NotifySuccessfulSave(string itemSaved = "Changes")
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = $"{itemSaved} saved successfully.", Duration = 5000 });
+        }
+
+        /// <summary>
+        /// Generates standard notification that a save failed.
+        /// </summary>
+        /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
+        protected void NotifySaveError(string[] errors, string itemSaved = "changes")
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = $"There {(errors.Length==1?"was an error":"were errors")} saving {itemSaved}.  {string.Join("  ", errors)}", Duration = 15000 });
+        }
+        #endregion
     }
 
     public static class AuthUserExtensions

@@ -5,6 +5,7 @@ using James.Shared.Model;
 using System.Drawing;
 using System.Runtime.Versioning;
 using System.ServiceModel;
+using Microsoft.Extensions.Configuration;
 using MimeTypes = James.Shared.Imaging.MimeTypes;
 
 namespace James.Data.Imaging
@@ -13,9 +14,38 @@ namespace James.Data.Imaging
     /// Imaging access from server-side code
     /// </summary>
     /// <remarks>Contains IImagingAccess plus server-only code for upload and download</remarks>
-    [SupportedOSPlatform("windows")]
-    public partial class ServerImagingAccess(ILoggingService loggingService, ImagingKong0Helper kong0Helper) : ImagingAccessBase
+    //[SupportedOSPlatform("windows")]
+    public class ServerImagingAccess : ImagingAccessBase
     {
+        private readonly ILoggingService _loggingService;
+        private readonly ImagingKong0Helper _kong0Helper;
+
+        /// <summary>
+        /// Imaging access from server-side code
+        /// </summary>
+        /// <remarks>Contains IImagingAccess plus server-only code for upload and download</remarks>
+        public ServerImagingAccess(ILoggingService loggingService, ImagingKong0Helper kong0Helper)
+        {
+            _loggingService = loggingService;
+            _kong0Helper = kong0Helper;
+            var remoteAddress = new EndpointAddress(EndpointUrl);
+            var binding = new BasicHttpBinding(BasicHttpSecurityMode.Transport)
+            {
+                ReceiveTimeout = TimeSpan.FromMinutes(2),
+                SendTimeout = TimeSpan.FromMinutes(2),
+                MaxBufferSize = 314372800,
+                MaxReceivedMessageSize = 314372800,
+                MessageEncoding = WSMessageEncoding.Mtom
+            };
+            _p8Client = new P8ServiceClient(binding, remoteAddress);
+        }
+
+        //HACK:There is probably a cleaner way to add this config value, but getting the Iconfiguration root was problematic and took to much time to figure out.
+        /// <summary>
+        /// The url of the imaging service being used
+        /// </summary>
+        public static string EndpointUrl { get; set; } = "https://tst-gateway.berkley-bts.com/wrb/ecm/p8service";
+
         //public const string DocNumber = "F_DOCNUMBER";
         //public const string DocType = "DocType";
         //public const string ScanDate = "ScanDate";
@@ -28,22 +58,24 @@ namespace James.Data.Imaging
         //public const string CompanyNo = "CompanyNo";
         //public const string BatchName = "BatchName";
         //public const string EntryDate = "F_ENTRYDATE";
-        private static readonly P8ServiceClient _p8Client = new();
+        private readonly P8ServiceClient _p8Client;
 
+        [SupportedOSPlatform("windows")]
         public async Task<(Stream, string, string)> GetFileStreamAsync(Guid documentGuid, string docType)
         {
             async Task<document> P8Call(ClientBase<P8Service> client) => await ((P8Service) client).getDocumentByIDAsync(string.Empty, string.Empty, docType, documentGuid.ToString(), false, AdditionalParams(_includeFilenameParam));
-            var doc =  await kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
+            var doc =  await _kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
             //var doc = await await kong0Helper.ExecuteMethodAsync(_p8Client, async client => await ((P8ServiceClient)client).getDocumentByIDAsync(string.Empty, string.Empty, docType, documentGuid.ToString(), false,
             //    AdditionalParams(_includeFilenameParam)));
             return await GetFileStreamAsync(doc!);
 
         }
 
-        public async Task<(Stream, string, string)> GetFileStreamAsync(document doc)
+        [SupportedOSPlatform("windows")]
+        public Task<(Stream, string, string)> GetFileStreamAsync(document doc)
         {
             var filename = doc.contentList[0].fileName ?? doc.GetProperty("Filename") ?? doc.GetProperty(DocRemarks) ?? Guid.NewGuid().ToString();
-            if (null == doc.contentList || doc.contentList.Length == 0) return (new MemoryStream(0), string.Empty, string.Empty);
+            if (null == doc.contentList || doc.contentList.Length == 0) return Task.FromResult<(Stream, string, string)>((new MemoryStream(0), string.Empty, string.Empty));
 
             if (doc.contentList.Length > 1 && MimeTypes.AreInterchangeableMimeTypes(doc.contentList[0].mimeType, "image/tiff"))
                 try
@@ -60,16 +92,16 @@ namespace James.Data.Imaging
                     }
 
                     //TIFF files are split into individual pages by P8, and need to be reassembled into a single multi page TIFF
-                    return (TiffHelper.MergeTiffToStream(tiffImages), filename, "image/tiff");
+                    return Task.FromResult<(Stream, string, string)>((TiffHelper.MergeTiffToStream(tiffImages), filename, "image/tiff"));
                 }
                 catch (Exception ex)
                 {
-                    loggingService.LogException(ex, "Combining TIFF files failed.", "Sending as simple concatenation.", severity: Severity.Warning);
+                    _loggingService.LogException(ex, "Combining TIFF files failed.", "Sending as simple concatenation.", severity: Severity.Warning);
                 }
             var mimeType = doc.contentList[0].mimeType;
             if (string.IsNullOrWhiteSpace(mimeType))
                 mimeType = MimeTypes.GetContentType(doc.contentList[0].fileName);
-            return (new MemoryStream(doc.contentList.SelectMany(c => (c.contentMTOM ?? c.content1).ToList()).ToArray()), filename, mimeType);
+            return Task.FromResult<(Stream, string, string)>((new MemoryStream(doc.contentList.SelectMany(c => (c.contentMTOM ?? c.content1).ToList()).ToArray()), filename, mimeType));
 
         }
 
@@ -82,7 +114,7 @@ namespace James.Data.Imaging
             return parms.ToArray();
         }
 
-        public override async Task UploadDocument(string docType, string filename, Stream fileContentStream, string contentType,
+        public override async Task<Guid?> UploadDocument(string docType, string filename, Stream fileContentStream, string contentType,
             ImagingDocumentCategory category, string id, string batchName, DateTime scanDate, CancellationToken cancellationToken = default)
         {
             try
@@ -151,15 +183,20 @@ namespace James.Data.Imaging
                 };
                 if (cancellationToken.IsCancellationRequested == false)
                 {
-                    async Task<string> P8Call(ClientBase<P8Service> client) => await ((P8Service)client).addDocumentAsync(
-                        string.Empty, string.Empty,
-                        doc, batchName, DefaultAdditionalParams.Select(ap => ap.ToEntry()).ToArray());
-                    doc.guid = await kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
+                    async Task<string> P8Call(ClientBase<P8Service> client) =>
+                        await ((P8Service)client).addDocumentAsync(
+                            string.Empty, string.Empty,
+                            doc, batchName, DefaultAdditionalParams.Select(ap => ap.ToEntry()).ToArray());
+
+                    doc.guid = await _kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
+                    return Guid.Parse(doc.guid!);
                 }
+                return null;
             }
             catch (Exception ex)
             {
-                loggingService.LogException(ex, "Error uploading to BTS controlled P8 servers.", category: "Imaging");
+                _loggingService.LogException(ex, "Error uploading to BTS controlled P8 servers.", category: "Imaging");
+                return null;
             }
         }
 
@@ -171,36 +208,23 @@ namespace James.Data.Imaging
         /// <param name="additionalParams">The additional parameters.</param>
         /// <returns></returns>
         /// <exception cref="ArgumentException">Criteria must contain a document category;<paramref name="criteria"/></exception>
-        public override async Task<ImagingDocument[]> SearchDocumentsAsync(ImagingSearchCriteria criteria,
+        public async Task<List<ImagingDocument>> SearchDocumentsAsync(ImagingSearchCriteria criteria,
             KeyValuePair<string, string>[]? searchOptions = null,
             KeyValuePair<string, string>[]? additionalParams = null)
         {
             if (string.IsNullOrWhiteSpace(criteria.DocClass))
                 throw new ArgumentException("Criteria must contain a document category", "criteria");
             var p8Criteria = ThisToThat.ToEntityType<searchCriteria>(criteria);
-            async Task<document[]> P8Call(ClientBase<P8Service> client) => (await ((P8Service)client).searchCurrentDocumentsAsync(new searchCurrentDocuments( string.Empty, string.Empty, [p8Criteria], true,
-                (searchOptions ?? DefaultSearchOptions).Select(so => so.ToEntry()).ToArray(),
-                (additionalParams ?? DefaultAdditionalParams).Select(so => so.ToEntry()).ToArray()))).documentList;
-            var foundDocuments = await kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
-            return foundDocuments?.Select(fd => fd.ToImagingDocument()).ToArray()??[];
-        }
-
-        /// <summary>
-        /// Searches for all documents connected to an id and an (optional) doc type.
-        /// </summary>
-        /// <param name="id">The connected id.</param>
-        /// <param name="docCategory">The <see cref="document"/> category.</param>
-        /// <param name="documentType">Document type (optional).</param>
-        /// <returns>All found documents</returns>
-        public override async Task<ImagingDocument[]> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory,
-            string? documentType = null)
-        {
-            var searchCriteria = GetSearchCriteria(id, docCategory);
-            if (null != documentType)
-                searchCriteria.WhereClause += " AND " + DocType + " = '" + documentType + "'";
-
-            var results = await SearchDocumentsAsync(searchCriteria);
-            return results;
+            var p8SearchOptions = (searchOptions ?? DefaultSearchOptions).Select(so => so.ToEntry()).ToArray();
+            var p8AdditionalParams = (additionalParams ?? DefaultAdditionalParams).Select(so => so.ToEntry()).ToArray();
+            async Task<document[]> P8Call(ClientBase<P8Service> client) =>
+                (await ((P8Service)client).searchCurrentDocumentsAsync(
+                    new searchCurrentDocuments(string.Empty, string.Empty,
+                        [p8Criteria], true,
+                        p8SearchOptions,
+                        p8AdditionalParams))).documentList;
+            var foundDocuments = await _kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
+            return foundDocuments?.Select(fd => fd.ToImagingDocument()).ToList()??[];
         }
 
         private static Dictionary<ImagingDocumentCategory, ImagingProperty[]> _availableProperties =
@@ -216,7 +240,7 @@ namespace James.Data.Imaging
                     category.DocumentCategory(),
                     DefaultAdditionalParams.Select(so => so.ToEntry()).ToArray()));
 
-            var propertyMappings = await kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
+            var propertyMappings = await _kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
             return _availableProperties[category] = propertyMappings?.properties.Select(p => p.ToImagingProperty())
                 .ToArray()??[];
         }

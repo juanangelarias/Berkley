@@ -41,7 +41,8 @@ namespace James.Shared.Server.Kong0
                     }
                 };
                 OperationContext.Current.OutgoingMessageProperties[HttpRequestMessageProperty.Name] = requestProperty;
-                return await clientFunc(client);
+                var result = await clientFunc(client);
+                return result;
             }
         }
         //Cache token for all users

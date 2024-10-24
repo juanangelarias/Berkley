@@ -1,4 +1,5 @@
-﻿using James.Shared.Model;
+﻿using James.Shared.Imaging;
+using James.Shared.Model;
 
 namespace James.Shared.Data
 {
@@ -11,7 +12,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber);
         public Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString);
-        public Task<IDataAccessResult<Obligee>> GetObligeeById(Guid id);
+        public Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id);
         public Task<IDataAccessResult<Obligee?>> GetObligeeByObligeeNumber(string obligeeNumber);
         public Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId);
         public Task<IDataAccessResult<List<Bond>>> GetObligeeSecondaryBonds(Guid obligeeId);
@@ -37,6 +38,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
+        public Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
@@ -63,10 +65,23 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
         public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
         public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
-        public Task<IDataAccessResult<string>> GetBondRequestNumber(string bondNumber);
+        public Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber);
         public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
+
+        public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
+            bool useDocCategoryAsCriteria = true);
+
+        public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory,
+            string? documentType = null);
+        public Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(ImagingDocumentCategory docCategory,
+            Guid documentId);
+
+        public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames();
+
+        public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
+            DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
     }
 
     public interface ISaveDataResult

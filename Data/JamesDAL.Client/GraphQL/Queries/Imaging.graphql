@@ -1,0 +1,41 @@
+query GetImagingSearchCriteria(
+  $id: String!
+  $docCategory: ImagingDocumentCategory!
+  $useDocCategoryAsCriteria: Boolean! = true
+) {
+  imagingSearchCriteria(
+    id: $id
+    docCategory: $docCategory
+    useDocCategoryAsCriteria: $useDocCategoryAsCriteria
+  ) {
+    docClass
+    fields
+    maxResults
+    whereClause
+    searchTimeoutSeconds
+    contentSearchString
+  }
+}
+
+query GetImagingDocuments($id: String!, $category: ImagingDocumentCategory!, $type: String!) {
+  searchDocuments(id: $id, docCategory: $category, documentType: $type) {
+    contentList {
+      filename
+    }
+    documentClass
+    folderPath
+    guid
+    entryDate
+    properties{
+      name
+      displayName
+      value
+    }
+  }
+}
+
+query GetImagingDocumentProperties($docCategory:ImagingDocumentCategory!, $guid:UUID!){
+  documentDetails(docCategory: $docCategory, documentId: $guid){
+    filename
+  }
+}

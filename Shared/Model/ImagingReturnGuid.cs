@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace James.Shared.Test
+namespace James.Shared.Model
 {
-    internal class ToScreenText
+    public class ImagingReturnGuid
     {
+        public Guid DocumentId { get; set; }
     }
 }

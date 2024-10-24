@@ -1,13 +1,12 @@
 ﻿@using James.Shared
+@using James.Shared.Imaging
+@using SharedBusinessLogic
 @inherits JamesLayoutComponentBase
 
 @inject TooltipService TooltipService
 @inject NavigationManager NavigationManager
 
 @inject IDataAccess DataAccess
-@inject ILoggingService LoggingService
-@inject NotificationService NotificationService
-
 <Theme />
 
 <RadzenDataGrid @ref="poaGrid" TItem="PowerOfAttorney" Data="powerOfAttorneys"
@@ -24,7 +23,7 @@
         <RadzenDataList TItem="PowerOfAttorneyDocumentStatus" Data="poa.PowerOfAttorneyDocumentStatuses" Density="Density.Compact"
                         Style="max-height:400px; overflow:auto; width:100%" AllowVirtualization="true" WrapItems="false" AllowPaging="false">
             <Template Context="poaDocStatus">
-                <PowerOfAttorneyDocumentStatusCard poaDocumentStatus="poaDocStatus" />
+                <PowerOfAttorneyDocumentStatusCard PoaDocumentStatus="poaDocStatus" />
             </Template>
         </RadzenDataList>
     </Template>
@@ -77,12 +76,19 @@
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.CurrentIssued" Style="width: 95%" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="POA">
-            <Template>
-                <RadzenButton Variant="Variant.Text" Icon="picture_as_pdf" Size="ButtonSize.ExtraSmall" />
+        <RadzenDataGridColumn Title="POA Document">
+            <Template Context="poa">
+                @* <RadzenButton Variant="Variant.Text" Icon="picture_as_pdf" Size="ButtonSize.ExtraSmall" /> *@
+                <InlineImagingDocument DocumentCategory="ImagingDocumentCategory.Agency"
+                                       DocumentId="@poa.ImagingId" 
+                                       DocumentType="@($"AG{poa.Insurer.ToWritingCompany()}POA" )"
+                                       ImagingId="@poa.Agency.AgencyNumber"
+                                       AllowUploads=@(null != poa.Insurer.ToWritingCompany()) 
+                                       UploadAction=@(guid=>PoaDocumentUploaded(guid, poa.Id)) 
+                                       UploadErrorAction=@(msg=>LogUploadError(msg, poa)) />
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
+@*         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
                               Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
             <Template Context="poa">
                 <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.ExtraSmall" Click="@(args => EditPoaRow(poa))" @onclick:stopPropagation="true" />
@@ -92,7 +98,7 @@
             <EditTemplate Context="poa">
                 <RadzenButton Variant="Variant.Text" Icon="save" Size="ButtonSize.ExtraSmall" Click="@(args => SavePoaRow(poa))" />
             </EditTemplate>
-        </RadzenDataGridColumn>
+        </RadzenDataGridColumn> *@
     </Columns>
     <LoadingTemplate>
         <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
@@ -253,7 +259,7 @@
             }
             else
             {
-                //TODO: Deal with errors.
+                LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
             }
 
         }
@@ -279,4 +285,23 @@
         await LoadPOAs();
     }
     void ShowTooltip(ElementReference elementReference, string message, TooltipOptions options = null) => TooltipService.Open(elementReference, message, options);
+
+    private void PoaDocumentUploaded(Guid? documentId, Guid poaId)
+    {
+        DataAccess.SetPowerOfAttorneyDocumentLink(poaId, documentId);
+    }
+
+    private void LogUploadError(string message, PowerOfAttorney poa)
+    {
+        LoggingService.LogError("Upload failed", 
+            "Uploading a file to imaging returned an error", 
+            "Imaging", 
+            data: new Dictionary<string, string>
+            {
+                { "Error Message", message }, 
+                { "AgencyNumber", poa.Agency.AgencyNumber},
+                { "Poa Id", poa.Id.ToString()}
+            });
+    }
+
 }

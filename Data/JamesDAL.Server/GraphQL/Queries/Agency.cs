@@ -154,6 +154,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(p => p.PowerOfAttorneyDocumentStatuses)
                 .ThenInclude(p => p.DocumentType)
                 .Include(p => p.StatusNavigation)
+                .Include(p=>p.Agency)
                 .ToListAsync();
         }
 
@@ -200,6 +201,8 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.AgencyCommissions.Where(ac => ac.AgencyId == agencyId).ToListAsync();
         }
-        
+
+        //[Authorize]
+        //public async Task<List<>>
     }
 }

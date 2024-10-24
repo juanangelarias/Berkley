@@ -1,14 +1,15 @@
 ﻿using HotChocolate.Subscriptions;
+using James.Data.Imaging;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Shared;
 using James.Shared.Data;
-using System.Diagnostics.Contracts;
+using James.Shared.Imaging;
 
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
         public async Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber)
         {
@@ -20,7 +21,7 @@ namespace James.Data.Server
         }
         public async Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber)
         {
-            return await ExecuteGet(async() => await query.GetAccountActiveLinesOfAuthority(accountNumber, contextFactory));
+            return await ExecuteGet(async () => await query.GetAccountActiveLinesOfAuthority(accountNumber, contextFactory));
         }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
@@ -133,7 +134,7 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId)
         {
             return await ExecuteGet(async () => await query.GetAllLegalEntityAddresses(legalEntityId, contextFactory));
-            
+
         }
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
         {
@@ -159,6 +160,11 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
         }
 
+        public async Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId)
+        {
+            return await ExecuteSave(async()=> await agencyMutation.CreateAgencyPOADocumentLink(poaId, imagingDocumentId, eventSender, contextFactory));
+        }
+
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
             return await ExecuteSave((async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2,
@@ -170,7 +176,7 @@ namespace James.Data.Server
             Guid legalEntityId, string addressType)
         {
             return await ExecuteSave(async () =>
-                await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode, 
+                await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode,
                 legalEntityId, addressType, contextFactory));
 
         }
@@ -358,14 +364,32 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await agencyMutation.SaveCommissionRates(agencyId, rates, eventSender, contextFactory));
         }
 
-        public async Task<IDataAccessResult<string>> GetBondRequestNumber(string bondNumber)
+        public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
         {
-            return await ExecuteGet(async () => await query.GetBondRequestNumber(bondNumber, contextFactory));
+            return await ExecuteGet(async () => await query.GetBondRequestNumberType(bondNumber, contextFactory));
         }
 
         public async Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber)
         {
             return await ExecuteGet(async () => await query.GetBondNumber(bondRequestNumber, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
+            ImagingDocumentCategory docCategory, Guid documentId)
+        {
+            return await ExecuteGet(async () => await query.GetDocumentDetails(docCategory, documentId, imagingAccess));
+        }
+
+        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
+        {
+            return await ExecuteGet(async ()=> await query.GetPOADocumentNames(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId,
+            string? comments)
+        {
+            return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorneyDocumentStatus(id, requested,
+                received, documentTypeId, comments, eventSender, contextFactory));
         }
 
         //UNDONE:  Refactor to DRY out the code
@@ -404,12 +428,87 @@ namespace James.Data.Server
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
-            //var eventValueTask =
-            //    await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified");
-            //eventValueTask.ReadEventsAsync();
-            ////UNDONE:
-            //return await Task.FromResult(FakeSubscription.Create);
             return OnAddressModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Address>>(onNext, onError, onComplete));
+        }
+
+        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory, string? documentType = null)
+        {
+            return await ExecuteGet(async () =>
+                await query.SearchDocumentsAsync(id, docCategory, documentType, contextFactory,
+                    imagingAccess));
+        }
+
+        ///// <summary>
+        ///// Searches for all documents connected to an id and an (optional) doc type.
+        ///// </summary>
+        ///// <param name="id">The connected id.</param>
+        ///// <param name="docCategory">The <see cref="document"/> category.</param>
+        ///// <param name="documentType">Document type (optional).</param>
+        ///// <returns>All found documents</returns>
+        //public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(ImagingSearchCriteria criteria, KeyValuePair<string, string>[]? searchOptions = null,
+        //    KeyValuePair<string, string>[]? additionalParams = null)
+        //{
+        //    return await ExecuteGet(async ()=> await imagingAccess.SearchDocuments(criteria, searchOptions, additionalParams));
+        //}
+
+        public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id,
+            ImagingDocumentCategory docCategory,
+            bool useDocCategoryAsCriteria = true)
+        {
+            return await ExecuteGet(async () => await ImagingSearchCriteria(id, docCategory, useDocCategoryAsCriteria));
+        }
+
+        private async Task<ImagingSearchCriteria> ImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
+            bool useDocCategoryAsCriteria = true)
+        {
+            id = id.Trim();
+            var criteria = new ImagingSearchCriteria()
+            {
+                MaxResults = 2000,
+                Fields = string.Join(",", ImagingAccessBase.DocumentPropertyFields)
+            };
+            if (useDocCategoryAsCriteria)
+            {
+                criteria.DocClass = docCategory.DocumentCategory();
+            }
+
+            string? bondNumber;
+            switch (docCategory)
+            {
+                case ImagingDocumentCategory.Account: //1
+                    criteria.WhereClause = $"{ImagingAccessBase.AccountId} = '{id}'";
+                    break;
+                case ImagingDocumentCategory.Bond: //2
+                    criteria.WhereClause = $"{ImagingAccessBase.PolicyNo} = '{id}'";
+                    var bidBondType = (await GetBondRequestNumberType(id)).Data;
+                    //TODO: Handle errors above
+                    criteria.WhereClause =
+                        $"({criteria.WhereClause} OR {(string.Equals(bidBondType.Type, "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ImagingAccessBase.ContBidId : ImagingAccessBase.CommBidId)} = '{bidBondType.BondRequestNumber}')";
+                    break;
+                case ImagingDocumentCategory.Agency: //3
+                    criteria.WhereClause = $"{ImagingAccessBase.AgencyNo} = '{id}'";
+                    break;
+                case ImagingDocumentCategory.CommBid: //4
+                    criteria.WhereClause = $"{ImagingAccessBase.CommBidId} = '{id}'";
+                    bondNumber = (await GetBondNumber(id)).Data;
+                    //TODO:Handle GraphQl errors
+                    if (!string.IsNullOrWhiteSpace(bondNumber))
+                        criteria.WhereClause = $"({criteria.WhereClause} OR {ImagingAccessBase.PolicyNo} = '{bondNumber}')";
+                    break;
+                case ImagingDocumentCategory.ContBid: //5
+                    criteria.WhereClause = $"{ImagingAccessBase.ContBidId} = '{id}'";
+                    bondNumber = (await GetBondNumber(id)).Data;
+                    //TODO:Handle GraphQl errors
+                    if (!string.IsNullOrWhiteSpace(bondNumber))
+                        criteria.WhereClause = $"({criteria.WhereClause} OR {ImagingAccessBase.PolicyNo} = '{bondNumber}')";
+                    break;
+                case ImagingDocumentCategory.Billing: //SearchBillingDocuments
+                    criteria.WhereClause = $"{ImagingAccessBase.AccountId} = '{id}''";
+                    break;
+                default:
+                    throw new ArgumentException("Invalid docCategory", nameof(docCategory));
+            }
+            return criteria;
         }
 
         private readonly Dictionary<Guid, ServerSideSubscription<SubscriptionResult<Address>>> _onAddressModified = new();
@@ -421,7 +520,7 @@ namespace James.Data.Server
                 if (_onAddressModified.ContainsKey(addressId) == false)
                 {
                     _onAddressModified[addressId] = new(eventReceiver
-                        .SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified_"+addressId).Result.ReadEventsAsync(), CancellationToken.None);
+                        .SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified_" + addressId).Result.ReadEventsAsync(), CancellationToken.None);
                 }
 
                 return _onAddressModified[addressId];

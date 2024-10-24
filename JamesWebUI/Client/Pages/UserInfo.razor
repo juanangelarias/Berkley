@@ -2,12 +2,14 @@
 @using James.Shared.Model
 @using System.Diagnostics
 @using James.Shared
+@using James.Shared.Imaging
 @inject HttpClient Http
 @* @attribute [Authorize] *@
 @inject ILoggingService _logging;
 <h3>User Info</h3>
-
-
+<hr/>
+<VirtualFileSimpleUpload Title="POA Form Upload" DocumentCategory="ImagingDocumentCategory.Agency" />
+<hr />
 <table>
     <tr>
         <td>Username</td>
@@ -35,7 +37,7 @@
     </tr>
     <tr>
         <td>IsUnderwriter</td>
-        <td>@(SiteUserInfo?.IsUnderwriter == true?"True":"false")</td>
+        <td>@(SiteUserInfo?.IsUnderwriter == true ? "True" : "false")</td>
     </tr>
     <tr>
         <td>IsHomeOfficeApprover</td>
@@ -44,7 +46,7 @@
     <tr>
         <td>Email</td>
         <td>@SiteUserInfo?.Email</td>
-    </tr> 
+    </tr>
     <tr>
         <td style="vertical-align: top">AD Groups</td>
         <td>
@@ -95,7 +97,7 @@
         // Debug.WriteLine(body);
         _logging.LogInformation("Calling /GetCurrentUserInfo from UserInfo.razor");
 
-        SiteUserInfo = await Http.GetFromJsonAsync<SiteUserInfo>("/GetCurrentUserInfo");
+        //SiteUserInfo = await Http.GetFromJsonAsync<SiteUserInfo>("/GetCurrentUserInfo");
         // Debug.WriteLine(SiteUserInfo);
         //TODO: Error handling
     }

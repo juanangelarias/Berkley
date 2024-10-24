@@ -1,5 +1,8 @@
 ﻿query GetBondRequestNumberByBondNumber($bondNumber: String!) {
-    bondRequestNumber(bondNumber: $bondNumber)
+    bondRequestNumberType(bondNumber: $bondNumber) {
+    bondRequestNumber
+    type
+  }
 }
 
 query GetBondNumberByBondRequestNumber($bondRequestNumber: String!) {

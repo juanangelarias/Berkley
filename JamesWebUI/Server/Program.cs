@@ -10,7 +10,6 @@ using James.Shared.Data;
 using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Server;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
@@ -42,11 +41,6 @@ try
     ConfirmAppSettingsEntry("Auth0:ClientId");
     ConfirmAppSettingsEntry("Auth0:ClientSecret");
     var auth0Authority = config["Auth0:Authority"]!;
-    //builder.Services.AddHttpClient("Auth0UserInfo",
-    //client => client.BaseAddress = new Uri(auth0Authority))
-    //    .AddHttpMessageHandler<TokenHandler>();
-    //builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
-    //    .CreateClient("Auth0UserInfo"));
 
 
     var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
@@ -110,6 +104,8 @@ try
     builder.Services.AddScoped<IUserShared, UserShared>();
     builder.Services.AddScoped<ILoggingShared, LoggingShared>();
     builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
+    builder.Services.AddScoped<ImagingKong0Helper>();
+    builder.Services.AddScoped<ServerImagingAccess>();
     builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
     if (OperatingSystem.IsWindows())
     {
@@ -119,7 +115,7 @@ try
         ConfirmAppSettingsEntry("Kong0:Imaging:client_id");
         ConfirmAppSettingsEntry("Kong0:Imaging:client_secret");
         ConfirmAppSettingsEntry("Kong0:Imaging:service_url");
-        builder.Services.SetupImagingForKong(config["Kong0:Imaging:client_id"]!, config["Kong0:Imaging:client_secret"]!, config["Kong0:Imaging:audience"]!);
+        builder.Services.SetupImagingForKong(config);
     }
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AccountMutations>();
@@ -245,7 +241,7 @@ try
         .AddInteractiveWebAssemblyRenderMode();
     //.AddAdditionalAssemblies(typeof(App).Assembly)
 
-    app.MapGraphQL("/graphql");
+    app.MapGraphQL();
 
     app.Run();
 }

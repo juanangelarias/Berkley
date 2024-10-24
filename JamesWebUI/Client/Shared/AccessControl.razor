@@ -18,7 +18,8 @@
         </RadzenProfileMenu>
     </Authorized>
     <NotAuthorized>
-        <a href="@JamesConstants.LOG_IN_PATH?redirectUri=@Navigation.Page()">Log in</a>
+        <RadzenButton Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary" 
+                      Text="Log in" Click="BeginLogin" />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -28,6 +29,12 @@
         if (item.Text == "Logout")
             //NOTE:  forceLoad must be true below to prevent the client side from trying to handle the logout request
             Navigation.NavigateTo(JamesConstants.LOG_OUT_PATH + "?redirectUri=/", true);
+    }
+
+    private async Task BeginLogin()
+    {
+        //Force load is required so that the login is processed on the server
+        Navigation.NavigateTo(JamesConstants.LOG_IN_PATH + "?redirectUri=" + Navigation.Page(), true);
     }
 
 }

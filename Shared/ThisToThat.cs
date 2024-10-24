@@ -45,7 +45,8 @@ namespace James.Shared
 
                         var destEnumerableType = propMatch.dProp.PropertyType;
                         var sList = (IEnumerable)propMatch.sProp.GetValue(source)!;
-                        propMatch.dProp.SetValue(result, CopyIEnumerable(sList, destEnumerableType));
+                        if (sList != null!)
+                            propMatch.dProp.SetValue(result, CopyIEnumerable(sList, destEnumerableType));
                     }
                     else if(propMatch.dProp.PropertyType == typeof(string))
                         //Simply cast source to string
@@ -109,7 +110,7 @@ namespace James.Shared
         private static IEnumerable CopyIEnumerable(IEnumerable source, Type destType)
         {
             //HACK: Will fail on multi-argument generic list.  I don't believe they will be encountered in these conversions.
-
+            if (null! == source) return null!;
             //Confirm destination type is a generic IEnumerable and cache the result to avoid reflection hit.
             //TODO:Performance test this
             if (!_validIEnumerableTypes.Contains(destType))

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using James.Shared.Imaging;
 
 namespace James.Shared.Model
 {
@@ -10,12 +11,38 @@ namespace James.Shared.Model
     {
         public string Guid { get; set; }
         public string DocumentClass { get; set; }
-        public string FolderPath { get; set; }
-        public ImagingProperty[]? Properties { get; set; }
+        public string? FolderPath { get; set; }
+        public DateTime EntryDate { get; set; }
+        public List<ImagingProperty>? Properties { get; set; }
+        public List<ImagingContent>? ContentList { get; set; }
+
+        public string Filename
+        {
+            get
+            {
+                var baseFilename = Properties.SingleOrDefault(p => p.Name == "DocRemarks").Value ??
+                                                 (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
+                var fileType = Path.GetExtension(baseFilename);
+                if (string.Empty == fileType)
+                {
+                    var mimeType = Properties.SingleOrDefault(p => p.Name == "MimeType").Value ??
+                                   (null == ContentList || ContentList.Count == 0 ? "" : ContentList[0].MimeType);
+                    baseFilename = Path.ChangeExtension(baseFilename, MimeTypes.ExtensionFromMimeType(mimeType));
+                }
+
+                return baseFilename;
+            }
+        }
         public override string ToString()
         {
             return $"Doc Class: {DocumentClass}\\r\\nFolder Path = {FolderPath}\\r\\nGuid = {Guid}";
         }
+    }
+
+    public class ImagingContent
+    {
+        public string Filename { get; set; }
+        public string MimeType { get; set; }
     }
 
     public class ImagingSearchCriteria
@@ -54,7 +81,7 @@ namespace James.Shared.Model
         public string RequiredFormatRegex { get; set; }
         public bool SystemGenerated { get; set; }
         public bool SystemGeneratedSpecified { get; set; }
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 }
 

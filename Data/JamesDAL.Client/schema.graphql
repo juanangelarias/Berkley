@@ -13,6 +13,7 @@ type Mutation {
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
   createAgencyStatusLog(input: CreateAgencyStatusLogInput!): CreateAgencyStatusLogPayload!
   createAgencyPOA(input: CreateAgencyPOAInput!): CreateAgencyPOAPayload!
+  createAgencyPOADocumentLink(input: CreateAgencyPOADocumentLinkInput!): CreateAgencyPOADocumentLinkPayload!
   deleteAgencyPOA(input: DeleteAgencyPOAInput!): DeleteAgencyPOAPayload!
   createAgencyInventory(input: CreateAgencyInventoryInput!): CreateAgencyInventoryPayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
@@ -61,7 +62,7 @@ type Query {
   agentByAgentId(agentId: UUID!): Agent!
   searchAgents(searchString: String!): [Agent!]!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
-  bondRequestNumber(bondNumber: String!): String!
+  bondRequestNumberType(bondNumber: String!): BondRequestNumberType
   bondNumber(bondRequestNumber: String!): String
   branches: [Branch!]!
   divisions: [DivisionDm!]!
@@ -74,6 +75,9 @@ type Query {
   allLegalEntityPhoneNumbers(legalEntityId: UUID!): [PhoneNumber!]!
   phoneTypes: [PhoneTypeDm!]!
   addressTypes: [AddressTypeDm!]!
+  searchDocuments(id: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
+  documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
+  imagingSearchCriteria(id: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
   allInsurers: [Insurer!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
@@ -156,8 +160,8 @@ type PowerOfAttorney {
   firstIssued: Date
   currentIssued: Date
   comments: String
-  status: UUID!
   imagingId: UUID
+  status: String!
   agency: Agency!
   insurer: Insurer!
   onlineBondSystems: [OnlineBondSystem!]!
@@ -189,6 +193,7 @@ type AgencyLicense {
   termination: Date
   appointingState: Boolean!
   isActive: Boolean!
+  imagingId: UUID
   agency: Agency!
   agent: Agent
   stateNavigation: State!
@@ -267,6 +272,7 @@ type Bond {
   daysToCancel: Int
   externalRemarks: String
   sfaabondType: String
+  enforceNmls: Boolean
   accountNumNavigation: Account!
   additionalObligeesNavigation: [AdditionalObligee!]!
   agent: LegalEntity
@@ -468,6 +474,7 @@ type Account {
   pocinterims: Boolean!
   interimWips: Boolean!
   indemnityComments: String
+  creditReportImagingId: UUID
   accountPrograms: [AccountProgram!]!
   accountStatusLogs: [AccountStatusLog!]!
   additionalRelatedParties: [AdditionalRelatedParty!]!
@@ -512,6 +519,11 @@ type Account {
   phoneNumbers: [LegalEntityPhone!]!
   mainEmailAddress: String
   emailAddresses: [LegalEntityEmail!]!
+}
+
+type BondRequestNumberType {
+  bondRequestNumber: String!
+  type: String!
 }
 
 type Branch {
@@ -649,6 +661,35 @@ type AddressTypeDm {
   legalEntityAddresses: [LegalEntityAddress!]!
 }
 
+type ImagingDocument {
+  guid: String!
+  documentClass: String!
+  folderPath: String
+  entryDate: DateTime!
+  properties: [ImagingProperty!]
+  contentList: [ImagingContent!]
+  filename: String!
+}
+
+enum ImagingDocumentCategory {
+  INVALID
+  ACCOUNT
+  BOND
+  AGENCY
+  COMM_BID
+  CONT_BID
+  BILLING
+}
+
+type ImagingSearchCriteria {
+  contentSearchString: String!
+  docClass: String!
+  fields: String!
+  maxResults: Int!
+  searchTimeoutSeconds: Int!
+  whereClause: String!
+}
+
 type Insurer {
   id: UUID!
   created: DateTime!
@@ -657,6 +698,7 @@ type Insurer {
   defaultRateGroup: String
   currencyCountry: String!
   lenumPeopleSoft: String
+  writingCompany: String
   agencyLicenses: [AgencyLicense!]!
   bondHolds: [BondHold!]!
   bonds: [Bond!]!
@@ -665,6 +707,7 @@ type Insurer {
   insurerStates: [InsurerState!]!
   onlineBondSystems: [OnlineBondSystem!]!
   powerOfAttorneys: [PowerOfAttorney!]!
+  writingCompanyNavigation: WritingCompanyDm
   fullName: String!
   mainAddress: Address
   addresses: [LegalEntityAddress!]!
@@ -902,6 +945,16 @@ type LegalEntityEmail {
   typeNavigation: EmailTypeDm!
 }
 
+type InsurerState {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  insurerId: UUID!
+  state: String!
+  insurer: Insurer!
+  stateNavigation: State!
+}
+
 type CountryDm {
   code: String!
   created: DateTime!
@@ -909,6 +962,33 @@ type CountryDm {
   name: String!
   insurers: [Insurer!]!
   states: [State!]!
+}
+
+type ImagingContent {
+  filename: String!
+  mimeType: String!
+}
+
+type ImagingProperty {
+  choiceOption: [ImagingChoice!]
+  dataType: ImagingPropertyDataType!
+  dataTypeSpecified: Boolean!
+  dateListValue: [DateTime]!
+  dateValue: DateTime!
+  dateValueSpecified: Boolean!
+  displayName: String!
+  description: String!
+  listValue: [String!]!
+  name: String!
+  readOnly: Boolean!
+  readOnlySpecified: Boolean!
+  required: Boolean!
+  requiredSpecified: Boolean!
+  requiredFormat: String!
+  requiredFormatRegex: String!
+  systemGenerated: Boolean!
+  systemGeneratedSpecified: Boolean!
+  value: String
 }
 
 type UserLineOfAuthority {
@@ -1034,7 +1114,7 @@ type ImagingCategoryTabDivision {
   divisionCode: String
   categoryNavigation: ImagingCategory!
   divisionCodeNavigation: DivisionDm
-  tabNameNavigation: ImagingTab!
+  imagingTab: ImagingTab!
 }
 
 type RegionDm {
@@ -1168,6 +1248,7 @@ type Ratio {
   cashFromFinancing: Int
   comments: String
   netChangeCash: Int
+  imagingId: UUID
   accountNumNavigation: Account!
   balanceSheets: [BalanceSheet!]!
 }
@@ -1837,14 +1918,12 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type InsurerState {
+type WritingCompanyDm {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  insurerId: UUID!
-  state: String!
-  insurer: Insurer!
-  stateNavigation: State!
+  name: String!
+  insurers: [Insurer!]!
 }
 
 type AccountReference {
@@ -1969,6 +2048,26 @@ type BidStatusDm {
   bondRequests: [BondRequest!]!
 }
 
+type BidStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  status: String!
+  order: Int!
+  bondRequestCommercials: [BondRequestCommercial!]!
+  bondRequests: [BondRequest!]!
+}
+
+type BidStatusDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  status: String!
+  order: Int!
+  bondRequestCommercials: [BondRequestCommercial!]!
+  bondRequests: [BondRequest!]!
+}
+
 type AccountClassDm {
   id: UUID!
   created: DateTime!
@@ -2045,6 +2144,7 @@ type WorkInProgressSummary {
   revenueRemaining: Long!
   costToComplete: Long!
   totalEstimatedGrossProfit: Long!
+  imagingId: UUID
   workInProgressJobs: [WorkInProgressJob!]!
 }
 
@@ -2212,6 +2312,29 @@ type SurchargeTypeDm {
   surcharges: [Surcharge!]!
 }
 
+enum ImagingPropertyDataType {
+  STRING
+  STRING_LIST
+  DATE
+  DATE_LIST
+  INTEGER
+  INTEGER_LIST
+  DOUBLE
+  DOUBLE_LIST
+  CHOICE_LIST_STRING
+  CHOICE_LIST_INTEGER
+  CHOICE_LIST_STRING_MULTI
+  CHOICE_LIST_INTEGER_MULTI
+  BOOLEAN
+  BOOLEAN_LIST
+  UNKOWN
+}
+
+type ImagingChoice {
+  displayValue: String!
+  value: String!
+}
+
 type SicratioTypeDm {
   id: UUID!
   created: DateTime!
@@ -2368,10 +2491,19 @@ input CreateAgencyPOAInput {
   firstIssued: Date
   currentIssued: Date
   comments: String
-  status: UUID!
+  status: String!
 }
 
 type CreateAgencyPOAPayload {
+  boolean: Boolean
+}
+
+input CreateAgencyPOADocumentLinkInput {
+  poaId: UUID!
+  imagingDocumentId: UUID
+}
+
+type CreateAgencyPOADocumentLinkPayload {
   boolean: Boolean
 }
 
@@ -2427,7 +2559,7 @@ input SetPowerOfAttorneyInput {
   firstIssued: Date
   currentIssued: Date
   comments: String
-  status: UUID!
+  status: String!
 }
 
 type SetPowerOfAttorneyPayload {

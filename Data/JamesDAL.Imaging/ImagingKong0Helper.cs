@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using James.Shared;
 using James.Shared.Imaging;
-using System.Web.Services.Description;
 using James.Shared.Server.Kong0;
 using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.Versioning;
-using System.ServiceModel.Channels;
-using James.Shared;
-using Microsoft.Extensions.Configuration;
 using System.ServiceModel;
+using System.ServiceModel.Channels;
+using Microsoft.Extensions.Configuration;
 using WcfCoreMtomEncoder;
 
 namespace James.Data.Imaging
@@ -37,7 +31,7 @@ namespace James.Data.Imaging
                         };
 
                     //Get the message encoding type and the binding elements of the newly created custom binding.
-                    //retreive all non encoding elements first, then our encoding element, then create an mtom encoding element from that.
+                    //retrieve all non encoding elements first, then our encoding element, then create an mtom encoding element from that.
                     //finally, prepend our new mtom to the elements without encoding in a new custom binding
                     var messageEncodingBindingElementType = typeof(MessageEncodingBindingElement);
                     var elements = customP8SoapServiceBinding.CreateBindingElements();
@@ -48,6 +42,9 @@ namespace James.Data.Imaging
                     // Encoding is before transport, so we prepend the MTOM message encoding binding element
                     // https://learn.microsoft.com/en-us/dotnet/framework/wcf/extending/custom-bindings
                     _customBinding = new CustomBinding(elementsWithoutEncodingElement.Prepend(newEncodingElement));
+//#if P8DEBUG
+//                    _customBinding.Elements.AddRange();
+//#endif
                 }
                 return _customBinding;
             }
@@ -63,13 +60,15 @@ namespace James.Data.Imaging
         /// <param name="kong0ClientId"></param>
         /// <param name="kong0ClientSecret"></param>
         /// <param name="kong0Audience"></param>
-        /// <remarks>Must be called after ILoggingService and ServerDataAccess are added to the dependancy injection container.</remarks>
+        /// <remarks>Must be called after ILoggingService and ServerDataAccess are added to the dependency injection container.</remarks>
         [SupportedOSPlatform("windows")]
-        public static void SetupImagingForKong(this IServiceCollection services,
-            string kong0ClientId, string kong0ClientSecret, string kong0Audience)
+        public static void SetupImagingForKong(this IServiceCollection services, IConfiguration config)
+            //string kong0ClientId, string kong0ClientSecret, string kong0Audience)
         {
-            KongTokenRequest.SetRequest(typeof(ImagingKong0Helper), new KongTokenRequest { Audience = kong0Audience, ClientId = kong0ClientId, ClientSecret = kong0ClientSecret });
-            services.AddScoped<IImagingAccess, ServerImagingAccess>();
+            KongTokenRequest.SetRequest(typeof(ImagingKong0Helper), new KongTokenRequest { Audience = config["Kong0:audience"]!, ClientId = config["Kong0:Imaging:client_id"]!, ClientSecret = config["Kong0:Imaging:client_secret"]! });
+            ServerImagingAccess.EndpointUrl = config["Kong0:Imaging:service_url"]!;
+            services.Configure<ServerImagingAccess>(config);
+            services.AddScoped<ServerImagingAccess>();
             services.AddSingleton<IKongCredentialCache, KongCredentialCache>();
             services.AddScoped<ImagingKong0Helper>();
         }

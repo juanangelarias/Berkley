@@ -22,5 +22,5 @@ public partial class ImagingCategoryTabDivision
 
     public virtual DivisionDm? DivisionCodeNavigation { get; set; }
 
-    public virtual ImagingTab TabNameNavigation { get; set; } = null!;
+    public virtual ImagingTab ImagingTab { get; set; } = null!;
 }

@@ -49,6 +49,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\James.Shared.Server\James.Shared.Server.csproj" />
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
+    <ProjectReference Include="..\JamesDAL.Imaging\James.Data.Imaging.csproj" />
   </ItemGroup>
 
 </Project>

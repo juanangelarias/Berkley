@@ -1,38 +1,22 @@
-﻿using James.Shared.Model;
-
-namespace James.Shared.Imaging
+﻿namespace James.Shared.Imaging
 {
     /// <summary>
     /// Contract for interfacing with the imaging system
     /// </summary>
     public interface IImagingAccess
     {
-        public Task UploadDocument(string docType, string filename, Stream fileContentStream,
+        public Task<Guid?> UploadDocument(string docType, string filename, Stream fileContentStream,
             string contentType, ImagingDocumentCategory category, string id, 
             string batchName, DateTime scanDate, CancellationToken cancellationToken = default);
-
-        public Task<ImagingDocument[]> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory,
-            string? documentType = null);
-        public Task<ImagingDocument[]> SearchDocumentsAsync(ImagingSearchCriteria criteria,
-            KeyValuePair<string, string>[]? searchOptions = null,
-            KeyValuePair<string, string>[]? additionalParams = null);
-
-        public ImagingSearchCriteria GetSearchCriteria(string id, ImagingDocumentCategory docCategory,
-                                                        bool useDocCategoryAsCriteria = true);
     }
+
+    //TODO:Merge this with ServerImagingAccess
     public abstract class ImagingAccessBase : IImagingAccess
     {
-        public abstract Task UploadDocument(string docType, string filename, 
+        public abstract Task<Guid?> UploadDocument(string docType, string filename, 
                                             Stream fileContentStream,
             string contentType,
             ImagingDocumentCategory category, string id, string batchName, DateTime scanDate, CancellationToken cancellationToken = default);
-
-        public abstract Task<ImagingDocument[]> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory,
-            string? documentType = null);
-
-        public abstract Task<ImagingDocument[]> SearchDocumentsAsync(ImagingSearchCriteria criteria,
-            KeyValuePair<string, string>[]? searchOptions = null,
-            KeyValuePair<string, string>[]? additionalParams = null);
 
         /// <summary>
         /// Gets the file types allowed by BTS central imaging team.
@@ -116,7 +100,7 @@ namespace James.Shared.Imaging
             DocRemarks
         };
 
-        protected static readonly KeyValuePair<string, string>[] DefaultSearchOptions = { };
+        protected static readonly KeyValuePair<string, string>[] DefaultSearchOptions = [];
 
         protected static readonly KeyValuePair<string, string>[] DefaultAdditionalParams =
         [
@@ -133,57 +117,6 @@ namespace James.Shared.Imaging
             if (AllowedFileTypes.Contains(extensionOrMimeType.TrimStart(".".ToCharArray()).ToLowerInvariant())) return true;
             var ext = MimeTypes.ExtensionFromMimeType(extensionOrMimeType);
             return (null != ext && AllowedFileTypes.Contains(ext));
-        }
-
-        public ImagingSearchCriteria GetSearchCriteria(string id, ImagingDocumentCategory docCategory,
-                                                        bool useDocCategoryAsCriteria = true)
-        {
-            id = id.Trim();
-            var criteria = new ImagingSearchCriteria()
-            {
-                MaxResults = 2000,
-                Fields = string.Join(",", DocumentPropertyFields)
-            };
-            if (useDocCategoryAsCriteria)
-            {
-                criteria.DocClass = docCategory.DocumentCategory();
-            }
-
-            switch (docCategory)
-            {
-                case ImagingDocumentCategory.Account: //1
-                    criteria.WhereClause = $"{AccountId} = '{id}'";
-                    break;
-                //TODO: Switch to IDataAccress
-                //case ImagingDocumentCategory.Bond: //2
-                //    criteria.WhereClause = $"{PolicyNo} = '{id}'";
-                //    var myBidbondType = UtilityImaging.getBidNumber(id); //check for bid number.
-                //    if (myBidbondType.bidID > -1)
-                //        criteria.WhereClause =
-                //            $"({criteria.WhereClause} OR {(string.Equals(myBidbondType.bondType.Trim(), "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ContBidId : CommBidId)} = '{myBidbondType.bidID}')";
-                //    break;
-                case ImagingDocumentCategory.Agency: //3
-                    criteria.WhereClause = $"{AgencyNo} = '{id}'";
-                    break;
-                //case ImagingDocumentCategory.CommBid: //4
-                //    criteria.WhereClause = $"{CommBidId} = '{id}'";
-                //    bondNum = UtilityImaging.GetBondForBid(int.Parse(id), "Commercial");
-                //    if (!string.IsNullOrWhiteSpace(bondNum))
-                //        criteria.WhereClause = $"({criteria.whereClause} OR {PolicyNo} = '{bondNum}')";
-                //    break;
-                //case ImagingDocumentCategory.ContBid: //5
-                //    criteria.WhereClause = $"{ContBidId} = '{id}'";
-                //    bondNum = UtilityImaging.GetBondForBid(int.Parse(id), "Contract");
-                //    if (!string.IsNullOrWhiteSpace(bondNum))
-                //        criteria.WhereClause = $"({criteria.WhereClause} OR {PolicyNo} = '{bondNum}')";
-                //    break;
-                case ImagingDocumentCategory.Billing: //SearchBillingDocuments
-                    criteria.WhereClause = $"{AccountId} = '{id}''";
-                    break;
-                default:
-                    throw new ArgumentException("Invalid docCategory", "docCategory");
-            }
-            return criteria;
         }
     }
 }

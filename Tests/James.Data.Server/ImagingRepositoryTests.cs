@@ -37,7 +37,7 @@ namespace James.Data.Server.Test
                 //Build Server does not have network access to the imaging servers.
                 return;
             var services = CreateServer();
-            var serverImagingAccess = (ServerImagingAccess)services.GetService(typeof(IImagingAccess))!;
+            var serverImagingAccess = (ServerImagingAccess)services.GetService(typeof(ServerImagingAccess))!;
             var categoriesToTest = 6;
             var propertiesAvailableByCategory = new Dictionary<ImagingDocumentCategory, ImagingProperty[]>();
             foreach (var imagingDocumentCategory in Enumerable.Range(1, categoriesToTest)
@@ -82,7 +82,7 @@ namespace James.Data.Server.Test
                 //Build Server does not have network access to the imaging servers.
                 return;
             var services = CreateServer();
-            var serverImagingAccess = (ServerImagingAccess)services.GetService(typeof(IImagingAccess))!;
+            var serverImagingAccess = (ServerImagingAccess)services.GetService(typeof(ServerImagingAccess))!;
             var docs = TestDocList.Select(d => new Tuple<string, Guid>(d.Item1.DocumentCategory(), d.Item2)).ToArray();
             List<(Stream, string, string)> docsFound = new();
             try
@@ -114,7 +114,7 @@ namespace James.Data.Server.Test
                 //Build Server does not have network access to the imaging servers.
                 return;
             var services = CreateServer();
-            var serverImagingAccess = (ServerImagingAccess)services.GetService(typeof(IImagingAccess))!;
+            var serverImagingAccess = (ServerImagingAccess)services.GetService(typeof(ServerImagingAccess))!;
             //BSGAccounting: {72E95C6E-0F26-4A9B-A1ED-11B11FCD6FC9}
             //BSGAgency: {82437C64-CFC6-4335-9AC9-9FD062F256B9}
             //BSGBilling: {B0F428CA-8B01-462D-BE42-0391F59B328F}
@@ -183,7 +183,7 @@ namespace James.Data.Server.Test
             services.AddScoped<ILoggingShared, LoggingShared>();
             services.AddScoped<ILoggingService, ServerLoggingService>();
             services.AddScoped<IDataAccess, ServerDataAccess>();
-            services.SetupImagingForKong(config["Kong0:Imaging:client_id"]!, config["Kong0:Imaging:client_secret"]!, config["Kong0:audience"]!);
+            services.SetupImagingForKong(config);
 
 
             services.AddLogging(c=>c
@@ -286,10 +286,10 @@ namespace James.Data.Server.Test
                 //Build Server does not have network access to the imaging servers.
                 return;
             var services = CreateServer();
-            var serverImagingAccess = (ServerImagingAccess)services.GetService(typeof(IImagingAccess))!;
-            var searchResult = await serverImagingAccess.SearchDocumentsAsync("322", ImagingDocumentCategory.Agency);
-            Assert.NotNull(searchResult);
-            Assert.True(searchResult.Any());
+            var serverDataAccess = (ServerDataAccess)services.GetService(typeof(IDataAccess))!;
+            var searchResult = await serverDataAccess.SearchDocuments("322", ImagingDocumentCategory.Agency);
+            Assert.NotNull(searchResult.Data);
+            Assert.True(searchResult.Data.Any());
         }
 
     }

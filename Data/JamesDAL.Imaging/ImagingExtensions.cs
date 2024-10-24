@@ -37,7 +37,21 @@ namespace James.Data.Imaging
         public static ImagingDocument ToImagingDocument(this document doc)
         {
             return new ImagingDocument
-                {Guid = doc.guid, DocumentClass = doc.documentClass, FolderPath = doc.folderPath};
+            {
+                Guid = doc.guid, DocumentClass = doc.documentClass, FolderPath = doc.folderPath,
+                ContentList = doc.contentList?.Select(c=>c.ToImagingContent()).ToList(),
+                Properties = doc.properties?.Select(p=>p.ToImagingProperty()).ToList(),
+                EntryDate = doc.EntryDate()
+            };
+        }
+
+        public static ImagingContent ToImagingContent(this content content)
+        {
+            return new ImagingContent
+            {
+                Filename = content.fileName,
+                MimeType = content.mimeType
+            };
         }
 
         //TODO:Investigate of automapper or similar can do there conversions

@@ -188,6 +188,8 @@ public partial class Ratio
 
     public int? NetChangeCash { get; set; }
 
+    public Guid? ImagingId { get; set; }
+
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual ICollection<BalanceSheet> BalanceSheets { get; set; } = new List<BalanceSheet>();

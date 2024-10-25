@@ -288,21 +288,22 @@ namespace James.Data.Client
                 "UserProfileByUserName");
         }
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
-            DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
+            DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status)
         {
-            return await ExecuteGet<PowerOfAttorney>(async () =>
-                await jamesClient.SetPowerOfAttorney.ExecuteAsync(new SetPowerOfAttorneyInput
-                {
-                    PoaId = poaId,
-                    InsurerId = insurerId,
-                    Limit = limit,
-                    ReferenceNumber = referenceNumber,
-                    FirstIssued = firstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    CurrentIssued = currentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-                    Comments = comments,
-                    Status = status
-                }), graphQlFunctionName: "SetPowerOfAttorney");
-
+            throw new NotImplementedException();
+            //return await ExecuteGet<PowerOfAttorney>(async () =>
+            //    await jamesClient.SetPowerOfAttorney.ExecuteAsync(new SetPowerOfAttorneyInput
+            //    {
+            //        PoaId = poaId,
+            //        InsurerId = insurerId,
+            //        Limit = limit,
+            //        ReferenceNumber = referenceNumber,
+            //        FirstIssued = firstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+            //        CurrentIssued = currentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+            //        Comments = comments,
+            //        Status = status
+            //    }), graphQlFunctionName: "SetPowerOfAttorney");
+            //UNDONE: Fix after regenerating GraphQl schema
         }
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
@@ -488,21 +489,23 @@ namespace James.Data.Client
             return GraphQLSaveResult(saveResult);
         }
         public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
-            DateOnly? currentIssued, string? comments, Guid status)
+            DateOnly? currentIssued, string? comments, string status)
         {
-            var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
-            {
-                PoaId = poaId,
-                InsurerId = insurerId,
-                AgencyId = agencyId,
-                Limit = limit,
-                ReferenceNumber = referenceNumber,
-                FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
-                CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
-                Status = status,
-                Comments = comments
-            });
-            return GraphQLSaveResult(saveResult);
+            throw new NotImplementedException();
+            //var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
+            //{
+            //    PoaId = poaId,
+            //    InsurerId = insurerId,
+            //    AgencyId = agencyId,
+            //    Limit = limit,
+            //    ReferenceNumber = referenceNumber,
+            //    FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
+            //    CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
+            //    Status = status,
+            //    Comments = comments
+            //});
+            //return GraphQLSaveResult(saveResult);
+            //UNDONE: Fix after regenerating GraphQl schema
         }
         public async Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId)
         {

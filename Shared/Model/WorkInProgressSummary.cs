@@ -44,5 +44,7 @@ public partial class WorkInProgressSummary
 
     public long TotalEstimatedGrossProfit { get; set; }
 
+    public Guid? ImagingId { get; set; }
+
     public virtual ICollection<WorkInProgressJob> WorkInProgressJobs { get; set; } = new List<WorkInProgressJob>();
 }

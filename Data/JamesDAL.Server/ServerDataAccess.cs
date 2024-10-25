@@ -155,7 +155,7 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetUserProfileByUserName(userName, contextFactory));
         }
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber, DateOnly? firstIssued,
-            DateOnly? currentIssued, string? comments, Guid status)
+            DateOnly? currentIssued, string? comments, string status)
         {
             return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit, referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
         }
@@ -237,7 +237,7 @@ namespace James.Data.Server
                 return new SaveDataResult { Errors = [ex.Message] };
             }
         }
-        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, Guid status)
+        public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status)
         {
             try
             {

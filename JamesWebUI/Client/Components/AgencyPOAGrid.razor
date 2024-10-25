@@ -36,11 +36,11 @@
                                 Data="@powerOfAttorneys?.OrderBy(p => p.StatusNavigation.Status).GroupBy(p => p.Status).Select(p => p?.FirstOrDefault()).ToList()" />
             </FilterTemplate>
             <EditTemplate Context="poa">
-                <RadzenDropDown TValue="Guid" @bind-Value="poa.Status" Data="@AllStatuses" Style="width: 95%"
+                <RadzenDropDown TValue="string" @bind-Value="poa.Status" Data="@AllStatuses" Style="width: 95%"
                                 TextProperty="Status" ValueProperty="Id" />
             </EditTemplate>
             <Template Context="poa">
-                <RadzenText Text="@(AllStatuses.FirstOrDefault(a => a.Id == poa.Status).Status)" />
+                <RadzenText Text="@poa.Status" />
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Insurer" Property="Insurer.IdNavigation.FullName"

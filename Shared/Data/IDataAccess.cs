@@ -1,7 +1,5 @@
 ﻿using James.Shared.Imaging;
 using James.Shared.Model;
-using System.Threading.Tasks;
-using System;
 
 namespace James.Shared.Data
 {

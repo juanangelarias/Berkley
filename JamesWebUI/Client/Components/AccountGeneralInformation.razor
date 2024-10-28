@@ -1,9 +1,11 @@
 ﻿@using James.Shared
+@using James.Shared.Imaging
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
-@inject IDataAccess _dataAccess
+@inject IDataAccess DataAccess
+<RenderModeBackground />
 
 <RadzenRow>
     <RadzenColumn Size="6">
@@ -95,10 +97,15 @@
                             <RadzenTextBox Value="Placeholder" />
                         </RadzenFormField>
                     </RadzenColumn>
-                    <RadzenColumn Size="3">
-                        <RadzenFormField Text="Paydex/Intelliscore" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.PaydexIntelliscore?.ToString()" />
-                        </RadzenFormField>
+                    <RadzenColumn Size="3" Visible="@(null!=AccountToDisplay)">
+                        <InlineImagingDocument DocumentShortName="Current Credit Report"
+                                               DocumentCategory="ImagingDocumentCategory.Account"
+                                               DocumentId="@AccountToDisplay.CreditReportImagingId"
+                                               DocumentType="CBR"
+                                               LinkableDocumentTypes="CBR,AEXPNR,AOCRPT,AEQFXR"
+                                               ImagingId ="@AccountToDisplay.AccountNum"
+                                               UploadAction="@(guid=> CreditReportUploaded(guid, @AccountToDisplay.AccountNum))" 
+                                               UploadErrorAction=@(msg=>LogUploadError(msg)) />
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
@@ -110,6 +117,11 @@
                     <RadzenColumn>
                         <RadzenFormField Text="SIC Name" AllowFloatingLabel="false" Variant="Variant.Text">
                             <RadzenTextBox Placeholder="SIC Name" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="Paydex/Intelliscore" AllowFloatingLabel="false" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.PaydexIntelliscore?.ToString()" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
@@ -345,5 +357,27 @@
     async Task SaveAdditionalInformationChanges()
     {
 
+    }
+
+    private async Task CreditReportUploaded(Guid? documentId, string accountNum)
+    {
+        var saveResult = await DataAccess.SetAccountCreditReportDocumentLink(documentId, accountNum);
+        if (saveResult.Success)
+            NotifySuccessfulSave("Credit Report");
+        else
+            NotifySaveError(saveResult.Errors, "credit report");
+    }
+
+    private void LogUploadError(string message)
+    {
+        LoggingService.LogError("Upload failed",
+            "Uploading a credit report to imaging returned an error",
+            "Imaging",
+            data: new Dictionary<string, string>
+            {
+                { "Error Message", message },
+                { "AccountNum", AccountToDisplay.AccountNum}
+            });
+        NotifySaveError([message], "credit report");
     }
 }

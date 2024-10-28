@@ -1,0 +1,5 @@
+mutation SetAccountCurrentCreditReportLink($input: SetCurrentCreditReportLinkInput!) {
+  setCurrentCreditReportLink(input: $input) {
+    boolean
+  }
+}

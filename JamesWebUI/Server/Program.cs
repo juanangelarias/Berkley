@@ -118,6 +118,7 @@ try
         builder.Services.SetupImagingForKong(config);
     }
     builder.Services.AddScoped<Query>();
+    builder.Services.AddScoped<AccountMutation>();
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
     builder.Services.AddScoped<GeneralMutations>();

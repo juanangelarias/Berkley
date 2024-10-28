@@ -60,6 +60,12 @@ mutation SetPoaDocumentLink($input: CreateAgencyPOADocumentLinkInput!) {
   }
 }
 
+mutation SetAgencyLicenseDocumentLink($input: CreateAgencyLicenseDocumentLinkInput!) {
+  createAgencyLicenseDocumentLink (input:$input){
+    boolean
+  }
+}
+
 mutation SetAgencyInventory($input: SetAgencyInventoryInput!){
     setAgencyInventory(input: $input){
         agencyInventory{

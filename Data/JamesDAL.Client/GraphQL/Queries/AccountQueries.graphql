@@ -1,80 +1,81 @@
-﻿query GetAccountByNumber($accountNumber: String){
-  accountByNumber(accountNumber: $accountNumber){
-    idNavigation{
-      fullName,
+﻿query GetAccountByNumber($accountNumber: String) {
+  accountByNumber(accountNumber: $accountNumber) {
+    idNavigation {
+      fullName
       legalEntityAddresses {
-        type,
-        address{
-          address1,
-          address2,
-          address3,
-          city,
-          stateCode,
-          stateCodeNavigation{
-            countryCode,
-            countryCodeNavigation{
+        type
+        address {
+          address1
+          address2
+          address3
+          city
+          stateCode
+          stateCodeNavigation {
+            countryCode
+            countryCodeNavigation {
               name
-            }     
-          },
+            }
+          }
           postalCode
         }
-      },
-      legalEntityPhones{
-        type,
+      }
+      legalEntityPhones {
+        type
         phoneNumber {
-          mainNumber,
+          mainNumber
           extension
         }
-      },
-      legalEntityEmails{
-        type, 
+      }
+      legalEntityEmails {
+        type
         emailAddress
       }
     }
-    bank,
+    bank
     agent {
-      idNavigation{
+      idNavigation {
         fullName
       }
-    },
-    agencyNumberNavigation{
-      idNavigation{
-        fullName,
-        legalEntityAddresses{
-          type,
-          address{
-            city,
+    }
+    agencyNumberNavigation {
+      idNavigation {
+        fullName
+        legalEntityAddresses {
+          type
+          address {
+            city
             stateCode
           }
         }
       }
     }
-    accountNum,
-    division,
-    homeOfficeReviewByNavigation{
+    accountNum
+    division
+    homeOfficeReviewByNavigation {
       fullName
-    },
-    homeOfficeReviewed,
-    branchReviewByNavigation{
+    }
+    homeOfficeReviewed
+    branchReviewByNavigation {
       fullName
-    },
-    branchReviewed,
-    attorney{
+    }
+    branchReviewed
+    attorney {
       idNavigation {
         fullName
-      },
+      }
       martindaleHubbellRating
-    },
-    underwriter{
-      idNavigation{
-        fullName,
-        initials,
-        title,
+    }
+    underwriter {
+      idNavigation {
+        fullName
+        initials
+        title
         email
-      },
+      }
       reportsTo
     }
-  } 
+    creditReportImagingId
+  }
 }
 
 query SearchAccounts($input: String!) {

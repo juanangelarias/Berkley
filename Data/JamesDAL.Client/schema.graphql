@@ -5,6 +5,7 @@ schema {
 }
 
 type Mutation {
+  setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
@@ -13,6 +14,7 @@ type Mutation {
   createAgencyStatusLog(input: CreateAgencyStatusLogInput!): CreateAgencyStatusLogPayload!
   createAgencyPOA(input: CreateAgencyPOAInput!): CreateAgencyPOAPayload!
   createAgencyPOADocumentLink(input: CreateAgencyPOADocumentLinkInput!): CreateAgencyPOADocumentLinkPayload!
+  createAgencyLicenseDocumentLink(input: CreateAgencyLicenseDocumentLinkInput!): CreateAgencyLicenseDocumentLinkPayload!
   deleteAgencyPOA(input: DeleteAgencyPOAInput!): DeleteAgencyPOAPayload!
   createAgencyInventory(input: CreateAgencyInventoryInput!): CreateAgencyInventoryPayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
@@ -84,6 +86,33 @@ type Query {
 type Subscription {
   onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
   onLicenseModified: AgencyLicense!
+}
+
+type Agent {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  nationalProducerNumber: String
+  defaultPhoneNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
+  defaultCellNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
+  defaultEmail: String @deprecated(reason: "Use standard email lookup instead.")
+  agencyLicenses: [AgencyLicense!]!
+  agentsInAgencies: [AgentsInAgency!]!
+  defaultCellNumberNavigation: PhoneNumber
+  defaultPhoneNumberNavigation: PhoneNumber
+  idNavigation: LegalEntity!
+  accounts: [Account!]!
+  licenses: [AgencyLicense!]!
+  fullName: String!
+  mainAddress: Address
+  addresses: [LegalEntityAddress!]!
+  mainPhoneNumber: PhoneNumber
+  phoneNumbers: [LegalEntityPhone!]!
+  mainEmailAddress: String
+  emailAddresses: [LegalEntityEmail!]!
+  givenName: String
+  middleInitial: String
+  familyName: String
 }
 
 type AgencyCommission {
@@ -485,33 +514,6 @@ type Account {
   phoneNumbers: [LegalEntityPhone!]!
   mainEmailAddress: String
   emailAddresses: [LegalEntityEmail!]!
-}
-
-type Agent {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  nationalProducerNumber: String
-  defaultPhoneNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
-  defaultCellNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
-  defaultEmail: String @deprecated(reason: "Use standard email lookup instead.")
-  agencyLicenses: [AgencyLicense!]!
-  agentsInAgencies: [AgentsInAgency!]!
-  defaultCellNumberNavigation: PhoneNumber
-  defaultPhoneNumberNavigation: PhoneNumber
-  idNavigation: LegalEntity!
-  accounts: [Account!]!
-  licenses: [AgencyLicense!]!
-  fullName: String!
-  mainAddress: Address
-  addresses: [LegalEntityAddress!]!
-  mainPhoneNumber: PhoneNumber
-  phoneNumbers: [LegalEntityPhone!]!
-  mainEmailAddress: String
-  emailAddresses: [LegalEntityEmail!]!
-  givenName: String
-  middleInitial: String
-  familyName: String
 }
 
 type BondRequestNumberType {
@@ -927,6 +929,52 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+type InsurerState {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  insurerId: UUID!
+  state: String!
+  insurer: Insurer!
+  stateNavigation: State!
+}
+
+type CountryDm {
+  code: String!
+  created: DateTime!
+  modified: DateTime!
+  name: String!
+  insurers: [Insurer!]!
+  states: [State!]!
+}
+
+type ImagingContent {
+  filename: String!
+  mimeType: String!
+}
+
+type ImagingProperty {
+  choiceOption: [ImagingChoice!]
+  dataType: ImagingPropertyDataType!
+  dataTypeSpecified: Boolean!
+  dateListValue: [DateTime]!
+  dateValue: DateTime!
+  dateValueSpecified: Boolean!
+  displayName: String!
+  description: String!
+  listValue: [String!]!
+  name: String!
+  readOnly: Boolean!
+  readOnlySpecified: Boolean!
+  required: Boolean!
+  requiredSpecified: Boolean!
+  requiredFormat: String!
+  requiredFormatRegex: String!
+  systemGenerated: Boolean!
+  systemGeneratedSpecified: Boolean!
+  value: String
 }
 
 type UserLineOfAuthority {
@@ -1856,14 +1904,12 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
-type InsurerState {
+type WritingCompanyDm {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  insurerId: UUID!
-  state: String!
-  insurer: Insurer!
-  stateNavigation: State!
+  name: String!
+  insurers: [Insurer!]!
 }
 
 type AccountReference {
@@ -1984,16 +2030,6 @@ type BidResultDm {
   modified: DateTime!
   description: String!
   order: Int!
-  bondRequests: [BondRequest!]!
-}
-
-type BidStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  status: String!
-  order: Int!
-  bondRequestCommercials: [BondRequestCommercial!]!
   bondRequests: [BondRequest!]!
 }
 
@@ -2293,6 +2329,15 @@ type DefaultGeneralLedgerAccount {
   accountClassNavigation: AccountClassDm!
 }
 
+input SetCurrentCreditReportLinkInput {
+  accountNum: String!
+  imagingDocumentId: UUID
+}
+
+type SetCurrentCreditReportLinkPayload {
+  boolean: Boolean
+}
+
 input CreateAgencyInput {
   parentId: UUID!
   fullName: String!
@@ -2429,6 +2474,15 @@ input CreateAgencyPOADocumentLinkInput {
 }
 
 type CreateAgencyPOADocumentLinkPayload {
+  boolean: Boolean
+}
+
+input CreateAgencyLicenseDocumentLinkInput {
+  licenseId: UUID!
+  imagingDocumentId: UUID
+}
+
+type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
 }
 

@@ -26,14 +26,14 @@ namespace JamesWebUI.Server.Controllers
         /// Gets the document from imaging.
         /// </summary>
         /// <param name="documentGuid">The document unique identifier.</param>
-        /// <param name="docType">Type of the document.</param>
+        /// <param name="documentCategory">Document class.</param>
         /// <returns>The file from imaging</returns>
-        [HttpGet("GetDocument/{docType}/{documentGuid:guid}")]
-        public async Task<ActionResult> GetDocument(Guid documentGuid, string docType)
+        [HttpGet("GetDocument/{documentCategory}/{documentGuid:guid}")]
+        public async Task<ActionResult> GetDocument(Guid documentGuid, ImagingDocumentCategory documentCategory)
         {
             try
             {
-                var (filestream, filename, contentType) = await ServerImagingAccess.GetFileStreamAsync(documentGuid, docType);
+                var (filestream, filename, contentType) = await ServerImagingAccess.GetFileStreamAsync(documentGuid, documentCategory);
                 //TODO: Check if imaging system has a file date that can be passed in below as LastModifiedDate
                 return new FileStreamResult(filestream, contentType) { FileDownloadName = filename };
             }

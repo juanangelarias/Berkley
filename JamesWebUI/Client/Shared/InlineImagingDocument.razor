@@ -2,37 +2,38 @@
 @inherits JamesLayoutComponentBase
 @inject TooltipService TooltipService
 @inject IDataAccess DataAccess
+@inject NavigationManager NavigationManager
 <RadzenStack Orientation="Orientation.Horizontal">
     <RadzenButton Icon="description"
                   Size="ButtonSize.Small"
                   ButtonStyle="ButtonStyle.Base"
                   Variant="Variant.Text"
                   Visible=@HasDocument
-                  MouseEnter="@(args => ShowTooltip(args,"Download POA Document"))"
+                  MouseEnter="@(args => ShowTooltip(args,"Download "+ DocumentShortName))"
                   Click=@DownloadDocument />
     <RadzenButton Icon="upload_file"
                   Size="ButtonSize.Small"
                   ButtonStyle="ButtonStyle.Base"
                   Variant="Variant.Text"
                   Visible=@(AllowUploads && !HasDocument)
-                  MouseEnter="@(args => ShowTooltip(args,"Upload POA Document"))"
+                  MouseEnter="@(args => ShowTooltip(args,"Upload "+ DocumentShortName))"
                   Click=@ShowSimpleUpload />
-    <RadzenButton Icon="edit"
+    <RadzenButton Icon="more_horiz"
                   Size="ButtonSize.ExtraSmall"
                   ButtonStyle="ButtonStyle.Base"
                   Variant="Variant.Text"
                   Visible=@(AllowUploads && HasDocument)
-                  MouseEnter="@(args => ShowTooltip(args,"Replace POA Document"))"
+                  MouseEnter="@(args => ShowTooltip(args,"Replace "+ DocumentShortName))"
                   Click=@ShowSimpleUpload />
     @* TODO: Discuss if a remove button is needed *@
 </RadzenStack>
 <script>
     window.triggerFileDownload = (fileName, url) => {
-      const anchorElement = document.createElement('a');
-      anchorElement.href = url;
-      anchorElement.download = fileName ?? '';
-      anchorElement.click();
-      anchorElement.remove();
+        const anchorElement = document.createElement('a');
+        anchorElement.href = url;
+        anchorElement.download = fileName ?? '';
+        anchorElement.click();
+        anchorElement.remove();
     }
 </script>
 @code {
@@ -45,17 +46,23 @@
     public required ImagingDocumentCategory DocumentCategory { get; set; }
     [Parameter]
     public required string DocumentType { get; set; }
+    [Parameter]
+    public string? LinkableDocumentTypes { get; set; }
     /// <summary>
     /// The Id used inside the DocumentCategory to link to an account/bond/bond request/agency/etc.
     /// </summary>
     [Parameter]
     public required string ImagingId { get; set; }
+
+    [Parameter] public bool AllowUploads { get; set; } = true;
     [Parameter]
-    public bool AllowUploads { get; set; }
-    [Parameter] 
     public Action<Guid?>? UploadAction { get; set; }
     [Parameter]
     public Action<string>? UploadErrorAction { get; set; }
+    /// <summary>
+    /// Used to make tooltip more descriptive.  Should be title cased.
+    /// </summary>
+    [Parameter] public string DocumentShortName { get; set; } = "Document";
 
     protected override Task OnParametersSetAsync()
     {
@@ -67,23 +74,26 @@
 
     //TODO: Load file name in background for tooltip
     void ShowTooltip(ElementReference elementReference, string message, TooltipOptions options = null) => TooltipService.Open(elementReference, message, options);
-    private Task DownloadDocument()
+    private async Task DownloadDocument()
     {
-        throw new NotImplementedException();
+        if (null == DocumentId) return;
+        NavigationManager.NavigateTo($"/ImagingRepository/GetDocument/{DocumentCategory}/{DocumentId}", true);
+        // throw new NotImplementedException();
     }
 
     private async Task ShowSimpleUpload()
     {
-        var dialogArguments = new Dictionary<string, object>() { { "Title", "Upload POA Document" }, 
+        var dialogArguments = new Dictionary<string, object>() { { "Title", "Upload POA Document" },
             { "DocumentCategory", DocumentCategory },
             {"DocumentType",DocumentType },
             {"DocumentId",DocumentId},
             {"ImagingId",ImagingId},
+            {"LinkableDocumentTypes",LinkableDocumentTypes},
             {"UploadAction", UploadAction}
         };
         var result = await DialogService.OpenAsync<VirtualFileSimpleUpload>("Attach POA Document", dialogArguments,
-            new DialogOptions{Width = "700px"});//TODO:Set DialogOptions
-        if (result is Guid)
+            new DialogOptions { Width = "700px" });//TODO:Set DialogOptions
+        if (null == result || result is Guid)
             //Set DocumentId to update UI
             DocumentId = result;
     }
@@ -96,10 +106,11 @@
             LoggingService.LogError("Upload failed",
                 "An upload to the imaging system failed.", "Imaging",
                 data: new Dictionary<string, string>
-                {
+                    {
                     { "Error Message", message }
-                });
-        } else
+                    });
+        }
+        else
             UploadErrorAction.Invoke(message);
     }
 }

@@ -5,7 +5,6 @@ namespace James.Data.Server.GraphQL.Queries
     public partial class Query
     {
         [Authorize]
-        //UNDONE: Change these all to sync Tasks
         public async Task<List<Agency>> SearchAgencies(string? stringToSearch, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -129,6 +128,7 @@ namespace James.Data.Server.GraphQL.Queries
         {
             var ctx = contextFactory.CreateDbContext();
             var result = await ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
+                .Include(lic=>lic.Agency)
                 .Include(lic => lic.Insurer)
                 .ThenInclude(lic => lic.IdNavigation)
                 .ToListAsync();

@@ -5,6 +5,7 @@ using James.Shared.Imaging;
 using James.Shared.Model;
 using StrawberryShake;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory;
@@ -127,6 +128,16 @@ namespace James.Data.Client
         public async Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId)
         {
             return await ExecuteSave(async () => await jamesClient.SetPoaDocumentLink.ExecuteAsync(new CreateAgencyPOADocumentLinkInput{ImagingDocumentId = imagingDocumentId, PoaId = poaId}));
+        }
+
+        public async Task<ISaveDataResult> SetAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetAgencyLicenseDocumentLink.ExecuteAsync(new CreateAgencyLicenseDocumentLinkInput { ImagingDocumentId = imagingDocumentId, LicenseId = licenseId }));
+        }
+
+        public async Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetAccountCurrentCreditReportLink.ExecuteAsync(new SetCurrentCreditReportLinkInput { ImagingDocumentId = documentId, AccountNum = accountNum }));
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)

@@ -1,5 +1,7 @@
 ﻿@using James.Shared.Imaging
 @inherits JamesLayoutComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
 @inject TooltipService TooltipService
 @inject IDataAccess DataAccess
 @inject NavigationManager NavigationManager
@@ -112,5 +114,23 @@
         }
         else
             UploadErrorAction.Invoke(message);
+    }
+
+    //The below is to prevent the file drop cursor from being shown except when the file is dragged onto the RadzenUpload
+    IJSObjectReference? _module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+            _module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./Shared/InlineImagingDocument.razor.js");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null)
+        {
+            await _module.DisposeAsync();
+        }
     }
 }

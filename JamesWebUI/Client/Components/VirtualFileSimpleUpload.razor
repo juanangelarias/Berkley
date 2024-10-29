@@ -1,32 +1,34 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @using System.Diagnostics
+@using System.Text.Json.Nodes
+@using System.Text.RegularExpressions
 @using James.Shared.Imaging
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
 @* @inject TooltipService TooltipService *@
 
-<RadzenTemplateForm TItem="string" Data="currentFileName">
-    @* Submit="@(args=>StartUpload(args))"> *@
-    <RadzenPanel Variant="Variant.Outlined">
-        <h3>@Title</h3>
-        <RadzenPanel Visible=@(!linkingToExisting)>
-            <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
-                <RadzenColumn Size="9">
-                    <RadzenUpload id="ddUpload" @ref="@uploadDD"
-                                  ChooseText="Drag and drop here or click to choose document"
-                                  Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?filename={currentFileName};documentId={DocumentId}")
-                                  InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
-                                  Change=@UploadFileChanged
-                                  Error=@UploadErrorHandler
-                                  Complete=@UploadComplete
-                                  Icon="upload_file"
-                                  Progress=@(args => OnProgress(args, "Drag and drop file to upload")) Style="width: 100%" />
-                </RadzenColumn>
-                <RadzenColumn Size="3">
-                    <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Secondary"
-                                  Text="Link to existing document" Click=@ToggleWorkflow />
-                </RadzenColumn>
-            </RadzenRow>
+@* Submit="@(args=>StartUpload(args))"> *@
+<RadzenPanel Variant="Variant.Outlined">
+    <h3>@Title</h3>
+    <RadzenPanel Visible=@(!linkingToExisting)>
+        <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
+            <RadzenColumn Size="9">
+                <RadzenUpload id="ddUpload" @ref="@uploadDD"
+                              ChooseText="Drag and drop here or click to choose document"
+                              Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?documentId={DocumentId}&filename={currentFileName}")
+                              InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
+                              Change=@UploadFileChanged
+                              Error=@UploadErrorHandler
+                              Complete=@UploadComplete
+                              Icon="upload_file"
+                              Progress=@(args => OnProgress(args, "Drag and drop file to upload")) Style="width: 100%" />
+            </RadzenColumn>
+            <RadzenColumn Size="3">
+                <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Secondary"
+                              Text="Link to existing document" Click=@ToggleWorkflow />
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenTemplateForm TItem="string" Data="currentFileName" Submit="@((args) =>StartUpload(args))">
             <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
                 <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:100%">
                     <ChildContent>
@@ -55,127 +57,120 @@
             <RadzenRow>
                 <RadzenColumn Size="12">
                     <RadzenButton Text="Upload" Disabled="@waitingForFileSelection"
-                                  class="rz-mt-4" Click="@(args=>StartUpload(args))" />
-                    @* ButtonType="ButtonType.Submit" /> *@
-                </RadzenColumn>
+                                  class="rz-mt-4"
+                                  ButtonType="ButtonType.Submit" />
+                </RadzenColumn>@* Click="@(args => StartUpload(args))" *@
             </RadzenRow>
-            <RadzenRow Visible="@(null != DocumentId)">
-                <RadzenColumn>
-                    <RadzenButton Text="Unlink Existing" 
-                                  class="rz-mt-4" Click="@(args=>Unlink(args))" />
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow Visible="@(!string.IsNullOrWhiteSpace(uploadError))">
-                <RadzenColumn Size="12">
-                    <RadzenText Text=@uploadError Style="color:red;font-weight:bold" />
-                </RadzenColumn>
-            </RadzenRow>
-        </RadzenPanel>
+        </RadzenTemplateForm>
+        <RadzenRow Visible="@(null != DocumentId)">
+            <RadzenColumn>
+                <RadzenButton Text="Unlink Existing"
+                              class="rz-mt-4" Click="@(args=>Unlink(args))" />
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow Visible="@(!string.IsNullOrWhiteSpace(uploadError))">
+            <RadzenColumn Size="12">
+                <RadzenText Text=@uploadError Style="color:red;font-weight:bold" />
+            </RadzenColumn>
+        </RadzenRow>
     </RadzenPanel>
-</RadzenTemplateForm>
-        <RadzenPanel Visible=@linkingToExisting Style="width:400px">
-            <RadzenRow>
-                <RadzenColumn Size="4">
-                    <RadzenButton Variant="Variant.Text" Icon="info" Text="Can't see the file?" />
-                </RadzenColumn>
-                <RadzenColumn Size="6">&nbsp;</RadzenColumn>
-                <RadzenColumn Size="2">
-                    <RadzenButton Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Secondary"
-                                  Text="Upload a new document" Click=@ToggleWorkflow />
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow>
-                <RadzenColumn>
-                    <RadzenText Text="POA Forms" Style="font-weight:700;font-size:1.5em;" />
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow>
-                <RadzenColumn>
-                    <RadzenDataList @ref=@existingList Data=@existingDocuments
-                                    TItem="ImagingDocument"
-                                    LoadData=@(args=>LoadExistingDocumentOptions(args))
-                                    IsLoading="@existingLoading">
+</RadzenPanel>
+<RadzenPanel Visible=@linkingToExisting Style="width:400px">
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <RadzenButton Variant="Variant.Text" Icon="info" Text="Can't see the file?" />
+        </RadzenColumn>
+        <RadzenColumn Size="6">&nbsp;</RadzenColumn>
+        <RadzenColumn Size="2">
+            <RadzenButton Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Secondary"
+                          Text="Upload a new document" Click=@ToggleWorkflow />
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenText Text="POA Forms" Style="font-weight:700;font-size:1.5em;" />
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenDataList @ref=@existingList Data=@existingDocuments
+                            TItem="ImagingDocument"
+                            LoadData=@(args=>LoadExistingDocumentOptions(args))
+                            IsLoading="@existingLoading">
+                <Template Context="doc">
+                    <RadzenRow>
+                        <RadzenColumn>
+                            <RadzenIcon Icon="Description" />
+                        </RadzenColumn>
+                        <RadzenColumn>
+                            <RadzenText Text=@doc.Filename Style="font-size:17px;font-weight:700" />
+                        </RadzenColumn>
+                        <RadzenColumn>
+                            <RadzenText Text=@doc.EntryDate.ToShortDateString() />
+                        </RadzenColumn>
+                        <RadzenColumn>
+                            <RadzenButton Variant="Variant.Text" Text="Link document" Icon="link"
+                                          Click=@(() => LinkExistingAndClose(doc.Guid)) />
+                        </RadzenColumn>
+                    </RadzenRow>
+                </Template>
+            </RadzenDataList>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenDataGrid TItem="ImagingDocument" IsLoading="@existingLoading"
+                            Data=@existingDocuments Style="min-width:600px">
+                <Columns>
+                    <RadzenDataGridColumn Width="50px">
                         <Template Context="doc">
-                            <RadzenRow>
-                                <RadzenColumn>
-                                    <RadzenIcon Icon="Description" />
-                                </RadzenColumn>
-                                <RadzenColumn>
-                                    <RadzenText Text=@doc.Filename Style="font-size:17px;font-weight:700" />
-                                </RadzenColumn>
-                                <RadzenColumn>
-                                    <RadzenText Text=@doc.EntryDate.ToShortDateString() />
-                                </RadzenColumn>
-                                <RadzenColumn>
-                                    <RadzenButton Variant="Variant.Text" Text="Link document" Icon="link"
-                                                  Click=@(() => LinkExistingAndClose(doc.Guid)) />
-                                </RadzenColumn>
-                            </RadzenRow>
+                            <RadzenIcon Icon="Description" />
                         </Template>
-                    </RadzenDataList>
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow>
-                <RadzenColumn>
-                    <RadzenDataGrid TItem="ImagingDocument" IsLoading="@existingLoading"
-                                    Data=@existingDocuments Style="min-width:600px">
-                        <Columns>
-                            <RadzenDataGridColumn Width="50px" >
-                                <Template Context="doc">
-                                    <RadzenIcon Icon="Description" />
-                                </Template>
-                            </RadzenDataGridColumn>
-                            <RadzenDataGridColumn Property="@nameof(ImagingDocument.Filename)"
-                                                  Title="Documents Uploaded"/>
-                            <RadzenDataGridColumn Property="@nameof(ImagingDocument.EntryDate)"
-                                                  Title="Uploaded" FormatString="{0:d}"/>
-                            <RadzenDataGridColumn >
-                                <Template Context="doc">
-                                    @* Text="Link document" Icon="link" *@
-                                    <RadzenButton Variant="Variant.Text"
-                                                  Click=@(() => LinkExistingAndClose(doc.Guid))>
-                                        <RadzenText Text="Link document"/>
-                                        <RadzenIcon Icon="link"/>
-                                    </RadzenButton>
-                                </Template>
-                            </RadzenDataGridColumn>
-                        </Columns>
-                    </RadzenDataGrid>
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow>
-                <RadzenColumn>
-                    <RadzenText Text=@searchError Style="color:red;font-weight:bold" />
-                </RadzenColumn>
-            </RadzenRow>
-    </RadzenPanel>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Property="@nameof(ImagingDocument.Filename)"
+                                          Title="Documents Uploaded" />
+                    <RadzenDataGridColumn Property="@nameof(ImagingDocument.EntryDate)"
+                                          Title="Uploaded" FormatString="{0:d}" />
+                    <RadzenDataGridColumn>
+                        <Template Context="doc">
+                            @* Text="Link document" Icon="link" *@
+                            <RadzenButton Variant="Variant.Text"
+                                          Click=@(() => LinkExistingAndClose(doc.Guid))>
+                                <RadzenText Text="Link document" />
+                                <RadzenIcon Icon="link" />
+                            </RadzenButton>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenText Text=@searchError Style="color:red;font-weight:bold" />
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenPanel>
 @* ReSharper disable CSharpWarnings::CS8618 *@
 @* ReSharper disable InconsistentNaming *@
 @code {
     RadzenUpload uploadDD;
     RadzenTextBox tbFilename;
     RadzenText uploadedBytes;
-    bool existingLoading = true;
     RadzenDataList<ImagingDocument> existingList;
     ImagingDocument[] existingDocuments = [];
-    string uploadError = "", searchError = "";
+
     [Parameter] public string Title { get; set; } = "Upload File To Imaging";
     [Parameter] public Action<Guid?>? UploadAction { get; set; }
     [Parameter] public Action<string>? ErrorAction { get; set; }
-    [Required]
     [Parameter] public required ImagingDocumentCategory DocumentCategory { get; set; }
-    [Required]
     [Parameter] public required string DocumentType { get; set; }
     [Parameter] public string? LinkableDocumentTypes { get; set; }
     [Parameter] public Guid? DocumentId { get; set; }
+    [Parameter] public required string ImagingId { get; set; }
 
-    [Required]
-    [Parameter]
-    public required string ImagingId
-    {
-
-        get; set;
-    }
+    bool existingLoading = true;
+    string uploadError = "", searchError = "";
 
     string currentFileName
     {
@@ -213,10 +208,11 @@
             UploadAction?.Invoke(linkDocGuid);
             //Autoclose
             DialogService.Close(DocumentId);
-        } else
-            LoggingService.LogError("Invalid Guid", 
-                "String passed to LinkExistingAndClose was not a valid guid.", 
-                "Virtual File", new Dictionary<string, string>{{"invalidGuid", guid }});
+        }
+        else
+            LoggingService.LogError("Invalid Guid",
+                "String passed to LinkExistingAndClose was not a valid guid.",
+                "Virtual File", new Dictionary<string, string> { { "invalidGuid", guid } });
     }
 
     private void UploadFileChanged(UploadChangeEventArgs args)
@@ -251,8 +247,8 @@
         StateHasChanged();
     }
 
-    // private async Task StartUpload(string args)
-    private async Task StartUpload(MouseEventArgs args)
+    private async Task StartUpload(string args)
+    // private async Task StartUpload(MouseEventArgs args)
     {
         if (null == currentFile) return;
         if (!uploadDD.HasValue)
@@ -269,13 +265,33 @@
 
     private void UploadComplete(UploadCompleteEventArgs args)
     {
-        if (string.IsNullOrWhiteSpace(uploadError))
-            UploadAction?.Invoke(DocumentId);
-        if (!args.Cancelled && Guid.TryParse(args.RawResponse, out var guid))
+        if (!string.IsNullOrWhiteSpace(uploadError))
         {
-            DocumentId = guid;
-            //Autoclose
-            DialogService.Close(guid);
+            NotifySaveError([uploadError], "uploaded file");
+            return;
+        }
+        //TODO: Read from args.rawresponse
+        if (!args.Cancelled && !string.IsNullOrWhiteSpace(args.RawResponse))
+        {
+            // args.RawResponse must have the surrounding quotes removed and  unicode character
+            // escape sequences decoded into the characters they represent.
+            var responseNode = JsonNode.Parse(Regex.Unescape(args.RawResponse.Trim('\"')));
+            if (null != responseNode && null != responseNode["DocumentID"] &&
+                Guid.TryParse(responseNode["DocumentID"]!.ToString(), out var guid))
+            {
+                DocumentId = guid;
+                try
+                {
+                    UploadAction?.Invoke(DocumentId);
+                    //Autoclose
+                    DialogService.Close(guid);
+                }
+                catch (Exception ex)
+                {
+                    LoggingService.LogException(ex, "UploadAction after upload failed.", category: "Imaging");
+                    NotifySaveError([ex.Message], "document association");
+                }
+            }
         }
     }
 
@@ -307,7 +323,7 @@
                 documentTypes.Add(DocumentType);
 
             //TODO: Pull the ability to do a parallel IDataAccess result query into shared code
-            var results =  documentTypes.AsParallel().Select( dt =>  DataAccess.SearchDocuments(ImagingId, DocumentCategory, dt)).ToList();
+            var results = documentTypes.AsParallel().Select(dt => DataAccess.SearchDocuments(ImagingId, DocumentCategory, dt)).ToList();
             await Task.WhenAll(results);
             if (results.All(r => r.Result.Success))
                 existingDocuments = results.SelectMany(r => r.Result.Data).ToArray();

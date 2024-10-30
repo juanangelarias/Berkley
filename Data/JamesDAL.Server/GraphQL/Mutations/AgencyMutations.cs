@@ -270,8 +270,25 @@ namespace James.Data.Server.GraphQL.Mutations
             var ctx = await contextFactory.CreateDbContextAsync();
             try
             {
-                var poa = ctx.PowerOfAttorneys.FirstOrDefault(p => p.Id == poaId);
+                var poa = ctx.PowerOfAttorneys.First(p => p.Id == poaId);
                 poa.ImagingId = imagingDocumentId;
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        [Authorize]
+        public async Task<bool> CreateAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId,
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var license = ctx.AgencyLicenses.First(p => p.Id == licenseId);
+                license.ImagingId = imagingDocumentId;
                 await ctx.SaveChangesAsync();
                 return true;
             }

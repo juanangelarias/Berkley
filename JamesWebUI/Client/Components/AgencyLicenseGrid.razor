@@ -1,6 +1,5 @@
-﻿@using System.Globalization;
-@using James.Shared
-@using StrawberryShake;
+﻿@using James.Shared
+@using James.Shared.Imaging
 
 @inherits JamesLayoutComponentBase
 
@@ -115,6 +114,17 @@
             <EditTemplate Context="license">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Termination" />
             </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Certificate" Width="60px">
+            <Template Context="lic">
+                <InlineImagingDocument DocumentShortName="License Certificate"
+                                       DocumentCategory="ImagingDocumentCategory.Agency"
+                                       DocumentId="@lic.ImagingId"
+                                       DocumentType="AGALIC"
+                                       ImagingId="@lic.Agency.AgencyNumber"
+                                       UploadAction=@(guid=> CertificateUploaded(guid, lic.Id))
+                                       UploadErrorAction=@(msg=>LogUploadError(msg, lic)) />
+            </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="license">
@@ -317,6 +327,30 @@
         await Task.Yield();
 
         isLoading = false;
+    }
+
+    private async Task CertificateUploaded(Guid? certificateId, Guid licenseId)
+    {
+        //Set the document link
+        var saveResult = await DataAccess.SetAgencyLicenseDocumentLink(licenseId, certificateId);
+        if (saveResult.Success)
+            NotifySuccessfulSave("License certificate");
+        else
+            NotifySaveError(saveResult.Errors, "license certificate");
+    }
+
+    private void LogUploadError(string message, AgencyLicense license)
+    {
+        LoggingService.LogError("Upload failed",
+            "Uploading a file to imaging returned an error",
+            "Imaging",
+            data: new Dictionary<string, string>
+                {
+                { "Error Message", message },
+                { "AgencyNumber", license.Agency.AgencyNumber},
+                { "License Id", license.Id.ToString()}
+                });
+        NotifySaveError([message],"license certificate");
     }
 
 }

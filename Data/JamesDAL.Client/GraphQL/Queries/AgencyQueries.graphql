@@ -181,21 +181,24 @@ query GetAgencyStatusLog($agencyNumber: String!){
 
 query GetAgencyLicenses($agencyId: UUID!) {
   agencyLicenses(agencyId: $agencyId) {
-    id,
-    isActive,
-    state,
-    appointingState,
-    licenseNumber,
-    isResident,
-    insurerId,
-    appointment,
-    expiration,
-    termination,
+    id
+    isActive
+    state
+    appointingState
+    licenseNumber
+    isResident
+    insurerId
+    appointment
+    expiration
+    termination
     insurer {
-      id,
-      idNavigation{
+      id
+      idNavigation {
         fullName
       }
+    }
+    agency {
+      agencyNumber
     }
   }
 }

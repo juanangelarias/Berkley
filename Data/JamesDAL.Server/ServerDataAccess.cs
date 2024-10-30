@@ -9,7 +9,7 @@ using James.Shared.Imaging;
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
         public async Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber)
         {
@@ -163,6 +163,18 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId)
         {
             return await ExecuteSave(async()=> await agencyMutation.CreateAgencyPOADocumentLink(poaId, imagingDocumentId, eventSender, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId)
+        {
+            return await ExecuteSave(async () =>
+                await agencyMutation.CreateAgencyLicenseDocumentLink(licenseId, imagingDocumentId, eventSender,
+                    contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum)
+        {
+            return await ExecuteSave(async ()=> await accountMutation.SetCurrentCreditReportLink(accountNum, documentId, eventSender, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)

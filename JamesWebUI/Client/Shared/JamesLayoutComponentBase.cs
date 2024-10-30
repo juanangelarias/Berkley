@@ -82,7 +82,16 @@ namespace JamesWebUI.Client.Shared
         /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
         protected void NotifySaveError(string[] errors, string itemSaved = "changes")
         {
-            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = $"There {(errors.Length==1?"was an error":"were errors")} saving {itemSaved}.  {string.Join("  ", errors)}", Duration = 15000 });
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} saving {itemSaved}.  {string.Join("  ", errors)}", Duration = 15000 });
+        }
+
+        /// <summary>
+        /// Generates standard notification that a load failed.
+        /// </summary>
+        /// <param name="itemSaved">The item that didn't load, default is "data".  Should NOT be title cased.</param>
+        protected void NotifyLoadError(string[] errors, string itemSaved = "data")
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} retrieving {itemSaved}.  {string.Join("  ", errors)}", Duration = 15000 });
         }
         #endregion
     }

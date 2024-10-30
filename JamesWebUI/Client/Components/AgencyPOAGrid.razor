@@ -79,25 +79,26 @@
         <RadzenDataGridColumn Title="POA Document">
             <Template Context="poa">
                 @* <RadzenButton Variant="Variant.Text" Icon="picture_as_pdf" Size="ButtonSize.ExtraSmall" /> *@
-                <InlineImagingDocument DocumentCategory="ImagingDocumentCategory.Agency"
-                                       DocumentId="@poa.ImagingId" 
+                <InlineImagingDocument DocumentShortName="POA Document"
+                                       DocumentCategory="ImagingDocumentCategory.Agency"
+                                       DocumentId="@poa.ImagingId"
                                        DocumentType="@($"AG{poa.Insurer.ToWritingCompany()}POA" )"
                                        ImagingId="@poa.Agency.AgencyNumber"
-                                       AllowUploads=@(null != poa.Insurer.ToWritingCompany()) 
-                                       UploadAction=@(guid=>PoaDocumentUploaded(guid, poa.Id)) 
+                                       AllowUploads=@(null != poa.Insurer.ToWritingCompany())
+                                       UploadAction=@(guid=>PoaDocumentUploaded(guid, poa.Id))
                                        UploadErrorAction=@(msg=>LogUploadError(msg, poa)) />
             </Template>
         </RadzenDataGridColumn>
-@*         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
-                              Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
-            <Template Context="poa">
-                <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.ExtraSmall" Click="@(args => EditPoaRow(poa))" @onclick:stopPropagation="true" />
-                <RadzenButton Variant="Variant.Text" Icon="post_add" Size="ButtonSize.ExtraSmall" MouseEnter="@(args => ShowTooltip(args, "Add New POA Document."))"/>
-                <RadzenButton Variant="Variant.Text" Icon="delete" Size="ButtonSize.ExtraSmall" Click="@(args => DeletePoaRow(poa))" />
-            </Template>
-            <EditTemplate Context="poa">
-                <RadzenButton Variant="Variant.Text" Icon="save" Size="ButtonSize.ExtraSmall" Click="@(args => SavePoaRow(poa))" />
-            </EditTemplate>
+        @*         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
+        Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
+        <Template Context="poa">
+        <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.ExtraSmall" Click="@(args => EditPoaRow(poa))" @onclick:stopPropagation="true" />
+        <RadzenButton Variant="Variant.Text" Icon="post_add" Size="ButtonSize.ExtraSmall" MouseEnter="@(args => ShowTooltip(args, "Add New POA Document."))"/>
+        <RadzenButton Variant="Variant.Text" Icon="delete" Size="ButtonSize.ExtraSmall" Click="@(args => DeletePoaRow(poa))" />
+        </Template>
+        <EditTemplate Context="poa">
+        <RadzenButton Variant="Variant.Text" Icon="save" Size="ButtonSize.ExtraSmall" Click="@(args => SavePoaRow(poa))" />
+        </EditTemplate>
         </RadzenDataGridColumn> *@
     </Columns>
     <LoadingTemplate>
@@ -117,7 +118,7 @@
 
     private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
     private List<PowerOfAttorneyStatusDm> AllStatuses { get; set; } = new List<PowerOfAttorneyStatusDm>();
-    
+
     private List<String> InsurerFilter = null;
     private List<Guid> StatusFilter = null;
 
@@ -286,22 +287,26 @@
     }
     void ShowTooltip(ElementReference elementReference, string message, TooltipOptions options = null) => TooltipService.Open(elementReference, message, options);
 
-    private void PoaDocumentUploaded(Guid? documentId, Guid poaId)
+    private async Task PoaDocumentUploaded(Guid? documentId, Guid poaId)
     {
-        DataAccess.SetPowerOfAttorneyDocumentLink(poaId, documentId);
+        var saveResult = await DataAccess.SetPowerOfAttorneyDocumentLink(poaId, documentId);
+        if (saveResult.Success)
+            NotifySuccessfulSave("POA document");
+        else 
+            NotifySaveError(saveResult.Errors, "poa document");
     }
 
     private void LogUploadError(string message, PowerOfAttorney poa)
     {
-        LoggingService.LogError("Upload failed", 
-            "Uploading a file to imaging returned an error", 
-            "Imaging", 
+        LoggingService.LogError("Upload failed",
+            "Uploading a file to imaging returned an error",
+            "Imaging",
             data: new Dictionary<string, string>
-            {
-                { "Error Message", message }, 
+                {
+                { "Error Message", message },
                 { "AgencyNumber", poa.Agency.AgencyNumber},
                 { "Poa Id", poa.Id.ToString()}
-            });
+                });
     }
 
 }

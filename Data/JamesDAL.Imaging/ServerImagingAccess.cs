@@ -61,9 +61,9 @@ namespace James.Data.Imaging
         private readonly P8ServiceClient _p8Client;
 
         [SupportedOSPlatform("windows")]
-        public async Task<(Stream, string, string)> GetFileStreamAsync(Guid documentGuid, string docType)
+        public async Task<(Stream, string, string)> GetFileStreamAsync(Guid documentGuid, ImagingDocumentCategory documentCategory)
         {
-            async Task<document> P8Call(ClientBase<P8Service> client) => await ((P8Service) client).getDocumentByIDAsync(string.Empty, string.Empty, docType, documentGuid.ToString(), false, AdditionalParams(_includeFilenameParam));
+            async Task<document> P8Call(ClientBase<P8Service> client) => await ((P8Service) client).getDocumentByIDAsync(string.Empty, string.Empty, documentCategory.DocumentCategory(), documentGuid.ToString(), false, AdditionalParams(_includeFilenameParam));
             var doc =  await _kong0Helper.ExecuteMethodAsync(_p8Client, P8Call);
             //var doc = await await kong0Helper.ExecuteMethodAsync(_p8Client, async client => await ((P8ServiceClient)client).getDocumentByIDAsync(string.Empty, string.Empty, docType, documentGuid.ToString(), false,
             //    AdditionalParams(_includeFilenameParam)));

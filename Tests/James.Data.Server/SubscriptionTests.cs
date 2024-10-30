@@ -186,7 +186,7 @@ ORDER BY cnt, a.Modified, a.Created");
                 });
             services.AddGraphQLServer()
                     .AddQueryType<Query>()
-                    .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
+                    .RegisterDbContextFactory<JamesDatabaseContext>()
                     .AddSubscriptionType<Subscription>()
                     .AddInMemorySubscriptions(options)
                     .AddMutationConventions();

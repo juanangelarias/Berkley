@@ -83,7 +83,7 @@ try
         .AddGraphQLServer()
         .AddAuthorization()
         .AddQueryType<Query>()
-        .RegisterDbContext<JamesDatabaseContext>(DbContextKind.Pooled)
+        .RegisterDbContextFactory<JamesDatabaseContext>()
         .AddSubscriptionType<Subscription>()
         .AddJamesGraphQlTypes()
         .AddMutationConventions()

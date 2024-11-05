@@ -3,3 +3,23 @@ mutation SetAccountCurrentCreditReportLink($input: SetCurrentCreditReportLinkInp
     boolean
   }
 }
+mutation SetAccountProgram($input: SetAccountProgramInput!) {
+  setAccountProgram(input: $input) {
+    accountProgram {
+      accountNum
+      aggregate
+      approvedBy
+      approvedDate
+      comments
+      created
+      createdBy
+      effective
+      expiration
+      homeOfficeApproved
+      id
+      modified
+      single
+      statusId
+    }
+  }
+} 

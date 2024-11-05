@@ -167,7 +167,7 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {
-            return await ExecuteGet(async () => await accountMutations.SetAccountProgram(programId, effective, expritation, single, aggregate, comments, statusId, contextFactory));
+            return await ExecuteGet(async () => await accountMutation.SetAccountProgram(programId, effective, expritation, single, aggregate, comments, statusId, contextFactory));
         }
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, string status)

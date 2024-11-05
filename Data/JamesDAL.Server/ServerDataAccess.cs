@@ -9,7 +9,7 @@ using James.Shared.Imaging;
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AgencyMutation agencyMutation, AccountMutations accountMutations, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
         public async Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber)
         {
@@ -167,7 +167,7 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {
-            return await ExecuteGet(async () => await acccountMutations.SetAccountProgram(programId, effective, expritation, single, aggregate, comments, statusId, contextFactory));
+            return await ExecuteGet(async () => await accountMutations.SetAccountProgram(programId, effective, expritation, single, aggregate, comments, statusId, contextFactory));
         }
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, string status)

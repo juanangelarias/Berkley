@@ -2048,26 +2048,6 @@ type BidStatusDm {
   bondRequests: [BondRequest!]!
 }
 
-type BidStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  status: String!
-  order: Int!
-  bondRequestCommercials: [BondRequestCommercial!]!
-  bondRequests: [BondRequest!]!
-}
-
-type BidStatusDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  status: String!
-  order: Int!
-  bondRequestCommercials: [BondRequestCommercial!]!
-  bondRequests: [BondRequest!]!
-}
-
 type AccountClassDm {
   id: UUID!
   created: DateTime!

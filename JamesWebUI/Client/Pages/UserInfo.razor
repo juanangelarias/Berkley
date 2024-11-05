@@ -1,14 +1,54 @@
 ﻿@page "/UserInfo"
-@using James.Shared.Model
 @using System.Diagnostics
 @using James.Shared
 @using James.Shared.Imaging
+@inject NotificationService NotificationService
 @inject HttpClient Http
-@* @attribute [Authorize] *@
+@attribute [Authorize]
 @inject ILoggingService _logging;
+<RenderModeBackground />
 <h3>User Info</h3>
-<hr/>
-<VirtualFileSimpleUpload Title="POA Form Upload" DocumentCategory="ImagingDocumentCategory.Agency" />
+<hr />
+<VirtualFileSimpleUpload Title="POA Form Upload"
+                         DocumentCategory="ImagingDocumentCategory.Account"
+                         DocumentType="@DocumentType"
+                         ImagingId="1005" />
+<hr />
+
+@* <RadzenTemplateForm TItem="string" Data="currentFileName">
+@* Submit="@(args=>StartUpload(args))">
+<RadzenPanel Variant="Variant.Outlined"> *@
+    <RadzenStack>
+        <RadzenUpload @ref="uploadDD"
+                      ChooseText="Drag and drop here or click to choose document"
+                      Auto="false" Multiple="false"
+                  Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?documentId={DocumentId}&filename={currentFileName}")
+                      Style="width:100%" Change=@UploadFileChanged
+                      Error=@UploadErrorHandler
+                      Complete=@UploadComplete
+                      InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})" />
+        @*    <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
+        <RadzenTemplateForm TItem="string" Data="currentFileName">
+        <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:100%">
+    <ChildContent>*@
+        <RadzenTextBox Name="tbFileName" @ref="tbFilename" @bind-Value=@currentFileName Style="width:100%" />
+    @*</ChildContent>
+        <Helper>
+        <RadzenRequiredValidator Component="tbFileName" Text="Name is required." />
+        <RadzenRegexValidator Component="tbFileName" Text="Must be a filename without path"
+        Pattern="^[^\\/]+$" />
+        <RadzenCustomValidator Component="tbFileName" Text="Must be a valid filename"
+        Validator="@(() => ClientBusinessLogic.Validators.ValidateFileName(currentFileName))" />
+        <RadzenCustomValidator Component="tbFileName" Text="File extension is not allowed by BTS"
+        Validator="@(() => !ClientBusinessLogic.Validators.ValidateFileName(currentFileName) || SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(currentFileName))" />
+        </Helper>
+        </RadzenFormField>
+        </RadzenTemplateForm>
+        </RadzenRow> *@
+        <RadzenButton Click="@ButtonClick" Text="Upload selected file" />
+    </RadzenStack>
+@*</RadzenPanel>
+ </RadzenTemplateForm> *@
 <hr />
 <table>
     <tr>
@@ -86,6 +126,49 @@
 
 
 @code {
+    RadzenUpload uploadDD;
+    RadzenTextBox tbFilename;
+
+    string currentFileName = null!, DocumentType = "AEXPNR", ImagingId = "1005";
+
+    Guid DocumentId = Guid.NewGuid();
+
+    ImagingDocumentCategory DocumentCategory = ImagingDocumentCategory.Account;
+
+    protected async Task ButtonClick(MouseEventArgs args)
+    {
+        if (currentFileName == null!) return;
+        if (uploadDD.HasValue)
+            await uploadDD.Upload();
+        else
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = "File not selected." });
+    }
+
+    private void UploadFileChanged(UploadChangeEventArgs ucea)
+    {
+        var file = ucea.Files.FirstOrDefault();
+        if (null == file)
+            currentFileName = null!;
+        else
+        {
+            var uploadFileName = file.Name;
+            var extension = Path.GetExtension(uploadFileName);
+            currentFileName = Path.ChangeExtension($"FakeCreditReport{DocumentId.GetHashCode()}", extension);
+            StateHasChanged();
+        }
+
+    }
+
+    private void UploadComplete(UploadCompleteEventArgs args)
+    {
+        NotificationService.Notify(NotificationSeverity.Success, "Upload complete");
+    }
+
+    private void UploadErrorHandler(UploadErrorEventArgs args)
+    {
+        Debug.WriteLine(args.Message);
+        NotificationService.Notify(NotificationSeverity.Error, args.Message);
+    }
     private SiteUserInfo SiteUserInfo;
     private string result;
 

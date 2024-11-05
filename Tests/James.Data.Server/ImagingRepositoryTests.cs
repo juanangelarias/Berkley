@@ -83,7 +83,7 @@ namespace James.Data.Server.Test
                 return;
             var services = CreateServer();
             var serverImagingAccess = (ServerImagingAccess)services.GetService(typeof(ServerImagingAccess))!;
-            var docs = TestDocList.Select(d => new Tuple<string, Guid>(d.Item1.DocumentCategory(), d.Item2)).ToArray();
+            var docs = TestDocList.Select(d => new Tuple<ImagingDocumentCategory, Guid>(d.Item1, d.Item2)).ToArray();
             List<(Stream, string, string)> docsFound = new();
             try
             {

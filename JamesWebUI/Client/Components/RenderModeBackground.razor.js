@@ -19,7 +19,7 @@ export function setBackgroundClient(el){
     pdiv.classList.add("RunningClientSide");
 }
 export function setBackgroundServer(el){
-    var pdiv = setBackground(el, "silver");
+    var pdiv = setBackground(el, "#E0E0E ");//Light silver
     pdiv.classList.add("RunningServerSide");
 }
 

@@ -48,6 +48,8 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
         public Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId);
+        public Task<ISaveDataResult> SetAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId);
+        public Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);

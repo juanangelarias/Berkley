@@ -1,13 +1,6 @@
 ﻿@page "/Account/{AccountNumber?}"
-@using System.Diagnostics
-@using James.Shared
-
 @inherits JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
-
 @inject IDataAccess DataAccess
-@inject ILoggingService _logging
 @attribute [Authorize]
 
 <Theme />
@@ -203,7 +196,8 @@
             var result = await DataAccess.GetAccountByNumber(AccountNumber);
             if (result.Errors.Any() || result.Data == null)
             {
-                _logging.LogError("Unable to retrieve account.", result.Errors.ToString());
+                LoggingService.LogError("Unable to retrieve account.", string.Join(", ",result.Errors));
+                NotifyLoadError(result.Errors, "account");
             }
             else
             {
@@ -219,7 +213,7 @@
             var result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber);
             if (result.Errors.Any())
             {
-                _logging.LogError("Unable to retrieve Account Inforce LOAs.", result.Errors.ToString());
+                LoggingService.LogError("Unable to retrieve Account Inforce LOAs.", result.Errors.ToString());
             }
             else
             {

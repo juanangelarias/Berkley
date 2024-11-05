@@ -5,6 +5,7 @@ schema {
 }
 
 type Mutation {
+  setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
@@ -14,6 +15,7 @@ type Mutation {
   createAgencyStatusLog(input: CreateAgencyStatusLogInput!): CreateAgencyStatusLogPayload!
   createAgencyPOA(input: CreateAgencyPOAInput!): CreateAgencyPOAPayload!
   createAgencyPOADocumentLink(input: CreateAgencyPOADocumentLinkInput!): CreateAgencyPOADocumentLinkPayload!
+  createAgencyLicenseDocumentLink(input: CreateAgencyLicenseDocumentLinkInput!): CreateAgencyLicenseDocumentLinkPayload!
   deleteAgencyPOA(input: DeleteAgencyPOAInput!): DeleteAgencyPOAPayload!
   createAgencyInventory(input: CreateAgencyInventoryInput!): CreateAgencyInventoryPayload!
   deleteLicense(input: DeleteLicenseInput!): DeleteLicensePayload!
@@ -2348,6 +2350,15 @@ type SetAccountProgramPayload {
   accountProgram: AccountProgram
 }
 
+input SetCurrentCreditReportLinkInput {
+  accountNum: String!
+  imagingDocumentId: UUID
+}
+
+type SetCurrentCreditReportLinkPayload {
+  boolean: Boolean
+}
+
 input CreateAgencyInput {
   parentId: UUID!
   fullName: String!
@@ -2484,6 +2495,15 @@ input CreateAgencyPOADocumentLinkInput {
 }
 
 type CreateAgencyPOADocumentLinkPayload {
+  boolean: Boolean
+}
+
+input CreateAgencyLicenseDocumentLinkInput {
+  licenseId: UUID!
+  imagingDocumentId: UUID
+}
+
+type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
 }
 

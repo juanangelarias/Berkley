@@ -283,6 +283,10 @@ type CreateAgencyStatusLogPayload {
   boolean: Boolean
 }
 
+type CreatePhoneNumberPayload {
+  boolean: Boolean
+}
+
 type BusinessTypeDm {
   id: UUID!
   created: DateTime!
@@ -551,16 +555,20 @@ type Query {
   agencyRelatedParties(agencyId: UUID!): [Agency!]!
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   agentByAgentId(agentId: UUID!): Agent!
+  searchAgents(searchString: String!): [Agent!]!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
   bondRequestNumberType(bondNumber: String!): BondRequestNumberType
   bondNumber(bondRequestNumber: String!): String
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
+  phoneNumber(phoneId: UUID!): PhoneNumber!
   userProfileByUserName(userName: String!): UserProfile!
   allInventoryDocTypes: [InventoryDocumentDm!]!
   allBranches: [Branch!]!
   allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
+  allLegalEntityPhoneNumbers(legalEntityId: UUID!): [PhoneNumber!]!
+  phoneTypes: [PhoneTypeDm!]!
   addressTypes: [AddressTypeDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
@@ -734,6 +742,10 @@ type LogUserPayload {
   string: String
 }
 
+input DeletePhoneNumberInput {
+  phoneId: UUID!
+}
+
 type InventoryDocumentDm {
   id: UUID!
   created: DateTime!
@@ -757,6 +769,15 @@ type AccountProgramStatusHistory {
   accountProgramId: UUID!
   accountNum: String!
   accountProgram: AccountProgram!
+}
+
+input CreatePhoneNumberInput {
+  phoneId: UUID!
+  countryCode: String!
+  mainNumber: String!
+  extension: String
+  legalEntityId: UUID!
+  phoneType: String!
 }
 
 type LegalEntityAddress {
@@ -917,6 +938,7 @@ type Bond {
 
 type Mutation {
   setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
+  setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
@@ -935,7 +957,9 @@ type Mutation {
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
   setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
   createAddress(input: CreateAddressInput!): CreateAddressPayload!
+  createPhoneNumber(input: CreatePhoneNumberInput!): CreatePhoneNumberPayload!
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
+  deletePhoneNumber(input: DeletePhoneNumberInput!): DeletePhoneNumberPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1164,6 +1188,10 @@ input LogInformationInput {
   data: [KeyValuePairOfStringAndStringInput!]
 }
 
+type DeletePhoneNumberPayload {
+  boolean: Boolean
+}
+
 input CreateAgencyStatusLogInput {
   id: UUID!
   agencyNumber: String!
@@ -1309,6 +1337,10 @@ type BondTransactionPurpose {
 
 type CreateAddressPayload {
   boolean: Boolean
+}
+
+type SetAccountProgramPayload {
+  accountProgram: AccountProgram
 }
 
 type DivisionDm {
@@ -1689,6 +1721,16 @@ input SetAgencyInventoryInput {
   postalCode: String
 }
 
+input SetAccountProgramInput {
+  programId: UUID!
+  effective: DateTime!
+  expritation: DateTime!
+  single: Int!
+  aggregate: Int!
+  comments: String
+  statusId: UUID!
+}
+
 input LogUserInput {
   message: String! = ""
 }
@@ -1719,7 +1761,7 @@ type VImagingCategoryTabDivisionType {
   tabName: String!
   tabDescription: String!
   type: String!
-  typeDesecription: String!
+  typeDescription: String!
   category: String!
   divisionCode: String
 }

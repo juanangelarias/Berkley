@@ -131,9 +131,6 @@
     }
   }
 }
-    creditReportImagingId
-  }
-}
 
 query SearchAccounts($input: String!) {
   searchAccounts(searchString: $input) {

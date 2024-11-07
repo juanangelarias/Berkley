@@ -14,6 +14,11 @@ namespace James.Data.Client
 
     public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging) : IDataAccess
     {
+        public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
+        {
+            //TODO: Fix
+            return new DataAccessResult<List<Agent>>();
+        }
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
             return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber)!,
@@ -68,7 +73,7 @@ namespace James.Data.Client
         {
             return await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber");
-            return result;
+
         }
 
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
@@ -277,16 +282,19 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {
-            return await ExecuteGet<AccountProgram>(async () => await jamesClient.SetAccountProgram.ExecuteAsync(new SetAccountProgramInput
-            {
-                ProgramId = programId,
-                Effective = effective,
-                Expritation = expritation,
-                Single = single,
-                Aggregate = aggregate,
-                Comments = comments,
-                StatusId = statusId
-            }), graphQlFunctionName: "SetAccountProgram");
+            //TODO: Fix
+            return new DataAccessResult<AccountProgram>();
+            //return await ExecuteGet<AccountProgram>(async
+            //() => await jamesClient.SetAccountProgram.ExecuteAsync(new SetAccountProgramInput
+            //{
+            //    ProgramId = programId,
+            //    Effective = effective,
+            //    Expritation = expritation,
+            //    Single = single,
+            //    Aggregate = aggregate,
+            //    Comments = comments,
+            //    StatusId = statusId
+            //}), graphQlFunctionName: "SetAccountProgram");
             //TODO: Update AccountProgram history log
         }
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,

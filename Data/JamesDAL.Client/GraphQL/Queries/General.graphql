@@ -9,30 +9,7 @@
     postalCode
   }
 }
-query GetPhoneNumber($input: UUID!) {
-  phoneNumber(phoneId: $input) {
-    countryCode
-    created
-    extension
-    id
-    mainNumber
-    modified
-    legalEntityPhone {
-      legalEntityId
-      phoneNumberId
-      type
-    }
-  }
-} 
-query GetPhoneTypes {
-  phoneTypes {
-    created
-    id
-    modified
-    order
-    type
-  }
-}
+
 query GetAllInventoryDocTypes {
   allInventoryDocTypes {
     documentType
@@ -87,16 +64,7 @@ query GetAllLegalEntityAddresses($input: UUID!) {
     }
   }
 } 
-query GetAllLegalEntityPhoneNumbers($input: UUID!) {
-  allLegalEntityPhoneNumbers(legalEntityId: $input) {
-    countryCode
-    created
-    extension
-    id
-    mainNumber
-    modified
-  }
-}
+
 query GetAddressTypes{
   addressTypes {
     created
@@ -105,4 +73,39 @@ query GetAddressTypes{
     order
     type
   }
+}
+
+query GetPhoneNumber($input: UUID!) {
+	phoneNumber(phoneId: $input) {
+	    countryCode
+	    created
+	    extension
+	    id
+	    mainNumber
+	    modified
+	    legalEntityPhone {
+		    legalEntityId
+		    phoneNumberId
+		    type
+	    }
+    }
+} 
+query GetPhoneTypes {
+	phoneTypes {
+	created
+	id
+	modified
+	order
+	type
+	}
+}
+query GetAllLegalEntityPhoneNumbers($input: UUID!) {
+	allLegalEntityPhoneNumbers(legalEntityId: $input) {
+	countryCode
+	created
+	extension
+	id
+	mainNumber
+	modified
+	}
 }

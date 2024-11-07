@@ -16,23 +16,47 @@ namespace James.Shared.Model
         public List<ImagingProperty>? Properties { get; set; }
         public List<ImagingContent>? ContentList { get; set; }
 
-        public string Filename
+        public string Description
         {
             get
             {
                 var baseFilename = Properties.SingleOrDefault(p => p.Name == "DocRemarks").Value ??
-                                                 (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
+                                   (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
+                return baseFilename;
+            }
+        }
+        public string Filename
+        {
+            get
+            {
+                var baseFilename = Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.Filename)?.Value ??
+                                   Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocRemarks)?.Value ??
+                                   (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
                 var fileType = Path.GetExtension(baseFilename);
                 if (string.Empty == fileType)
                 {
-                    var mimeType = Properties.SingleOrDefault(p => p.Name == "MimeType").Value ??
+                    var mimeType = Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.MimeType)?.Value ??
                                    (null == ContentList || ContentList.Count == 0 ? "" : ContentList[0].MimeType);
-                    baseFilename = Path.ChangeExtension(baseFilename, MimeTypes.ExtensionFromMimeType(mimeType));
+                    if (!string.IsNullOrWhiteSpace(mimeType))
+                        baseFilename = Path.ChangeExtension(baseFilename, MimeTypes.ExtensionFromMimeType(mimeType));
                 }
 
                 return baseFilename;
             }
         }
+
+        public string? DocumentType
+        {
+            get => Properties?.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType)?.Value;
+            set
+            {
+                Properties ??= new List<ImagingProperty>(1);
+                if (null == Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType))
+                    Properties.Add(new ImagingProperty { Name = ImagingAccessBase.DocType, DisplayName = "Document Type" });
+                Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType)!.Value = value;
+            }
+        }
+
         public override string ToString()
         {
             return $"Doc Class: {DocumentClass}\\r\\nFolder Path = {FolderPath}\\r\\nGuid = {Guid}";

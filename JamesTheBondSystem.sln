@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedBusinessLogic", "Busi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientBusinessLogic.Test", "BusinessLogic\Tests\ClientBusinessLogic.Test\ClientBusinessLogic.Test.csproj", "{5CBA2E3A-9485-4359-8547-F217989DD8DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedBusinessLogic.Test", "Test\SharedBusinessLogic.Test\SharedBusinessLogic.Test.csproj", "{6E3F4787-EBBC-4C0D-A0D4-98D8E648E8D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedBusinessLogic.Test", "Test\SharedBusinessLogic.Test\SharedBusinessLogic.Test.csproj", "{6E3F4787-EBBC-4C0D-A0D4-98D8E648E8D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

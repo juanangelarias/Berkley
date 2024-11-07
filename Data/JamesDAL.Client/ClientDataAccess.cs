@@ -1,11 +1,8 @@
 ﻿using James.Data.Client.GraphQL;
 using James.Shared;
 using James.Shared.Data;
-using James.Shared.Imaging;
 using James.Shared.Model;
 using StrawberryShake;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory;
@@ -19,7 +16,7 @@ namespace James.Data.Client
     {
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
-            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber),
+            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber)!,
                 "AccountByNumber");
          
         }
@@ -66,16 +63,6 @@ namespace James.Data.Client
             var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber");
             return result;
-            //var result = await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber);
-            //if (result.Errors.Count == 0)
-            //{
-            //    Debug.Assert(result.Data != null, "result.Data != null");
-            //    return new DataAccessResult<Agency> { Data = ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber) };
-            //}
-
-            //logging.LogWarning("GetAgencyByAgencyNumber returned error(s)",
-            //    string.Join("\r\n", result.Errors.Select(ErrorToString)), "GraphQl");
-            //return new DataAccessResult<Agency> { Errors = result.Errors.Select(ErrorToString).ToArray() };
         }
 
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
@@ -83,8 +70,6 @@ namespace James.Data.Client
             return await ExecuteGet<List<AgencyLicense>>(
                 async () => await jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId),
                 subProperty: "AgencyLicenses");
-            //var result = await jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId);
-            //return GraphQLResult<List<AgencyLicense>>(result, "AgencyLicenses");
         }
         public async Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId)
         {
@@ -97,9 +82,6 @@ namespace James.Data.Client
         {
             return await ExecuteGet<List<Insurer>>(
                 async () => await jamesClient.AllInsurers.ExecuteAsync(), "AllInsurers");
-            //var result = await jamesClient.AllInsurers.ExecuteAsync();
-            //result.Data.AllInsurers
-            //return GraphQLResult<List<Insurer>>(result);
         }
         public async Task<IDataAccessResult<List<Branch>>> GetAllBranches()
         {
@@ -110,9 +92,6 @@ namespace James.Data.Client
         {
             return await ExecuteGet<List<State>>(
                 async () => await jamesClient.GetAllStates.ExecuteAsync(), "AllStates");
-            //var result = await jamesClient.GetAllStates.ExecuteAsync();
-            //result.Data.AllStates
-            //return GraphQLResult<List<State>>(result);
         }
         public async Task<IDataAccessResult<Address>> GetAddress(Guid addressId)
         {
@@ -193,18 +172,12 @@ namespace James.Data.Client
         {
             return await ExecuteGet<List<Bond>>(
                 async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId), "AgencyBonds");
-            //var result = await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId);
-            //result.Data.AgencyBonds
-            //return GraphQLResult<List<Bond>>(result);
         }
 
         public async Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId)
         {
             return await ExecuteGet<List<AgentsInAgency>>(
                 async () => await jamesClient.GetAgencyAgents.ExecuteAsync(agencyId), "AgencyAgents");
-            //var result = await jamesClient.GetAgencyAgents.ExecuteAsync(agencyId);
-            //result.Data.AgencyAgents
-            //return GraphQLResult<List<AgentsInAgency>>(result);
         }
         public async Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber)
         {
@@ -215,71 +188,34 @@ namespace James.Data.Client
         {
             return await ExecuteGet<List<AgencyStatusDm>>(
                 async () => await jamesClient.GetAgencyStatuses.ExecuteAsync(), "AgencyStatuses");
-            //var result = await jamesClient.GetAgencyStatuses.ExecuteAsync();
-            //result.Data.AgencyStatuses
-            //return GraphQLResult<List<AgencyStatusDm>>(result);
         }
 
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             return await ExecuteGet<Agent>(
                 async () => await jamesClient.AgentByAgentId.ExecuteAsync(agentId), "AgentByAgentId", "AgentByAgentId");
-            //var result = await jamesClient.AgentByAgentId.ExecuteAsync(agentId);
-            //result.Data.AgentByAgentId
-            //return GraphQLResult<Agent>(result);
         }
 
         public async Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId)
         {
             return await ExecuteGet<List<Agency>>(
                 async () => await jamesClient.GetAgencyRelatedParties.ExecuteAsync(agencyId), "AgencyRelatedParties");
-            //var result = await jamesClient.GetAgencyRelatedParties.ExecuteAsync(agencyId);
-            //result.Data.AgencyRelatedParties
-            //return GraphQLResult<List<Agency>>(result);
         }
 
         public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search)
         {
             return await ExecuteGet<List<Agency>>(
                 async () => await jamesClient.SearchAgencies.ExecuteAsync(search), "SearchAgencies");
-            //    try
-            //    {
-            //        var result = await jamesClient.SearchAgencies.ExecuteAsync(search);
-            //        result.Data.SearchAgencies
-            //        return GraphQLResult<List<Agency>>(result);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        var exceptionDetail = ex.ToText();
-            //        logging.LogException(ex, "GetAgencyByAgencyNumber returned exception",
-            //            exceptionDetail, Severity.Error, "GraphQl");
-            //        return new DataAccessResult<List<Agency>> { Data = [], Errors = [ex.Message] };
-            //    }
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
         {
-            //try
-            //{
-            //var result = await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId);
-            //result.Data.AgencyPOAs
-            //    return GraphQLResult<List<PowerOfAttorney>>(result);
-            //}
-            //catch (Exception ex)
-            //{
-            //    var exceptionDetail = ex.ToText();
-            //    _logging.LogException(ex, "GetAgencyPOAs returned exception",
-            //        exceptionDetail, Severity.Error, "GraphQl");
-            //    return new DataAccessResult<List<PowerOfAttorney>> { Data = [], Errors = [ex.Message] };
-            //}
             return await ExecuteGet<List<PowerOfAttorney>>(async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId),
                 "AgencyPOAs");
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
-            //var result = await jamesClient.GetAllPoaStatuses.ExecuteAsync();
-            //result.Data.AllPoaStatuses
             return await ExecuteGet<List<PowerOfAttorneyStatusDm>>(async () => await jamesClient.GetAllPoaStatuses.ExecuteAsync(),
                 "AllPoaStatuses");
         }
@@ -301,24 +237,23 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status)
         {
-            throw new NotImplementedException();
-            //return await ExecuteGet<PowerOfAttorney>(async () =>
-            //    await jamesClient.SetPowerOfAttorney.ExecuteAsync(new SetPowerOfAttorneyInput
-            //    {
-            //        PoaId = poaId,
-            //        InsurerId = insurerId,
-            //        Limit = limit,
-            //        ReferenceNumber = referenceNumber,
-            //        FirstIssued = firstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //        CurrentIssued = currentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //        Comments = comments,
-            //        Status = status
-            //    }), graphQlFunctionName: "SetPowerOfAttorney");
-            //UNDONE: Fix after regenerating GraphQl schema
+            return await ExecuteGet<PowerOfAttorney>(async () =>
+                await jamesClient.SetPowerOfAttorney.ExecuteAsync(new SetPowerOfAttorneyInput
+                {
+                    PoaId = poaId,
+                    InsurerId = insurerId,
+                    Limit = limit,
+                    ReferenceNumber = referenceNumber,
+                    FirstIssued = firstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                    CurrentIssued = currentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                    Comments = comments,
+                    Status = status
+                }), graphQlFunctionName: "SetPowerOfAttorney");
         }
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
         {
+            //throw new NotImplementedException();
             return await ExecuteGet<AgencyInventory>(async () =>
             await jamesClient.SetAgencyInventory.ExecuteAsync(new SetAgencyInventoryInput
             {
@@ -383,6 +318,16 @@ namespace James.Data.Client
             //    await jamesClient.GetBondNumber.ExecuteAsync(bondRequestNumber));
         }
 
+        public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
+        {
+            return await ExecuteGet<List<ImagingType>>(async () => await jamesClient.GetAllImagingTypes.ExecuteAsync(), "AllImagingTypes");
+        }
+
+        public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
+        {
+            return await ExecuteGet<List<VImagingCategoryTabDivisionType>>(async () => await jamesClient.GetAllImagingCategoryTabDivisionTypes.ExecuteAsync(), "AllImagingCategoryTabDivisionTypes");
+        }
+
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
             var subscriptionToWatch = jamesClient.AddressModified.Watch(addressId.ToString());
@@ -397,12 +342,11 @@ namespace James.Data.Client
                 await jamesClient.GetImagingSearchCriteria.ExecuteAsync(id, category, useDocCategoryAsCriteria));
         }
 
-        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory, string? documentType = null)
+        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory, string? documentType = null)
         {
             var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), Enum.GetName(typeof(ImagingDocumentCategory), docCategory)!);
-            var result = await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(id, category, documentType), "SearchDocuments", "GetImagingDocuments");
+            var result = await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(imagingId, category, documentType), "SearchDocuments", "GetImagingDocuments");
             return result;
-            throw new NotImplementedException();
         }
 
         public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
@@ -502,21 +446,19 @@ namespace James.Data.Client
         public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, string status)
         {
-            throw new NotImplementedException();
-            //var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
-            //{
-            //    PoaId = poaId,
-            //    InsurerId = insurerId,
-            //    AgencyId = agencyId,
-            //    Limit = limit,
-            //    ReferenceNumber = referenceNumber,
-            //    FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
-            //    CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
-            //    Status = status,
-            //    Comments = comments
-            //});
-            //return GraphQLSaveResult(saveResult);
-            //UNDONE: Fix after regenerating GraphQl schema
+            var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
+            {
+                PoaId = poaId,
+                InsurerId = insurerId,
+                AgencyId = agencyId,
+                Limit = limit,
+                ReferenceNumber = referenceNumber,
+                FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
+                CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
+                Status = status,
+                Comments = comments
+            });
+            return GraphQLSaveResult(saveResult);
         }
         public async Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId)
         {
@@ -629,8 +571,6 @@ namespace James.Data.Client
                     State = state,
                     IsActive = isActive
                 }), "SetAgencyLicense.AgencyLicense");
-            //result.Data.SetAgencyLicense.AgencyLicense
-            //return GraphQLResult<AgencyLicense>(result);
         }
 
         private static string ErrorToString(IClientError error)

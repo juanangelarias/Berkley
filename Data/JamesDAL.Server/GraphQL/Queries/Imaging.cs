@@ -6,14 +6,22 @@ namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
-
+        /// <summary>
+        /// Returns document metadata from the imaging system for a given document category, document type and imaging id
+        /// </summary>
+        /// <param name="imagingId">the id of the object associated with the document category</param>
+        /// <param name="docCategory">The document category to search</param>
+        /// <param name="documentType">The document type to search for</param>
+        /// <param name="contextFactory">database context factory</param>
+        /// <param name="imagingAccess">Imaging access object</param>
+        /// <returns></returns>
         [Authorize]
-        public async Task<List<ImagingDocument>> SearchDocumentsAsync(string id, ImagingDocumentCategory docCategory,
+        public async Task<List<ImagingDocument>> SearchDocumentsAsync(string imagingId, ImagingDocumentCategory docCategory,
                                                                 string? documentType,
                                                                 [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
                                                                 [Service] ServerImagingAccess imagingAccess)
         {
-            var searchCriteria = await GetImagingSearchCriteria(id, docCategory, contextFactory);
+            var searchCriteria = await GetImagingSearchCriteria(imagingId, docCategory, contextFactory);
             //TODO: Handle errors
             if (null != documentType)
                 searchCriteria.WhereClause += " AND " + ImagingAccessBase.DocType + " = '" + documentType + "'";
@@ -44,16 +52,16 @@ namespace James.Data.Server.GraphQL.Queries
                 Fields = string.Join(",", ImagingAccessBase.DocumentPropertyFields)
             };
             var results = await imagingAccess.SearchDocumentsAsync(searchCriteria);
-            return results?.SingleOrDefault();
+            return results.SingleOrDefault();
         }
 
         [Authorize]
-        public async Task<ImagingSearchCriteria> GetImagingSearchCriteria(string id,
+        public async Task<ImagingSearchCriteria> GetImagingSearchCriteria(string imagingId,
                                                                         ImagingDocumentCategory docCategory,
                                                                         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
                                                                         bool useDocCategoryAsCriteria = true)
         {
-            id = id.Trim();
+            imagingId = imagingId.Trim();
             var criteria = new ImagingSearchCriteria()
             {
                 ContentSearchString = "",
@@ -69,40 +77,56 @@ namespace James.Data.Server.GraphQL.Queries
             switch (docCategory)
             {
                 case ImagingDocumentCategory.Account: //1
-                    criteria.WhereClause = $"{ImagingAccessBase.AccountId} = '{id}'";
+                    criteria.WhereClause = $"{ImagingAccessBase.AccountId} = '{imagingId}'";
                     break;
                 case ImagingDocumentCategory.Bond: //2
-                    criteria.WhereClause = $"{ImagingAccessBase.PolicyNo} = '{id}'";
-                    var bidBondType = await GetBondRequestNumberType(id, contextFactory);
+                    criteria.WhereClause = $"{ImagingAccessBase.PolicyNo} = '{imagingId}'";
+                    var bidBondType = await GetBondRequestNumberType(imagingId, contextFactory);
                     //TODO: Handle errors above
                     if (null != bidBondType)
                         criteria.WhereClause =
                             $"({criteria.WhereClause} OR {(string.Equals(bidBondType.Type, "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ImagingAccessBase.ContBidId : ImagingAccessBase.CommBidId)} = '{bidBondType.BondRequestNumber}')";
                     break;
                 case ImagingDocumentCategory.Agency: //3
-                    criteria.WhereClause = $"{ImagingAccessBase.AgencyNo} = '{id}'";
+                    criteria.WhereClause = $"{ImagingAccessBase.AgencyNo} = '{imagingId}'";
                     break;
                 case ImagingDocumentCategory.CommBid: //4
-                    criteria.WhereClause = $"{ImagingAccessBase.CommBidId} = '{id}'";
-                    bondNumber = await GetBondNumber(id, contextFactory);
+                    criteria.WhereClause = $"{ImagingAccessBase.CommBidId} = '{imagingId}'";
+                    bondNumber = await GetBondNumber(imagingId, contextFactory);
                     //TODO:Handle GraphQl errors
                     if (!string.IsNullOrWhiteSpace(bondNumber))
                         criteria.WhereClause = $"({criteria.WhereClause} OR {ImagingAccessBase.PolicyNo} = '{bondNumber}')";
                     break;
                 case ImagingDocumentCategory.ContBid: //5
-                    criteria.WhereClause = $"{ImagingAccessBase.ContBidId} = '{id}'";
-                    bondNumber = await GetBondNumber(id, contextFactory);
+                    criteria.WhereClause = $"{ImagingAccessBase.ContBidId} = '{imagingId}'";
+                    bondNumber = await GetBondNumber(imagingId, contextFactory);
                     //TODO:Handle GraphQl errors
                     if (!string.IsNullOrWhiteSpace(bondNumber))
                         criteria.WhereClause = $"({criteria.WhereClause} OR {ImagingAccessBase.PolicyNo} = '{bondNumber}')";
                     break;
                 case ImagingDocumentCategory.Billing: //SearchBillingDocuments
-                    criteria.WhereClause = $"{ImagingAccessBase.AccountId} = '{id}''";
+                    criteria.WhereClause = $"{ImagingAccessBase.AccountId} = '{imagingId}''";
                     break;
                 default:
                     throw new ArgumentException("Invalid docCategory", nameof(docCategory));
             }
             return criteria;
+        }
+
+        [Authorize]
+        public async Task<List<ImagingType>> GetAllImagingTypes(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return ctx.ImagingTypes.ToList();
+        }
+
+        [Authorize]
+        public async Task<List<VImagingCategoryTabDivisionType>> GetAllImagingCategoryTabDivisionType(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return ctx.VImagingCategoryTabDivisionTypes.OrderBy(ctdt=>ctdt.TabName).ThenBy(ctdt=>ctdt.Type).ToList();
         }
     }
 }

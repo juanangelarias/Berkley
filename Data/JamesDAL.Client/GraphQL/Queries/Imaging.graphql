@@ -4,7 +4,7 @@ query GetImagingSearchCriteria(
   $useDocCategoryAsCriteria: Boolean! = true
 ) {
   imagingSearchCriteria(
-    id: $id
+    imagingId: $id
     docCategory: $docCategory
     useDocCategoryAsCriteria: $useDocCategoryAsCriteria
   ) {
@@ -17,8 +17,8 @@ query GetImagingSearchCriteria(
   }
 }
 
-query GetImagingDocuments($id: String!, $category: ImagingDocumentCategory!, $type: String!) {
-  searchDocuments(id: $id, docCategory: $category, documentType: $type) {
+query GetImagingDocuments($id: String!, $category: ImagingDocumentCategory!, $type: String) {
+  searchDocuments(imagingId: $id, docCategory: $category, documentType: $type) {
     contentList {
       filename
     }
@@ -39,3 +39,21 @@ query GetImagingDocumentProperties($docCategory:ImagingDocumentCategory!, $guid:
     filename
   }
 }
+
+query GetAllImagingTypes {
+  allImagingTypes {
+    type
+    description
+  }
+} 
+
+query GetAllImagingCategoryTabDivisionTypes {
+  allImagingCategoryTabDivisionType {
+    category
+    divisionCode
+    tabDescription
+    tabName
+    type
+    typeDesecription
+  }
+} 

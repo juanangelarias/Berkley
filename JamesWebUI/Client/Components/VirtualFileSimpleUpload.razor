@@ -2,6 +2,7 @@
 @using System.Diagnostics
 @using System.Text.Json.Nodes
 @using System.Text.RegularExpressions
+@using James.Shared
 @using James.Shared.Imaging
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
@@ -15,7 +16,7 @@
             <RadzenColumn Size="9">
                 <RadzenUpload id="ddUpload" @ref="@uploadDD"
                               ChooseText="Drag and drop here or click to choose document"
-                              Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?documentId={DocumentId}&filename={currentFileName}")
+                              Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?filename={currentFileName}")
                               InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
                               Change=@UploadFileChanged
                               Error=@UploadErrorHandler
@@ -103,7 +104,7 @@
                             <RadzenIcon Icon="Description" />
                         </RadzenColumn>
                         <RadzenColumn>
-                            <RadzenText Text=@doc.Filename Style="font-size:17px;font-weight:700" />
+                            <RadzenText Text=@doc.Description Style="font-size:17px;font-weight:700" />
                         </RadzenColumn>
                         <RadzenColumn>
                             <RadzenText Text=@doc.EntryDate.ToShortDateString() />
@@ -127,7 +128,7 @@
                             <RadzenIcon Icon="Description" />
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn Property="@nameof(ImagingDocument.Filename)"
+                    <RadzenDataGridColumn Property="@nameof(ImagingDocument.Description)"
                                           Title="Documents Uploaded" />
                     <RadzenDataGridColumn Property="@nameof(ImagingDocument.EntryDate)"
                                           Title="Uploaded" FormatString="{0:d}" />
@@ -191,7 +192,8 @@
             if (null != uploadedBytes)
                 uploadedBytes.Text = $"({args.Loaded.ToScreenBytes()}/{args.Total.ToScreenBytes()})";
             else
-                LoggingService.LogWarning("uploadedBytes control not instantiated", "uploadedBytes == null", "UI");
+                LoggingService.LogWarning("uploadedBytes control not instantiated", 
+                    "uploadedBytes == null", StandardLoggingCategories.UserInterface);
         }
 
         if (progress == 100)
@@ -212,11 +214,13 @@
         else
             LoggingService.LogError("Invalid Guid",
                 "String passed to LinkExistingAndClose was not a valid guid.",
-                "Virtual File", new Dictionary<string, string> { { "invalidGuid", guid } });
+                StandardLoggingCategories.Imaging, 
+                new Dictionary<string, string> { { "invalidGuid", guid } });
     }
 
     private void UploadFileChanged(UploadChangeEventArgs args)
     {
+        //TODO: Add code to limit max file size uploaded
         var file = args.Files.SingleOrDefault();
         if (null == file)
         {
@@ -233,7 +237,6 @@
 
         Debug.Assert(uploadDD.HasValue, "upload control shows .HasValue==false");
 
-        DocumentId = Guid.NewGuid();
         waitingForFileSelection = false;
 
         if (string.IsNullOrWhiteSpace(currentFileName) || null != currentFile)
@@ -250,7 +253,7 @@
     private async Task StartUpload(string args)
     // private async Task StartUpload(MouseEventArgs args)
     {
-        if (null == currentFile) return;
+        //if (null == currentFile) return;
         if (!uploadDD.HasValue)
         {
             NotifySaveError(["upload control has no value"], "imaging file");
@@ -270,7 +273,7 @@
             NotifySaveError([uploadError], "uploaded file");
             return;
         }
-        //TODO: Read from args.rawresponse
+        //Read from args.rawresponse
         if (!args.Cancelled && !string.IsNullOrWhiteSpace(args.RawResponse))
         {
             // args.RawResponse must have the surrounding quotes removed and  unicode character
@@ -288,7 +291,8 @@
                 }
                 catch (Exception ex)
                 {
-                    LoggingService.LogException(ex, "UploadAction after upload failed.", category: "Imaging");
+                    LoggingService.LogException(ex, "UploadAction after upload failed.", 
+                        category: StandardLoggingCategories.Imaging);
                     NotifySaveError([ex.Message], "document association");
                 }
             }

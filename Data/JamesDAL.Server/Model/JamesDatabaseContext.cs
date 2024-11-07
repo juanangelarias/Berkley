@@ -170,6 +170,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<ImagingTab> ImagingTabs { get; set; }
 
+    public virtual DbSet<ImagingTabType> ImagingTabTypes { get; set; }
+
     public virtual DbSet<ImagingType> ImagingTypes { get; set; }
 
     public virtual DbSet<Indemnitor> Indemnitors { get; set; }
@@ -337,6 +339,8 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<VBond> VBonds { get; set; }
 
     public virtual DbSet<VConfiguration> VConfigurations { get; set; }
+
+    public virtual DbSet<VImagingCategoryTabDivisionType> VImagingCategoryTabDivisionTypes { get; set; }
 
     public virtual DbSet<VoidedBond> VoidedBonds { get; set; }
 
@@ -2859,7 +2863,6 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.HasOne(d => d.DivisionCodeNavigation).WithMany(p => p.ImagingCategoryTabDivisions)
                 .HasForeignKey(d => d.DivisionCode)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_ImagingCategoryTabDivision_DivisionDM");
 
             entity.HasOne(d => d.ImagingTab).WithMany(p => p.ImagingCategoryTabDivisions)
@@ -2891,6 +2894,31 @@ public partial class JamesDatabaseContext : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<ImagingTabType>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.ToTable("ImagingTabType");
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.ImagingTab).WithMany(p => p.ImagingTabTypes)
+                .HasForeignKey(d => d.ImagingTabId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ImagingTabType_ImagingTab");
+
+            entity.HasOne(d => d.ImagingType).WithMany(p => p.ImagingTabTypes)
+                .HasForeignKey(d => d.ImagingTypeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ImagingTabType_ImagingType");
+        });
+
         modelBuilder.Entity<ImagingType>(entity =>
         {
             entity.HasKey(e => e.Id).IsClustered(false);
@@ -2898,6 +2926,8 @@ public partial class JamesDatabaseContext : DbContext
             entity.ToTable("ImagingType", tb => tb.HasTrigger("trgImagingTypeModified"));
 
             entity.HasIndex(e => e.Id, "UQ_ImagingType_Id").IsUnique();
+
+            entity.HasIndex(e => e.Type, "UQ_ImagingType_Type").IsUnique();
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Created)
@@ -5144,6 +5174,33 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.ModifiedDate).HasColumnType("datetime");
             entity.Property(e => e.Value)
                 .HasMaxLength(255)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<VImagingCategoryTabDivisionType>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vImagingCategoryTabDivisionType");
+
+            entity.Property(e => e.Category)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.DivisionCode)
+                .HasMaxLength(4)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.TabDescription)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.TabName)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Type)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.TypeDescription)
+                .HasMaxLength(50)
                 .IsUnicode(false);
         });
 

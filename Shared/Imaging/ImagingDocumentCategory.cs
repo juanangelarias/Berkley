@@ -3,6 +3,9 @@
     /// <summary>
     /// Source of truth for <c>document</c> categories
     /// </summary>
+    /// <remarks>
+    /// Should match what is in the dbo.ImagingCategory table
+    /// </remarks>
     public enum ImagingDocumentCategory
     {
         Invalid = 0,

@@ -17,4 +17,6 @@ public partial class ImagingTab
     public string Description { get; set; } = null!;
 
     public virtual ICollection<ImagingCategoryTabDivision> ImagingCategoryTabDivisions { get; set; } = new List<ImagingCategoryTabDivision>();
+
+    public virtual ICollection<ImagingTabType> ImagingTabTypes { get; set; } = new List<ImagingTabType>();
 }

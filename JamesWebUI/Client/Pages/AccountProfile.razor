@@ -1,4 +1,5 @@
 ﻿@page "/Account/{AccountNumber?}"
+@using James.Shared.Imaging
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
 @attribute [Authorize]
@@ -120,6 +121,9 @@
                     </RadzenTabsItem>
                     <RadzenTabsItem Text="Key Personnel">
 
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Virtual File">
+                        <ImagingFull ImagingId="@AccountToDisplay?.AccountNum" DivisionCode="@(AccountToDisplay?.Division)" DocumentCategory="ImagingDocumentCategory.Account" />
                     </RadzenTabsItem>
                 </Tabs>
             </RadzenTabs>

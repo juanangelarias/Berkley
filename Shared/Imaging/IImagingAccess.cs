@@ -89,6 +89,8 @@
         public const string CompanyNo = "CompanyNo";
         public const string BatchName = "BatchName";
         public const string EntryDate = "F_ENTRYDATE";
+        public const string Filename = "Filename";
+        public const string MimeType = "MimeType";
         /// <summary>
         /// Typical fields returned for most document search results.
         /// </summary>
@@ -118,5 +120,16 @@
             var ext = MimeTypes.ExtensionFromMimeType(extensionOrMimeType);
             return (null != ext && AllowedFileTypes.Contains(ext));
         }
+    }
+
+    //UNDONE:Remove after schema is updated for new Imaging 
+    public class ImagingCategoryTabDivisionType
+    {
+        public ImagingDocumentCategory Category { get; set; }
+        public required string TabName { get; set; }
+        public required string TabDescription { get; set; }
+        public string? DivisionCode { get; set; }
+        public required string Type { get; set; }
+        public required string TypeDescription { get; set; }
     }
 }

@@ -93,6 +93,11 @@ namespace JamesWebUI.Client.Shared
         {
             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} retrieving {itemSaved}.  {string.Join("  ", errors)}", Duration = 15000 });
         }
+
+        protected void LogGraphQlLoadError()
+        {
+            throw new NotImplementedException("If you need it, create it.");
+        }
         #endregion
     }
 

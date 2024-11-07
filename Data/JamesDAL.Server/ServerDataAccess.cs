@@ -409,6 +409,16 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetBondNumber(bondRequestNumber, contextFactory));
         }
 
+        public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
+        {
+            return await ExecuteGet(async ()=> await query.GetAllImagingTypes(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
+        {
+            return await ExecuteGet(async () => await query.GetAllImagingCategoryTabDivisionType(contextFactory));
+        }
+
         public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
             ImagingDocumentCategory docCategory, Guid documentId)
         {
@@ -466,25 +476,12 @@ namespace James.Data.Server
             return OnAddressModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Address>>(onNext, onError, onComplete));
         }
 
-        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory, string? documentType = null)
+        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory, string? documentType = null)
         {
             return await ExecuteGet(async () =>
-                await query.SearchDocumentsAsync(id, docCategory, documentType, contextFactory,
+                await query.SearchDocumentsAsync(imagingId, docCategory, documentType, contextFactory,
                     imagingAccess));
         }
-
-        ///// <summary>
-        ///// Searches for all documents connected to an id and an (optional) doc type.
-        ///// </summary>
-        ///// <param name="id">The connected id.</param>
-        ///// <param name="docCategory">The <see cref="document"/> category.</param>
-        ///// <param name="documentType">Document type (optional).</param>
-        ///// <returns>All found documents</returns>
-        //public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(ImagingSearchCriteria criteria, KeyValuePair<string, string>[]? searchOptions = null,
-        //    KeyValuePair<string, string>[]? additionalParams = null)
-        //{
-        //    return await ExecuteGet(async ()=> await imagingAccess.SearchDocuments(criteria, searchOptions, additionalParams));
-        //}
 
         public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id,
             ImagingDocumentCategory docCategory,

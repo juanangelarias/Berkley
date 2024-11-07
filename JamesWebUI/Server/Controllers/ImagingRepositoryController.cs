@@ -112,8 +112,6 @@ namespace JamesWebUI.Server.Controllers
             {
                 loggingService.LogException(ex, "Error uploading files to imaging", category: "Imaging");
                 return new StatusCodeResult(500);
-                //TODO: remove throw when unhandled exceptions are handled.
-                throw;
             }
         }
     }

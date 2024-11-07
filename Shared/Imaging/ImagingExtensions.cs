@@ -25,6 +25,15 @@ namespace James.Shared.Imaging
                 throw new ArgumentException("Invalid docCategory", "category");
             return docClassAttr.DocCategory;
         }
+        /// <summary>
+        /// Shortcut for converting the enum to its name
+        /// </summary>
+        /// <param name="category">Enumeration value</param>
+        /// <returns>Enumeration name as string</returns>
+        public static string Name(this ImagingDocumentCategory category)
+        {
+            return Enum.GetName(typeof(ImagingDocumentCategory), category)!;
+        }
 
     }
 }

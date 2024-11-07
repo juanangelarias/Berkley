@@ -81,13 +81,22 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
         public Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber);
         public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
+        public Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes();
+        public Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes();
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
 
         public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true);
 
-        public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory,
+        /// <summary>
+        /// Returns metadata of documents contained in a given document class, document type and imaging id
+        /// </summary>
+        /// <param name="imagingId">the id of the object associated with the document category</param>
+        /// <param name="docCategory">The document category to search</param>
+        /// <param name="documentType">The document type to search for</param>
+        /// <returns>List of the metadata for the <see cref="ImagingDocument" />s found</returns>
+        public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory,
             string? documentType = null);
         public Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(ImagingDocumentCategory docCategory,
             Guid documentId);

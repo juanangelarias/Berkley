@@ -1,11 +1,8 @@
 ﻿using James.Data.Client.GraphQL;
 using James.Shared;
 using James.Shared.Data;
-using James.Shared.Imaging;
 using James.Shared.Model;
 using StrawberryShake;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory;
@@ -19,7 +16,7 @@ namespace James.Data.Client
     {
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
-            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber),
+            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber)!,
                 "AccountByNumber");
          
         }
@@ -71,6 +68,7 @@ namespace James.Data.Client
         {
             return await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber");
+            return result;
         }
 
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
@@ -233,12 +231,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             return await ExecuteGet<Agent>(
-                async () => await jamesClient.AgentByAgentId.ExecuteAsync(agentId), "AgentByAgentId");
-        }
-        public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
-        {
-            return await ExecuteGet<List<Agent>>(
-                async () => await jamesClient.SearchAgents.ExecuteAsync(searchString), "SearchAgents");
+                async () => await jamesClient.AgentByAgentId.ExecuteAsync(agentId), "AgentByAgentId", "AgentByAgentId");
         }
         public async Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId)
         {
@@ -263,8 +256,6 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
-            //var result = await jamesClient.GetAllPoaStatuses.ExecuteAsync();
-            //result.Data.AllPoaStatuses
             return await ExecuteGet<List<PowerOfAttorneyStatusDm>>(async () => await jamesClient.GetAllPoaStatuses.ExecuteAsync(),
                 "AllPoaStatuses");
         }
@@ -301,24 +292,23 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status)
         {
-            throw new NotImplementedException();
-            //return await ExecuteGet<PowerOfAttorney>(async () =>
-            //    await jamesClient.SetPowerOfAttorney.ExecuteAsync(new SetPowerOfAttorneyInput
-            //    {
-            //        PoaId = poaId,
-            //        InsurerId = insurerId,
-            //        Limit = limit,
-            //        ReferenceNumber = referenceNumber,
-            //        FirstIssued = firstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //        CurrentIssued = currentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
-            //        Comments = comments,
-            //        Status = status
-            //    }), graphQlFunctionName: "SetPowerOfAttorney");
-            //UNDONE: Fix after regenerating GraphQl schema
+            return await ExecuteGet<PowerOfAttorney>(async () =>
+                await jamesClient.SetPowerOfAttorney.ExecuteAsync(new SetPowerOfAttorneyInput
+                {
+                    PoaId = poaId,
+                    InsurerId = insurerId,
+                    Limit = limit,
+                    ReferenceNumber = referenceNumber,
+                    FirstIssued = firstIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                    CurrentIssued = currentIssued?.ToDateTime(TimeOnly.Parse("12:00 AM")),
+                    Comments = comments,
+                    Status = status
+                }), graphQlFunctionName: "SetPowerOfAttorney");
         }
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
         {
+            //throw new NotImplementedException();
             return await ExecuteGet<AgencyInventory>(async () =>
             await jamesClient.SetAgencyInventory.ExecuteAsync(new SetAgencyInventoryInput
             {
@@ -383,6 +373,16 @@ namespace James.Data.Client
             //    await jamesClient.GetBondNumber.ExecuteAsync(bondRequestNumber));
         }
 
+        public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
+        {
+            return await ExecuteGet<List<ImagingType>>(async () => await jamesClient.GetAllImagingTypes.ExecuteAsync(), "AllImagingTypes");
+        }
+
+        public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
+        {
+            return await ExecuteGet<List<VImagingCategoryTabDivisionType>>(async () => await jamesClient.GetAllImagingCategoryTabDivisionTypes.ExecuteAsync(), "AllImagingCategoryTabDivisionTypes");
+        }
+
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
             var subscriptionToWatch = jamesClient.AddressModified.Watch(addressId.ToString());
@@ -397,12 +397,11 @@ namespace James.Data.Client
                 await jamesClient.GetImagingSearchCriteria.ExecuteAsync(id, category, useDocCategoryAsCriteria));
         }
 
-        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string id, ImagingDocumentCategory docCategory, string? documentType = null)
+        public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory, string? documentType = null)
         {
             var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), Enum.GetName(typeof(ImagingDocumentCategory), docCategory)!);
-            var result = await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(id, category, documentType), "SearchDocuments", "GetImagingDocuments");
+            var result = await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(imagingId, category, documentType), "SearchDocuments", "GetImagingDocuments");
             return result;
-            throw new NotImplementedException();
         }
 
         public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
@@ -502,21 +501,19 @@ namespace James.Data.Client
         public async Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, string status)
         {
-            throw new NotImplementedException();
-            //var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
-            //{
-            //    PoaId = poaId,
-            //    InsurerId = insurerId,
-            //    AgencyId = agencyId,
-            //    Limit = limit,
-            //    ReferenceNumber = referenceNumber,
-            //    FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
-            //    CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
-            //    Status = status,
-            //    Comments = comments
-            //});
-            //return GraphQLSaveResult(saveResult);
-            //UNDONE: Fix after regenerating GraphQl schema
+            var saveResult = await jamesClient.CreateAgencyPOA.ExecuteAsync(new CreateAgencyPOAInput
+            {
+                PoaId = poaId,
+                InsurerId = insurerId,
+                AgencyId = agencyId,
+                Limit = limit,
+                ReferenceNumber = referenceNumber,
+                FirstIssued = firstIssued?.ToDateTime(new TimeOnly(0)),
+                CurrentIssued = currentIssued?.ToDateTime(new TimeOnly(0)),
+                Status = status,
+                Comments = comments
+            });
+            return GraphQLSaveResult(saveResult);
         }
         public async Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId)
         {
@@ -630,8 +627,6 @@ namespace James.Data.Client
                     State = state,
                     IsActive = isActive
                 }), "SetAgencyLicense.AgencyLicense");
-            //result.Data.SetAgencyLicense.AgencyLicense
-            //return GraphQLResult<AgencyLicense>(result);
         }
 
         private static string ErrorToString(IClientError error)

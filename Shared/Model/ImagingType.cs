@@ -15,4 +15,6 @@ public partial class ImagingType
     public string Type { get; set; } = null!;
 
     public string Description { get; set; } = null!;
+
+    public virtual ICollection<ImagingTabType> ImagingTabTypes { get; set; } = new List<ImagingTabType>();
 }

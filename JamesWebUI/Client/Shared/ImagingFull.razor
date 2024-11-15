@@ -22,6 +22,7 @@
                       Change=@UploadFileChanged
                       Error=@UploadErrorHandler
                       Complete=@UploadComplete
+                      Progress="@UploadProgress"
                       Icon="upload_file"
                       Style="width: 100%" />
         <RadzenTemplateForm TItem="List<ImagingDocumentDetails>" Data="_uploadFiles"
@@ -184,13 +185,6 @@
         }
 
         await LoadAll();
-
-        if (null! == _rzUpload)//TODO:Remove after testing
-        {
-            NotificationService.Notify(NotificationSeverity.Warning, "_rzUpload is null.", duration: 180000);
-        }
-        else
-            NotificationService.Notify(NotificationSeverity.Success, "_rzUpload is not null.", duration: 60000);
     }
 
     private void DownloadDocument(string documentGuid)
@@ -239,35 +233,31 @@
             return;
         }
         _uploadFailed = false;
-        if (null! == _rzUpload)
-        {
-            NotificationService.Notify(NotificationSeverity.Warning, "_rzUpload is null.");
-            return;
-        }
         if (!_rzUpload.HasValue)
         {
             NotificationService.Notify(NotificationSeverity.Warning, "_rzUpload.HasValue == false.");
             return;
         }
+        //NOTE:Console.WriteLine writes to the browser console from web assembly and to the output window of VS from server rendering
+        Console.WriteLine("Uploading to "+_rzUpload.Url);
         await _rzUpload.Upload();
     }
 
     private void UploadFileChanged(UploadChangeEventArgs args)
     {
-        //TODO:Handle the case where they remove a file after entering data on it so that data isn't wiped out.
-        _uploadFiles.Clear();
-        _uploadFiles.AddRange(args.Files.Select(f => new ImagingDocumentDetails
+        //Handle the case where they remove a file after entering data on it so that data isn't wiped out.
+        var removedFiles = _uploadFiles.Where(uf => args.Files.All(f => f.Name != uf.FileName)).ToArray();
+        foreach (var removed in removedFiles)
+        {
+            _uploadFiles.Remove(removed);
+        }
+
+        var addedFiles = args.Files.Where(f => _uploadFiles.All(uf => uf.FileName != f.Name));
+        _uploadFiles.AddRange(addedFiles.Select(f => new ImagingDocumentDetails
         { FileName = f.Name, DocumentType = null! }));
         _waitingForFileSelection = _uploadFiles.Count == 0;
 
         StateHasChanged();
-
-        if (null! == _rzUpload)//TODO:Remove after testing
-        {
-            NotificationService.Notify(NotificationSeverity.Warning, "_rzUpload is null.");
-        }
-        else
-            NotificationService.Notify(NotificationSeverity.Success, "_rzUpload is not null.");
     }
 
     private void UploadErrorHandler(UploadErrorEventArgs arg)
@@ -276,14 +266,20 @@
         NotifySaveError([arg.Message], "uploaded file");
     }
 
-    private async Task UploadComplete(UploadCompleteEventArgs obj)
+    private async Task UploadComplete(UploadCompleteEventArgs args)
     {
-        //TODO: Determine if this happens once per file or once per upload session
-
+        if (!_uploadFailed)
+            await _rzUpload.ClearFiles();
         //Reload documents
         //NOTE: Simply reloading the documents solves any situation:  All successful, some successful or none successful.
         var reloadResults = await DataAccess.SearchDocuments(ImagingId, DocumentCategory);
         PopulateDocuments(reloadResults);
+    }
+
+    private void UploadProgress(UploadProgressArgs args)
+    {
+        if (args.Progress == 100)
+            NotifySuccessfulSave("Uploaded file"+(_uploadFiles.Count==1?"":"s"));
     }
 
 }

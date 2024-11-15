@@ -1,4 +1,5 @@
 ﻿using ClientBusinessLogic;
+using James.Data.Client.GraphQL.State;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Imaging;
@@ -46,6 +47,7 @@ namespace JamesWebUI.Client.Shared
         {
             if (documentsResult.Success)
             {
+                //TODO: 
                 var documents = documentsResult.Data!;
                 //Add unknown types, if needed.
                 var allTypes = new HashSet<string>(_imagingTypes.Select(t => t.Type).Distinct());
@@ -132,11 +134,11 @@ namespace JamesWebUI.Client.Shared
                 {
                     case 0:
                         return "/";
-                    case 1:
-                        return
-                            $"ImagingRepository/UploadDocument/{_uploadFiles.First().DocumentType}/{(int)DocumentCategory}/{ImagingId}?descriptions={_uploadFiles.First().Description}";
+                    //case 1:
+                    //    return
+                    //        $"ImagingRepository/UploadDocument/{_uploadFiles.First().DocumentType}/{(int)DocumentCategory}/{ImagingId}?description={_uploadFiles.First().Description}";
                     default:
-                        return $"ImagingRepository/UploadDocuments/{string.Join(':', _uploadFiles.Select(uf => uf.DocumentType))}/{(int)DocumentCategory}/{ImagingId}?filenames={string.Join(':', _uploadFiles.Select(uf => uf.FileName))}";
+                        return $"ImagingRepository/UploadDocuments/{string.Join(':', _uploadFiles.Select(uf => uf.DocumentType))}/{(int)DocumentCategory}/{ImagingId}?descriptions={string.Join(':', _uploadFiles.Select(uf => uf.Description))}";
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿@page "/Agency/{Id?}"
 @using System.Diagnostics
 @using James.Shared
+@using James.Shared.Imaging
 
 @inherits JamesLayoutComponentBase
 @implements IDisposable
@@ -186,6 +187,7 @@
                     <AgencyCommissionRates AgencyId="@_agencyToDisplay.Id" AgencyStatus="@_agencyToDisplay?.Status" />
                 </RadzenTabsItem>
                 <RadzenTabsItem Text="Virtual File">
+                    <ImagingFull ImagingId="@_agencyToDisplay?.AgencyNumber" DocumentCategory="ImagingDocumentCategory.Agency" />
                 </RadzenTabsItem>
             </Tabs>
         </RadzenTabs>

@@ -200,6 +200,7 @@ query GetAgencyLicenses($agencyId: UUID!) {
     agency {
       agencyNumber
     }
+    imagingId
   }
 }
 

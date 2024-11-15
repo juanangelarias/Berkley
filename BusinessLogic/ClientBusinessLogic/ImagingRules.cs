@@ -23,7 +23,7 @@ namespace ClientBusinessLogic
             var unknownType = CreateUnknownType();
             return new VImagingCategoryTabDivisionType
             {
-                Category = Enum.GetName(typeof(ImagingDocumentCategory), documentCategory)!,
+                Category = documentCategory.Name(),
                 DivisionCode = division,
                 TabName = "Old Surety Documents",
                 TabDescription = "ACCT_ALL_Old Surety Documents",

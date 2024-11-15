@@ -775,7 +775,7 @@ type ImagingProperty {
   dateListValue: [DateTime]!
   dateValue: DateTime!
   dateValueSpecified: Boolean!
-  displayName: String!
+  displayName: String
   description: String!
   listValue: [String!]!
   name: String!
@@ -1719,7 +1719,7 @@ type VImagingCategoryTabDivisionType {
   tabName: String!
   tabDescription: String!
   type: String!
-  typeDesecription: String!
+  typeDescription: String!
   category: String!
   divisionCode: String
 }

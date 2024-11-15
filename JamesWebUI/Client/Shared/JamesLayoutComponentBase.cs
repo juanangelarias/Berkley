@@ -98,6 +98,17 @@ namespace JamesWebUI.Client.Shared
         {
             throw new NotImplementedException("If you need it, create it.");
         }
+
+        /// <summary>
+        /// Loads the tasks, retries if needed and returns when either everything has finished or failed
+        /// </summary>
+        /// <param name="loadTasks">Argumentless Lambda Expressions that sets external IDataAccessResult variables</param>
+        /// <returns></returns>
+        protected async Task LoadInParallel(params Func<Task>[] loadTasks)
+        {
+            //UNDONE:  Flesh this idea out to handle retries
+            await Task.WhenAll(loadTasks.Select(lt=> lt()));
+        }
         #endregion
     }
 

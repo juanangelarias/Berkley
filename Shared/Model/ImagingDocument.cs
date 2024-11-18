@@ -32,7 +32,6 @@ namespace James.Shared.Model
                 try
                 {
                     var baseFilename = Properties.FirstOrDefault(p => p.Name == ImagingAccessBase.Filename)?.Value ??
-                                       //Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocRemarks)?.Value ??
                                        (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
                     var fileType = Path.GetExtension(baseFilename);
                     if (string.Empty == fileType)

@@ -31,5 +31,15 @@ namespace ClientBusinessLogic
                 Type = unknownType.Type
             };
         }
+
+        public static List<VImagingCategoryTabDivisionType> GetRelevantTabsAndTypes(
+            this IEnumerable<VImagingCategoryTabDivisionType> allImagingCategoryTabDivisionTypes, ImagingDocumentCategory documentCategory, string? divisionCode)
+        {
+            return allImagingCategoryTabDivisionTypes.Where(ctdt => (ctdt.Category == documentCategory.Name()
+                                                                     && (documentCategory !=
+                                                                         ImagingDocumentCategory.Account ||
+                                                                         ctdt.DivisionCode == divisionCode)))
+                .ToList();
+        }
     }
 }

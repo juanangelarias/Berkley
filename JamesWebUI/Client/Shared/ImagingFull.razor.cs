@@ -1,42 +1,62 @@
 ﻿using ClientBusinessLogic;
-using James.Data.Client.GraphQL.State;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Imaging;
 using James.Shared.Model;
-using Radzen;
 
 namespace JamesWebUI.Client.Shared
 {
     public partial class ImagingFull
     {
+        List<ImagingTypeDocuments> _currentTypeDocuments = new();
+        List<ImagingTabTypeDocuments> _currentTabTypeDocuments = new();
+        List<VImagingCategoryTabDivisionType> _currentCatTabDivTypes = new();
+        List<ImagingType> _imagingTypes = null!;
+        List<ImagingDocumentDetails> _uploadFiles = new();
+        bool _waitingForFileSelection = true, _uploadFailed, _docsLoading = true;
+
         private async Task LoadAll()
         {
             IDataAccessResult<List<VImagingCategoryTabDivisionType>> docCategoryTabDivisionTypeResult = null!;
             IDataAccessResult<List<ImagingType>> docTypesResult = null!;
             IDataAccessResult<List<ImagingDocument>> docsResult = null!;
-            await LoadInParallel((async () => { docCategoryTabDivisionTypeResult = await DataAccess.GetAllImagingCategoryTabDivisionTypes(); }), async () => { docTypesResult = await DataAccess.GetAllImagingTypes(); }, async () => { docsResult = await DataAccess.SearchDocuments(ImagingId, DocumentCategory); });
-
-
-
-            if (docCategoryTabDivisionTypeResult!.Success)
-                //TODO:Consider what part of the below should move to business logic
-                _currentCatTabDivTypes = docCategoryTabDivisionTypeResult.Data!
-                    .Where(ctdt => (ctdt.Category == DocumentCategory.Name()
-                        && (DocumentCategory != ImagingDocumentCategory.Account || ctdt.DivisionCode == DivisionCode)))
-                    .ToList();
-            else
+            var loadDocCategoryTabDivisionType = new LoadItem()
             {
-                //TODO:Handle Errors
-                NotificationService.Notify(severity: NotificationSeverity.Warning, "Load failure of imaging Tabs and Types");
-            }
-            if (docTypesResult!.Success)
-                _imagingTypes = docTypesResult.Data!;
-            else
+                AsyncLoadTask = (async () =>
+                {
+                    docCategoryTabDivisionTypeResult = await DataAccess.GetAllImagingCategoryTabDivisionTypes();
+                }),
+                ResultVariable = () => docCategoryTabDivisionTypeResult
+            };
+            var loadDocTypes = new LoadItem()
             {
-                //TODO:Handle Errors
-                NotificationService.Notify(severity: NotificationSeverity.Warning, "Load failure of imaging types");
+                AsyncLoadTask = async () => { docTypesResult = await DataAccess.GetAllImagingTypes(); },
+                ResultVariable = () => docTypesResult
+            };
+            var loadDocs = new LoadItem()
+            {
+                AsyncLoadTask = async () =>
+                {
+                    docsResult = await DataAccess.SearchDocuments(ImagingId, DocumentCategory);
+                },
+                ResultVariable = () => docsResult
+            };
+
+            await LoadInParallel(loadDocCategoryTabDivisionType, loadDocTypes, loadDocs);
+
+            //Check for any failed tasks because that means retries have expired.
+            if (docCategoryTabDivisionTypeResult!.Success == false ||
+                docTypesResult!.Success == false ||
+                docsResult!.Success == false)
+            {
+                NotifyLoadError(["Maximum retries exceeded", "Wait and manually refresh page"]);
+                return;
             }
+
+            //Use business logic to determine which tabs and types are relevant to the page
+            _currentCatTabDivTypes =
+                docCategoryTabDivisionTypeResult.Data!.GetRelevantTabsAndTypes(DocumentCategory, DivisionCode);
+            _imagingTypes = docTypesResult.Data!;
             PopulateDocuments(docsResult);
         }
 
@@ -47,7 +67,6 @@ namespace JamesWebUI.Client.Shared
         {
             if (documentsResult.Success)
             {
-                //TODO: 
                 var documents = documentsResult.Data!;
                 //Add unknown types, if needed.
                 var allTypes = new HashSet<string>(_imagingTypes.Select(t => t.Type).Distinct());
@@ -100,20 +119,21 @@ namespace JamesWebUI.Client.Shared
                                   Types = tt.Select(t => _imagingTypes.Single(it => it.Type == t.Type)).ToList()
                               }).ToList(); //Get list of types in each tab
 
-                var stage2 = from tabType in stage1
-                             select (new ImagingTabTypeDocuments()
-                             {
-                                 TabName = tabType.TabName,
-                                 TypeDocuments = (
-                                     from ty in tabType.Types
-                                     where typeDocuments.ContainsKey(ty)
-                                     select new ImagingTypeDocuments
-                                     {
-                                         Type = ty,
-                                         Documents = typeDocuments[ty]
-                                     }
-                                 ).ToList()
-                             }); //Combine documents for each tab and type
+                var stage2 = (from tabType in stage1
+                              select (new ImagingTabTypeDocuments()
+                              {
+                                  TabName = tabType.TabName,
+                                  TypeDocuments = (
+                                      from ty in tabType.Types
+                                      where typeDocuments.ContainsKey(ty)
+                                      select new ImagingTypeDocuments
+                                      {
+                                          Type = ty,
+                                          Documents = typeDocuments[ty]
+                                      }
+                                  ).Where(itd => itd.Documents.Any()).ToList()
+                              }))//Combine documents for each tab and type
+                    .Where(tt => tt.TypeDocuments.Any(td => td.Documents.Any()));
                 _currentTabTypeDocuments.AddRange(stage2);
 
                 _docsLoading = false;
@@ -121,8 +141,8 @@ namespace JamesWebUI.Client.Shared
             }
             else
             {
-                //TODO:  Log the error and figure out how to show to user.
-                NotificationService.Notify(severity: NotificationSeverity.Warning, "Load failure of documents");
+                //Should never hit this since success should have been checked before calling.
+                NotifyLoadError(documentsResult.Errors, "documents");
             }
         }
 
@@ -141,6 +161,26 @@ namespace JamesWebUI.Client.Shared
                         return $"ImagingRepository/UploadDocuments/{string.Join(':', _uploadFiles.Select(uf => uf.DocumentType))}/{(int)DocumentCategory}/{ImagingId}?descriptions={string.Join(':', _uploadFiles.Select(uf => uf.Description))}";
                 }
             }
+        }
+
+        private class ImagingDocumentDetails
+        {
+            public required string FileName { get; set; }
+            public string Description { get; set; } = "";
+            public required string DocumentType { get; set; }
+            public VImagingCategoryTabDivisionType DocumentCategoryType { get; set; } = new();
+        }
+
+        private class ImagingTypeDocuments
+        {
+            public required ImagingType Type { get; set; }
+            public required List<ImagingDocument> Documents { get; set; }
+        }
+
+        private class ImagingTabTypeDocuments
+        {
+            public required string TabName { get; set; }
+            public required List<ImagingTypeDocuments> TypeDocuments { get; set; }
         }
 
         private readonly List<ImagingTypeDocuments> _fakeData = [

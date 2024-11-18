@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace James.Shared
+﻿namespace James.Shared
 {
     /// <summary>
     /// A set of constants to use as categories for log messages to keep them consistent
@@ -17,5 +11,6 @@ namespace James.Shared
         public const string Agency = "Agency";
         public const string Obligee = "Obligee";
         public const string Bond = "Bond";
+        public const string DataAccess = "Data Access";
     }
 }

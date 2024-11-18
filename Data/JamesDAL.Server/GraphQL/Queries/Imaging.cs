@@ -1,4 +1,8 @@
-﻿using HotChocolate.Authorization;
+﻿//Uncomment below to have random exceptions thrown.  Set the frequency by setting ChaosFrequencyPercentage below
+//TODO:  Move this compiler flag into the build for dev, int and tst
+#define ChaosMonkey
+
+using HotChocolate.Authorization;
 using James.Data.Imaging;
 using James.Shared.Imaging;
 
@@ -6,6 +10,24 @@ namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
+    #if ChaosMonkey
+        /// <summary>
+        /// Percentage of tries that should throw exceptions (0-100)
+        /// </summary>
+        private const int ChaosFrequencyPercentage = 20;
+        private static readonly Random _rnd = new ();
+
+        /// <summary>
+        /// Randomly throws a chaos monkey exception based on ChaosFrequencyPercentage
+        /// </summary>
+        /// <exception cref="Exception"></exception>
+        private void ThrowIfChaos()
+        {
+            if (_rnd.Next(0, 100) <= ChaosFrequencyPercentage)
+                throw new Exception("Chaos Monkey strikes again!!");
+        }
+    #endif
+
         /// <summary>
         /// Returns document metadata from the imaging system for a given document category, document type and imaging id
         /// </summary>
@@ -36,6 +58,9 @@ namespace James.Data.Server.GraphQL.Queries
             KeyValuePair<string, string>[]? searchOptions = null,
             KeyValuePair<string, string>[]? additionalParams = null)
         {
+#if ChaosMonkey
+            ThrowIfChaos();
+#endif
             return await imagingAccess.SearchDocumentsAsync(criteria, searchOptions, additionalParams);
         }
 
@@ -117,6 +142,9 @@ namespace James.Data.Server.GraphQL.Queries
         public async Task<List<ImagingType>> GetAllImagingTypes(
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
+#if ChaosMonkey
+            ThrowIfChaos();
+#endif
             var ctx = await contextFactory.CreateDbContextAsync();
             return ctx.ImagingTypes.ToList();
         }
@@ -125,6 +153,9 @@ namespace James.Data.Server.GraphQL.Queries
         public async Task<List<VImagingCategoryTabDivisionType>> GetAllImagingCategoryTabDivisionType(
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
+#if ChaosMonkey
+            ThrowIfChaos();
+#endif
             var ctx = await contextFactory.CreateDbContextAsync();
             return ctx.VImagingCategoryTabDivisionTypes.OrderBy(ctdt=>ctdt.TabName).ThenBy(ctdt=>ctdt.Type).ToList();
         }

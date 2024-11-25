@@ -537,6 +537,7 @@ type Query {
   accountOnly(accountNumber: String): Account
   searchAgencies(stringToSearch: String): [Agency!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
+  agencyById(agencyId: UUID!): Agency
   agencyAccounts(agencyNumber: String!): [Account!]!
   agencyParent(agencyId: UUID!): Agency!
   agencyInventory(agencyId: UUID!): [AgencyInventory!]!
@@ -1719,7 +1720,7 @@ type VImagingCategoryTabDivisionType {
   tabName: String!
   tabDescription: String!
   type: String!
-  typeDesecription: String!
+  typeDescription: String!
   category: String!
   divisionCode: String
 }

@@ -54,6 +54,6 @@ query GetAllImagingCategoryTabDivisionTypes {
     tabDescription
     tabName
     type
-    typeDesecription
+    typeDescription
   }
 } 

@@ -10,5 +10,6 @@ namespace James.Shared
     {
         public const string Imaging = "Imaging";
         public const string UserInterface = "UI";
+        public const string DataAccess = "Data Access";
     }
 }

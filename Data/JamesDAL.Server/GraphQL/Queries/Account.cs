@@ -1,5 +1,4 @@
 ﻿using HotChocolate.Authorization;
-using HotChocolate.Language;
 
 namespace James.Data.Server.GraphQL.Queries
 {
@@ -27,7 +26,8 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(ag => ag!.IdNavigation)
                 .Include(a => a.HomeOfficeReviewByNavigation)
                 .Include(a => a.BranchReviewByNavigation)
-                .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim());
+                .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim())
+                   ?? throw new GraphQLException("No account with this account number exists.");
         }
         [Authorize]
         public async Task<List<Account>> SearchAccounts(string searchString, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

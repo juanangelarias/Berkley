@@ -38,6 +38,15 @@
   }
 }
 
+query GetAgencyNameAndNumberById($agencyId: UUID!) {
+  agencyById(agencyId: $agencyId) {
+    agencyNumber
+    idNavigation {
+      fullName
+    }
+  }
+}
+
 query agencyAccounts($agencyNumber: String!) {
   agencyAccounts(agencyNumber: $agencyNumber) {
     accountNum

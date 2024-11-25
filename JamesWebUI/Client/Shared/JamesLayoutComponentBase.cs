@@ -1,25 +1,30 @@
 ﻿using System.Security.Claims;
+using James.Shared;
+using James.Shared.Model;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
+using Radzen.Blazor;
+using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
 namespace JamesWebUI.Client.Shared
 {
     public abstract class JamesLayoutComponentBase : LayoutComponentBase
     {
         [Inject]
-        public required JamesWebUI.Client.Services.ThemeService JamesThemeService { get; set; }
+        public required ThemeService JamesThemeService { get; set; }
         [Inject]
-        public required James.Shared.ILoggingService LoggingService { get; set; }
+        public required ILoggingService LoggingService { get; set; }
         [Inject]
-        public required Radzen.DialogService DialogService { get; set; }
+        public required DialogService DialogService { get; set; }
         [Inject]
-        public required Radzen.NotificationService NotificationService { get; set; }
+        public required NotificationService NotificationService { get; set; }
 
         #region Authentication Code
         [CascadingParameter]
         protected Task<AuthenticationState>? AuthenticationState { get; set; }
-        private Task<AuthenticationState> _loadAuthenticationStateAsync { get; set; }
+        private Task<AuthenticationState> LoadAuthenticationStateAsync { get; set; } = null!;
+
         //TODO: Discuss whether to allow only synchronous or asynchronous access to values.
         //Synchronous access properties
         protected AuthenticationState? State { get; private set; }
@@ -30,23 +35,23 @@ namespace JamesWebUI.Client.Shared
         //Asynchronous access to properties
         protected async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            if (_loadAuthenticationStateAsync.IsCompleted)
-                return _loadAuthenticationStateAsync.Result;
-            return await _loadAuthenticationStateAsync;
+            if (LoadAuthenticationStateAsync.IsCompleted)
+                return LoadAuthenticationStateAsync.Result;
+            return await LoadAuthenticationStateAsync;
         }
 
         protected async Task<ClaimsPrincipal> GetUserPrincipalAsync()
         {
-            if (_loadAuthenticationStateAsync.IsCompleted)
-                return _loadAuthenticationStateAsync.Result.User;
-            return (await _loadAuthenticationStateAsync).User;
+            if (LoadAuthenticationStateAsync.IsCompleted)
+                return LoadAuthenticationStateAsync.Result.User;
+            return (await LoadAuthenticationStateAsync).User;
         }
 
         protected async Task<bool> GetIsAuthenticatedAsync()
         {
-            if (_loadAuthenticationStateAsync.IsCompleted)
-                return null != _loadAuthenticationStateAsync.Result.User.Identity;
-            return null != (await _loadAuthenticationStateAsync).User.Identity;
+            if (LoadAuthenticationStateAsync.IsCompleted)
+                return null != LoadAuthenticationStateAsync.Result.User.Identity;
+            return null != (await LoadAuthenticationStateAsync).User.Identity;
         }
 
         #endregion
@@ -60,7 +65,7 @@ namespace JamesWebUI.Client.Shared
                 Task.Run(async () =>
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 {
-                    _loadAuthenticationStateAsync = AuthenticationState;
+                    LoadAuthenticationStateAsync = AuthenticationState;
                     State = await AuthenticationState;
                     IsAuthenticationStateLoaded = true;
                 });
@@ -79,6 +84,7 @@ namespace JamesWebUI.Client.Shared
         /// <summary>
         /// Generates standard notification that a save failed.
         /// </summary>
+        /// <param name="errors">Errors that were returned.</param>
         /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
         protected void NotifySaveError(string[] errors, string itemSaved = "changes")
         {
@@ -88,6 +94,7 @@ namespace JamesWebUI.Client.Shared
         /// <summary>
         /// Generates standard notification that a load failed.
         /// </summary>
+        /// <param name="errors">Errors that were returned.</param>
         /// <param name="itemSaved">The item that didn't load, default is "data".  Should NOT be title cased.</param>
         protected void NotifyLoadError(string[] errors, string itemSaved = "data")
         {
@@ -97,6 +104,27 @@ namespace JamesWebUI.Client.Shared
         protected void LogGraphQlLoadError()
         {
             throw new NotImplementedException("If you need it, create it.");
+        }
+
+        private string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+            substitutions[original].Property;
+
+        private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+            substitutions[original].Title;
+
+        protected string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format, ExportColumnSubstitutions? propertySubstitutions = null)
+        {
+            propertySubstitutions ??= new();
+            var query = new Query()
+            {
+                OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),
+                Filter = SubstitutePropertyIfNeeded(dataGrid.Query.Filter, propertySubstitutions),
+                Select = string.Join(",", dataGrid.ColumnsCollection.Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property))
+                    .Select(c => new {Property= SubstitutePropertyIfNeeded(c.Property, propertySubstitutions), Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)})
+                    .Select(cSub => new {Property= cSub.Property, Title = cSub.Title.Contains(".") ? $"{cSub.Property} as {cSub.Title.Replace(".", "_")}" : cSub.Title })
+                            .Select(pt => pt.Property== pt.Title? pt.Property:$"{pt.Property} as {pt.Title.Replace(' ',ExportColumnSubstitution.SpaceSubstitution)}"))
+            };
+            return query.ToUrl($"{url}/{(format == ExportFormat.CSV ? "CSV" : "Excel")}");
         }
         #endregion
     }

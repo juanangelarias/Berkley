@@ -34,6 +34,7 @@ namespace James.Data.Client
             return await ExecuteGet<List<Account>>(async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),
                 subProperty: "AgencyAccounts");
         }
+
         public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)
         {
             return await ExecuteGet<List<Obligee>>(async () => await jamesClient.SearchObligees.ExecuteAsync(searchString), "SearchObligees");
@@ -61,6 +62,13 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber)
         {
             var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
+                "AgencyByAgencyNumber");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId)
+        {
+            var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyNameAndNumberById.ExecuteAsync(agencyId),
                 "AgencyByAgencyNumber");
             return result;
         }

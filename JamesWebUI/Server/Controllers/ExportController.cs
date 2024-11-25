@@ -195,7 +195,7 @@ namespace JamesWebUI.Server.Controllers
             }
 
             var result = new FileStreamResult(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            result.FileDownloadName = (!string.IsNullOrEmpty(fileName) ? fileName : "Export") + ".xlsx";
+            result.FileDownloadName = Path.ChangeExtension(!string.IsNullOrEmpty(fileName) ? fileName : "Export", "xlsx") ;
 
             return result;
         }

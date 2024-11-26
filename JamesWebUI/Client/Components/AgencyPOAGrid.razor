@@ -311,7 +311,7 @@
                 { "Error Message", message },
                 { "AgencyNumber", poa.Agency.AgencyNumber},
                 { "Poa Id", poa.Id.ToString()}
-                    });
+                        });
     }
 
     private void ExportLicenseGrid(ExportFormat format)
@@ -322,8 +322,8 @@
         substitutions.AddSubstitution("FirstIssued", title: "First Issued");
         substitutions.AddSubstitution("CurrentIssued", title: "Current Issued");
         NavigationManager.NavigateTo(ExportDataGridUrl(poaGrid,
-$"/export/AgencyPOAs/{AgencyId}", format, substitutions),
-true);
+                $"/export/AgencyPOAs/{AgencyId}", format, substitutions),
+            true);
     }
 
 }

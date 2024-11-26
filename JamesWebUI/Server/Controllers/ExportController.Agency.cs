@@ -1,4 +1,5 @@
 ﻿using James.Shared;
+using James.Shared.Data;
 using James.Shared.Model;
 using Microsoft.AspNetCore.Mvc;
 using SharedBusinessLogic;
@@ -12,8 +13,15 @@ namespace JamesWebUI.Server.Controllers
         {
             if (Guid.Empty == agencyId)
                 return new StatusCodeResult(422); //Unprocessable content
-            //TODO:  Do the below in parallel
-            var licenseResult = await DataAccess.GetAgencyLicenses(agencyId);
+
+            IDataAccessResult<List<AgencyLicense>> licenseResult = null!;
+            IDataAccessResult<Agency?> agencyNameNumberResult = null!;
+            var loads = new List<Func<Task>>
+            {
+                async () => { licenseResult = await DataAccess.GetAgencyLicenses(agencyId); },
+                async () => { agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId); }
+            };
+            await Task.WhenAll(loads.Select(l=>l()));
             if (!licenseResult.Success)
             {
                 LoggingService.LogError("Failed to retrieve agency license data", licenseResult.Errors,
@@ -21,8 +29,6 @@ namespace JamesWebUI.Server.Controllers
                     new Dictionary<string, string> { { "AgencyId", agencyId.ToString() } });
                 return new StatusCodeResult(500);
             }
-
-            var agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId);
 
             string fileName;
             if (agencyNameNumberResult.Success)
@@ -46,8 +52,15 @@ namespace JamesWebUI.Server.Controllers
         {
             if (Guid.Empty == agencyId)
                 return new StatusCodeResult(422); //Unprocessable content
-            //TODO:  Do the below in parallel
-            var poaResult = await DataAccess.GetAgencyPoas(agencyId);
+
+            IDataAccessResult<List<PowerOfAttorney>> poaResult = null!;
+            IDataAccessResult<Agency?> agencyNameNumberResult = null!;
+            var loads = new List<Func<Task>>
+            {
+                async () => { poaResult = await DataAccess.GetAgencyPoas(agencyId); },
+                async () => { agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId); }
+            };
+            await Task.WhenAll(loads.Select(l => l()));
             if (!poaResult.Success)
             {
                 LoggingService.LogError("Failed to retrieve agency POA data", poaResult.Errors,
@@ -55,8 +68,6 @@ namespace JamesWebUI.Server.Controllers
                     new Dictionary<string, string> { { "AgencyId", agencyId.ToString() } });
                 return new StatusCodeResult(500);
             }
-
-            var agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId);
 
             string fileName;
             if (agencyNameNumberResult.Success)
@@ -73,6 +84,126 @@ namespace JamesWebUI.Server.Controllers
             return format == ExportFormat.CSV
                 ? ToCsv(ApplyQuery(poaQuery, Request.Query), $"{fileName}.csv")
                 : ToExcel(ApplyQuery(poaQuery, Request.Query), $"{fileName}.xlsx");
+        }
+
+        [HttpGet("/export/AgencyRelatedParties/{agencyId:guid}/{format=Excel}")]
+        public async Task<ActionResult> ExportAgencyRelatedParties(Guid agencyId, ExportFormat format)
+        {
+            if (Guid.Empty == agencyId)
+                return new StatusCodeResult(422); //Unprocessable content
+
+            IDataAccessResult<List<Agency>> poaResult = null!;
+            IDataAccessResult<Agency?> agencyNameNumberResult = null!;
+
+            var loads = new List<Func<Task>>
+            {
+                async () => { poaResult = await DataAccess.GetAgencyRelatedParties(agencyId); },
+                async () => { agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId); }
+            };
+            await Task.WhenAll(loads.Select(l => l()));
+            if (!poaResult.Success)
+            {
+                LoggingService.LogError("Failed to retrieve agency Related Party data", poaResult.Errors,
+                    StandardLoggingCategories.DataAccess,
+                    new Dictionary<string, string> { { "AgencyId", agencyId.ToString() } });
+                return new StatusCodeResult(500);
+            }
+
+            string fileName;
+            if (agencyNameNumberResult.Success)
+                fileName = $"{agencyNameNumberResult.Data!.ToFileName()}-RelatedParties";
+            else
+            {
+                LoggingService.LogError("Failed to retrieve agency number and name", poaResult.Errors,
+                    StandardLoggingCategories.DataAccess,
+                    new Dictionary<string, string> { { "AgencyId", agencyId.ToString() } });
+                fileName = "AgencyRelatedParties";
+            }
+
+            var poaQuery = poaResult.Data!.AsQueryable();
+            return format == ExportFormat.CSV
+                ? ToCsv(ApplyQuery(poaQuery, Request.Query), $"{fileName}.csv")
+                : ToExcel(ApplyQuery(poaQuery, Request.Query), $"{fileName}.xlsx");
+        }
+
+        [HttpGet("/export/AgencyContacts/{agencyId:guid}/{format=Excel}")]
+        public async Task<ActionResult> ExportAgencyContacts(Guid agencyId, ExportFormat format)
+        {
+            if (Guid.Empty == agencyId)
+                return new StatusCodeResult(422); //Unprocessable content
+
+            IDataAccessResult<List<Agency>> contactsResult = null!;
+            IDataAccessResult<Agency?> agencyNameNumberResult = null!;
+
+            var loads = new List<Func<Task>>
+            {
+                async () => { contactsResult = await DataAccess.GetAgencyRelatedParties(agencyId); },
+                async () => { agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId); }
+            };
+            await Task.WhenAll(loads.Select(l => l()));
+            if (!contactsResult.Success)
+            {
+                LoggingService.LogError("Failed to retrieve agency Related Party data", contactsResult.Errors,
+                    StandardLoggingCategories.DataAccess,
+                    new Dictionary<string, string> { { "AgencyId", agencyId.ToString() } });
+                return new StatusCodeResult(500);
+            }
+
+            string fileName;
+            if (agencyNameNumberResult.Success)
+                fileName = $"{agencyNameNumberResult.Data!.ToFileName()}-RelatedParties";
+            else
+            {
+                LoggingService.LogError("Failed to retrieve agency number and name", contactsResult.Errors,
+                    StandardLoggingCategories.DataAccess,
+                    new Dictionary<string, string> { { "AgencyId", agencyId.ToString() } });
+                fileName = "AgencyRelatedParties";
+            }
+
+            var poaQuery = contactsResult.Data!.AsQueryable();
+            return format == ExportFormat.CSV
+                ? ToCsv(ApplyQuery(poaQuery, Request.Query), $"{fileName}.csv")
+                : ToExcel(ApplyQuery(poaQuery, Request.Query), $"{fileName}.xlsx");
+        }
+
+        [HttpGet("/export/AgencyInventory/{agencyId:guid}/{format=Excel}")]
+        public async Task<ActionResult> ExportAgencyInventory(Guid agencyId, ExportFormat format)
+        {
+            if (Guid.Empty == agencyId)
+                return new StatusCodeResult(422); //Unprocessable content
+
+            IDataAccessResult<List<AgencyInventory>> inventoryResult = null!;
+            IDataAccessResult<Agency?> agencyNameNumberResult = null!;
+
+            var loads = new List<Func<Task>>
+            {
+                async () => { inventoryResult = await DataAccess.GetAgencyInventory(agencyId);},
+                async () => { agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId); }
+            };
+            await Task.WhenAll(loads.Select(l => l()));
+            if (!inventoryResult.Success)
+            {
+                LoggingService.LogError("Failed to retrieve agency Related Party data", inventoryResult.Errors,
+                    StandardLoggingCategories.DataAccess,
+                    new Dictionary<string, string> { { "AgencyId", agencyId.ToString() } });
+                return new StatusCodeResult(500);
+            }
+
+            string fileName;
+            if (agencyNameNumberResult.Success)
+                fileName = $"{agencyNameNumberResult.Data!.ToFileName()}-Inventory";
+            else
+            {
+                LoggingService.LogError("Failed to retrieve agency number and name", inventoryResult.Errors,
+                    StandardLoggingCategories.DataAccess,
+                    new Dictionary<string, string> { { "AgencyId", agencyId.ToString() } });
+                fileName = "AgencyInventory";
+            }
+
+            var inventoryQuery = inventoryResult.Data!.AsQueryable();
+            return format == ExportFormat.CSV
+                ? ToCsv(ApplyQuery(inventoryQuery, Request.Query), $"{fileName}.csv")
+                : ToExcel(ApplyQuery(inventoryQuery, Request.Query), $"{fileName}.xlsx");
         }
     }
 }

@@ -29,19 +29,25 @@ namespace James.Shared.Model
         {
             get
             {
-                var baseFilename = Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.Filename)?.Value ??
-                                   Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocRemarks)?.Value ??
-                                   (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
-                var fileType = Path.GetExtension(baseFilename);
-                if (string.Empty == fileType)
+                try
                 {
-                    var mimeType = Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.MimeType)?.Value ??
-                                   (null == ContentList || ContentList.Count == 0 ? "" : ContentList[0].MimeType);
-                    if (!string.IsNullOrWhiteSpace(mimeType))
-                        baseFilename = Path.ChangeExtension(baseFilename, MimeTypes.ExtensionFromMimeType(mimeType));
-                }
+                    var baseFilename = Properties.FirstOrDefault(p => p.Name == ImagingAccessBase.Filename)?.Value ??
+                                       (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
+                    var fileType = Path.GetExtension(baseFilename);
+                    if (string.Empty == fileType)
+                    {
+                        var mimeType = Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.MimeType)?.Value ??
+                                       (null == ContentList || ContentList.Count == 0 ? "" : ContentList[0].MimeType);
+                        if (!string.IsNullOrWhiteSpace(mimeType))
+                            baseFilename = Path.ChangeExtension(baseFilename, MimeTypes.ExtensionFromMimeType(mimeType));
+                    }
 
-                return baseFilename;
+                    return baseFilename;
+                }
+                catch (Exception e)
+                {
+                    return e.ToString();
+                }
             }
         }
 
@@ -59,7 +65,7 @@ namespace James.Shared.Model
 
         public override string ToString()
         {
-            return $"Doc Class: {DocumentClass}\\r\\nFolder Path = {FolderPath}\\r\\nGuid = {Guid}";
+            return $"Doc Class: {DocumentClass}\\r\\nGuid = {Guid}";
         }
     }
 
@@ -93,7 +99,7 @@ namespace James.Shared.Model
         public DateTime?[] DateListValue { get; set; }
         public DateTime DateValue { get; set; }
         public bool DateValueSpecified { get; set; }
-        public string DisplayName { get; set; }
+        public string? DisplayName { get; set; }
         public string Description { get; set; }
         public string[] ListValue { get; set; }
         public string Name { get; set; }

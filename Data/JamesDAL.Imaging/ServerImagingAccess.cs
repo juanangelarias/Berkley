@@ -214,6 +214,14 @@ namespace James.Data.Imaging
         {
             if (string.IsNullOrWhiteSpace(criteria.DocClass))
                 throw new ArgumentException("Criteria must contain a document category", "criteria");
+            //Return filenames
+            var additionalParamsList = new List<KeyValuePair<string, string>>(1 + additionalParams?.Length??0);
+            if (null != additionalParams)
+                additionalParamsList.AddRange(additionalParams);
+            if (additionalParamsList.All(p=>p.Key!=_includeFilenameParam.key))
+                additionalParamsList.Add(new (_includeFilenameParam.key, _includeFilenameParam.value));
+            additionalParams = additionalParamsList.ToArray();
+
             var p8Criteria = ThisToThat.ToEntityType<searchCriteria>(criteria);
             var p8SearchOptions = (searchOptions ?? DefaultSearchOptions).Select(so => so.ToEntry()).ToArray();
             var p8AdditionalParams = (additionalParams ?? DefaultAdditionalParams).Select(so => so.ToEntry()).ToArray();

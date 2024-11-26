@@ -1,4 +1,6 @@
 ﻿using System.Security.Claims;
+using James.Shared;
+using James.Shared.Data;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
@@ -10,16 +12,17 @@ namespace JamesWebUI.Client.Shared
         [Inject]
         public required JamesWebUI.Client.Services.ThemeService JamesThemeService { get; set; }
         [Inject]
-        public required James.Shared.ILoggingService LoggingService { get; set; }
+        public required ILoggingService LoggingService { get; set; }
         [Inject]
-        public required Radzen.DialogService DialogService { get; set; }
+        public required DialogService DialogService { get; set; }
         [Inject]
-        public required Radzen.NotificationService NotificationService { get; set; }
+        public required NotificationService NotificationService { get; set; }
 
         #region Authentication Code
         [CascadingParameter]
         protected Task<AuthenticationState>? AuthenticationState { get; set; }
-        private Task<AuthenticationState> _loadAuthenticationStateAsync { get; set; }
+        private Task<AuthenticationState> LoadAuthenticationStateAsync { get; set; } = null!;
+
         //TODO: Discuss whether to allow only synchronous or asynchronous access to values.
         //Synchronous access properties
         protected AuthenticationState? State { get; private set; }
@@ -30,23 +33,23 @@ namespace JamesWebUI.Client.Shared
         //Asynchronous access to properties
         protected async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            if (_loadAuthenticationStateAsync.IsCompleted)
-                return _loadAuthenticationStateAsync.Result;
-            return await _loadAuthenticationStateAsync;
+            if (LoadAuthenticationStateAsync.IsCompleted)
+                return LoadAuthenticationStateAsync.Result;
+            return await LoadAuthenticationStateAsync;
         }
 
         protected async Task<ClaimsPrincipal> GetUserPrincipalAsync()
         {
-            if (_loadAuthenticationStateAsync.IsCompleted)
-                return _loadAuthenticationStateAsync.Result.User;
-            return (await _loadAuthenticationStateAsync).User;
+            if (LoadAuthenticationStateAsync.IsCompleted)
+                return LoadAuthenticationStateAsync.Result.User;
+            return (await LoadAuthenticationStateAsync).User;
         }
 
         protected async Task<bool> GetIsAuthenticatedAsync()
         {
-            if (_loadAuthenticationStateAsync.IsCompleted)
-                return null != _loadAuthenticationStateAsync.Result.User.Identity;
-            return null != (await _loadAuthenticationStateAsync).User.Identity;
+            if (LoadAuthenticationStateAsync.IsCompleted)
+                return null != LoadAuthenticationStateAsync.Result.User.Identity;
+            return null != (await LoadAuthenticationStateAsync).User.Identity;
         }
 
         #endregion
@@ -60,7 +63,7 @@ namespace JamesWebUI.Client.Shared
                 Task.Run(async () =>
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                 {
-                    _loadAuthenticationStateAsync = AuthenticationState;
+                    LoadAuthenticationStateAsync = AuthenticationState;
                     State = await AuthenticationState;
                     IsAuthenticationStateLoaded = true;
                 });
@@ -79,6 +82,7 @@ namespace JamesWebUI.Client.Shared
         /// <summary>
         /// Generates standard notification that a save failed.
         /// </summary>
+        /// <param name="errors">Array of error messages</param>
         /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
         protected void NotifySaveError(string[] errors, string itemSaved = "changes")
         {
@@ -88,15 +92,57 @@ namespace JamesWebUI.Client.Shared
         /// <summary>
         /// Generates standard notification that a load failed.
         /// </summary>
+        /// <param name="errors">Array of error messages</param>
         /// <param name="itemSaved">The item that didn't load, default is "data".  Should NOT be title cased.</param>
         protected void NotifyLoadError(string[] errors, string itemSaved = "data")
         {
             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} retrieving {itemSaved}.  {string.Join("  ", errors)}", Duration = 15000 });
+            LogGraphQlLoadError(errors, itemSaved);
         }
 
-        protected void LogGraphQlLoadError()
+        protected void LogGraphQlLoadError(string[] errors, string itemSaved = "data")
         {
-            throw new NotImplementedException("If you need it, create it.");
+            LoggingService.LogError(message: $"There {(errors.Length == 1 ? "was an error" : "were errors")} retrieving {itemSaved}.", category:StandardLoggingCategories.DataAccess, data:Enumerable.Range(0,errors.Length).ToDictionary(i=>"Error"+(i+1), i => errors[i]));
+        }
+
+        /// <summary>
+        /// Loads the tasks, retries if needed and returns when either everything has finished or failed
+        /// </summary>
+        /// <param name="loadTasks">Argumentless Lambda Expressions that sets external IDataAccessResult variables</param>
+        /// <returns></returns>
+        protected async Task LoadInParallel(params LoadItem[] loadTasks)
+        {
+            var maxRetries = 5 * loadTasks.Length;
+            var retriesRemaining = maxRetries;
+            //Initial load
+            await Task.WhenAll(loadTasks.Select(lt => lt.AsyncLoadTask()));
+
+            var needsToRetry = loadTasks.Where(lt => !lt.ResultVariable().Success).ToArray();
+            while (needsToRetry.Any() && retriesRemaining>0)
+            {
+                //Handle any needed retries
+                NotifyLoadError(needsToRetry.SelectMany(ntr => ntr.ResultVariable().Errors).ToArray());
+                await Task.Delay((maxRetries - retriesRemaining) * 250);
+                await Task.WhenAll(needsToRetry.Select(nr => nr.AsyncLoadTask()));
+                retriesRemaining -= needsToRetry.Length;
+                needsToRetry = loadTasks.Where(lt => !lt.ResultVariable().Success).ToArray();
+            }
+        }
+
+        protected class LoadItem
+        {
+            /// <summary>
+            /// Argumentless lambda expression or function that sets external IDataAccessResult variables
+            /// </summary>
+            public required Func<Task> AsyncLoadTask { get; init; }
+
+            /// <summary>
+            /// Argumentless lambda expression or function that returns the result variable.
+            /// </summary>
+            /// <remarks>This must be a function because the result variable will not be set until the AsyncLoadTask has run.
+            /// </remarks>
+            /// <returns>Returns a reference to the IDataAccessResult base class, ISaveDataResult, that is non-generic and only cares about success and errors</returns>
+            public required Func<ISaveDataResult> ResultVariable { get; init; }
         }
         #endregion
     }

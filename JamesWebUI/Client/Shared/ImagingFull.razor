@@ -1,86 +1,134 @@
-﻿@using System.Diagnostics
-@using ClientBusinessLogic
-@using James.Shared
-@using James.Shared.Imaging
+﻿@using James.Shared.Imaging
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
-<RadzenStack>
-    <RadzenUpload id="ddUpload" @ref="@_uploadDD"
-                  ChooseText="Drag and drop documents here or click to choose document to upload"
-                  Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{_details.DocumentType}/{(int)DocumentCategory}/{ImagingId}?filename={_details.FileName}")
-                  InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
-                  Change=@UploadFileChanged
-                  Error=@UploadErrorHandler
-                  Complete=@UploadComplete
-                  Icon="upload_file"
-                  Style="width: 100%" />
-    <RadzenTemplateForm TItem="ImagingDocumentDetails" Data="_details"
-                        Visible="@(_waitingForFileSelection==false)"
-                        Submit="@((args) =>StartUpload(args))">
-        <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
-            <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:100%">
-                <ChildContent>
-                    <RadzenTextBox Name="tbFileName" @ref="_tbFilename" @bind-Value=@_details.FileName Style="width:100%" />
-                </ChildContent>
-                <Helper>
-                    <RadzenRequiredValidator Component="_tbFileName" Text="Name is required." />
-                    <RadzenRegexValidator Component="tbFileName" Text="Must be a filename without path"
-                                          Pattern="^[^\\/]+$" />
-                    <RadzenCustomValidator Component="tbFileName" Text="Must be a valid filename"
-                                           Validator="@(()=>ClientBusinessLogic.Validators.ValidateFileName(_details.FileName))" />
-                    <RadzenCustomValidator Component="tbFileName" Text="File extension is not allowed by BTS"
-                                           Validator="@(()=>!ClientBusinessLogic.Validators.ValidateFileName(_details.FileName)||
-                                                            SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(_details.FileName))" />
-                </Helper>
-            </RadzenFormField>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="12">
-                <RadzenButton Text="Upload" Disabled="@_waitingForFileSelection"
-                              class="rz-mt-4"
-                              ButtonType="ButtonType.Submit" />
-            </RadzenColumn>
-        </RadzenRow>>
-    </RadzenTemplateForm>
-    <RadzenPanel>
-        <RadzenDataList TItem="ImagingTabTypeDocuments" Data="@_currentTabTypeDocuments" IsLoading="_docsLoading">
-            <Template Context="tab">
-                <RadzenPanel Collapsed="true" AllowCollapse="true"
-                             Text="@tab.TabName">
-                    <RadzenDataList TItem="ImagingTypeDocuments" Data="@tab.TypeDocuments" WrapItems="true">
-                        <Template Context="documents">
-                            <RadzenPanel Collapsed="true" AllowCollapse="true"
-                                         Text="@documents?.Type.Description">
-                                <RadzenStack>
-                                    <div class="rz-p-12 rz-text-align-center">
-                                        <RadzenCheckBox TriState="false" Name="cbThumbnails" Value="false" Disabled="true" />
-                                        <RadzenLabel Text="View Thumbnails" Component="cbThumbnails" class="rz-ms-2" />
-                                    </div>
-                                    <RadzenDataList TItem="ImagingDocument" Data="@documents.Documents" WrapItems="true">
-                                        <Template Context="doc">
-                                            <RadzenButton Variant="Variant.Outlined">
-                                                <RadzenRow>
-                                                    <RadzenColumn><RadzenIcon Icon="description" /></RadzenColumn>
-                                                    <RadzenColumn><RadzenText Text=@doc?.Description /></RadzenColumn>
-                                                    <RadzenColumn><RadzenText Text=@doc?.Filename /></RadzenColumn>
-                                                    <RadzenColumn><RadzenText Text=@doc?.EntryDate.ToShortDateString() /></RadzenColumn>
-                                                </RadzenRow>
-                                            </RadzenButton>
-                                        </Template>
-                                    </RadzenDataList>
-                                </RadzenStack>
-                            </RadzenPanel>
-                        </Template>
-                    </RadzenDataList>
-                </RadzenPanel>
-            </Template>
-        </RadzenDataList>
-    </RadzenPanel>
-</RadzenStack>
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JS
+<style>
+    .imagingDocuments button p {
+        text-transform: none;
+    }
 
+    /*Increases width of Document Type dropdown*/
+    div.rz-dropdown-panel.rz-popup {
+        width: 550px !important;
+        min-width: 550px !important;
+    }
+</style>
+<RadzenUpload @ref="@_rzUpload" id="rzUpload"
+              ChooseText="Drag and drop documents here or click to choose document(s) to upload"
+              Auto="false" Multiple="true" Url=@UploadUrl
+              InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
+              Change=@UploadFileChanged
+              Error=@UploadErrorHandler
+              Complete=@UploadComplete
+              Icon="upload_file"
+              Style="width: 100%" />
+<RadzenTemplateForm TItem="List<ImagingDocumentDetails>" Data="_uploadFiles"
+                    Visible="@(_waitingForFileSelection == false)"
+                    Submit="@((args) => StartUpload(args))"
+                    class="_uploadFilesrz-m-0">
+    <RadzenDataList TItem="ImagingDocumentDetails" WrapItems="true" Data="@_uploadFiles">
+        <Template Context="detail">
+            <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0">
+                <RadzenStack class="rz-m-0" Style="max-width:50em">
+                    <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text">
+                        <ChildContent>
+                            <RadzenTextBox Name="tbFileName" @bind-Value=@detail.FileName Style="width:25em" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="tbFileName" Text="Name is required." />
+                            <RadzenRegexValidator Component="tbFileName" Text="Must be a filename without path"
+                                                  Pattern="^[^\\/]+$" />
+                            <RadzenCustomValidator Component="tbFileName" Text="Must be a valid filename"
+                                                   Validator="@(() => ClientBusinessLogic.Validators.ValidateFileName(detail.FileName))" />
+                            <RadzenCustomValidator Component="tbFileName" Text="File extension is not allowed by BTS"
+                                                   Validator="@(() => !ClientBusinessLogic.Validators.ValidateFileName(detail.FileName) || SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(detail.FileName))" />
+                        </Helper>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Description" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:25em">
+                        <ChildContent>
+                            <RadzenTextBox Name="tbDescription" @bind-Value=@detail.Description Style="width:100%" />
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="tbDescription" Text="Description is required." />
+                        </Helper>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Document Type" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:25em">
+                        <ChildContent>
+                            <RadzenDropDownDataGrid Name="ddDocType"
+                                                    TValue="string"
+                                                    Data="@_currentCatTabDivTypes"
+                                                    ValueProperty="@nameof(VImagingCategoryTabDivisionType.Type)"
+                                                    TextProperty="@nameof(VImagingCategoryTabDivisionType.TypeDescription)"
+                                                    @bind-value="@detail.DocumentType"
+                                                    PageSize="20" Density="Density.Compact"
+                                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                    FilterAsYouType="true"
+                                                    AllowFilteringByAllStringColumns="true"
+                                                    AllowFiltering="true"
+                                                    class="docTypeSelector">
+                                <Columns>
+                                    <RadzenDropDownDataGridColumn Property="@nameof(detail.DocumentCategoryType.TabName)" Title="Category" MinWidth="7em" />
+                                    <RadzenDropDownDataGridColumn Property="@nameof(detail.DocumentCategoryType.TypeDescription)" Title="Type" MinWidth="10em" />
+                                </Columns>
+                            </RadzenDropDownDataGrid>
+                        </ChildContent>
+                        <Helper>
+                            <RadzenRequiredValidator Component="ddDocType" Text="Must select a document type" />
+                            <RadzenRegexValidator Component="ddDocType" Text="Must select a document type"
+                                                  Pattern="\S+" />
+                        </Helper>
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenRow>
+        </Template>
+    </RadzenDataList>
+    <RadzenRow>
+        <RadzenColumn Size="12">
+            <RadzenButton Text="Upload" Disabled="@_waitingForFileSelection"
+                          class="rz-mt-4"
+                          ButtonType="ButtonType.Submit" />
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenTemplateForm>
+<RadzenPanel class="rz-p-0">
+    <RadzenDataList TItem="ImagingTabTypeDocuments" Data="@_currentTabTypeDocuments" IsLoading="_docsLoading" WrapItems="true">
+        <Template Context="tab">
+            <RadzenPanel Collapsed="true" AllowCollapse="true" class="rz-p-0"
+                         Text="@tab.TabName">
+                <RadzenDataList TItem="ImagingTypeDocuments" Data="@tab.TypeDocuments" WrapItems="true">
+                    <Template Context="documents">
+                        <RadzenPanel Collapsed="true" AllowCollapse="true"
+                                     Text="@documents.Type.Description">
+                            <RadzenStack class="rz-p-0">
+                                <div class="rz-p-0 rz-text-align-center">
+                                    <RadzenCheckBox TriState="false" Name="cbThumbnails" Value="false" Disabled="true" />
+                                    <RadzenLabel Text="View Thumbnails" Component="cbThumbnails" class="rz-ms-2" />
+                                </div>
+                                <RadzenDataList TItem="ImagingDocument" Data="@documents.Documents" WrapItems="true" class="imagingDocuments">
+                                    <Template Context="doc">
+                                        <RadzenButton Variant="Variant.Outlined" Click="@(()=>DownloadDocument(doc.Guid))">
+                                            <RadzenRow>
+                                                <RadzenColumn Width="1"><RadzenIcon Icon="description" class="rz-p-0 rz-w-fit-content" /></RadzenColumn>
+                                                <RadzenColumn Width="5"><RadzenText Text=@doc.Description class="rz-w-fit-content" /></RadzenColumn>
+                                                <RadzenColumn Width="4"><RadzenText Text=@doc.Filename class="rz-w-fit-content" /></RadzenColumn>
+                                                <RadzenColumn Width="2"><RadzenText Text=@doc.EntryDate.ToShortDateString() /></RadzenColumn>
+                                            </RadzenRow>
+                                        </RadzenButton>
+                                    </Template>
+                                </RadzenDataList>
+                            </RadzenStack>
+                        </RadzenPanel>
+                    </Template>
+                </RadzenDataList>
+            </RadzenPanel>
+        </Template>
+    </RadzenDataList>
+</RadzenPanel>
 
 @code {
     [Parameter] public ImagingDocumentCategory DocumentCategory { get; set; }
+
     /// <summary>
     /// Division code
     /// </summary>
@@ -88,6 +136,7 @@
     /// Only used if DocumentCategory is ImagingDocumentCategory.Account, null otherwise
     /// </remarks>
     [Parameter] public string? DivisionCode { get; set; }
+
     /// <summary>
     /// The Id used by imaging to subdivide the DocumentCategory
     /// </summary>
@@ -96,242 +145,96 @@
     /// Agency uses AgencyNumber
     /// BondRequests use BondRequestNumber
     /// Billing uses AccountNum</remarks>
-    [Parameter] public string ImagingId { get; set; }
+    [Parameter] public required string ImagingId { get; set; }
 
-    RadzenStack _imagingList;
-    RadzenUpload _uploadDD;
-    //RadzenDataList<ImagingTypeDocuments> _docCategoryList;
-    ImagingDocumentDetails _details = new ImagingDocumentDetails { FileName = "", Description = "", DocumentType = "" };
-    RadzenTextBox _tbFilename;
-    List<ImagingTypeDocuments> _currentTypeDocuments = new();
-    List<ImagingTabTypeDocuments> _currentTabTypeDocuments = new();
-    List<VImagingCategoryTabDivisionType> _currentCatTabDivTypes = new();
-    List<ImagingType> _imagingTypes;
-    bool _waitingForFileSelection = true, uploadFailed, _docsLoading = true;
-
-    List<ImagingTypeDocuments> _fakeData = [
-        new ImagingTypeDocuments{ Type = new ImagingType() { Type = "AA", Description = "Category1" }, Documents = [
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-Properties = [new ImagingProperty{Name="DocRemarks", Value="File1.doc"}
-]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File2.doc"}
-    ]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File3.xls"}
-    ]}]},
-new ImagingTypeDocuments{ Type = new ImagingType() { Type = "AB", Description = "Category2" } , Documents = [
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-Properties = [new ImagingProperty{Name="DocRemarks", Value="File1.doc"}
-]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File2.doc"}
-    ]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File3.xls"}
-    ]}]},
-new ImagingTypeDocuments{ Type = new ImagingType() { Type = "CC", Description = "Category3" } , Documents = [
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-Properties = [new ImagingProperty{Name="DocRemarks", Value="File1.doc"}
-]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File2.doc"}
-    ]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File3.xls"}
-    ]}]},
-new ImagingTypeDocuments{ Type = new ImagingType() { Type = "DD", Description = "Category4" } , Documents = [
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-Properties = [new ImagingProperty{Name="DocRemarks", Value="File1.doc"}
-]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File2.doc"}
-    ]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File3.xls"}
-    ]}]},
-new ImagingTypeDocuments{ Type = new ImagingType() { Type = "EE", Description = "Category5" } , Documents = [
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-Properties = [new ImagingProperty{Name="DocRemarks", Value="File1.doc"}
-]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File2.doc"}
-    ]},
-new ImagingDocument(){EntryDate = DateTime.Now.AddMonths(-1),
-    Properties = [new ImagingProperty{Name="DocRemarks", Value="File3.xls"}
-    ]}]}];
+    RadzenUpload rzUpload
+    {
+        get => _rzUpload;
+        set
+        {
+            NotificationService.Notify(NotificationSeverity.Success, "Set!!!!");
+            _rzUpload = value;
+        }
+    }
+    RadzenUpload _rzUpload;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        //TODO:  Get available documents and their categories
-
-        //var results =
         if (string.IsNullOrWhiteSpace(ImagingId))
         {
-            LoggingService.LogError(message:"ImagingId is not valid", details:"ImagingId is null or whitespace",
-                category:"Imaging");
-            //TODO make sure this doesn't get hit
+            LoggingService.LogError(message: "ImagingId is not valid", details: "ImagingId is null or whitespace",
+                category: "Imaging");
             return;
         }
 
-        //UNDONE: run these queries in parallel instead of in series
-        var docCategoryTabDivisionTypeResult = await DataAccess.GetAllImagingCategoryTabDivisionTypes();
-        var docTypesResult = await DataAccess.GetAllImagingTypes();
-        var docsResult = await DataAccess.SearchDocuments(ImagingId, DocumentCategory);
-        if (docCategoryTabDivisionTypeResult.Success)
-            _currentCatTabDivTypes = docCategoryTabDivisionTypeResult.Data!
-                .Where(ctdt => (ctdt.Category == Enum.GetName(typeof(ImagingDocumentCategory), DocumentCategory)
-                    && (DocumentCategory != ImagingDocumentCategory.Account || ctdt.DivisionCode == DivisionCode)))
-                .ToList();
+        await LoadAll();
+    }
+
+    private void DownloadDocument(string documentGuid)
+    {
+        if (Guid.TryParse(documentGuid, out var documentId))
+            NavigationManager.NavigateTo($"/ImagingRepository/GetDocument/{DocumentCategory}/{documentId}", true);
         else
+            NotificationService.Notify(NotificationSeverity.Error, "Document Id invalid format");
+    }
+
+    //The below is to prevent the file drop cursor from being shown except when the file is dragged onto the RadzenUpload
+    IJSObjectReference? _module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+            _module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./Shared/InlineImagingDocument.razor.js");
+    }
+
+    private async Task StartUpload(List<ImagingDocumentDetails> args)
+    {
+        if (_uploadFiles.Any(f => string.IsNullOrWhiteSpace(f.Description) || string.IsNullOrWhiteSpace(f.FileName) || string.IsNullOrWhiteSpace(f.DocumentType)))
         {
-            //TODO:Handle Errors
-        }
-        if (docTypesResult.Success)
-            _imagingTypes = docTypesResult.Data!;
-        else
-        {
-            //TODO:Handle Errors
-        }
-        if (docsResult.Success)
-        {
-            //Add unknown types, if needed.
-            var allTypes = new HashSet<string>(_imagingTypes.Select(t => t.Type).Distinct());
-            var allDocs = docsResult.Data.ToList();
-            var unknownTypes = allDocs.Select(d => d.DocumentType).Distinct()
-                .Where(ddt => !allTypes.Contains(ddt)).ToList();
-            if (unknownTypes.Any())
-            {
-                LoggingService.LogWarning("Non-standard document types found in imaging",
-                    "Document types do not match standard types in database",
-                    category: StandardLoggingCategories.Imaging,
-                    data: new Dictionary<string, string>{ 
-                        { "Document Category", DocumentCategory.Name() },
-                        { "ImagingId", ImagingId }, 
-                        { "DivisionCode", DivisionCode??"NULL" }
-                    });
-                var unknownTypeCat = ImagingRules.CreateUnknownType(DocumentCategory, division: DivisionCode);
-                _imagingTypes.Add(ImagingRules.CreateUnknownType());
-                _currentCatTabDivTypes.Add(unknownTypeCat);
-                var docsWithUnknownType = allDocs.Where(d => unknownTypes.Contains(d.DocumentType)).ToList();
-                foreach (var unknownTypeDoc in docsWithUnknownType)
-                    unknownTypeDoc.DocumentType = unknownTypeCat.Type;
-            }
-
-            var grouped = from doc in docsResult.Data
-                          group doc by doc.DocumentType
-            into docCategory
-                          select new ImagingTypeDocuments
-                          {
-                              Type = _imagingTypes.SingleOrDefault(it => it.Type == docCategory.Key) ??
-                                                                   new ImagingType { Type = docCategory.Key, Description = "Not in DB" },
-                              Documents = docCategory.ToList()
-                          };
-            var typeDocuments = grouped.ToDictionary(g=>g.Type, v=>v.Documents);
-
-
-            _currentTabTypeDocuments.Clear();
-            var tabs = from ctdt in _currentCatTabDivTypes
-                       group ctdt by ctdt.TabName
-                into tabTypes
-                       select tabTypes;
-            //var pldImagingDocs = new ImagingType{}
-            var stage1 = (from tt in tabs
-                select new
-                {
-                    TabName = tt.Key,
-                    Types=tt.Select(t=> _imagingTypes.Single(it=>it.Type==t.Type)).ToList()
-                }).ToList();
-
-            var stage2 = from tabType in stage1
-                         select (new ImagingTabTypeDocuments()
-                         {
-                             TabName = tabType.TabName,
-                             TypeDocuments = (
-                                 from ty in tabType.Types
-                                 select new ImagingTypeDocuments
-                                 {
-                                     Type = ty,
-                                     Documents = typeDocuments[ty]
-                                 }
-                             ).ToList()
-                         });
-            _currentTabTypeDocuments.AddRange(stage2);
-
-            _docsLoading = false;
-            StateHasChanged();
-        }
-        else
-        {
-            //TODO:  Log the error and figure out how to show to user.
-        }
-
-        //TODO: Create collapsible RadzenPanels for each category
-    }
-
-    private async Task LoadDocumentsAsync()
-    {
-
-    }
-
-    private class ImagingDocumentDetails
-    {
-        public string FileName { get; set; }
-        public string Description { get; set; }
-        public string DocumentType { get; set; }
-        public DateTime DocumentDate { get; } = DateTime.Now;
-    }
-
-    private class ImagingTypeDocuments
-    {
-        public ImagingType Type { get; set; }
-        public List<ImagingDocument> Documents { get; set; }
-    }
-
-    private class ImagingTabTypeDocuments
-    {
-        public string TabName { get; set; }
-        public List<ImagingTypeDocuments> TypeDocuments { get; set; }
-    }
-
-    private async Task StartUpload(ImagingDocumentDetails args)
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task UploadFileChanged(UploadChangeEventArgs args)
-    {
-        var file = args.Files.SingleOrDefault();//TODO:Support multiple file selections
-        if (null == file)
-        {
-            _waitingForFileSelection = true;
-            _details.FileName = string.Empty;
-            _details.Description = string.Empty;
-            _details.DocumentType = string.Empty;
+            NotificationService.Notify(NotificationSeverity.Warning, "Please fill out all required information.");
             return;
         }
+        _uploadFailed = false;
+        if (!_rzUpload.HasValue)
+        {
+            NotificationService.Notify(NotificationSeverity.Warning, "_rzUpload.HasValue == false.");
+            return;
+        }
+        await _rzUpload.Upload();
+    }
 
-        Debug.Assert(_uploadDD.HasValue, "upload control shows .HasValue==false");
+    private void UploadFileChanged(UploadChangeEventArgs args)
+    {
+        //Handle the case where they remove a file after entering data on it so that data isn't wiped out.
+        var removedFiles = _uploadFiles.Where(uf => args.Files.All(f => f.Name != uf.FileName)).ToArray();
+        foreach (var removed in removedFiles)
+        {
+            _uploadFiles.Remove(removed);
+        }
 
-        _waitingForFileSelection = false;
-        _details.FileName = file.Name;
+        var addedFiles = args.Files.Where(f => _uploadFiles.All(uf => uf.FileName != f.Name));
+        _uploadFiles.AddRange(addedFiles.Select(f => new ImagingDocumentDetails
+        { FileName = f.Name, DocumentType = null! }));
+        _waitingForFileSelection = _uploadFiles.Count == 0;
 
         StateHasChanged();
     }
 
-    private async Task UploadErrorHandler(UploadErrorEventArgs arg)
+    private void UploadErrorHandler(UploadErrorEventArgs arg)
     {
-        uploadFailed = true;
+        _uploadFailed = true;
         NotifySaveError([arg.Message], "uploaded file");
     }
 
-    private void UploadComplete(UploadCompleteEventArgs obj)
+    private async Task UploadComplete(UploadCompleteEventArgs args)
     {
-        //TODO: Determine if this happens once per file or once per upload session
-        if (uploadFailed) return;
-        throw new NotImplementedException();
-        //TODO:  Reload documents
+        if (!_uploadFailed)
+            await _rzUpload.ClearFiles();
+        //Reload documents
+        //NOTE: Simply reloading the documents solves any situation:  All successful, some successful or none successful.
+        var reloadResults = await DataAccess.SearchDocuments(ImagingId, DocumentCategory);
+        PopulateDocuments(reloadResults);
     }
-
 }

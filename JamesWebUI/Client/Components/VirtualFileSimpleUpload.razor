@@ -1,5 +1,4 @@
-﻿@using System.ComponentModel.DataAnnotations
-@using System.Diagnostics
+﻿@using System.Diagnostics
 @using System.Text.Json.Nodes
 @using System.Text.RegularExpressions
 @using James.Shared
@@ -16,7 +15,7 @@
             <RadzenColumn Size="9">
                 <RadzenUpload id="ddUpload" @ref="@uploadDD"
                               ChooseText="Drag and drop here or click to choose document"
-                              Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?filename={currentFileName}")
+                              Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?description={currentDescription}")
                               InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
                               Change=@UploadFileChanged
                               Error=@UploadErrorHandler
@@ -29,21 +28,21 @@
                               Text="Link to existing document" Click=@ToggleWorkflow />
             </RadzenColumn>
         </RadzenRow>
-        <RadzenTemplateForm TItem="string" Data="currentFileName" Submit="@((args) =>StartUpload(args))">
+        <RadzenTemplateForm TItem="string" Data="currentDescription" Submit="@((args) =>StartUpload(args))">
             <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
                 <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:100%">
                     <ChildContent>
-                        <RadzenTextBox Name="tbFileName" @ref="tbFilename" @bind-Value=@currentFileName Style="width:100%" />
+                        <RadzenTextBox Name="tbDescription" @ref="tbDescription" @bind-Value=@currentDescription Style="width:100%" />
                     </ChildContent>
                     <Helper>
                         <RadzenRequiredValidator Component="tbFileName" Text="Name is required." />
                         <RadzenRegexValidator Component="tbFileName" Text="Must be a filename without path"
                                               Pattern="^[^\\/]+$" />
                         <RadzenCustomValidator Component="tbFileName" Text="Must be a valid filename"
-                                               Validator="@(()=>ClientBusinessLogic.Validators.ValidateFileName(currentFileName))" />
+                                               Validator="@(()=>ClientBusinessLogic.Validators.ValidateFileName(currentDescription))" />
                         <RadzenCustomValidator Component="tbFileName" Text="File extension is not allowed by BTS"
-                                               Validator="@(()=>!ClientBusinessLogic.Validators.ValidateFileName(currentFileName)||
-                                                                SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(currentFileName))" />
+                                               Validator="@(()=>!ClientBusinessLogic.Validators.ValidateFileName(currentDescription)||
+                                                                SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(currentDescription))" />
                     </Helper>
                 </RadzenFormField>
             </RadzenRow>
@@ -124,9 +123,7 @@
                             Data=@existingDocuments Style="min-width:600px">
                 <Columns>
                     <RadzenDataGridColumn Width="50px">
-                        <Template Context="doc">
-                            <RadzenIcon Icon="Description" />
-                        </Template>
+                        <RadzenIcon Icon="Description" />
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn Property="@nameof(ImagingDocument.Description)"
                                           Title="Documents Uploaded" />
@@ -156,7 +153,7 @@
 @* ReSharper disable InconsistentNaming *@
 @code {
     RadzenUpload uploadDD;
-    RadzenTextBox tbFilename;
+    RadzenTextBox tbDescription;
     RadzenText uploadedBytes;
     RadzenDataList<ImagingDocument> existingList;
     ImagingDocument[] existingDocuments = [];
@@ -173,7 +170,7 @@
     bool existingLoading = true;
     string uploadError = "", searchError = "";
 
-    string currentFileName
+    string currentDescription
     {
         get;
         set;
@@ -189,10 +186,10 @@
         progress = args.Progress;
         if (0 < progress && 100 > progress)
         {
-            if (null != uploadedBytes)
+            if (null! != uploadedBytes)
                 uploadedBytes.Text = $"({args.Loaded.ToScreenBytes()}/{args.Total.ToScreenBytes()})";
             else
-                LoggingService.LogWarning("uploadedBytes control not instantiated", 
+                LoggingService.LogWarning("uploadedBytes control not instantiated",
                     "uploadedBytes == null", StandardLoggingCategories.UserInterface);
         }
 
@@ -214,7 +211,7 @@
         else
             LoggingService.LogError("Invalid Guid",
                 "String passed to LinkExistingAndClose was not a valid guid.",
-                StandardLoggingCategories.Imaging, 
+                StandardLoggingCategories.Imaging,
                 new Dictionary<string, string> { { "invalidGuid", guid } });
     }
 
@@ -225,7 +222,7 @@
         if (null == file)
         {
             waitingForFileSelection = true;
-            currentFileName = string.Empty;
+            currentDescription = string.Empty;
             if (currentFile != file)
             {
                 currentFile = file;
@@ -239,12 +236,12 @@
 
         waitingForFileSelection = false;
 
-        if (string.IsNullOrWhiteSpace(currentFileName) || null != currentFile)
+        if (string.IsNullOrWhiteSpace(currentDescription) || null != currentFile)
             //Should allow user to type the file name and then select the file without wiping out what they typed.
-            currentFileName = file.Name;
+            currentDescription = file.Name;
         else
             //Keep the name the user has already inputted, but make sure it's file extension matches the selected file.
-            currentFileName = Path.ChangeExtension(currentFileName, Path.GetExtension(file.Name));
+            currentDescription = Path.ChangeExtension(currentDescription, Path.GetExtension(file.Name));
         currentFile = file;
 
         StateHasChanged();
@@ -291,7 +288,7 @@
                 }
                 catch (Exception ex)
                 {
-                    LoggingService.LogException(ex, "UploadAction after upload failed.", 
+                    LoggingService.LogException(ex, "UploadAction after upload failed.",
                         category: StandardLoggingCategories.Imaging);
                     NotifySaveError([ex.Message], "document association");
                 }
@@ -303,7 +300,10 @@
     {
         uploadError = "There was an error uploading the file.";
         if (!string.IsNullOrWhiteSpace(args.Message))
+        {
             uploadError += "   " + args.Message;
+            NotifySaveError([args.Message], "uploaded file");
+        }
     }
 
     private async Task ToggleWorkflow()
@@ -330,7 +330,7 @@
             var results = documentTypes.AsParallel().Select(dt => DataAccess.SearchDocuments(ImagingId, DocumentCategory, dt)).ToList();
             await Task.WhenAll(results);
             if (results.All(r => r.Result.Success))
-                existingDocuments = results.SelectMany(r => r.Result.Data).ToArray();
+                existingDocuments = results.SelectMany(r => r.Result.Data!).ToArray();
             else
             {
                 var errors = results.SelectMany(r => r.Result.Errors).Distinct().ToArray();

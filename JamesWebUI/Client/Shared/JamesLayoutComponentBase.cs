@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using System.Text.RegularExpressions;
 using James.Shared;
 using James.Shared.Model;
 using Microsoft.AspNetCore.Components;
@@ -98,31 +99,60 @@ namespace JamesWebUI.Client.Shared
         /// <param name="itemSaved">The item that didn't load, default is "data".  Should NOT be title cased.</param>
         protected void NotifyLoadError(string[] errors, string itemSaved = "data")
         {
-            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} retrieving {itemSaved}.  {string.Join("  ", errors)}", Duration = 15000 });
+            var msg =
+                $"There {(errors.Length == 1 ? "was an error" : "were errors")} retrieving {itemSaved}.  {string.Join("  ", errors)}";
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Error, Summary = msg, Duration = 15000 });
         }
 
-        protected void LogGraphQlLoadError()
+        protected void LogGraphQlLoadError(string[] errors, string message, string loadItem = "data")
         {
-            throw new NotImplementedException("If you need it, create it.");
-        }
+            LoggingService.LogError(message, category: StandardLoggingCategories.DataAccess,
+                errors: errors, data: new() {{ "Failed load item", loadItem }, {"Source Class",GetType().Name}
+        } );
+    }
 
-        private string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+        private string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) => string.IsNullOrWhiteSpace(original) ? original :
             substitutions[original].Property;
 
-        private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+        private string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
+        {
+            if (originalFilter == null!) return null!;
+            foreach (var substitution in substitutions)
+            {
+                originalFilter = Regex.Replace(originalFilter, $"(?<=[(\\s\\(^]){substitution.Original}(?=[\\s\\)])", substitution.Property);
+            }
+            return originalFilter;
+        }
+
+        private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) => string.IsNullOrWhiteSpace(original) ? original :
             substitutions[original].Title;
 
-        protected string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format, ExportColumnSubstitutions? propertySubstitutions = null)
+        public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format, ExportColumnSubstitutions? propertySubstitutions = null)
         {
             propertySubstitutions ??= new();
+            var selectColumns = dataGrid.ColumnsCollection
+                .Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property))
+                .Select(c => new
+                {
+                    Property = SubstitutePropertyIfNeeded(c.Property, propertySubstitutions),
+                    Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)
+                }).ToList();
+            selectColumns.AddRange(propertySubstitutions.Where(s=>s.Value.Original == string.Empty).Select(s=> new {Property=s.Value.Property, Title = s.Value.Title}));
+            var selectColumnString  = string.Join(",",
+                    selectColumns
+                    .Select(cSub => cSub with
+                    {
+                        Title = cSub.Title.Replace(".", "_")
+                    })
+                    .Select(pt =>
+                        pt.Property == pt.Title
+                            ? pt.Property
+                            : $"{pt.Property} as {pt.Title.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
             var query = new Query()
             {
                 OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),
-                Filter = SubstitutePropertyIfNeeded(dataGrid.Query.Filter, propertySubstitutions),
-                Select = string.Join(",", dataGrid.ColumnsCollection.Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property))
-                    .Select(c => new {Property= SubstitutePropertyIfNeeded(c.Property, propertySubstitutions), Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)})
-                    .Select(cSub => new {Property= cSub.Property, Title = cSub.Title.Contains(".") ? $"{cSub.Property} as {cSub.Title.Replace(".", "_")}" : cSub.Title })
-                            .Select(pt => pt.Property== pt.Title? pt.Property:$"{pt.Property} as {pt.Title.Replace(' ',ExportColumnSubstitution.SpaceSubstitution)}"))
+                Filter = SubstituteFilterPropertyIfNeeded(dataGrid.Query.Filter, propertySubstitutions),
+                Select = selectColumnString
             };
             return query.ToUrl($"{url}/{(format == ExportFormat.CSV ? "CSV" : "Excel")}");
         }

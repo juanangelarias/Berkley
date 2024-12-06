@@ -543,7 +543,7 @@ type Query {
   agencyInventory(agencyId: UUID!): [AgencyInventory!]!
   agencyStatusLog(agencyNumber: String!): [AgencyStatusLog!]!
   agencyBonds(agencyId: UUID!): [Bond!]!
-  agencyAgents(agencyId: UUID!): [AgentsInAgency!]!
+  agencyAgents(agencyId: UUID!): [Agent!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
   agencyPOAs(agencyId: UUID!): [PowerOfAttorney!]!
@@ -1638,6 +1638,7 @@ type Agency {
   powerOfAttorneys: [PowerOfAttorney!]!
   statusNavigation: AgencyStatusDm!
   voidedBonds: [VoidedBond!]!
+  mainAddress: Address
   billingContact: LegalEntity
   agents: [Agent!]!
   onlineBondSystems: [OnlineBondSystem!]!
@@ -1645,7 +1646,6 @@ type Agency {
   errorAndOmissions: [AgencyErrorAndOmission!]!
   competition: [AgencyCompetition!]!
   fullName: String!
-  mainAddress: Address
   addresses: [LegalEntityAddress!]!
   mainPhoneNumber: PhoneNumber
   phoneNumbers: [LegalEntityPhone!]!

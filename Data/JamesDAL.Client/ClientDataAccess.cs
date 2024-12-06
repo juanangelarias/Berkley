@@ -182,9 +182,9 @@ namespace James.Data.Client
                 async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId), "AgencyBonds");
         }
 
-        public async Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId)
+        public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
         {
-            return await ExecuteGet<List<AgentsInAgency>>(
+            return await ExecuteGet<List<Agent>>(
                 async () => await jamesClient.GetAgencyAgents.ExecuteAsync(agencyId), "AgencyAgents");
         }
         public async Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber)

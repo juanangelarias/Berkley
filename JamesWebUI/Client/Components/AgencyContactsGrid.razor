@@ -7,7 +7,7 @@
 @inject IDataAccess DataAccess
 
 <Theme />
-
+<RenderModeBackground />
 
 <RadzenDataGrid TItem="Agent" Data="@agents" @ref="@agentsGrid" Density="Density.Compact"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
@@ -99,7 +99,7 @@
 @code {
     [Parameter] public Guid AgencyId { get; set; }
     private List<Agent> agents { get; set; }
-    private RadzenDataGrid<Agent> agentsGrid { get; set; }
+    public RadzenDataGrid<Agent> agentsGrid { get; set; }
     private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
     private bool isLoading = true;
 
@@ -120,15 +120,15 @@
     {
         var result = await DataAccess.GetAgencyAgents(AgencyId);
 
-        if (result.Data?.Any() ==true)
+        if (result.Success)
         {
-            agentsGrid.Data = agents = result.Data.Select(aia=>aia.Agent).ToList();
-            agentsGrid.Reload();
+            agents = result.Data!;
+            await agentsGrid.Reload();
         }
         else
         {
-            //TODO:Add error details
-            LoggingService.LogError("Error loading agents in AgencyContactsGrid");
+            NotifyLoadError(result.Errors, "agents");
+            LogGraphQlLoadError(result.Errors,"Error loading agents in AgencyContactsGrid", "agents");
         }
     }
     private async Task LoadSelectInsurerDropDown()
@@ -140,8 +140,8 @@
         var result = await DataAccess.GetAllInsurers();
         if (result.Success == false)
         {
-            //TODO:Add error details
-            LoggingService.LogError("Error getting insurers in Agency Contract Grid");
+            NotifyLoadError(result.Errors, "insurers");
+            LogGraphQlLoadError(result.Errors, "Error getting insurers in Agency Contract Grid");
         }
 
         Debug.Assert(result.Data != null, "result.Data != null");
@@ -153,9 +153,16 @@
     {
         var substitutions = new ExportColumnSubstitutions();
         //TODO: Determine substitutions
-        substitutions.AddSubstitution("");
+        substitutions.AddSubstitution("IdNavigation.GivenName", title: "Given Name");
+        substitutions.AddSubstitution("IdNavigation.MiddleInitial", title: "Middle Initial");
+        substitutions.AddSubstitution("IdNavigation.FamilyName", title: "Family Initial");
+        substitutions.AddSubstitution("", "License.LicenseNumber", "License Number");
+        substitutions.AddSubstitution("", "License.State");
+        substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
+        substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
+        substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
         NavigationManager.NavigateTo(ExportDataGridUrl(agentsGrid,
-                $"/export/AgencyContacts/{AgencyId}", format, substitutions),
-            true);
+$"/export/AgencyContacts/{AgencyId}", format, substitutions),
+true);
     }
 }

@@ -90,7 +90,7 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, contextFactory));
         }
-        public async Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId)
+        public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyAgents(agencyId, contextFactory));
         }

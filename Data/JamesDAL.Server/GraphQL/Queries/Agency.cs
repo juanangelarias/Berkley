@@ -127,10 +127,9 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<List<AgentsInAgency>> GetAgencyAgents(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<Agent>> GetAgencyAgents(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-
             return await ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.IdNavigation)
@@ -139,6 +138,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(ag => ag.Insurer)
                 .ThenInclude(ag => ag.IdNavigation)
                 .Where(ag => ag.AgencyId == agencyId)
+                .Select(aia=>aia.Agent)
                 .ToListAsync();
         }
 
@@ -201,6 +201,8 @@ namespace James.Data.Server.GraphQL.Queries
             {
                 var relatedPartyIds = await ctx.VAgencyParents.Where(a => a.Parent == topParent.Parent).Select(a => a.Id).ToListAsync();
                 var relatedAgencies = await ctx.Agencies.Where(a => relatedPartyIds.Contains(a.Id))
+                    .Include(a=>a.AgencyLicenses)
+                    .ThenInclude(al=>al.Agent)
                     .Include(a => a.IdNavigation)
                     .ThenInclude(a => a.LegalEntityAddresses.Where(lea => lea.Type == "Main"))
                     .ThenInclude(a => a.Address)

@@ -132,12 +132,12 @@ namespace JamesWebUI.Server.Controllers
             if (Guid.Empty == agencyId)
                 return new StatusCodeResult(422); //Unprocessable content
 
-            IDataAccessResult<List<Agency>> contactsResult = null!;
+            IDataAccessResult<List<Agent>> contactsResult = null!;
             IDataAccessResult<Agency?> agencyNameNumberResult = null!;
 
             var loads = new List<Func<Task>>
             {
-                async () => { contactsResult = await DataAccess.GetAgencyRelatedParties(agencyId); },
+                async () => { contactsResult = await DataAccess.GetAgencyAgents(agencyId); },
                 async () => { agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId); }
             };
             await Task.WhenAll(loads.Select(l => l()));
@@ -160,10 +160,22 @@ namespace JamesWebUI.Server.Controllers
                 fileName = "AgencyRelatedParties";
             }
 
-            var poaQuery = contactsResult.Data!.AsQueryable();
+            var singleLicenseAgents = contactsResult.Data!.SelectMany(a=> a.AgencyLicenses.Select(al=>
+            {
+                var asl = ThisToThat.ToEntityType<AgentSingleLicense>(a);
+                asl.License = al;
+                return asl;
+            })).ToList();
+
+            var agentLicenseQuery = singleLicenseAgents.AsQueryable();
             return format == ExportFormat.CSV
-                ? ToCsv(ApplyQuery(poaQuery, Request.Query), $"{fileName}.csv")
-                : ToExcel(ApplyQuery(poaQuery, Request.Query), $"{fileName}.xlsx");
+                ? ToCsv(ApplyQuery(agentLicenseQuery, Request.Query), $"{fileName}.csv")
+                : ToExcel(ApplyQuery(agentLicenseQuery, Request.Query), $"{fileName}.xlsx");
+        }
+
+        private class AgentSingleLicense : Agent
+        {
+            public AgencyLicense License { get; set; }
         }
 
         [HttpGet("/export/AgencyInventory/{agencyId:guid}/{format=Excel}")]

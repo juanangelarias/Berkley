@@ -25,9 +25,9 @@ public class ExportColumnSubstitution
 
     public ExportColumnSubstitution(string original, string? property = null, string? title = null)
     {
-        Original=original;
-        Property=property;
-        Title=title;
+        Original = original;
+        Property = property;
+        Title = title;
     }
 
     private readonly string? _title;
@@ -39,7 +39,7 @@ public class ExportColumnSubstitution
     /// <remarks>Limited to characters that can be used as variable names in .NET, and the space character</remarks>
     public string Title
     {
-        get => _title ?? Original;
+        get => _title ?? (string.IsNullOrWhiteSpace(Original) ? Property : Original);
         init => _title = value;
     }
 
@@ -53,7 +53,7 @@ public class ExportColumnSubstitution
     }
 
     /// <summary>
-    /// Must match what is in the RadzenDataGridColumn "Property" property
+    /// Either matches what is in the RadzenDataGridColumn "Property" property, or is blank to signify an added column not in the Grid.  The second scenario is primarily for adding data from nested grids.
     /// </summary>
     public string Original { get; init; }
 }
@@ -62,11 +62,19 @@ public class ExportColumnSubstitutions : IDictionary<string, ExportColumnSubstit
 {
     private readonly Dictionary<string, ExportColumnSubstitution> _substitutions = new();
 
+    private static int _additionalColumns;
+    private string AdditionalColumnId()
+    {
+        Interlocked.Increment(ref _additionalColumns);
+        return $"Addition{ExportColumnSubstitution.SpaceSubstitution}{_additionalColumns:D5}";
+    }
+
     public void AddSubstitution(ExportColumnSubstitution substitution)
     {
-        _substitutions[substitution.Original] = substitution;
+        var key = substitution.Original == string.Empty ? AdditionalColumnId() : substitution.Original;
+        _substitutions[key] = substitution;
     }
-    public void AddSubstitution(string original, string? property=null, string? title=null)
+    public void AddSubstitution(string original, string? property = null, string? title = null)
     {
         _substitutions[original] = new ExportColumnSubstitution { Original = original, Property = property, Title = title };
     }
@@ -90,7 +98,7 @@ public class ExportColumnSubstitutions : IDictionary<string, ExportColumnSubstit
 
     public ExportColumnSubstitution this[string original]
     {
-        get => _substitutions.GetValueOrDefault(original)??new ExportColumnSubstitution(original);
+        get => _substitutions.GetValueOrDefault(original) ?? new ExportColumnSubstitution(original);
         set
         {
             if (value == null || original != value.Original)

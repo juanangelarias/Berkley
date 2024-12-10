@@ -166,6 +166,13 @@ namespace JamesWebUI.Server.Controllers
                 asl.License = al;
                 return asl;
             })).ToList();
+            //Initial list omits Agents with no licenses, must add here
+            singleLicenseAgents.AddRange(contactsResult.Data!.Where(ag => ag.AgencyLicenses.Count == 0).Select(a=>
+            {
+                var asl = ThisToThat.ToEntityType<AgentSingleLicense>(a);
+                asl.License = new AgencyLicense{Agent = a, State = "", LicenseNumber = "", Insurer = new Insurer{IdNavigation = new LegalEntity{FullName = ""}}};
+                return asl;
+            }));
 
             var agentLicenseQuery = singleLicenseAgents.AsQueryable();
             return format == ExportFormat.CSV
@@ -175,7 +182,8 @@ namespace JamesWebUI.Server.Controllers
 
         private class AgentSingleLicense : Agent
         {
-            public AgencyLicense License { get; set; }
+            // ReSharper disable once UnusedAutoPropertyAccessor.Local
+            public AgencyLicense? License { get; set; }
         }
 
         [HttpGet("/export/AgencyInventory/{agencyId:guid}/{format=Excel}")]

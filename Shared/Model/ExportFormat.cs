@@ -76,7 +76,7 @@ public class ExportColumnSubstitutions : IDictionary<string, ExportColumnSubstit
     }
     public void AddSubstitution(string original, string? property = null, string? title = null)
     {
-        _substitutions[original] = new ExportColumnSubstitution { Original = original, Property = property, Title = title };
+        AddSubstitution(new ExportColumnSubstitution { Original = original, Property = property, Title = title });
     }
 
     public void Add(string key, ExportColumnSubstitution value)

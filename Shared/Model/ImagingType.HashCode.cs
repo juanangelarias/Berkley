@@ -13,5 +13,7 @@
                 return ty.Type == Type || (ty.Id != Guid.Empty && ty.Id==Id);
             return false;
         }
+
+        public override string ToString() => $"ImagingType {Type}";
     }
 }

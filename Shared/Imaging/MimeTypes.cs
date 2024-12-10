@@ -2328,7 +2328,7 @@ x-conference/x-cooltalk				ice";
 
             //De-dup and merge
             _mimeTypeData.AddRange(secondSource
-                .Where(ss=>_mimeTypeData.All(mtv=>ss.MimeType!=mtv.MimeType 
+                .Where(ss=>_mimeTypeData.All(mtv=> ss.MimeType!=mtv?.MimeType 
                                                   || ss.FileExtension != mtv.FileExtension)));
         }
 

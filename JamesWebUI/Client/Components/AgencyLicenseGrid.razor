@@ -169,8 +169,8 @@
 
 
     //TODO: Remove this stuff once we figure out caching
-    private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
-    private List<State> AllStates { get; set; } = new List<State>();
+    private static List<Insurer> AllInsurers { get; set; } = new();
+    private static List<State> AllStates { get; set; } = new();
 
     private List<String> StateFilter = null;
 

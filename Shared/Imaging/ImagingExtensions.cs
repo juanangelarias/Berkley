@@ -30,10 +30,6 @@ namespace James.Shared.Imaging
         /// </summary>
         /// <param name="category">Enumeration value</param>
         /// <returns>Enumeration name as string</returns>
-        public static string Name(this ImagingDocumentCategory category)
-        {
-            return Enum.GetName(typeof(ImagingDocumentCategory), category)!;
-        }
-
+        public static string Name(this ImagingDocumentCategory category) => Enum.GetName(typeof(ImagingDocumentCategory), category)!;
     }
 }

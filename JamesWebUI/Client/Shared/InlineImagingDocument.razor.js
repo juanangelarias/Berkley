@@ -23,4 +23,8 @@ const dragEventHandler = e => {
     }
 }
 
-//['dragenter', 'dragover', 'drop'].forEach(ev => window.addEventListener(ev, dragEventHandler, false));
+if (!(globalThis.dragDrop)) {
+    ['dragenter', 'dragover', 'drop'].forEach(ev => window.addEventListener(ev, dragEventHandler, false));
+    //Prevent handlers from being added twice
+    globalThis.dragDrop = true;
+}

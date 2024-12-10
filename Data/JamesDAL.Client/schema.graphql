@@ -776,7 +776,7 @@ type ImagingProperty {
   dateListValue: [DateTime]!
   dateValue: DateTime!
   dateValueSpecified: Boolean!
-  displayName: String!
+  displayName: String
   description: String!
   listValue: [String!]!
   name: String!

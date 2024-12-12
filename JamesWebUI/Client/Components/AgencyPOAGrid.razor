@@ -1,5 +1,4 @@
-﻿@using James.Shared
-@using James.Shared.Imaging
+﻿@using James.Shared.Imaging
 @using SharedBusinessLogic
 @inherits JamesLayoutComponentBase
 
@@ -17,13 +16,17 @@
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New POA" Variant="Variant.Text" Click="@InsertPOARow" />
+            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(args => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@isLoading" />
+            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(args => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@isLoading" />
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="poa">
         <RadzenDataList TItem="PowerOfAttorneyDocumentStatus" Data="poa.PowerOfAttorneyDocumentStatuses" Density="Density.Compact"
                         Style="max-height:400px; overflow:auto; width:100%" AllowVirtualization="true" WrapItems="false" AllowPaging="false">
             <Template Context="poaDocStatus">
-                <PowerOfAttorneyDocumentStatusCard PoaDocumentStatus="poaDocStatus" />
+                <PowerOfAttorneyDocumentStatusCard PoaDocumentStatus="@poaDocStatus" />
             </Template>
         </RadzenDataList>
     </Template>
@@ -90,16 +93,16 @@
             </Template>
         </RadzenDataGridColumn>
         @*         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
-        Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
-        <Template Context="poa">
-        <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.ExtraSmall" Click="@(args => EditPoaRow(poa))" @onclick:stopPropagation="true" />
-        <RadzenButton Variant="Variant.Text" Icon="post_add" Size="ButtonSize.ExtraSmall" MouseEnter="@(args => ShowTooltip(args, "Add New POA Document."))"/>
-        <RadzenButton Variant="Variant.Text" Icon="delete" Size="ButtonSize.ExtraSmall" Click="@(args => DeletePoaRow(poa))" />
-        </Template>
-        <EditTemplate Context="poa">
-        <RadzenButton Variant="Variant.Text" Icon="save" Size="ButtonSize.ExtraSmall" Click="@(args => SavePoaRow(poa))" />
-        </EditTemplate>
-        </RadzenDataGridColumn> *@
+            Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
+            <Template Context="poa">
+            <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.ExtraSmall" Click="@(args => EditPoaRow(poa))" @onclick:stopPropagation="true" />
+            <RadzenButton Variant="Variant.Text" Icon="post_add" Size="ButtonSize.ExtraSmall" MouseEnter="@(args => ShowTooltip(args, "Add New POA Document."))"/>
+            <RadzenButton Variant="Variant.Text" Icon="delete" Size="ButtonSize.ExtraSmall" Click="@(args => DeletePoaRow(poa))" />
+            </Template>
+            <EditTemplate Context="poa">
+            <RadzenButton Variant="Variant.Text" Icon="save" Size="ButtonSize.ExtraSmall" Click="@(args => SavePoaRow(poa))" />
+            </EditTemplate>
+            </RadzenDataGridColumn> *@
     </Columns>
     <LoadingTemplate>
         <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
@@ -107,7 +110,7 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Guid AgencyID { get; set; }
+    [Parameter] public Guid AgencyId { get; set; }
 
     private RadzenDataGrid<PowerOfAttorney> poaGrid { get; set; }
 
@@ -153,11 +156,11 @@
     }
     private async Task LoadPOAs()
     {
-        var result = await DataAccess.GetAgencyPoas(AgencyID);
+        var result = await DataAccess.GetAgencyPoas(AgencyId);
 
         if (result.Success)
         {
-            powerOfAttorneys = result.Data;
+            powerOfAttorneys = result.Data!;
             await poaGrid.Reload();
         }
         else
@@ -188,7 +191,9 @@
     {
         var result = await DataAccess.GetAllPoaStatuses();
         if (result.Success)
-            return result.Data.OrderBy(s => s.Status).ToList();
+        {
+            return result.Data!.OrderBy(s => s.Status).ToList();
+        }
         //TODO:Add error details
         LoggingService.LogError("Error getting all statuses in the AgencyPOAGrid");
         return [];
@@ -269,7 +274,7 @@
     {
         var result = await DataAccess.CreateAgencyPOA(powerOfAttorney.Id,
             powerOfAttorney.Insurer.Id,
-            AgencyID,
+            AgencyId,
             (int)powerOfAttorney.Limit,
             powerOfAttorney.ReferenceNumber,
             powerOfAttorney.FirstIssued,
@@ -292,7 +297,7 @@
         var saveResult = await DataAccess.SetPowerOfAttorneyDocumentLink(poaId, documentId);
         if (saveResult.Success)
             NotifySuccessfulSave("POA document");
-        else 
+        else
             NotifySaveError(saveResult.Errors, "poa document");
     }
 
@@ -306,7 +311,19 @@
                 { "Error Message", message },
                 { "AgencyNumber", poa.Agency.AgencyNumber},
                 { "Poa Id", poa.Id.ToString()}
-                });
+                        });
+    }
+
+    private void ExportLicenseGrid(ExportFormat format)
+    {
+        var substitutions = new ExportColumnSubstitutions();
+        substitutions.AddSubstitution("Insurer.IdNavigation.FullName", title: "Insurer");
+        substitutions.AddSubstitution("ReferenceNumber", title: "Reference Number");
+        substitutions.AddSubstitution("FirstIssued", title: "First Issued");
+        substitutions.AddSubstitution("CurrentIssued", title: "Current Issued");
+        NavigationManager.NavigateTo(ExportDataGridUrl(poaGrid,
+                $"/export/AgencyPOAs/{AgencyId}", format, substitutions),
+            true);
     }
 
 }

@@ -5,12 +5,13 @@ namespace James.Shared.Data
 {
     public interface IDataAccess
     {
-        public Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber);
+        public Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber);
         public Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber);
         public Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber);
         public Task<IDataAccessResult<List<Account>>> SearchAccounts(string searchString);
         public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber);
+        public Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId);
         public Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString);
         public Task<IDataAccessResult<Obligee?>> GetObligeeById(Guid id);
         public Task<IDataAccessResult<Obligee?>> GetObligeeByObligeeNumber(string obligeeNumber);
@@ -26,7 +27,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
-        public Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId);
+        public Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);

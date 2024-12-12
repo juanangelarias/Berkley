@@ -43,6 +43,33 @@ public abstract class LoggingServiceBase : ILoggingService
         Log(MessageEventId, message, details, Severity.Error, category, data: data);
     }
 
+    /// <summary>
+    /// Logs errors
+    /// </summary>
+    /// <remarks>Designed for efficient logging of IDataAccess errors without excessive string concatenation</remarks>
+    /// <param name="message">Error message (Identifies process that had error)</param>
+    /// <param name="errors">Array of errors</param>
+    /// <param name="category">Category.  Use StandardLoggingCategories values when possible.</param>
+    /// <param name="data">Data relevant to the error.</param>
+    public void LogError(string message, string[] errors, string category = "General", Dictionary<string, string>? data = null)
+    {
+        data ??= new Dictionary<string, string>();
+        if (errors.Length==1&& !data.ContainsKey("Error"))
+            data.Add("Error", errors[0]);
+        else
+        {
+            var errorNumOffset = 0;
+            for(var i =1;i<=errors.Length;i++)
+            {
+                var key = "Error" + (i+ errorNumOffset);
+                while (data.ContainsKey(key))
+                    key = "Error" + ++errorNumOffset;
+                data.Add(key, errors[i-1]);
+            }
+        }
+        Log(MessageEventId, message, "See data for details", Severity.Error, category, data: data);
+    }
+
     public void LogException(Exception exception, string message, string details="", Severity severity = Severity.Error, string category = "General",
         Dictionary<string, string>? data = null)
     {

@@ -11,7 +11,7 @@ namespace James.Data.Server
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
-        public async Task<IDataAccessResult<Account?>> GetAccountByNumber(string accountNumber)
+        public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
             return await ExecuteGet(async () => await query.GetAccountByNumber(accountNumber, contextFactory));
         }
@@ -32,6 +32,12 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyByAgencyNumber(agencyNumber, contextFactory));
         }
+
+        public async Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyById(agencyId, contextFactory));
+        }
+
         public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)
         {
             return await ExecuteGet(async () => await query.SearchObligeesAsync(searchString, contextFactory));
@@ -84,7 +90,7 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, contextFactory));
         }
-        public async Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId)
+        public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyAgents(agencyId, contextFactory));
         }

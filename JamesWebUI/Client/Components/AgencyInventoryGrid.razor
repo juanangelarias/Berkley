@@ -21,6 +21,10 @@
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow" />
+            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(args => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@isLoading" />
+            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(args => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@isLoading" />
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -66,6 +70,24 @@
                 <RadzenTextBox @bind-Value="@inventory.Address.Address1" />
             </EditTemplate>
         </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyInventory" Title="Address2" Property="Address.Address2"
+                              Visible="false">
+            <Template Context="inventory">
+                <RadzenText Text="@inventory.Address.Address2" />
+            </Template>
+            <EditTemplate Context="inventory">
+                <RadzenTextBox @bind-Value="@inventory.Address.Address2" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyInventory" Title="Address3" Property="Address.Address3"
+                              Visible="false">
+            <Template Context="inventory">
+                <RadzenText Text="@inventory.Address.Address3" />
+            </Template>
+            <EditTemplate Context="inventory">
+                <RadzenTextBox @bind-Value="@inventory.Address.Address3" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="City" Property="Address.City"
                               Width="150px">
             <Template Context="inventory">
@@ -83,6 +105,15 @@
             <EditTemplate Context="inventory">
                 <RadzenDropDown TValue="string" @ref="stateDropDown" Data="AllStates" @bind-Value="@inventory.Address.StateCode"
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%" />
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyInventory" Title="Zip Code" Property="Address.PostalCode"
+                              Visible="false">
+            <Template Context="inventory">
+                <RadzenText Text="@inventory.Address.PostalCode" />
+            </Template>
+            <EditTemplate Context="inventory">
+                <RadzenTextBox @bind-Value="@inventory.Address.PostalCode" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyInventory" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
@@ -209,10 +240,10 @@
         //The actual Insert is done in OnLicenseCreate()
         await ShowLoading();
         var newInventory = new AgencyInventory()
-            {
-                Id = Guid.NewGuid(),
-                Address = new Address() { Id = Guid.NewGuid() }
-            };
+        {
+            Id = Guid.NewGuid(),
+            Address = new Address() { Id = Guid.NewGuid() }
+        };
         inventoriesToInsert.Add(newInventory);
         await inventoryGrid.InsertRow(newInventory);
     }
@@ -250,5 +281,22 @@
         await Task.Yield();
 
         isLoading = false;
+    }
+
+    private void ExportLicenseGrid(ExportFormat format)
+    {
+        var substitutions = new ExportColumnSubstitutions();
+        substitutions.AddSubstitution("Sent", title: "Date Sent");
+        substitutions.AddSubstitution("DocumentType", title: "Doc Type");
+        substitutions.AddSubstitution("Addressee", title: "Sent To");
+        substitutions.AddSubstitution("Address.Address1", title: "Address1");
+        substitutions.AddSubstitution("Address.Address2", title: "Address2");
+        substitutions.AddSubstitution("Address.Address3", title: "Address3");
+        substitutions.AddSubstitution("Address.City", title: "City");
+        substitutions.AddSubstitution("Address.StateCode", title: "State");
+        substitutions.AddSubstitution("Address.PostalCode", title: "Zip Code");
+        NavigationManager.NavigateTo(ExportDataGridUrl(inventoryGrid,
+$"/export/AgencyInventory/{AgencyId}", format, substitutions),
+true);
     }
 }

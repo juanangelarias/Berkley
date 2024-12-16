@@ -38,6 +38,15 @@
   }
 }
 
+query GetAgencyNameAndNumberById($agencyId: UUID!) {
+  agencyById(agencyId: $agencyId) {
+    agencyNumber
+    idNavigation {
+      fullName
+    }
+  }
+}
+
 query agencyAccounts($agencyNumber: String!) {
   agencyAccounts(agencyNumber: $agencyNumber) {
     accountNum
@@ -70,6 +79,7 @@ query agencyAccounts($agencyNumber: String!) {
       id
       address1
       address2
+      address3
       city
       stateCode
       postalCode
@@ -109,35 +119,33 @@ query GetAgencyBonds($agencyId: UUID!) {
 
 query GetAgencyAgents($agencyId: UUID!){
 	agencyAgents(agencyId: $agencyId){
-        agentId,
-        agent{
-            fullName,
+        id,
+        fullName,
+        givenName,
+        middleInitial,
+        familyName,
+        mainEmailAddress,
+        nationalProducerNumber,
+        idNavigation{
             givenName,
             middleInitial,
             familyName,
-            mainEmailAddress,
-            nationalProducerNumber,
-            idNavigation{
-                givenName,
-                middleInitial,
-                familyName,
-                fullName
-            }
-            agencyLicenses{
+            fullName
+        }
+        agencyLicenses{
+            id,
+            licenseNumber,
+            comments,
+            appointment,
+            termination,
+            appointingState,
+            state,
+            isActive,
+            created,
+            insurer{
                 id,
-                licenseNumber,
-                comments,
-                appointment,
-                termination,
-                appointingState,
-                state,
-                isActive,
-                created,
-                insurer{
-                    id,
-                    idNavigation{
-                        fullName
-                    }
+                idNavigation{
+                    fullName
                 }
             }
         }
@@ -200,6 +208,7 @@ query GetAgencyLicenses($agencyId: UUID!) {
     agency {
       agencyNumber
     }
+    imagingId
   }
 }
 
@@ -265,6 +274,8 @@ query GetAgencyRelatedParties($input: UUID!){
         legalEntityAddresses{
           address{
             address1
+            address2
+            address3
             city
             stateCode
             postalCode

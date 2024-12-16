@@ -7,12 +7,20 @@
 @inject IDataAccess DataAccess
 
 <Theme />
-
+<RenderModeBackground />
 
 <RadzenDataGrid TItem="Agent" Data="@agents" @ref="@agentsGrid" Density="Density.Compact"
-                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" 
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
                 AllowPaging="true" PageSize="10" AllowSorting="true">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(args => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@isLoading" />
+            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(args => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@isLoading" />
+        </RadzenStack>
+    </HeaderTemplate>
     <Template Context="agent">
         <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense"
                         Style="height:300px;" AllowVirtualization="true"
@@ -30,11 +38,11 @@
                 </RadzenPanel>
             </HeaderTemplate>
             <Columns>
-                <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Width="125px">
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Width="125px" Property="LicenseNumber">
                     <Template Context="license">
                         <RadzenText Text="@license.LicenseNumber" />
                     </Template>
-                    
+
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Width="100px">
                     <Template Context="license">
@@ -94,12 +102,14 @@
     private RadzenDataGrid<Agent> agentsGrid { get; set; }
     private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
     private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         await LoadAgents();
+        isLoading = false;
     }
     protected override async Task OnParametersSetAsync()
     {
@@ -111,13 +121,15 @@
     {
         var result = await DataAccess.GetAgencyAgents(AgencyId);
 
-        if (result.Data?.Any() ==true)
+        if (result.Success)
         {
-            agents = result.Data.Select(aia=>aia.Agent).ToList();
+            agents = result.Data!;
+            await agentsGrid.Reload();
         }
         else
         {
-            LoggingService.LogError("Error loading agents in AgencyContactsGrid", result.Errors.ToString());
+            NotifyLoadError(result.Errors, "agents");
+            LogGraphQlLoadError(result.Errors,"Error loading agents in AgencyContactsGrid", "agents");
         }
     }
     private async Task LoadSelectInsurerDropDown()
@@ -129,10 +141,28 @@
         var result = await DataAccess.GetAllInsurers();
         if (result.Success == false)
         {
-            LoggingService.LogError("Error getting insurers in Agency Contract Grid", result.Errors.ToString());
+            NotifyLoadError(result.Errors, "insurers");
+            LogGraphQlLoadError(result.Errors, "Error getting insurers in Agency Contract Grid");
         }
 
         Debug.Assert(result.Data != null, "result.Data != null");
         return result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
+    }
+
+    private void ExportLicenseGrid(ExportFormat format)
+    {
+        var substitutions = new ExportColumnSubstitutions();
+        //TODO: Determine substitutions
+        substitutions.AddSubstitution("IdNavigation.GivenName", title: "Given Name");
+        substitutions.AddSubstitution("IdNavigation.MiddleInitial", title: "Middle Initial");
+        substitutions.AddSubstitution("IdNavigation.FamilyName", title: "Family Initial");
+        substitutions.AddSubstitution("", "License.LicenseNumber", "License Number");
+        substitutions.AddSubstitution("", "License.State");
+        substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
+        substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
+        substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
+        NavigationManager.NavigateTo(ExportDataGridUrl(agentsGrid,
+$"/export/AgencyContacts/{AgencyId}", format, substitutions),
+true);
     }
 }

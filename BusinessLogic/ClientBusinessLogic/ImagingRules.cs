@@ -23,13 +23,23 @@ namespace ClientBusinessLogic
             var unknownType = CreateUnknownType();
             return new VImagingCategoryTabDivisionType
             {
-                Category = Enum.GetName(typeof(ImagingDocumentCategory), documentCategory)!,
+                Category = documentCategory.Name(),
                 DivisionCode = division,
                 TabName = "Old Surety Documents",
                 TabDescription = "ACCT_ALL_Old Surety Documents",
                 TypeDescription = unknownType.Description,
                 Type = unknownType.Type
             };
+        }
+
+        public static List<VImagingCategoryTabDivisionType> GetRelevantTabsAndTypes(
+            this IEnumerable<VImagingCategoryTabDivisionType> allImagingCategoryTabDivisionTypes, ImagingDocumentCategory documentCategory, string? divisionCode)
+        {
+            return allImagingCategoryTabDivisionTypes.Where(ctdt => (ctdt.Category == documentCategory.Name()
+                                                                     && (documentCategory !=
+                                                                         ImagingDocumentCategory.Account ||
+                                                                         ctdt.DivisionCode == divisionCode)))
+                .ToList();
         }
     }
 }

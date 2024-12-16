@@ -5,6 +5,7 @@ using James.Shared.Model;
 using StrawberryShake;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using James.Shared.Imaging;
 using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory;
 using Severity = James.Shared.Model.Severity;
 #pragma warning disable CA1305
@@ -40,6 +41,7 @@ namespace James.Data.Client
             return await ExecuteGet<List<Account>>(async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),
                 subProperty: "AgencyAccounts");
         }
+
         public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)
         {
             return await ExecuteGet<List<Obligee>>(async () => await jamesClient.SearchObligees.ExecuteAsync(searchString), "SearchObligees");
@@ -74,6 +76,13 @@ namespace James.Data.Client
             return await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber");
 
+        }
+
+        public async Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId)
+        {
+            var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyNameAndNumberById.ExecuteAsync(agencyId),
+                "AgencyByAgencyNumber");
+            return result;
         }
 
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
@@ -217,9 +226,9 @@ namespace James.Data.Client
                 async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId), "AgencyBonds");
         }
 
-        public async Task<IDataAccessResult<List<AgentsInAgency>>> GetAgencyAgents(Guid agencyId)
+        public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
         {
-            return await ExecuteGet<List<AgentsInAgency>>(
+            return await ExecuteGet<List<Agent>>(
                 async () => await jamesClient.GetAgencyAgents.ExecuteAsync(agencyId), "AgencyAgents");
         }
         public async Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber)
@@ -388,7 +397,7 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
         {
-            return await ExecuteGet<List<VImagingCategoryTabDivisionType>>(async () => await jamesClient.GetAllImagingCategoryTabDivisionTypes.ExecuteAsync(), "AllImagingCategoryTabDivisionTypes");
+            return await ExecuteGet<List<VImagingCategoryTabDivisionType>>(async () => await jamesClient.GetAllImagingCategoryTabDivisionTypes.ExecuteAsync(), "AllImagingCategoryTabDivisionType");
         }
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
@@ -400,14 +409,14 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory, bool useDocCategoryAsCriteria = true)
         {
-            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), Enum.GetName(typeof(ImagingDocumentCategory), docCategory)!);
+            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory),docCategory.Name());
             return await ExecuteGet<ImagingSearchCriteria>(async () =>
                 await jamesClient.GetImagingSearchCriteria.ExecuteAsync(id, category, useDocCategoryAsCriteria));
         }
 
         public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory, string? documentType = null)
         {
-            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), Enum.GetName(typeof(ImagingDocumentCategory), docCategory)!);
+            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), docCategory.Name());
             var result = await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(imagingId, category, documentType), "SearchDocuments", "GetImagingDocuments");
             return result;
         }

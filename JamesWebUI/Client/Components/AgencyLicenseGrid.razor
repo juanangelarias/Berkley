@@ -15,6 +15,7 @@
         row-gap: 2px;
     }
 </style>
+
 <RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" Data="@agencyLicenses"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
@@ -25,7 +26,10 @@
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow" />
-
+            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(args => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@isLoading" />
+            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(args => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@isLoading" />
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -64,7 +68,7 @@
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense"
-                              Title="No Aptmt" Width="75px">
+                              Title="No Aptmt" Width="75px" Property="AppointingState">
             <Template Context="license">
                 <RadzenCheckBox Value="license.AppointingState" ReadOnly="true" />
             </Template>
@@ -81,7 +85,7 @@
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense"
-                              Title="Resident" Width="75px">
+                              Title="Resident" Width="75px" Property="IsResident">
             <Template Context="license">
                 <RadzenCheckBox TValue="bool" Value="license.IsResident" ReadOnly="true" />
             </Template>
@@ -89,7 +93,7 @@
                 <RadzenCheckBox TValue="bool" @bind-Value="license.IsResident" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false" 
+        <RadzenDataGridColumn TItem="AgencyLicense" Filterable="false"
                               Title="Insurer" Property="Insurer" Width="200px">
             <Template Context="license">
                 <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
@@ -165,8 +169,8 @@
 
 
     //TODO: Remove this stuff once we figure out caching
-    private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
-    private List<State> AllStates { get; set; } = new List<State>();
+    private static List<Insurer> AllInsurers { get; set; } = new();
+    private static List<State> AllStates { get; set; } = new();
 
     private List<String> StateFilter = null;
 
@@ -236,7 +240,7 @@
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
         await ShowLoading();
-        var newLicense = new AgencyLicense() {Id = Guid.NewGuid()};
+        var newLicense = new AgencyLicense() { Id = Guid.NewGuid() };
         licensesToInsert.Add(newLicense);
         await licenseGrid.InsertRow(newLicense);
     }
@@ -349,8 +353,19 @@
                 { "Error Message", message },
                 { "AgencyNumber", license.Agency.AgencyNumber},
                 { "License Id", license.Id.ToString()}
-                });
-        NotifySaveError([message],"license certificate");
+                    });
+        NotifySaveError([message], "license certificate");
     }
 
+    private void ExportLicenseGrid(ExportFormat format)
+    {
+        var substitutions = new ExportColumnSubstitutions();
+        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName" );
+        substitutions.AddSubstitution("IsActive", title: "Is Active");
+        substitutions.AddSubstitution("IsResident", title: "Is Resident");
+        substitutions.AddSubstitution("AppointingState", title: "Appointing State");
+        NavigationManager.NavigateTo(ExportDataGridUrl(licenseGrid,
+    $"/export/AgencyLicenses/{AgencyId}", format, substitutions),
+    true);
+    }
 }

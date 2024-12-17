@@ -361,7 +361,8 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
             ImagingDocumentCategory docCategory, Guid documentId)
         {
-            throw new NotImplementedException();
+            //This should only be called by the server, because the client cannot access the imaging system.
+            throw new NotImplementedException("Imaging details can only be accessed serverside.");
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()

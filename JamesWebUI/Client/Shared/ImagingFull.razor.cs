@@ -1,5 +1,4 @@
 ﻿using ClientBusinessLogic;
-using James.Shared;
 using James.Shared.Data;
 using James.Shared.Imaging;
 using James.Shared.Model;
@@ -22,27 +21,36 @@ namespace JamesWebUI.Client.Shared
             IDataAccessResult<List<ImagingDocument>> docsResult = null!;
             var loadDocCategoryTabDivisionType = new LoadItem()
             {
+                Key= "GetAllImagingCategoryTabDivisionTypes",
                 AsyncLoadTask = (async () =>
                 {
                     docCategoryTabDivisionTypeResult = await DataAccess.GetAllImagingCategoryTabDivisionTypes();
                 }),
+                CacheLoadTask = (cache)=> docCategoryTabDivisionTypeResult = new DataAccessResult<List<VImagingCategoryTabDivisionType>>{Data = (List<VImagingCategoryTabDivisionType>)cache },
                 ResultVariable = () => docCategoryTabDivisionTypeResult
             };
             var loadDocTypes = new LoadItem()
             {
+                Key= "GetAllImagingTypes",
                 AsyncLoadTask = async () => { docTypesResult = await DataAccess.GetAllImagingTypes(); },
+            CacheLoadTask = (cache) => docTypesResult
+                = new DataAccessResult<List<ImagingType>> { Data = (List<ImagingType>)cache },
                 ResultVariable = () => docTypesResult
             };
             var loadDocs = new LoadItem()
             {
+                //TODO:Find the best performance from making keys from args
+                Key = "SearchDocuments"+ImagingId+DocumentCategory.DocumentCategory(),
                 AsyncLoadTask = async () =>
                 {
                     docsResult = await DataAccess.SearchDocuments(ImagingId, DocumentCategory);
                 },
+                CacheLoadTask = (cache) => docsResult
+                    = new DataAccessResult<List<ImagingDocument>> { Data = (List<ImagingDocument>)cache },
                 ResultVariable = () => docsResult
             };
 
-            await LoadInParallel(loadDocCategoryTabDivisionType, loadDocTypes, loadDocs);
+            await DataCache.ParallelGetCacheOrDataAsync(loadDocCategoryTabDivisionType, loadDocTypes, loadDocs);
 
             //Check for any failed tasks because that means retries have expired.
             if (docCategoryTabDivisionTypeResult!.Success == false ||

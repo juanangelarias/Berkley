@@ -31,21 +31,21 @@ namespace JamesWebUI.Client.Shared
         protected bool IsAuthenticated => IsAuthenticationStateLoaded && State!.User.Identity != null;
 
         //Asynchronous access to properties
-        protected async Task<AuthenticationState> GetAuthenticationStateAsync()
+        protected async ValueTask<AuthenticationState> GetAuthenticationStateAsync()
         {
             if (LoadAuthenticationStateAsync.IsCompleted)
                 return LoadAuthenticationStateAsync.Result;
             return await LoadAuthenticationStateAsync;
         }
 
-        protected async Task<ClaimsPrincipal> GetUserPrincipalAsync()
+        protected async ValueTask<ClaimsPrincipal> GetUserPrincipalAsync()
         {
             if (LoadAuthenticationStateAsync.IsCompleted)
                 return LoadAuthenticationStateAsync.Result.User;
             return (await LoadAuthenticationStateAsync).User;
         }
 
-        protected async Task<bool> GetIsAuthenticatedAsync()
+        protected async ValueTask<bool> GetIsAuthenticatedAsync()
         {
             if (LoadAuthenticationStateAsync.IsCompleted)
                 return null != LoadAuthenticationStateAsync.Result.User.Identity;
@@ -143,9 +143,11 @@ namespace JamesWebUI.Client.Shared
         /// </summary>
         /// <param name="loadTasks">Argumentless Lambda Expressions that sets external IDataAccessResult variables</param>
         /// <returns></returns>
+        /// <remarks>Superseded by DataCache.ParallelGetCacheOrDataAsync</remarks>
+        [Obsolete]
         protected async Task LoadInParallel(params LoadItem[] loadTasks)
         {
-            var maxRetries = 5 * loadTasks.Length;
+            var maxRetries = JamesConstants.Default_Max_Retries * loadTasks.Length;
             var retriesRemaining = maxRetries;
             //Initial load
             await Task.WhenAll(loadTasks.Select(lt => lt.AsyncLoadTask()));
@@ -160,22 +162,6 @@ namespace JamesWebUI.Client.Shared
                 retriesRemaining -= needsToRetry.Length;
                 needsToRetry = loadTasks.Where(lt => !lt.ResultVariable().Success).ToArray();
             }
-        }
-
-        protected class LoadItem
-        {
-            /// <summary>
-            /// Argumentless lambda expression or function that sets external IDataAccessResult variables
-            /// </summary>
-            public required Func<Task> AsyncLoadTask { get; init; }
-
-            /// <summary>
-            /// Argumentless lambda expression or function that returns the result variable.
-            /// </summary>
-            /// <remarks>This must be a function because the result variable will not be set until the AsyncLoadTask has run.
-            /// </remarks>
-            /// <returns>Returns a reference to the IDataAccessResult base class, ISaveDataResult, that is non-generic and only cares about success and errors</returns>
-            public required Func<ISaveDataResult> ResultVariable { get; init; }
         }
 
         private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
@@ -193,7 +179,7 @@ namespace JamesWebUI.Client.Shared
                     Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)
                 }).ToList();
             selectColumns.AddRange(propertySubstitutions.Where(s => s.Value.Original == string.Empty)
-                .Select(s => new { Property = s.Value.Property, Title = s.Value.Title }));
+                .Select(s => new { s.Value.Property, s.Value.Title }));
             var selectColumnString = string.Join(",",
                 selectColumns
                     .Select(cSub => cSub with

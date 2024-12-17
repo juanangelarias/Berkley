@@ -101,7 +101,12 @@ namespace James.Shared.Data
         public string[] Errors { get; }
         public bool Success { get; }
     }
-    public interface IDataAccessResult<T>:ISaveDataResult
+
+    public interface IDataAccessResult : ISaveDataResult
+    {
+        public object? DataObject { get; }
+    }
+    public interface IDataAccessResult<T>: IDataAccessResult
     {
         public T? Data { get; }
     }
@@ -115,6 +120,7 @@ namespace James.Shared.Data
     public class DataAccessResult<T> : IDataAccessResult<T>
     {
         public T? Data { get; init; }
+        public object? DataObject => Data;
 
         public string[] Errors { get; init; } = [];
 
@@ -123,6 +129,7 @@ namespace James.Shared.Data
     public class DataAccessResultString : IDataAccessResult<string?>
     {
         public string? Data { get; init; }
+        public object? DataObject => Data;
 
         public string[] Errors { get; init; } = [];
 

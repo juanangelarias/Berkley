@@ -27,4 +27,14 @@ public interface ILoggingService
     /// <param name="category">Category.  Use StandardLoggingCategories values when possible.</param>
     /// <param name="data">Data relevant to the error.</param>
     void LogError(string message, string[] errors, string category = "General", Dictionary<string, string>? data = null);
+
+    /// <summary>
+    /// Logs errors
+    /// </summary>
+    /// <remarks>Designed for efficient logging of IDataAccess errors without excessive string concatenation</remarks>
+    /// <param name="message">Error message (Identifies process that had error)</param>
+    /// <param name="errors">Array of errors</param>
+    /// <param name="category">Category.  Use StandardLoggingCategories values when possible.</param>
+    /// <param name="data">Data relevant to the error.</param>
+    void LogWarning (string message, string[] errors, string category = "General", Dictionary<string, string>? data = null);
 }

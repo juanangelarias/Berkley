@@ -21,56 +21,49 @@ namespace JamesWebUI.Client.Shared
             IDataAccessResult<List<ImagingDocument>> docsResult = null!;
             var loadDocCategoryTabDivisionType = new LoadItem()
             {
-                Key= "GetAllImagingCategoryTabDivisionTypes",
+                Key = "GetAllImagingCategoryTabDivisionTypes",
                 AsyncLoadTask = (async () =>
                 {
                     docCategoryTabDivisionTypeResult = await DataAccess.GetAllImagingCategoryTabDivisionTypes();
                 }),
-                CacheLoadTask = (cache)=> docCategoryTabDivisionTypeResult = new DataAccessResult<List<VImagingCategoryTabDivisionType>>{Data = (List<VImagingCategoryTabDivisionType>)cache },
-                ResultVariable = () => docCategoryTabDivisionTypeResult
+                CacheLoadTask = (cache) => docCategoryTabDivisionTypeResult = new DataAccessResult<List<VImagingCategoryTabDivisionType>> { Data = (List<VImagingCategoryTabDivisionType>)cache! },
+                ResultVariable = () => docCategoryTabDivisionTypeResult,
+                AfterLoad = () => _currentCatTabDivTypes =
+                    //Use business logic to determine which tabs and types are relevant to the page
+                    docCategoryTabDivisionTypeResult.Data!.GetRelevantTabsAndTypes(DocumentCategory, DivisionCode)
             };
             var loadDocTypes = new LoadItem()
             {
-                Key= "GetAllImagingTypes",
+                Key = "GetAllImagingTypes",
                 AsyncLoadTask = async () => { docTypesResult = await DataAccess.GetAllImagingTypes(); },
-            CacheLoadTask = (cache) => docTypesResult
-                = new DataAccessResult<List<ImagingType>> { Data = (List<ImagingType>)cache },
-                ResultVariable = () => docTypesResult
+                CacheLoadTask = (cache) => docTypesResult
+                    = new DataAccessResult<List<ImagingType>> { Data = (List<ImagingType>)cache! },
+                ResultVariable = () => docTypesResult,
+                AfterLoad = () => _imagingTypes = docTypesResult.Data!
             };
             var loadDocs = new LoadItem()
             {
                 //TODO:Find the best performance from making keys from args
-                Key = "SearchDocuments"+ImagingId+DocumentCategory.DocumentCategory(),
+                Key = "SearchDocuments" + ImagingId + DocumentCategory.DocumentCategory(),
                 AsyncLoadTask = async () =>
                 {
                     docsResult = await DataAccess.SearchDocuments(ImagingId, DocumentCategory);
                 },
                 CacheLoadTask = (cache) => docsResult
-                    = new DataAccessResult<List<ImagingDocument>> { Data = (List<ImagingDocument>)cache },
+                    = new DataAccessResult<List<ImagingDocument>> { Data = (List<ImagingDocument>)cache! },
                 ResultVariable = () => docsResult
             };
 
-            await DataCache.ParallelGetCacheOrDataAsync(loadDocCategoryTabDivisionType, loadDocTypes, loadDocs);
-
-            //Check for any failed tasks because that means retries have expired.
-            if (docCategoryTabDivisionTypeResult!.Success == false ||
-                docTypesResult!.Success == false ||
-                docsResult!.Success == false)
-            {
-                NotifyLoadError(["Maximum retries exceeded", "Wait and manually refresh page"]);
-                return;
-            }
-
-            //Use business logic to determine which tabs and types are relevant to the page
-            _currentCatTabDivTypes =
-                docCategoryTabDivisionTypeResult.Data!.GetRelevantTabsAndTypes(DocumentCategory, DivisionCode);
-            _imagingTypes = docTypesResult.Data!;
-            PopulateDocuments(docsResult);
+            //UNDONE: Troubleshoot why Populate Documents fired even after the chaos monkey threw an error with loading prerequisites
+            await DataCache.ParallelGetCacheOrDataAsync(() =>
+                PopulateDocuments(docsResult), 
+                AddEventNotify(loadDocCategoryTabDivisionType, "imaging categories, types and divisions"),
+                AddEventNotify(loadDocTypes, "imaging document types"),
+                AddEventNotify(loadDocs, "imaging document data"));
         }
 
         private ImagingType _unknownType = ImagingRules.CreateUnknownType();
 
-        //private void PopulateDocuments(List<ImagingDocument> documents)
         private void PopulateDocuments(IDataAccessResult<List<ImagingDocument>> documentsResult)
         {
             if (documentsResult.Success)

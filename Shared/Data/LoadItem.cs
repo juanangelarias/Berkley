@@ -29,10 +29,9 @@ public class LoadItem
     /// When subscriptions are implemented, the cache can be held much longer.</remarks>
     public TimeSpan CacheDuration { get; set; }= TimeSpan.FromHours(1);
 
-    public event EventHandler Loaded;
+    public Action? AfterLoad { get; init; }
 
-    internal void LoadErrorsEncountered(string[] errors, bool fatal) =>
-        LoadError?.Invoke(this, new LoadErrorEventArgs(){Errors = errors, Fatal = fatal});
+    public event EventHandler Loaded;//TODO:Review if this is needed, or is the after load Action all that is needed
 
     internal void FireLoaded()
     {
@@ -40,6 +39,9 @@ public class LoadItem
     }
     
     public event EventHandler<LoadErrorEventArgs> LoadError;
+
+    internal void LoadErrorsEncountered(string[] errors, bool fatal) =>
+        LoadError?.Invoke(this, new LoadErrorEventArgs(){Errors = errors, Fatal = fatal});
 }
 
 public class CachedResult

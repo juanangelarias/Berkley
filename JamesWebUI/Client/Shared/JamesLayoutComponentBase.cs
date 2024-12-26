@@ -106,27 +106,54 @@ namespace JamesWebUI.Client.Shared
         /// </summary>
         /// <param name="errors">Errors that were returned.</param>
         /// <param name="itemSaved">The item that didn't load, default is "data".  Should NOT be title cased.</param>
-        protected void NotifyLoadError(string[] errors, string itemSaved = "data")
+        /// <param name="fatal">True if no retries will happen, false if retries are continuing.</param>
+        protected void NotifyLoadError(string[] errors, string itemSaved = "data", bool fatal = false)
         {
-            var msg =
-                $"There {(errors.Length == 1 ? "was an error" : "were errors")} retrieving {itemSaved}.  {string.Join("  ", errors)}";
+            var msg = fatal ?
+                $"There {(errors.Length == 1 ? "was a fatal error" : "were fatal error(s)"
+                    )} retrieving {itemSaved}.  {string.Join("  ", errors)}" :
+                $"There was an error retrieving {itemSaved}.  Retrying...";
             NotificationService.Notify(new NotificationMessage
-            { Severity = NotificationSeverity.Error, Summary = msg, Duration = 15000 });
+            {
+                Severity = fatal ? NotificationSeverity.Error : NotificationSeverity.Warning,
+                Summary = msg,
+                Duration = 15000
+            });
         }
 
-        protected void LogGraphQlLoadError(string[] errors, string message, string loadItem = "data")
+        protected void LogGraphQlLoadError(string[] errors, string message, string loadItem = "data", bool fatal = true)
         {
-            LoggingService.LogError(message, category: StandardLoggingCategories.DataAccess,
-                errors: errors, data: new()
-                {
-                    { "Failed load item", loadItem }, { "Source Class", GetType().Name }
-                });
+            if (fatal)
+                LoggingService.LogError(message, category: StandardLoggingCategories.DataAccess,
+                    errors: errors, data: new()
+                    {
+                        { "Failed load item", loadItem }, { "Source Class", GetType().Name }
+                    });
+            else
+                LoggingService.LogWarning(message, category: StandardLoggingCategories.DataAccess,
+                    errors: errors, data: new()
+                    {
+                        { "Failed load item", loadItem }, { "Source Class", GetType().Name }
+                    });
         }
 
-        private string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+        protected LoadItem AddEventNotify(LoadItem loadItem, string loadItemName = "data")
+        {
+            loadItem.LoadError += LoadItemOnLoadError;
+
+            void LoadItemOnLoadError(object? sender, LoadErrorEventArgs e)
+            {
+                NotifyLoadError(e.Errors, loadItemName, e.Fatal);
+                LogGraphQlLoadError(e.Errors, $"Error loading {loadItemName}", loadItemName);
+            }
+
+            return loadItem;
+        }
+
+        private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
             string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property;
 
-        private string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
+        private static string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
         {
             if (originalFilter == null!) return null!;
             foreach (var substitution in substitutions)
@@ -136,32 +163,6 @@ namespace JamesWebUI.Client.Shared
             }
 
             return originalFilter;
-        }
-
-        /// <summary>
-        /// Loads the tasks, retries if needed and returns when either everything has finished or failed
-        /// </summary>
-        /// <param name="loadTasks">Argumentless Lambda Expressions that sets external IDataAccessResult variables</param>
-        /// <returns></returns>
-        /// <remarks>Superseded by DataCache.ParallelGetCacheOrDataAsync</remarks>
-        [Obsolete]
-        protected async Task LoadInParallel(params LoadItem[] loadTasks)
-        {
-            var maxRetries = JamesConstants.Default_Max_Retries * loadTasks.Length;
-            var retriesRemaining = maxRetries;
-            //Initial load
-            await Task.WhenAll(loadTasks.Select(lt => lt.AsyncLoadTask()));
-
-            var needsToRetry = loadTasks.Where(lt => !lt.ResultVariable().Success).ToArray();
-            while (needsToRetry.Any() && retriesRemaining > 0)
-            {
-                //Handle any needed retries
-                NotifyLoadError(needsToRetry.SelectMany(ntr => ntr.ResultVariable().Errors).ToArray());
-                await Task.Delay((maxRetries - retriesRemaining) * 250);
-                await Task.WhenAll(needsToRetry.Select(nr => nr.AsyncLoadTask()));
-                retriesRemaining -= needsToRetry.Length;
-                needsToRetry = loadTasks.Where(lt => !lt.ResultVariable().Success).ToArray();
-            }
         }
 
         private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
@@ -202,6 +203,7 @@ namespace JamesWebUI.Client.Shared
         #endregion
     }
 
+    //TODO: Review if this is still needed after permissioning is fleshed out
     public static class AuthUserExtensions
     {
         public static string? Username(ClaimsPrincipal user)

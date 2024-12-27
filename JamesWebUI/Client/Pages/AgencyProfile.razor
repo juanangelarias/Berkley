@@ -8,15 +8,15 @@
 
 @inject NavigationManager NavigationManager
 
-@inject IDataAccess _dataAccess
-@inject ILoggingService _logging
+@inject IDataAccess DataAccess
+@inject ILoggingService Logging
 @attribute [Authorize]
 
 <Theme />
 
 <PageTitle>Agency Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
- @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
+@* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
 
 
 
@@ -162,7 +162,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <RadzenFieldset Text="Addresses">
-                         <LegalEntityAddressEditor LegalEntityId="@_agencyToDisplay.Id" />
+                        <LegalEntityAddressEditor LegalEntityId="@_agencyToDisplay.Id" />
                     </RadzenFieldset>
                 </RadzenColumn>
             </RadzenRow>
@@ -224,52 +224,79 @@
         Notifications =
         [
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
+new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
+new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
+new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
         ];
     }
+
+    private IDataAccessResult<Agency> _agencyResult;
+    private LoadItem AgencyByAgencyNumberLoadItem(string agencyNumber) =>
+            new LoadItem()
+            {
+                Key = $"Agency{agencyNumber}",
+                AsyncLoadTask = async () => _agencyResult = await DataAccess.GetAgencyByAgencyNumber(agencyNumber),
+                CacheLoadTask = cache => _agencyResult = new DataAccessResult<Agency> { Data = (Agency)cache },
+                ResultVariable = () => _agencyResult,
+                AfterLoad = () =>
+                {
+                    Debug.Assert(_agencyResult.Data != null, "AgencyResult.Data != null if result.Success == true");
+                    _agencyToDisplay = _agencyResult.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
+
+                    _mainAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
+                    _billingAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
+                },
+                CacheDuration = TimeSpan.FromHours(8),   //Subscription will update this if changed, so long cache time is appropriate.
+                AddSubscriptionTask = li =>
+                {
+                    List<IDisposable> subscriptions = new();
+                    if (_mainAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
+                        subscriptions.Add(DataAccess.AddressModified(_mainAddress.Id, async sra =>
+                        {
+                            if (EditorIdentifier == sra.Identifier) return;
+                            //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
+                            if (_mainAddressEditor == null || await _mainAddressEditor.SubscriptionUpdate(sra.Result))
+                                ShowNotification("Main address");
+                        }));
+                    if (_billingAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
+                        subscriptions.Add(DataAccess.AddressModified(_billingAddress.Id, async sra =>
+                        {
+                            if (EditorIdentifier == sra.Identifier) return;
+                            //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
+                            if (_billingAddressEditor == null || await _billingAddressEditor.SubscriptionUpdate(sra.Result))
+                                ShowNotification("Billing Address");
+                        }));
+                    if (subscriptions.Count > 0)
+                        li.Subscription = new Multisubscription(subscriptions);
+                }
+            };
+    
+    private IDataAccessResult<List<Branch>> _branchesResult;
+    private LoadItem BranchesLoadItem() =>
+        new()
+        {
+            Key = "branches",
+            AsyncLoadTask = async () => _branchesResult = await DataAccess.GetAllBranches(),
+            CacheLoadTask = cache => _branchesResult = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache },
+            ResultVariable = () => _branchesResult,
+            AfterLoad = () =>
+            {
+                Debug.Assert(_branchesResult.Data != null, "_branchesResult.Data != null");
+                AllBranches = _branchesResult.Data.OrderBy(b => b.Name).ToList();
+            }
+        };
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        await LoadBranches();
+        var loadItems = new List<LoadItem>([BranchesLoadItem()]);
         if (null != Id)
-        {
-            var result = await _dataAccess.GetAgencyByAgencyNumber(Id);
-            if (result.Success)
-            {
-                Debug.Assert(result.Data != null, "result.Data != null if result.Success == true");
-                _agencyToDisplay = result.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
-
-                _mainAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
-                _billingAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
-                if (_mainAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
-                    _mainAddressSubscription = _dataAccess.AddressModified(_mainAddress.Id, async sra =>
-                    {
-                        if (EditorIdentifier == sra.Identifier) return;
-                        //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
-                        if (_mainAddressEditor == null || await _mainAddressEditor.SubscriptionUpdate(sra.Result))
-                            ShowNotification("Main address");
-                    });
-                if (_billingAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
-                    _billingAddressSubscription = _dataAccess.AddressModified(_billingAddress.Id, async sra =>
-                    {
-                        if (EditorIdentifier == sra.Identifier) return;
-                        //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
-                        if (_billingAddressEditor == null || await _billingAddressEditor.SubscriptionUpdate(sra.Result))
-                            ShowNotification("Billing Address");
-                    });
-            }
-            else
-            {
-                _logging.LogWarning("GetAgencyByAgencyNumber returned error(s)", string.Join("\r\n", result.Errors), "GraphQl");
-            }
-        }
+            loadItems.Add(AgencyByAgencyNumberLoadItem(Id));
+        await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
     }
     private async Task LoadBranches()
     {
-        var result = await _dataAccess.GetAllBranches();
+        var result = await DataAccess.GetAllBranches();
         if (result.Success)
         {
             Debug.Assert(result.Data != null, "result.Data != null");
@@ -277,13 +304,13 @@
         }
         else
         {
-            _logging.LogWarning("GetAllBranches returned error(s)", string.Join("\r\n", result.Errors), "GraphQL");
+            Logging.LogWarning("GetAllBranches returned error(s)", string.Join("\r\n", result.Errors), "GraphQL");
         }
     }
     private async Task SaveAgencyChanges()
     {
         //TODO: Handle errors
-        await _dataAccess.SetAgencyGeneralInfo(_agencyToDisplay.Id, _agencyToDisplay.IdNavigation.FullName, _agencyToDisplay.IdNavigation.ParentNavigation!.Id,
+        await DataAccess.SetAgencyGeneralInfo(_agencyToDisplay.Id, _agencyToDisplay.IdNavigation.FullName, _agencyToDisplay.IdNavigation.ParentNavigation!.Id,
             _agencyToDisplay.IdNavigation.TaxIdEncrypted, _agencyToDisplay.NationalProducerNumber, _agencyToDisplay.W9, _agencyToDisplay.Need1099,
             _agencyToDisplay.Nasbp, _agencyToDisplay.Branch!);
         EditMode = !EditMode;
@@ -292,11 +319,11 @@
     void ShowNotification(string nameOfInformation)
     {
         ShowNotification(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Info,
-                Detail = nameOfInformation + " on this page has been changed by another user.",
-                Duration = 4000
-            });
+        {
+            Severity = NotificationSeverity.Info,
+            Detail = nameOfInformation + " on this page has been changed by another user.",
+            Duration = 4000
+        });
     }
     void ShowNotification(NotificationMessage message)
     {
@@ -314,14 +341,14 @@
         await DialogService.OpenAsync<AgencyStatusGrid>("Agency Status",
         new Dictionary<string, object>() { { "AgencyNumber", _agencyToDisplay.AgencyNumber }, { "CurrentStatus", _agencyToDisplay.Status } },
         new DialogOptions()
-            {
-                Resizable = false,
-                Draggable = true,
-                CloseDialogOnOverlayClick = true,
-                Style = "border-radius: 20px",
-                Width = "1000px",
-                Height = "500px"
-            }
+        {
+            Resizable = false,
+            Draggable = true,
+            CloseDialogOnOverlayClick = true,
+            Style = "border-radius: 20px",
+            Width = "1000px",
+            Height = "500px"
+        }
         );
     }
 }

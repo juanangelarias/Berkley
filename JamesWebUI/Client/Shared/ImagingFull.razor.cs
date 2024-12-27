@@ -54,7 +54,6 @@ namespace JamesWebUI.Client.Shared
                 ResultVariable = () => docsResult
             };
 
-            //UNDONE: Troubleshoot why Populate Documents fired even after the chaos monkey threw an error with loading prerequisites
             await DataCache.ParallelGetCacheOrDataAsync(() =>
                 PopulateDocuments(docsResult), 
                 AddEventNotify(loadDocCategoryTabDivisionType, "imaging categories, types and divisions"),

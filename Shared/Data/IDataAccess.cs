@@ -135,4 +135,21 @@ namespace James.Shared.Data
 
         public bool Success => Errors.Length == 0;
     }
+
+    public class Multisubscription : List<IDisposable>, IDisposable
+    {
+        public Multisubscription()
+        {
+        }
+        public Multisubscription(IEnumerable<IDisposable> subscriptions)
+        {
+            AddRange(subscriptions);
+        }
+
+        public void Dispose()
+        {
+            foreach(var subscription in this)
+                subscription.Dispose();
+        }
+    }
 }

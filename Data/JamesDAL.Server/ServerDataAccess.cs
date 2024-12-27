@@ -168,7 +168,7 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId)
         {
-            return await ExecuteSave(async()=> await agencyMutation.CreateAgencyPOADocumentLink(poaId, imagingDocumentId, eventSender, contextFactory));
+            return await ExecuteSave(async () => await agencyMutation.CreateAgencyPOADocumentLink(poaId, imagingDocumentId, eventSender, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId)
@@ -180,7 +180,7 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum)
         {
-            return await ExecuteSave(async ()=> await accountMutation.SetCurrentCreditReportLink(accountNum, documentId, eventSender, contextFactory));
+            return await ExecuteSave(async () => await accountMutation.SetCurrentCreditReportLink(accountNum, documentId, eventSender, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
@@ -394,7 +394,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
         {
-            return await ExecuteGet(async ()=> await query.GetAllImagingTypes(contextFactory));
+            return await ExecuteGet(async () => await query.GetAllImagingTypes(contextFactory));
         }
 
         public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
@@ -410,7 +410,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
         {
-            return await ExecuteGet(async ()=> await query.GetPOADocumentNames(contextFactory));
+            return await ExecuteGet(async () => await query.GetPOADocumentNames(contextFactory));
         }
 
         public async Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId,
@@ -540,23 +540,6 @@ namespace James.Data.Server
 
                 return _onAddressModified[addressId];
             }
-        }
-        //public async Task<IDisposable> AddressModified(CancellationToken cancellationToken = default)
-        //{
-        //    var eventValueTask =
-        //        await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified", cancellationToken);
-        //    eventValueTask.ReadEventsAsync();
-        //    //UNDONE:
-        //    return await Task.FromResult(FakeSubscription.Create);
-        //}
-    }
-    //TODO:Remove when subscriptions are handled
-    public class FakeSubscription : IDisposable
-    {
-        public static FakeSubscription Create => new();
-        public void Dispose()
-        {
-            //Just a fake object.;
         }
     }
 }

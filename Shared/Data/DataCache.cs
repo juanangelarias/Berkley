@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Text;
+﻿using System.Collections.Concurrent;
 
 namespace James.Shared.Data;
 
@@ -13,18 +10,24 @@ public static class DataCache
     }
 
     private static readonly ConcurrentDictionary<string, CachedResult> _cachedResults = new();
+    /// <summary>
+    /// The number of cache usages before a scan to remove expired items is called.
+    /// </summary>
+    /// <remarks>Balance the need for memory management vs the performance impact of scanning the cache.</remarks>
+    private const int CacheUsesUntilGarbageCollection = 20;
+    private static int _cacheUses;
 
     public static async Task GetCacheOrLoadDataAsync(LoadItem loadItem)
     {
         if (_cachedResults.TryGetValue(loadItem.Key, out var cachedValue))
         {
-            if ((DateTime.Now - cachedValue.CachedTime) <= loadItem.CacheDuration)
+            if (DateTime.Now <= cachedValue.CachedUntil)
             {
                 //Cache hit
                 loadItem.CacheLoadTask(_cachedResults[loadItem.Key].Data);
                 //Run AfterLoad as though data was just loaded
                 loadItem.AfterLoad?.Invoke();
-                return;
+                goto ExpireCacheIfNeeded;//<Evil grin>A goto statement!</Evil grin>
             }
 
             //Cache is expired
@@ -43,9 +46,14 @@ public static class DataCache
 
         if (loadItem.ResultVariable().Success)
         {
-            _cachedResults[loadItem.Key] = new CachedResult { Data = loadItem.ResultVariable().DataObject };
-            loadItem.FireLoaded(); //TODO:Set up subscriptions to keep data updated.
+            _cachedResults[loadItem.Key] = new CachedResult
+            {
+                Data = loadItem.ResultVariable().DataObject,
+                CachedUntil = DateTime.Now + loadItem.CacheDuration
+            };
+            loadItem.FireLoaded();
             loadItem.AfterLoad?.Invoke();
+            loadItem.AddSubscriptionTask?.Invoke(loadItem);
         }
         else
         {
@@ -53,38 +61,61 @@ public static class DataCache
             errorList.Add("Maximum number of retries exceeded.");
             loadItem.LoadErrorsEncountered(errorList.ToArray(), true);
         }
+
+    ExpireCacheIfNeeded:
+        if (0 == ++_cacheUses % CacheUsesUntilGarbageCollection)
+            ReleaseExpired();
     }
 
+    /// <summary>
+    /// Load multiple items in parallel
+    /// </summary>
+    /// <param name="loadItems">The LoadItem to load</param>
+    /// <returns></returns>
     public static async Task ParallelGetCacheOrDataAsync(params LoadItem[] loadItems)
     {
         await ParallelGetCacheOrDataAsync(null, loadItems);
     }
+
+    /// <summary>
+    /// Load multiple items in parallel and then run the afterAllLoaded when loading complete
+    /// </summary>
+    /// <param name="afterAllLoaded">Action to execute after all items have been loaded.</param>
+    /// <param name="loadItems">The LoadItem to load</param>
+    /// <returns></returns
     public static async Task ParallelGetCacheOrDataAsync(Action? afterAllLoaded, params LoadItem[] loadItems)
     {
         await Task.WhenAll(loadItems.Select(GetCacheOrLoadDataAsync));
-        if (loadItems.All(li=>li.ResultVariable().Success))
-        {
-            //TODO:Remove after debugging
-            var sb = new StringBuilder($"{loadItems.Length} load items have completed.\r\n");
-            for (int i = 1; i <= loadItems.Length;i++)
-            {
-                sb.Append("Task ");
-                sb.Append(i.ToString("D2"));
-                sb.Append(" key = '");
-                sb.Append(loadItems[i-1].Key);
-                sb.Append("', Success = ");
-                sb.Append(loadItems[i-1].ResultVariable().Success.ToString());
-                sb.Append(", Value is null = ");
-                sb.AppendLine((loadItems[i-1].ResultVariable().DataObject == null).ToString());
-            }
-
-            var textSummary = sb.ToString();
-            if (textSummary.Contains("false"))
-                Debug.WriteLine("Break here");
-
+        if (loadItems.All(li => li.ResultVariable().Success))
             afterAllLoaded?.Invoke();
-        }
     }
+
+    /// <summary>
+    /// Removes references to expired cache items
+    /// </summary>
+    private static void ReleaseExpired()
+    {
+        //This will run async and return immediately back to the calling function/
+        Task.Factory.StartNew(() =>
+        {
+            if (_isReleasingExpired) return;
+            try
+            {
+                _isReleasingExpired = true;
+                var expired = _cachedResults.Where(cr => cr.Value.CachedUntil < DateTime.Now).Select(cr => cr.Key)
+                    .ToArray();
+                foreach (var expiredCacheItemKey in expired)
+                    Clear(expiredCacheItemKey);
+            }
+            finally
+            {
+                _isReleasingExpired = false;
+            }
+        });
+    }
+
+    private static bool _isReleasingExpired;
+    private static object _releasingExpiredLockObject = new();
 
     /// <summary>
     /// Clears cache
@@ -101,6 +132,9 @@ public static class DataCache
     /// <param name="key">Cache key to clear</param>
     public static void Clear(string key)
     {
+        if (_cachedResults.TryGetValue(key, out var oldValue) && oldValue.Data is IDisposable disposeIt)
+            disposeIt.Dispose();
+
         _cachedResults.Remove(key, out _);
     }
 }

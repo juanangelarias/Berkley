@@ -1,6 +1,6 @@
 ﻿namespace James.Shared.Data;
 
-public class LoadItem
+public class LoadItem : IDisposable
 {
     public required string Key { get; set; }
     /// <summary>
@@ -23,12 +23,22 @@ public class LoadItem
     public required Func<IDataAccessResult> ResultVariable { get; init; }
 
     /// <summary>
+    /// Optional reference to a subscription that keeps the datastore updated
+    /// </summary>
+    /// <remarks>should only be set in the AddSubscriptionTask</remarks>
+    public IDisposable? Subscription { get; set; }
+    public Action<LoadItem>? AddSubscriptionTask { get; set; }
+
+    /// <summary>
     /// Time until cached result is considered stale
     /// </summary>
     /// <remarks>Everything should be cached, at minimum, for a minute to protect from multiple queries.
     /// When subscriptions are implemented, the cache can be held much longer.</remarks>
     public TimeSpan CacheDuration { get; set; }= TimeSpan.FromHours(1);
 
+    /// <summary>
+    /// Action taken after the data has loaded either from the source or from the cache
+    /// </summary>
     public Action? AfterLoad { get; init; }
 
     public event EventHandler Loaded;//TODO:Review if this is needed, or is the after load Action all that is needed
@@ -42,21 +52,18 @@ public class LoadItem
 
     internal void LoadErrorsEncountered(string[] errors, bool fatal) =>
         LoadError?.Invoke(this, new LoadErrorEventArgs(){Errors = errors, Fatal = fatal});
+
+    public void Dispose()
+    {
+        Subscription?.Dispose();
+    }
 }
 
-public class CachedResult
+internal class CachedResult
 {
-    private object? _data;
-    public object? Data
-    {
-        get => _data;
-        set
-        {
-            _data = value;
-            CachedTime = DateTime.Now;
-        }
-    }
-    public DateTime CachedTime { get; private set; } = DateTime.Now;
+    internal object? Data { get; set; }
+
+    internal required DateTime CachedUntil { get; init; } = DateTime.Now;
 }
 
 public class LoadErrorEventArgs : EventArgs

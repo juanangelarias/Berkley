@@ -220,3 +220,23 @@ query GetAccountProgramHistory($input: String!) {
     }
   }
 } 
+query GetAdditionalRelatedParties($input: String!) {
+  additionalRelatedParties(accountNumber: $input) {
+    accountNum
+    comments
+    created
+    financialStatements
+    guarantor
+    id
+    indemnity
+    modified
+    idNavigation {
+      created
+      entityType
+      fullName
+      isIndividual
+      modified
+      parent
+    }
+  }
+} 

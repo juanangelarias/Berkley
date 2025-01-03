@@ -32,7 +32,7 @@
                 Property="Status.Description">
                 <Template Context="program">
                     @{
-                        if (program.Status.Description == "APPROVED")
+                        if (program?.Status?.Description == "APPROVED")
                         {
                             <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success" />
                         }

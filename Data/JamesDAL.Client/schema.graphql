@@ -539,6 +539,7 @@ type Query {
   accountActiveLinesOfAuthority(accountNumber: String!): InforceAccountLOA!
   accountProgramHistory(accountNumber: String!): [AccountProgram!]!
   accountOnly(accountNumber: String): Account
+  additionalRelatedParties(accountNumber: String): [AdditionalRelatedParty!]!
   searchAgencies(stringToSearch: String): [Agency!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
   agencyById(agencyId: UUID!): Agency

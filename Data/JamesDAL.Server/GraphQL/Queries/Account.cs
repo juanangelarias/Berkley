@@ -32,7 +32,6 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(a => a.Cpacontact)
                 .Include(a => a.BusinessTypeNavigation)
                 .Include(a => a.BusinessTypeClassNavigation)
-                .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim());
                 .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim())
                    ?? throw new GraphQLException("No account with this account number exists.");
         }
@@ -98,6 +97,19 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.Accounts
                 .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim());
+        }
+        [Authorize]
+        public async Task<List<AdditionalRelatedParty>> GetAdditionalRelatedParties(string? accountNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            if (string.IsNullOrWhiteSpace(accountNumber))
+            {
+                return null;
+            }
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.AdditionalRelatedParties
+                .Include(a => a.IdNavigation)
+                .Where(a => a.AccountNum == accountNumber)
+                .ToListAsync();
         }
     }
 }

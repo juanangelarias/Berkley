@@ -9,6 +9,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber);
         public Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber);
         public Task<IDataAccessResult<List<Account>>> SearchAccounts(string searchString);
+        public Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accoungNumber);
         public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId);

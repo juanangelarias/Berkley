@@ -56,7 +56,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="11">
                         <RadzenFormField Text="CPA Firm Name" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
-                            <RadzenText Text="@AccountToDisplay.Cpafirm.FullName" />
+                            <RadzenText Text="@AccountToDisplay?.Cpafirm?.FullName" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="1">
@@ -66,7 +66,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="11">
                         <RadzenFormField Text="Contact Person" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay.Cpacontact.FullName" />
+                            <RadzenTextBox Value="@AccountToDisplay?.Cpacontact?.FullName" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>

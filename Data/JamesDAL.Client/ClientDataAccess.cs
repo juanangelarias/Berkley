@@ -36,6 +36,13 @@ namespace James.Data.Client
             return await ExecuteGet<InforceAccountLOA>(async () => await jamesClient.GetAccountActiveLinesOfAuthority.ExecuteAsync(accountNumber), 
                 "AccountActiveLinesOfAuthority");
         }
+        public async Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accountNumber)
+        {
+            //TODO: Implement
+            return await ExecuteGet<List<AdditionalRelatedParty>>(async () => await jamesClient.GetAdditionalRelatedParties.ExecuteAsync(accountNumber),
+                "AdditionalRelatedParties");
+            //return new DataAccessResult<List<AdditionalRelatedParty>>();
+        }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
             return await ExecuteGet<List<Account>>(async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),

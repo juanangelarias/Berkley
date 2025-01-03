@@ -23,6 +23,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAccountActiveLinesOfAuthority(accountNumber, contextFactory));
         }
+        public async Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accountNumber)
+        {
+            return await ExecuteGet(async () => await query.GetAdditionalRelatedParties(accountNumber, contextFactory));
+        }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
             return await ExecuteGet(async () => await query.GetAgencyAccounts(agencyNumber, contextFactory));

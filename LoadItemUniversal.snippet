@@ -10,12 +10,12 @@
     <Snippet>
       <Code Language="CSharp">
         <![CDATA[private IDataAccessResult<$DataTypeToLoad$> $ResultVariableName$;
-    private LoadItem BranchesLoadItem() =>
+    private LoadItem $LoadItemName$() =>
         new ()
         {
             Key = "$KeyName$",
-            AsyncLoadTask = async () => $ResultVariableName$ = await DataAccess.GetAllBranches(),
-            CacheLoadTask = cache => $ResultVariableName$ = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache },
+            AsyncLoadTask = async () => $ResultVariableName$ = await DataAccess.$DataAccessMethod$,
+            CacheLoadTask = cache => $ResultVariableName$ = new DataAccessResult<$DataTypeToLoad$> { Data = ($DataTypeToLoad$)cache! },
             ResultVariable = () => $ResultVariableName$,
             AfterLoad = () =>
             {

@@ -44,8 +44,8 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
-            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
-        public Task<ISaveDataResult> DeleteAddress(Guid addressId);
+            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType, string identifier);
+        public Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier);
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
             Guid changedBy, string? comments);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
@@ -74,6 +74,9 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes();
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
+
+        public IDisposable AddressCollectionModified(Guid legalEntityId, Action<SubscriptionResult<Guid>> onNext,
+            Action<Exception>? onError = null, Action? onComplete = null);
 
         public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true);

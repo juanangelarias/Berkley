@@ -144,7 +144,7 @@ namespace James.Data.Client
             return GraphQLSaveResult(result);
         }
         public async Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
-            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType)
+            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType, string identifier)
         {
             //TODO: Error handling
             var result = await jamesClient.CreateAddress.ExecuteAsync(new CreateAddressInput()
@@ -157,16 +157,18 @@ namespace James.Data.Client
                 StateCode = stateCode,
                 PostalCode = postalCode,
                 LegalEntityId = legalEntityId,
-                AddressType = addressType
+                AddressType = addressType,
+                Identifier = identifier
             });
             return GraphQLSaveResult(result);
         }
-        public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
+        public async Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier)
         {
             //TODO: Error Handling
             var result = await jamesClient.DeleteAddress.ExecuteAsync(new DeleteAddressInput()
             {
-                AddressId = addressId
+                AddressId = addressId,
+                Identifier = identifier
             });
 
             return GraphQLSaveResult(result);
@@ -343,6 +345,13 @@ namespace James.Data.Client
             var addressModifiedWatch = new AddressModifiedWatchClass(subscriptionToWatch).SubscribeTo(onNext, onError, onComplete);
             return addressModifiedWatch;
         }
+        public IDisposable AddressCollectionModified(Guid legalEntityId, Action<SubscriptionResult<Guid>> onNext,
+            Action<Exception>? onError = null, Action? onComplete = null)
+        {
+            var subscriptionToWatch = jamesClient.AddressCollectionModified.Watch(legalEntityId.ToString());
+            var addressCollectionModifiedWatch = new AddressCollectionModifiedWatchClass(subscriptionToWatch).SubscribeTo(onNext, onError, onComplete);
+            return addressCollectionModifiedWatch;
+        }
 
         public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory, bool useDocCategoryAsCriteria = true)
         {
@@ -400,15 +409,9 @@ namespace James.Data.Client
         //IObservable<SubscriptionResult<Address>>,
             IDisposable
         {
-            //private List<IObserver<IOperationResult<IAddressModifiedResult>>> _observers = new();
             private IDisposable? _internalSubscription;
-            //public IDisposable Subscribe(IObserver<SubscriptionResult<Address>> observer)
-            //{
-            //    return graphQlSubscription.Subscribe();
-            //}
             public IDisposable SubscribeTo(Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
             {
-                //conversionFunction(IOperationResult<IAddressModifiedResult> onNextResult)=> onNext.Result
                 if (null == onError && null == onComplete)
                     return graphQlSubscription.Subscribe(Conversion(onNext));
                 //If onComplete is not null, OnError is required.
@@ -427,6 +430,40 @@ namespace James.Data.Client
                     {
                         Identifier = onNextConversion.Data.OnAddressModified.Identifier,
                         Result = ThisToThat.ToEntityType<Address>(onNextConversion.Data.OnAddressModified.Result)
+                    };
+                    source.Invoke(subscriptionResultAddress);
+                };
+            }
+
+            public void Dispose()
+            {
+                _internalSubscription?.Dispose();
+            }
+        }
+        private sealed class AddressCollectionModifiedWatchClass(IObservable<IOperationResult<IAddressCollectionModifiedResult>> graphQlSubscription) :
+            IDisposable
+        {
+            private IDisposable? _internalSubscription;
+            public IDisposable SubscribeTo(Action<SubscriptionResult<Guid>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
+            {
+                if (null == onError && null == onComplete)
+                    return graphQlSubscription.Subscribe(Conversion(onNext));
+                //If onComplete is not null, OnError is required.
+                ArgumentNullException.ThrowIfNull(onError, nameof(onError));
+                if (null == onComplete)
+                    return graphQlSubscription.Subscribe(Conversion(onNext), onError);
+                return _internalSubscription = graphQlSubscription.Subscribe(Conversion(onNext), onError, onComplete);
+            }
+
+            private static Action<IOperationResult<IAddressCollectionModifiedResult>> Conversion(Action<SubscriptionResult<Guid>> source)
+            {
+                return onNextConversion =>
+                {
+                    ArgumentNullException.ThrowIfNull(onNextConversion.Data, "Subscription Payload");
+                    var subscriptionResultAddress = new SubscriptionResult<Guid>
+                    {
+                        Identifier = onNextConversion.Data.OnAddressCollectionModified.Identifier,
+                        Result = ThisToThat.ToEntityType<Guid>(onNextConversion.Data.OnAddressCollectionModified.Identifier)
                     };
                     source.Invoke(subscriptionResultAddress);
                 };

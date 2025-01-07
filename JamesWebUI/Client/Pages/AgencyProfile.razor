@@ -203,8 +203,6 @@
     private Address _billingAddress = new();
     private bool _summaryView;
     private string EditorIdentifier { get; } = Guid.NewGuid().ToString();
-    IDisposable? _mainAddressSubscription;
-    IDisposable? _billingAddressSubscription;
     AddressDisplay? _mainAddressEditor, _billingAddressEditor;
 
     private bool ErrorsAndOmissionsEditMode { get; set; }
@@ -246,29 +244,7 @@ new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = 
                     _mainAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
                     _billingAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
                 },
-                CacheDuration = TimeSpan.FromHours(8),   //Subscription will update this if changed, so long cache time is appropriate.
-                AddSubscriptionTask = li =>
-                {
-                    List<IDisposable> subscriptions = new();
-                    if (_mainAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
-                        subscriptions.Add(DataAccess.AddressModified(_mainAddress.Id, async sra =>
-                        {
-                            if (EditorIdentifier == sra.Identifier) return;
-                            //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
-                            if (_mainAddressEditor == null || await _mainAddressEditor.SubscriptionUpdate(sra.Result))
-                                ShowNotification("Main address");
-                        }));
-                    if (_billingAddress.Id != Guid.Empty) //TODO:If address is later created and saved, add subscription then
-                        subscriptions.Add(DataAccess.AddressModified(_billingAddress.Id, async sra =>
-                        {
-                            if (EditorIdentifier == sra.Identifier) return;
-                            //If not displayed, editor will be null (happens when an editor is in a non-visible tab)
-                            if (_billingAddressEditor == null || await _billingAddressEditor.SubscriptionUpdate(sra.Result))
-                                ShowNotification("Billing Address");
-                        }));
-                    if (subscriptions.Count > 0)
-                        li.Subscription = new Multisubscription(subscriptions);
-                }
+                CacheDuration = TimeSpan.FromHours(8)   //Subscription will update this if changed, so long cache time is appropriate.
             };
     
     private IDataAccessResult<List<Branch>> _branchesResult;
@@ -332,8 +308,6 @@ new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = 
 
     public void Dispose()
     {
-        _mainAddressSubscription?.Dispose();
-        _billingAddressSubscription?.Dispose();
         AuthenticationState?.Dispose();
     }
     private async Task ShowStatusDialog()

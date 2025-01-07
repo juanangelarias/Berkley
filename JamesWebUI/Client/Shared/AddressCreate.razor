@@ -84,11 +84,12 @@
 @code {
     [Parameter] public Guid LegalEntityId { get; set; }
     [Parameter] public EventCallback<Guid> AddressCreated { get; set; }
+    private string EditorIdentifier { get; } = Guid.NewGuid().ToString();
 
     private Address NewAddress { get; set; } = new Address()
-        {
-            Id = Guid.NewGuid()
-        };
+    {
+        Id = Guid.NewGuid()
+    };
     private RadzenDropDown<string> addressTypeDropDown { get; set;}
     private string addressType { get; set; }
     private List<AddressTypeDm> AddressTypes { get; set; } = new List<AddressTypeDm>();
@@ -103,12 +104,12 @@
     {
         if (ClientBusinessLogic.Validators.ValidateAddress(NewAddress))
         {
-
+            //TODO:Confirm that the address type is unique for the legal entity
             try
             {
                 var result = await DataAccess.CreateAddress(NewAddress.Id, NewAddress.Address1, NewAddress.Address2, NewAddress.Address3,
                 NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
-                LegalEntityId, addressType);
+                LegalEntityId, addressType, EditorIdentifier);
                 await AddressCreated.InvokeAsync(NewAddress.Id);
             }
             catch
@@ -128,6 +129,7 @@
     }
     async Task LoadAddressTypes()
     {
+        //TODO: Disallow address types that already exist.
         var result = await DataAccess.GetAddressTypes();
         //TODO: Check for errors
         AddressTypes = result.Data;

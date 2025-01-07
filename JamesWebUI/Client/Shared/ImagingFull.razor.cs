@@ -43,8 +43,7 @@ namespace JamesWebUI.Client.Shared
             };
             var loadDocs = new LoadItem()
             {
-                //TODO:Find the best performance from making keys from args
-                Key = "SearchDocuments" + ImagingId + DocumentCategory.DocumentCategory(),
+                Key = $"SearchDocuments{ImagingId}{DocumentCategory.DocumentCategory()}",
                 AsyncLoadTask = async () =>
                 {
                     docsResult = await DataAccess.SearchDocuments(ImagingId, DocumentCategory);

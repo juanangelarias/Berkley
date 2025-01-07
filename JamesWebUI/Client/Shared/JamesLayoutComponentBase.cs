@@ -137,6 +137,13 @@ namespace JamesWebUI.Client.Shared
                     });
         }
 
+        /// <summary>
+        /// Used to add UI notifications to LoadItems
+        /// </summary>
+        /// <param name="loadItem">Load Item to add events to</param>
+        /// <param name="loadItemName">user-friendly name of data being load that will be used in notification if there are load issues.</param>
+        /// <returns>Load event with events added</returns>
+        /// <remarks>Typically used to surround load items when passing the do DataCache methods</remarks>
         protected LoadItem AddEventNotify(LoadItem loadItem, string loadItemName = "data")
         {
             loadItem.LoadError += LoadItemOnLoadError;
@@ -144,7 +151,7 @@ namespace JamesWebUI.Client.Shared
             void LoadItemOnLoadError(object? sender, LoadErrorEventArgs e)
             {
                 NotifyLoadError(e.Errors, loadItemName, e.Fatal);
-                LogGraphQlLoadError(e.Errors, $"Error loading {loadItemName}", loadItemName);
+                LogGraphQlLoadError(e.Errors, $"Error loading {loadItemName}", loadItemName, e.Fatal);
             }
 
             return loadItem;

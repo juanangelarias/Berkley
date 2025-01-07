@@ -10,12 +10,12 @@
     <Snippet>
       <Code Language="CSharp">
         <![CDATA[private IDataAccessResult<$DataTypeToLoad$> $ResultVariableName$;
-    private LoadItem BranchesLoadItem() =>
+    private LoadItem $LoadItemName$($DatasetVariables$) =>
         new ()
         {
-            Key = $"$KeyName${$DatasetVariableKey$}",
-            AsyncLoadTask = async () => $ResultVariableName$ = await DataAccess.GetAllBranches(),
-            CacheLoadTask = cache => $ResultVariableName$ = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache },
+            Key = $$"$KeyName${$DatasetVariableKey$}",
+            AsyncLoadTask = async () => $ResultVariableName$ = await DataAccess.$DataAccessMethod$,
+            CacheLoadTask = cache => $ResultVariableName$ = new DataAccessResult<$DataTypeToLoad$> { Data = ($DataTypeToLoad$)cache! },
             ResultVariable = () => $ResultVariableName$,
             AfterLoad = () =>
             {
@@ -27,6 +27,7 @@
       </Code>
       <Imports>
         <Import>
+          <Namespace>James.Shared.Data</Namespace>
           <Namespace>James.Shared.Data</Namespace>
         </Import>
       </Imports>
@@ -69,7 +70,7 @@
         <Literal>
           <ID>AfterLoadTask</ID>
           <ToolTip>Task to perform.</ToolTip>
-          <Default>_loadResult</Default>
+          <Default>&lt;Code to load result into page variable, etc.&gt;</Default>
         </Literal>
       </Declarations>
     </Snippet>

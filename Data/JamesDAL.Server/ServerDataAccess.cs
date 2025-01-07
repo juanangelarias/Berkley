@@ -185,25 +185,25 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
-            return await ExecuteSave((async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2,
+            return await ExecuteSave((async () => await generalMutations.SetAddress(address.Id, address.Address1, address.Address2,
                 address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
                 eventSender, contextFactory, loggingService)));
         }
         public async Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode,
-            Guid legalEntityId, string addressType)
+            Guid legalEntityId, string addressType, string identifier)
         {
             return await ExecuteSave(async () =>
-                await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode,
-                legalEntityId, addressType, contextFactory));
+                await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode, 
+                legalEntityId, addressType, identifier, eventSender, contextFactory, loggingService));
 
         }
-        public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
+        public async Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier)
         {
-
             return await ExecuteSave(async () =>
-            await generalMutations.DeleteAddress(addressId, contextFactory));
+            await generalMutations.DeleteAddress(addressId, identifier, eventSender, contextFactory, loggingService));
         }
+
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
             bool need1099, bool nasbp, string branchKey)
         {
@@ -459,6 +459,11 @@ namespace James.Data.Server
             return OnAddressModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Address>>(onNext, onError, onComplete));
         }
 
+        public IDisposable AddressCollectionModified(Guid addressId, Action<SubscriptionResult<Guid>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
+        {
+            return OnAddressCollectionModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Guid>>(onNext, onError, onComplete));
+        }
+
         public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory, string? documentType = null)
         {
             return await ExecuteGet(async () =>
@@ -539,6 +544,21 @@ namespace James.Data.Server
                 }
 
                 return _onAddressModified[addressId];
+            }
+        }
+        private readonly Dictionary<Guid, ServerSideSubscription<SubscriptionResult<Guid>>> _onAddressCollectionModified = new();
+
+        private ServerSideSubscription<SubscriptionResult<Guid>> OnAddressCollectionModified(Guid legalEntityId)
+        {
+            lock (_onAddressCollectionModified)
+            {
+                if (_onAddressModified.ContainsKey(legalEntityId) == false)
+                {
+                    _onAddressCollectionModified[legalEntityId] = new(eventReceiver
+                        .SubscribeAsync<SubscriptionResult<Guid>>("OnAddressCollectionModified_" + legalEntityId).Result.ReadEventsAsync(), CancellationToken.None);
+                }
+
+                return _onAddressCollectionModified[legalEntityId];
             }
         }
     }

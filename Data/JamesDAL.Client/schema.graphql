@@ -160,6 +160,7 @@ type AgencyStatusLog {
 
 input DeleteAddressInput {
   addressId: UUID!
+  identifier: String!
 }
 
 type LegalEntity {
@@ -919,7 +920,6 @@ type Bond {
 type Mutation {
   setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
-  setAddress(input: SetAddressInput!): SetAddressPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
   setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
   createLicense(input: CreateLicenseInput!): CreateLicensePayload!
@@ -937,6 +937,7 @@ type Mutation {
   setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
   createAddress(input: CreateAddressInput!): CreateAddressPayload!
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
+  setAddress(input: SetAddressInput!): SetAddressPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1291,6 +1292,11 @@ type PowerOfAttorneyDocumentStatus {
   comments: String
   documentType: PowerOfAttorneyDocumentNameDm!
   poa: PowerOfAttorney!
+}
+
+type SubscriptionResultOfGuid {
+  identifier: String!
+  result: UUID!
 }
 
 type BondTransactionPurpose {
@@ -2668,6 +2674,7 @@ type LegalEntityTypeDm {
 
 type Subscription {
   onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
+  onAddressCollectionModified(legalEntityId: ID!): SubscriptionResultOfGuid!
   onLicenseModified: AgencyLicense!
 }
 
@@ -2695,6 +2702,7 @@ input CreateAddressInput {
   postalCode: String
   legalEntityId: UUID!
   addressType: String!
+  identifier: String!
 }
 
 "The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."

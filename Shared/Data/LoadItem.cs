@@ -1,0 +1,73 @@
+﻿namespace James.Shared.Data;
+
+public class LoadItem : IDisposable
+{
+    public required string Key { get; set; }
+    /// <summary>
+    /// Argumentless lambda expression or function that sets external IDataAccessResult variables
+    /// </summary>
+    public required Func<Task> AsyncLoadTask { get; init; }
+
+    /// <summary>
+    /// Action to take on the loaded data when loaded from Cache
+    /// </summary>
+    /// <remarks>Data is retrieved as an object and needs to be copied to the result variable as a strongly typed object.</remarks>
+    public required Action<object?> CacheLoadTask { get; init; }
+
+    /// <summary>
+    /// Argumentless lambda expression or function that returns the result variable.
+    /// </summary>
+    /// <remarks>This must be a function because the result variable will not be set until the AsyncLoadTask has run.
+    /// </remarks>
+    /// <returns>Returns a reference to the IDataAccessResult base class, ISaveDataResult, that is non-generic and only cares about success and errors</returns>
+    public required Func<IDataAccessResult> ResultVariable { get; init; }
+
+    /// <summary>
+    /// Optional reference to a subscription that keeps the datastore updated
+    /// </summary>
+    /// <remarks>should only be set in the AddSubscriptionTask</remarks>
+    public IDisposable? Subscription { get; set; }
+    public Action<LoadItem>? AddSubscriptionTask { get; set; }
+
+    /// <summary>
+    /// Time until cached result is considered stale
+    /// </summary>
+    /// <remarks>Everything should be cached, at minimum, for a minute to protect from multiple queries.
+    /// When subscriptions are implemented, the cache can be held much longer.</remarks>
+    public TimeSpan CacheDuration { get; set; }= TimeSpan.FromHours(1);
+
+    /// <summary>
+    /// Action taken after the data has loaded either from the source or from the cache
+    /// </summary>
+    public Action? AfterLoad { get; init; }
+
+    public event EventHandler Loaded;//TODO:Review if this is needed, or is the after load Action all that is needed
+
+    internal void FireLoaded()
+    {
+        Loaded?.Invoke(this, EventArgs.Empty);
+    }
+    
+    public event EventHandler<LoadErrorEventArgs> LoadError;
+
+    internal void LoadErrorsEncountered(string[] errors, bool fatal) =>
+        LoadError?.Invoke(this, new LoadErrorEventArgs(){Errors = errors, Fatal = fatal});
+
+    public void Dispose()
+    {
+        Subscription?.Dispose();
+    }
+}
+
+internal class CachedResult
+{
+    internal object? Data { get; set; }
+
+    internal required DateTime CachedUntil { get; init; } = DateTime.Now;
+}
+
+public class LoadErrorEventArgs : EventArgs
+{
+    public required string[] Errors { get; set; }
+    public bool Fatal { get; set; }
+}

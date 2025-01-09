@@ -1,10 +1,10 @@
 ﻿@using James.Shared
 @inherits JamesLayoutComponentBase
-
+@implements IDisposable
 @inject NavigationManager NavigationManager
 
 
-@inject IDataAccess _dataAccess
+@inject IDataAccess DataAccess
 
 <RadzenPanel Visible="!EditMode" Name="@(Name+"Display")">
     <RadzenRow>
@@ -122,9 +122,12 @@
     [Parameter] public string Name { get; set; } = "Address";
     [Parameter] public string EditorIdentifier { get; set; } = Guid.NewGuid().ToString();
     [Parameter] public EventCallback<Guid> StateChanged { get; set; }
+    [Parameter] public Func<IDisposable>? AddSubscription { get; set; }
+
 
     public Address AddressToDisplay { get; set; } = new();
     private Address? _loadedAddress;
+    private IDisposable? _subscription;
     public bool DetailedMode { get; private set; }
     public bool EditMode { get; private set; }
 
@@ -132,13 +135,16 @@
     {
         await base.OnParametersSetAsync();
         await LoadAddress();
+        if (null != AddSubscription)
+            _subscription = AddSubscription();
+
     }
 
     private async Task LoadAddress()
     {
         if (Guid.Empty != AddressId)
         {
-            var result = await _dataAccess.GetAddress(AddressId);
+            var result = await DataAccess.GetAddress(AddressId);
             if (null != result.Data)
                 AddressToDisplay = result.Data;
             //TODO:Handle errors
@@ -208,7 +214,7 @@
 
     async Task SubmitAddressChange(Address newAddress)
     {
-        await _dataAccess.SetAddress(newAddress, EditorIdentifier);
+        await DataAccess.SetAddress(newAddress, EditorIdentifier);
         EditMode = false;
     }
     private void ToggleEditMode()
@@ -228,7 +234,7 @@
     );
         if (result)
         {
-            var deleteResult = await _dataAccess.DeleteAddress(AddressId);
+            var deleteResult = await DataAccess.DeleteAddress(AddressId, EditorIdentifier);
             //TODO: Error Handling
             if (deleteResult.Errors.Any())
             {
@@ -257,3 +263,10 @@
         NotificationService.Notify(message);
     }
 }
+@code {
+    public void Dispose()
+    {
+        _subscription?.Dispose();
+    }
+}
+

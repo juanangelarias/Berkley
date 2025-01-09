@@ -1,5 +1,6 @@
 ﻿query GetAccountByNumber($accountNumber: String) {
   accountByNumber(accountNumber: $accountNumber) {
+    id
     idNavigation {
       fullName
       legalEntityAddresses {

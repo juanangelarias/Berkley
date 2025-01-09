@@ -1,4 +1,5 @@
-﻿@using System.Globalization
+﻿@using System.Diagnostics
+@using System.Globalization
 @using James.Shared;
 @using ClientBusinessLogic
 
@@ -9,7 +10,7 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab"  >
+<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab">
     <Tabs>
         @{
             if (AllAddresses.Any())
@@ -17,15 +18,21 @@
                 foreach (var a in AllAddresses)
                 {
                     <RadzenTabsItem Text="@(a.LegalEntityAddress.Type)" >
-                        <AddressDisplay AddressId="a.Id" StateChanged="@(() => LoadAddresses())" />
+                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress.Type]" AddressId="a.Id" 
+                                        StateChanged="@(() => LoadAddresses())"
+                                        AddSubscription="@(()=>DataAccess.AddressModified(a.Id, async sra =>
+                                                         {
+                                                             if (_addressDisplays[a.LegalEntityAddress.Type].EditorIdentifier==sra.Identifier) return;
+                                                             await _addressDisplays[a.LegalEntityAddress.Type].SubscriptionUpdate(sra.Result);
+                                                         }))" />
                     </RadzenTabsItem>
+                    //NOTE: The redundant specification of the AddressCreate below is needed to prevent the AddressCreate from being selected initially
                     if (a == AllAddresses.Last())
                     {
                         <RadzenTabsItem Icon="add" Text="Add Address" >
                             <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@AddressCreated"></AddressCreate>
                         </RadzenTabsItem>
                     }
-
                 }
             }
             else
@@ -40,39 +47,51 @@
 
 
 @code {
-    [Parameter] public Guid LegalEntityId{ get; set; }
+
+    [Parameter]
+    public Guid LegalEntityId { get; set; }
+    private Guid _legalEntityId = Guid.Empty;
     private RadzenTabs addressTabs { get; set; }
     private List<Address> AllAddresses { get; set; } = new List<Address>();
+    private Dictionary<string, AddressDisplay> _addressDisplays = [];
     private int selectedTab { get; set; } = 0;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
-        await LoadAddresses();
-
+        if (LegalEntityId != Guid.Empty)
+            await LoadAddresses();
     }
 
-    private async Task LoadAddresses()
-    { 
-        var result = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId);
-
-        if (result.Errors.Any())
+    private IDataAccessResult<List<Address>> _addressesLoadResult;
+    private LoadItem AddressesLoadItem(Guid id) =>
+        new()
         {
-            LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
-            NotificationService.Notify(new NotificationMessage()
+            Key = $"Adds{LegalEntityId}",
+            AsyncLoadTask = async () => _addressesLoadResult = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId),
+            CacheLoadTask = cache => _addressesLoadResult = new DataAccessResult<List<Address>> { Data = (List<Address>)cache! },
+            ResultVariable = () => _addressesLoadResult,
+            AfterLoad = () =>
+            {
+                Debug.Assert(_addressesLoadResult.Data != null, "_addressesLoadResult.Data != null");
+                //Add after load code here
+                AllAddresses = _addressesLoadResult.Data;
+                selectedTab = 0;
+            },
+            AddSubscriptionTask = async li =>
+            {
+                //NOTE: Subscriptions for the address editors are added via the AddressDisplay AddSubscription function
+                li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async _ =>
                 {
-                    Severity = NotificationSeverity.Error,
-                    Detail = "Error loading addresses.",
-                    Duration = 4000
+                    DataCache.Clear("addresses");
+                    await LoadAddresses();
                 });
-        }
-        else
-        {
-            AllAddresses = result.Data;
-            selectedTab = 0;
-            StateHasChanged();
-        }
+            }
+        };
+
+    private async Task LoadAddresses()
+    {
+        await DataCache.GetCacheOrLoadDataAsync(AddEventNotify(AddressesLoadItem(LegalEntityId), "addresses"));
     }
     private async Task AddressCreated(Guid addressToSelect)
     {
@@ -82,16 +101,16 @@
         {
             LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
             NotificationService.Notify(new NotificationMessage()
-                {
-                    Severity = NotificationSeverity.Error,
-                    Detail = "Error creating new address.",
-                    Duration = 4000
-                });
+            {
+                Severity = NotificationSeverity.Error,
+                Detail = "Error creating new address.",
+                Duration = 4000
+            });
         }
         else
         {
             AllAddresses = result.Data;
-            
+
             var selected = AllAddresses.FirstOrDefault(a => a.Id == addressToSelect);
             if (null != selected)
             {

@@ -5,7 +5,6 @@ using James.Shared.Model;
 using System.Drawing;
 using System.Runtime.Versioning;
 using System.ServiceModel;
-using Microsoft.Extensions.Configuration;
 using MimeTypes = James.Shared.Imaging.MimeTypes;
 
 namespace James.Data.Imaging
@@ -218,13 +217,14 @@ namespace James.Data.Imaging
             var additionalParamsList = new List<KeyValuePair<string, string>>(1 + additionalParams?.Length??0);
             if (null != additionalParams)
                 additionalParamsList.AddRange(additionalParams);
+            else additionalParamsList.AddRange(DefaultAdditionalParams);
             if (additionalParamsList.All(p=>p.Key!=_includeFilenameParam.key))
                 additionalParamsList.Add(new (_includeFilenameParam.key, _includeFilenameParam.value));
             additionalParams = additionalParamsList.ToArray();
 
             var p8Criteria = ThisToThat.ToEntityType<searchCriteria>(criteria);
             var p8SearchOptions = (searchOptions ?? DefaultSearchOptions).Select(so => so.ToEntry()).ToArray();
-            var p8AdditionalParams = (additionalParams ?? DefaultAdditionalParams).Select(so => so.ToEntry()).ToArray();
+            var p8AdditionalParams = additionalParams.Select(so => so.ToEntry()).ToArray();
             async Task<document[]> P8Call(ClientBase<P8Service> client) =>
                 (await ((P8Service)client).searchCurrentDocumentsAsync(
                     new searchCurrentDocuments(string.Empty, string.Empty,

@@ -12,3 +12,9 @@
     }
   }
 }
+
+subscription AddressCollectionModified($legalEntityId: ID!) {
+  onAddressCollectionModified(legalEntityId: $legalEntityId) {
+    identifier
+  }
+}

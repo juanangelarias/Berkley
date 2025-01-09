@@ -54,6 +54,8 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
+            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType, string identifier);
+        public Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier);
             string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
         public Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType);
@@ -88,6 +90,9 @@ namespace James.Shared.Data
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
 
+        public IDisposable AddressCollectionModified(Guid legalEntityId, Action<SubscriptionResult<Guid>> onNext,
+            Action<Exception>? onError = null, Action? onComplete = null);
+
         public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true);
 
@@ -114,7 +119,12 @@ namespace James.Shared.Data
         public string[] Errors { get; }
         public bool Success { get; }
     }
-    public interface IDataAccessResult<T>:ISaveDataResult
+
+    public interface IDataAccessResult : ISaveDataResult
+    {
+        public object? DataObject { get; }
+    }
+    public interface IDataAccessResult<T>: IDataAccessResult
     {
         public T? Data { get; }
     }
@@ -128,6 +138,7 @@ namespace James.Shared.Data
     public class DataAccessResult<T> : IDataAccessResult<T>
     {
         public T? Data { get; init; }
+        public object? DataObject => Data;
 
         public string[] Errors { get; init; } = [];
 
@@ -136,9 +147,27 @@ namespace James.Shared.Data
     public class DataAccessResultString : IDataAccessResult<string?>
     {
         public string? Data { get; init; }
+        public object? DataObject => Data;
 
         public string[] Errors { get; init; } = [];
 
         public bool Success => Errors.Length == 0;
+    }
+
+    public class Multisubscription : List<IDisposable>, IDisposable
+    {
+        public Multisubscription()
+        {
+        }
+        public Multisubscription(IEnumerable<IDisposable> subscriptions)
+        {
+            AddRange(subscriptions);
+        }
+
+        public void Dispose()
+        {
+            foreach(var subscription in this)
+                subscription.Dispose();
+        }
     }
 }

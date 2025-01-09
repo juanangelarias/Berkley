@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <Title>Load Item Universal</Title>
+      <Author>Greg Wilson</Author>
+      <Description>Create a simple LoadItem for loading data that takes no arguments (E.G. Lists for drop down controls)</Description>
+      <Shortcut>ldiu</Shortcut>
+    </Header>
+    <Snippet>
+      <Code Language="CSharp">
+        <![CDATA[private IDataAccessResult<$DataTypeToLoad$> $ResultVariableName$;
+    private LoadItem $LoadItemName$() =>
+        new ()
+        {
+            Key = "$KeyName$",
+            AsyncLoadTask = async () => $ResultVariableName$ = await DataAccess.$DataAccessMethod$,
+            CacheLoadTask = cache => $ResultVariableName$ = new DataAccessResult<$DataTypeToLoad$> { Data = ($DataTypeToLoad$)cache! },
+            ResultVariable = () => $ResultVariableName$,
+            AfterLoad = () =>
+            {
+                Debug.Assert($ResultVariableName$.Data != null, "$ResultVariableName$.Data != null");
+                //Add after load code here
+                $AfterLoadTask$
+            }
+        };]]>
+      </Code>
+      <Imports>
+        <Import>
+          <Namespace>James.Shared.Data</Namespace>
+        </Import>
+      </Imports>
+      <Declarations>
+        <Literal>
+          <ID>DataTypeToLoad</ID>
+          <ToolTip>Datatype you are loading.</ToolTip>
+          <Default>Datatype</Default>
+        </Literal>
+        <Literal>
+          <ID>KeyName</ID>
+          <ToolTip>UniqueKey.</ToolTip>
+          <Default>TheKey</Default>
+        </Literal>
+        <Literal>
+          <ID>ResultVariableName</ID>
+          <ToolTip>Name of result variable.</ToolTip>
+          <Default>_loadResult</Default>
+        </Literal>
+        <Literal>
+          <ID>LoadItemName</ID>
+          <ToolTip>Name of LoadItem.</ToolTip>
+          <Default>MyLoadItem</Default>
+        </Literal>
+        <Literal>
+          <ID>DataAccessMethod</ID>
+          <ToolTip>Method used to load from IDataAccess.</ToolTip>
+          <Default>GetMyData()</Default>
+        </Literal>
+        <Literal>
+          <ID>AfterLoadTask</ID>
+          <ToolTip>Task to perform.</ToolTip>
+          <Default>_loadResult</Default>
+        </Literal>
+      </Declarations>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

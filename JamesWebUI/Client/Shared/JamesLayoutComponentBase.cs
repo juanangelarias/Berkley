@@ -31,21 +31,21 @@ namespace JamesWebUI.Client.Shared
         protected bool IsAuthenticated => IsAuthenticationStateLoaded && State!.User.Identity != null;
 
         //Asynchronous access to properties
-        protected async Task<AuthenticationState> GetAuthenticationStateAsync()
+        protected async ValueTask<AuthenticationState> GetAuthenticationStateAsync()
         {
             if (LoadAuthenticationStateAsync.IsCompleted)
                 return LoadAuthenticationStateAsync.Result;
             return await LoadAuthenticationStateAsync;
         }
 
-        protected async Task<ClaimsPrincipal> GetUserPrincipalAsync()
+        protected async ValueTask<ClaimsPrincipal> GetUserPrincipalAsync()
         {
             if (LoadAuthenticationStateAsync.IsCompleted)
                 return LoadAuthenticationStateAsync.Result.User;
             return (await LoadAuthenticationStateAsync).User;
         }
 
-        protected async Task<bool> GetIsAuthenticatedAsync()
+        protected async ValueTask<bool> GetIsAuthenticatedAsync()
         {
             if (LoadAuthenticationStateAsync.IsCompleted)
                 return null != LoadAuthenticationStateAsync.Result.User.Identity;
@@ -106,27 +106,61 @@ namespace JamesWebUI.Client.Shared
         /// </summary>
         /// <param name="errors">Errors that were returned.</param>
         /// <param name="itemSaved">The item that didn't load, default is "data".  Should NOT be title cased.</param>
-        protected void NotifyLoadError(string[] errors, string itemSaved = "data")
+        /// <param name="fatal">True if no retries will happen, false if retries are continuing.</param>
+        protected void NotifyLoadError(string[] errors, string itemSaved = "data", bool fatal = false)
         {
-            var msg =
-                $"There {(errors.Length == 1 ? "was an error" : "were errors")} retrieving {itemSaved}.  {string.Join("  ", errors)}";
+            var msg = fatal ?
+                $"There {(errors.Length == 1 ? "was a fatal error" : "were fatal error(s)"
+                    )} retrieving {itemSaved}.  {string.Join("  ", errors)}" :
+                $"There was an error retrieving {itemSaved}.  Retrying...";
             NotificationService.Notify(new NotificationMessage
-            { Severity = NotificationSeverity.Error, Summary = msg, Duration = 15000 });
+            {
+                Severity = fatal ? NotificationSeverity.Error : NotificationSeverity.Warning,
+                Summary = msg,
+                Duration = 15000
+            });
         }
 
-        protected void LogGraphQlLoadError(string[] errors, string message, string loadItem = "data")
+        protected void LogGraphQlLoadError(string[] errors, string message, string loadItem = "data", bool fatal = true)
         {
-            LoggingService.LogError(message, category: StandardLoggingCategories.DataAccess,
-                errors: errors, data: new()
-                {
-                    { "Failed load item", loadItem }, { "Source Class", GetType().Name }
-                });
+            if (fatal)
+                LoggingService.LogError(message, category: StandardLoggingCategories.DataAccess,
+                    errors: errors, data: new()
+                    {
+                        { "Failed load item", loadItem }, { "Source Class", GetType().Name }
+                    });
+            else
+                LoggingService.LogWarning(message, category: StandardLoggingCategories.DataAccess,
+                    errors: errors, data: new()
+                    {
+                        { "Failed load item", loadItem }, { "Source Class", GetType().Name }
+                    });
         }
 
-        private string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+        /// <summary>
+        /// Used to add UI notifications to LoadItems
+        /// </summary>
+        /// <param name="loadItem">Load Item to add events to</param>
+        /// <param name="loadItemName">user-friendly name of data being load that will be used in notification if there are load issues.</param>
+        /// <returns>Load event with events added</returns>
+        /// <remarks>Typically used to surround load items when passing the do DataCache methods</remarks>
+        protected LoadItem AddEventNotify(LoadItem loadItem, string loadItemName = "data")
+        {
+            loadItem.LoadError += LoadItemOnLoadError;
+
+            void LoadItemOnLoadError(object? sender, LoadErrorEventArgs e)
+            {
+                NotifyLoadError(e.Errors, loadItemName, e.Fatal);
+                LogGraphQlLoadError(e.Errors, $"Error loading {loadItemName}", loadItemName, e.Fatal);
+            }
+
+            return loadItem;
+        }
+
+        private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
             string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property;
 
-        private string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
+        private static string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
         {
             if (originalFilter == null!) return null!;
             foreach (var substitution in substitutions)
@@ -136,46 +170,6 @@ namespace JamesWebUI.Client.Shared
             }
 
             return originalFilter;
-        }
-
-        /// <summary>
-        /// Loads the tasks, retries if needed and returns when either everything has finished or failed
-        /// </summary>
-        /// <param name="loadTasks">Argumentless Lambda Expressions that sets external IDataAccessResult variables</param>
-        /// <returns></returns>
-        protected async Task LoadInParallel(params LoadItem[] loadTasks)
-        {
-            var maxRetries = 5 * loadTasks.Length;
-            var retriesRemaining = maxRetries;
-            //Initial load
-            await Task.WhenAll(loadTasks.Select(lt => lt.AsyncLoadTask()));
-
-            var needsToRetry = loadTasks.Where(lt => !lt.ResultVariable().Success).ToArray();
-            while (needsToRetry.Any() && retriesRemaining > 0)
-            {
-                //Handle any needed retries
-                NotifyLoadError(needsToRetry.SelectMany(ntr => ntr.ResultVariable().Errors).ToArray());
-                await Task.Delay((maxRetries - retriesRemaining) * 250);
-                await Task.WhenAll(needsToRetry.Select(nr => nr.AsyncLoadTask()));
-                retriesRemaining -= needsToRetry.Length;
-                needsToRetry = loadTasks.Where(lt => !lt.ResultVariable().Success).ToArray();
-            }
-        }
-
-        protected class LoadItem
-        {
-            /// <summary>
-            /// Argumentless lambda expression or function that sets external IDataAccessResult variables
-            /// </summary>
-            public required Func<Task> AsyncLoadTask { get; init; }
-
-            /// <summary>
-            /// Argumentless lambda expression or function that returns the result variable.
-            /// </summary>
-            /// <remarks>This must be a function because the result variable will not be set until the AsyncLoadTask has run.
-            /// </remarks>
-            /// <returns>Returns a reference to the IDataAccessResult base class, ISaveDataResult, that is non-generic and only cares about success and errors</returns>
-            public required Func<ISaveDataResult> ResultVariable { get; init; }
         }
 
         private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
@@ -193,7 +187,7 @@ namespace JamesWebUI.Client.Shared
                     Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)
                 }).ToList();
             selectColumns.AddRange(propertySubstitutions.Where(s => s.Value.Original == string.Empty)
-                .Select(s => new { Property = s.Value.Property, Title = s.Value.Title }));
+                .Select(s => new { s.Value.Property, s.Value.Title }));
             var selectColumnString = string.Join(",",
                 selectColumns
                     .Select(cSub => cSub with
@@ -216,6 +210,7 @@ namespace JamesWebUI.Client.Shared
         #endregion
     }
 
+    //TODO: Review if this is still needed after permissioning is fleshed out
     public static class AuthUserExtensions
     {
         public static string? Username(ClaimsPrincipal user)

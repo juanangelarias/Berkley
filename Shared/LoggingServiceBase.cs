@@ -51,7 +51,14 @@ public abstract class LoggingServiceBase : ILoggingService
     /// <param name="errors">Array of errors</param>
     /// <param name="category">Category.  Use StandardLoggingCategories values when possible.</param>
     /// <param name="data">Data relevant to the error.</param>
-    public void LogError(string message, string[] errors, string category = "General", Dictionary<string, string>? data = null)
+    public void LogError(string message, string[] errors, string category = "General",
+        Dictionary<string, string>? data = null)
+    {
+        LogErrorWarning(message, errors, true, category, data);
+    }
+
+    private void LogErrorWarning(string message, string[] errors, bool fatal, string category = "General",
+        Dictionary<string, string>? data = null)
     {
         data ??= new Dictionary<string, string>();
         if (errors.Length==1&& !data.ContainsKey("Error"))
@@ -67,7 +74,13 @@ public abstract class LoggingServiceBase : ILoggingService
                 data.Add(key, errors[i-1]);
             }
         }
-        Log(MessageEventId, message, "See data for details", Severity.Error, category, data: data);
+        Log(MessageEventId, message, "See data for details", fatal ?Severity.Error: Severity.Warning, category, data: data);
+    }
+
+
+    public void LogWarning(string message, string[] errors, string category = "General", Dictionary<string, string>? data = null)
+    {
+        LogErrorWarning(message, errors, false, category, data);
     }
 
     public void LogException(Exception exception, string message, string details="", Severity severity = Severity.Error, string category = "General",

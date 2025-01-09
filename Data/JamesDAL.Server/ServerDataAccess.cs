@@ -187,7 +187,7 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId)
         {
-            return await ExecuteSave(async()=> await agencyMutation.CreateAgencyPOADocumentLink(poaId, imagingDocumentId, eventSender, contextFactory));
+            return await ExecuteSave(async () => await agencyMutation.CreateAgencyPOADocumentLink(poaId, imagingDocumentId, eventSender, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId)
@@ -199,24 +199,25 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum)
         {
-            return await ExecuteSave(async ()=> await accountMutation.SetCurrentCreditReportLink(accountNum, documentId, eventSender, contextFactory));
+            return await ExecuteSave(async () => await accountMutation.SetCurrentCreditReportLink(accountNum, documentId, eventSender, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
-            return await ExecuteSave(async () => await agencyMutation.SetAddress(address.Id, address.Address1, address.Address2,
+            return await ExecuteSave((async () => await generalMutations.SetAddress(address.Id, address.Address1, address.Address2,
                 address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
                 eventSender, contextFactory, loggingService));
         }
         public async Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode,
-            Guid legalEntityId, string addressType)
+            Guid legalEntityId, string addressType, string identifier)
         {
             return await ExecuteSave(async () =>
-                await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode,
-                legalEntityId, addressType, contextFactory));
+                await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode, 
+                legalEntityId, addressType, identifier, eventSender, contextFactory, loggingService));
 
         }
+        public async Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier)
         public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType)
         {
@@ -224,6 +225,8 @@ namespace James.Data.Server
         }
         public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
         {
+            return await ExecuteSave(async () =>
+            await generalMutations.DeleteAddress(addressId, identifier, eventSender, contextFactory, loggingService));
 
             return await ExecuteSave(async () => await generalMutations.DeleteAddress(addressId, contextFactory));
         }
@@ -231,6 +234,7 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await generalMutations.DeletePhoneNumber(phoneId, contextFactory));
         }
+
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
             bool need1099, bool nasbp, string branchKey)
         {
@@ -421,7 +425,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
         {
-            return await ExecuteGet(async ()=> await query.GetAllImagingTypes(contextFactory));
+            return await ExecuteGet(async () => await query.GetAllImagingTypes(contextFactory));
         }
 
         public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
@@ -437,7 +441,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
         {
-            return await ExecuteGet(async ()=> await query.GetPOADocumentNames(contextFactory));
+            return await ExecuteGet(async () => await query.GetPOADocumentNames(contextFactory));
         }
 
         public async Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId,
@@ -484,6 +488,11 @@ namespace James.Data.Server
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
             return OnAddressModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Address>>(onNext, onError, onComplete));
+        }
+
+        public IDisposable AddressCollectionModified(Guid addressId, Action<SubscriptionResult<Guid>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
+        {
+            return OnAddressCollectionModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Guid>>(onNext, onError, onComplete));
         }
 
         public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory, string? documentType = null)
@@ -568,22 +577,20 @@ namespace James.Data.Server
                 return _onAddressModified[addressId];
             }
         }
-        //public async Task<IDisposable> AddressModified(CancellationToken cancellationToken = default)
-        //{
-        //    var eventValueTask =
-        //        await eventReceiver.SubscribeAsync<SubscriptionResult<Address>>("OnAddressModified", cancellationToken);
-        //    eventValueTask.ReadEventsAsync();
-        //    //UNDONE:
-        //    return await Task.FromResult(FakeSubscription.Create);
-        //}
-    }
-    //TODO:Remove when subscriptions are handled
-    public class FakeSubscription : IDisposable
-    {
-        public static FakeSubscription Create => new();
-        public void Dispose()
+        private readonly Dictionary<Guid, ServerSideSubscription<SubscriptionResult<Guid>>> _onAddressCollectionModified = new();
+
+        private ServerSideSubscription<SubscriptionResult<Guid>> OnAddressCollectionModified(Guid legalEntityId)
         {
-            //Just a fake object.;
+            lock (_onAddressCollectionModified)
+            {
+                if (_onAddressModified.ContainsKey(legalEntityId) == false)
+                {
+                    _onAddressCollectionModified[legalEntityId] = new(eventReceiver
+                        .SubscribeAsync<SubscriptionResult<Guid>>("OnAddressCollectionModified_" + legalEntityId).Result.ReadEventsAsync(), CancellationToken.None);
+                }
+
+                return _onAddressCollectionModified[legalEntityId];
+            }
         }
     }
 }

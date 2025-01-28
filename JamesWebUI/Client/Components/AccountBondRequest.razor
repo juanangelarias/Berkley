@@ -1,0 +1,99 @@
+﻿@using System.Diagnostics
+@using System.Globalization
+@using James.Shared;
+@using ClientBusinessLogic
+
+@inherits JamesLayoutComponentBase
+
+@inject NavigationManager NavigationManager
+@inject IDataAccess DataAccess
+
+<RadzenSteps>
+    <Steps>
+        <RadzenStepsItem Text="Contract Bond Request Information">
+            <RadzenRow>
+                <RadzenColumn>
+                    <RadzenText Text="Contract Bond Request Information" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="2">
+                    <RadzenFormField Text="Date of Request" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenDatePicker TValue="DateTime" ShowTime="false" />
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="2">
+                    <RadzenFormField Text="" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenDropDown TValue="string">
+                            
+                        </RadzenDropDown>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="2">
+                    <RadzenFormField Text="Bid Date" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenDatePicker TValue="DateTime" ShowTime="false" />
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="2">
+                    <RadzenFormField Text="Bond Number" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <RadzenTextBox Value="Placeholder" />
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow Gap="5">
+                <RadzenColumn Size="4">
+                    <RadzenFormField Text="Obligee" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
+                        <ChildContent>
+                            <RadzenTextBox @bind-Value="selectedObligee" />
+                        </ChildContent>
+                        <End>
+                            <RadzenButton Icon="search" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text"/>
+                        </End>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn>
+                    <RadzenButton Variant="Variant.Filled" Text="Add New Obligee" ButtonStyle="ButtonStyle.Light" Click="CreateObligeeClick" />
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="4">
+                    <RadzenFormField Text="Project Name" AllowFloatingLabel="false" Variant="Variant.Text" Style="width:95%">
+                        <RadzenTextBox Value="Placeholder"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStepsItem>
+        <RadzenStepsItem Text="Send Request for Approval">
+
+        </RadzenStepsItem>
+        <RadzenStepsItem Text="Notes and Remarks">
+
+        </RadzenStepsItem>
+        <RadzenStepsItem Text="Bidders & Subs">
+
+        </RadzenStepsItem>
+    </Steps>
+</RadzenSteps>
+
+@code {
+    private string selectedObligee { get; set; } = "";
+
+    public async Task CreateObligeeClick()
+    {
+        var result = await DialogService.OpenAsync<Pages.CreateObligee>("Create Obligee", 
+        new Dictionary<string, object>() { { "IsDialog", true } },
+        new DialogOptions()
+            {
+                Resizable = false,
+                Draggable = false,
+                Width = "750px",
+                Height = "750px"
+            });
+
+        if (null != result)
+        {
+            //TODO: Set the new obligee as selected
+            selectedObligee = result.IdNavigation.FullName;
+        }
+    }
+}

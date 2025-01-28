@@ -31,7 +31,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Business Class" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="Placeholder" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox Value="@AccountToDisplay?.BusinessTypeClassNavigation?.BusinessType" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="8">
@@ -89,12 +89,12 @@
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Report Date" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="Placeholder" />
+                            <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay?.DunBradstreetDate" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Rating" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="Placeholder" />
+                            <RadzenTextBox Value="@AccountToDisplay?.DunBradstreetRate" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3" Visible="@(null!=AccountToDisplay)">
@@ -111,7 +111,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="SIC Code" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Placeholder="SIC Code" />
+                            <RadzenTextBox Placeholder="@AccountToDisplay?.DunBradstreetSic" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn>
@@ -277,13 +277,14 @@
                     Contract LOA
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs?.ContractLOA?.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs?.ContractLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenTextBox Value="@(inforceLOAs?.ContractLOA?.Expiration.ToShortDateString())" 
+                    Style="@($"width: 95%; background-color: {(@inforceLOAs?.ContractLOA?.Expiration < DateTime.Today ? "yellow": "white")}")" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -291,13 +292,14 @@
                     Commercial LOA
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs?.CommercialLOA?.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs?.CommercialLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Placeholder="Placeholder" Style="width: 95%" Disabled="true" />
+                    <RadzenTextBox Value="@(inforceLOAs?.CommercialLOA?.Expiration.ToShortDateString())"
+                                   Style="@($"width: 95%; background-color: {(@inforceLOAs?.CommercialLOA?.Expiration < DateTime.Today ? "yellow": "white")}")" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -336,7 +338,12 @@
 </RadzenRow>
 
 @code {
-    [Parameter] public Account AccountToDisplay { get; set; }
+    [Parameter] public Account? AccountToDisplay { get; set; }
+    public InforceAccountLOA inforceLOAs { get; set; } = new InforceAccountLOA()
+    {
+        ContractLOA = new LineOfAuthorityLog(),
+        CommercialLOA = new LineOfAuthorityLog()
+    };
 
     private bool MasterEditMode { get; set; } = false;
     private bool GenInfoEditMode { get; set; } = false;
@@ -346,7 +353,12 @@
     {
         await base.OnParametersSetAsync();
 
-        StateHasChanged();
+        if (AccountToDisplay != null)
+        {
+            //TODO: Reenable this once data port is complete.
+            await LoadInforceLOAs();
+            //StateHasChanged();
+        }
     }
 
     async Task SaveGenInfoChanges()
@@ -357,6 +369,29 @@
     async Task SaveAdditionalInformationChanges()
     {
 
+    }
+
+    async Task LoadInforceLOAs()
+    {
+        if (!string.IsNullOrWhiteSpace(AccountToDisplay.AccountNum))
+        {
+            var result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountToDisplay.AccountNum);
+
+            if (result.Errors.Any() || null == result.Data)
+            {
+                LoggingService.LogError("Error loading inforce LOAs for this account.", result.Errors.ToString());
+                NotificationService.Notify(new NotificationMessage
+                    {
+                        Detail = "Error loading Account LOAs.",
+                        Duration = 4000,
+                        Severity = NotificationSeverity.Error
+                    });
+            }
+            else
+            {
+                inforceLOAs = result.Data;
+            }
+        }
     }
 
     private async Task CreditReportUploaded(Guid? documentId, string accountNum)

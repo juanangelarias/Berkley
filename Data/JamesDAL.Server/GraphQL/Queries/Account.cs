@@ -26,6 +26,14 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(ag => ag!.IdNavigation)
                 .Include(a => a.HomeOfficeReviewByNavigation)
                 .Include(a => a.BranchReviewByNavigation)
+                .Include(a => a.BankPhone)
+                .Include(a => a.Cpafirm)
+                .ThenInclude(c => c.LegalEntityPhones)
+                .Include(a => a.Cpacontact)
+                .Include(a => a.BusinessTypeNavigation)
+                .Include(a => a.BusinessTypeClassNavigation)
+                .Include(a => a.LawFirm)
+                .ThenInclude(a => a.IdNavigation)
                 .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim())
                    ?? throw new GraphQLException("No account with this account number exists.");
         }
@@ -37,8 +45,8 @@ namespace James.Data.Server.GraphQL.Queries
                 //TODO: Improve search with fuzzy logic.
                 var ctx = await contextFactory.CreateDbContextAsync();
                 return await ctx.Accounts
+                    .Where(a => a.IdNavigation.FullName.Contains(searchString) || a.AccountNum.Contains(searchString))
                     .Include(a => a.IdNavigation)
-                    .Where(a => a.IdNavigation.FullName.Contains(searchString))
                     .ToListAsync();
             }
             else
@@ -52,12 +60,12 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
 
             var contractLOA = await ctx.LineOfAuthorityLogs
-                .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.Expiration >= DateTime.Today && l.BondType == "Contract")
+                .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.BondType == "Contract")
                 .OrderByDescending(l => l.Created)
                 .FirstOrDefaultAsync();
 
             var commercialLOA = await ctx.LineOfAuthorityLogs
-                .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.Expiration >= DateTime.Today && l.BondType == "Commercial")
+                .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.BondType == "Commercial")
                 .OrderByDescending(l => l.Created)
                 .FirstOrDefaultAsync();
 
@@ -68,6 +76,7 @@ namespace James.Data.Server.GraphQL.Queries
                 CommercialLOA = commercialLOA
             };
 
+            
             return inforceLOAs;
         }
         [Authorize]
@@ -78,6 +87,7 @@ namespace James.Data.Server.GraphQL.Queries
             return await ctx.AccountPrograms
                 .Where(a => a.AccountNum == accountNumber)
                 .Include(a => a.AccountProgramStatusHistories)
+                .Include(a => a.Status)
                 .OrderByDescending(a => a.Expiration)
                 .ToListAsync();
         }
@@ -89,6 +99,19 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.Accounts
                 .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim());
+        }
+        [Authorize]
+        public async Task<List<AdditionalRelatedParty>> GetAdditionalRelatedParties(string? accountNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            if (string.IsNullOrWhiteSpace(accountNumber))
+            {
+                return null;
+            }
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.AdditionalRelatedParties
+                .Include(a => a.IdNavigation)
+                .Where(a => a.AccountNum == accountNumber)
+                .ToListAsync();
         }
     }
 }

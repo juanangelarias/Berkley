@@ -1,0 +1,208 @@
+﻿@page "/Agents"
+@using System.Diagnostics
+@using James.Shared
+
+@inherits JamesLayoutComponentBase
+
+@inject NavigationManager NavigationManager
+
+@inject IDataAccess DataAccess
+@inject ILoggingService _logging
+@attribute [Authorize]
+
+<Theme />
+
+<PageTitle>BasisTNG - Agent Maintenance</PageTitle>
+<RenderModeBackground></RenderModeBackground>
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="10px">
+    <RadzenPanel Style="border-radius: 20px;" class="rz-shadow-7">
+        <ChildContent>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenColumn Size="4">
+                    <RadzenText TextStyle="TextStyle.DisplayH5" Text="Agent Maintenance" />
+                </RadzenColumn>
+                <RadzenColumn Size="4">
+                    <AgentSearch @bind-SelectedAgentId="@AgentId" />
+                </RadzenColumn>
+                <RadzenColumn Size="4">
+                    <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Primary" Text="Create New Agent" />
+                </RadzenColumn>
+            </RadzenRow>
+        </ChildContent>
+    </RadzenPanel>
+    <RadzenPanel>
+        <RadzenStack Orientation="Orientation.Vertical">
+
+            <RadzenRow>
+                <RadzenColumn Size="6">
+                    <RadzenFieldset Text="General Info">
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenFormField Text="First Name" AllowFloatingLabel="false">
+                                <RadzenTextBox Value="@AgentToDisplay?.IdNavigation?.GivenName" />
+                            </RadzenFormField>
+                            <RadzenFormField Text="MI" AllowFloatingLabel="false">
+                                <RadzenTextBox Value="@AgentToDisplay?.IdNavigation?.MiddleInitial" />
+                            </RadzenFormField>
+                            <RadzenFormField Text="Last Name" AllowFloatingLabel="false">
+                                <RadzenTextBox Value="@AgentToDisplay?.IdNavigation?.FamilyName" />
+                            </RadzenFormField>
+                        </RadzenStack>
+                    </RadzenFieldset>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <RadzenFieldset Text="Contact Info">
+                        <RadzenTabs>
+                            <Tabs>
+                                <RadzenTabsItem Text="Address">
+                                    <LegalEntityAddressManager LegalEntityId="@AgentToDisplay.Id" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Phone">
+                                    <LegalEntityPhoneNumberManager LegalEntityId="@AgentToDisplay.Id" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Email">
+
+                                </RadzenTabsItem>
+                            </Tabs>
+                        </RadzenTabs>
+                        
+                    </RadzenFieldset>
+                </RadzenColumn>
+            </RadzenRow>
+
+            <RadzenFieldset Text="Licenses">
+                <RadzenRow>
+                    <RadzenColumn>
+                        <AgentLicenseGrid AgentId="@AgentToDisplay.Id" />
+@*                         <RadzenDataGrid Data="@AgentToDisplay?.AgencyLicenses" TItem="AgencyLicense" Density="Density.Compact"
+                                        Style="height:500px; border-radius:15px;"  AllowVirtualization="true"
+                                        AllowFiltering="true" AllowColumnPicking="true" AllowGrouping="true">
+                            <HeaderTemplate>
+                                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+                                    <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" />
+
+                                </RadzenStack>
+                            </HeaderTemplate>
+                            <Columns>
+                                <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Width="125px">
+                                    <Template Context="license">
+                                        <RadzenText Text="@license?.LicenseNumber" />
+                                    </Template>
+
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Width="100px">
+                                    <Template Context="license">
+                                        <RadzenText Text="@license?.State" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="AgencyLicense" Title="Resident" Width="125px">
+                                    <Template Context="license">
+                                        <RadzenCheckBox Value="@license?.IsResident" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="125px">
+                                    <Template Context="license">
+                                        <RadzenCheckBox Value="@license?.AppointingState" />
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="AgencyLicense" Title="Insurer">
+                                    <Template Context="license">
+                                        <RadzenText Text="@license?.Insurer?.IdNavigation?.FullName" />
+                                    </Template>
+                                    <EditTemplate Context="license">
+                                        <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" Data="allInsurers" Style="width:95%"
+                                                        TextProperty="IdNavigation.FullName" ValueProperty="Id" @bind-Value="@license.InsurerId" />
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid> *@
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenFieldset>
+        </RadzenStack>
+    </RadzenPanel>
+</RadzenStack>
+
+@code {
+    private Guid _agentId;
+    [Parameter]
+    public Guid AgentId
+    {
+        get => _agentId;
+        set
+        {
+            if (_agentId == value) return;
+            _agentId = value;
+            LoadAgent();
+        }
+    }
+    private Agent AgentToDisplay { get; set; } = new Agent()
+        {
+            IdNavigation = new LegalEntity()
+        };
+
+
+    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
+    private List<Insurer> allInsurers { get; set; } = new List<Insurer>();
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        BusyDialog();
+        await LoadAgent();
+        await LoadSelectInsurerDropDown();
+        DialogService.Close();
+    }
+    private async Task LoadAgent()
+    {
+        BusyDialog();
+        if (Guid.Empty != AgentId)
+        {
+            var result = await DataAccess.GetAgent((Guid)AgentId);
+
+            if (result.Errors.Any() && null != result.Data)
+            {
+                LoggingService.LogError("Error when loading agent.", result.Errors.ToString());
+                NotificationService.Notify(new NotificationMessage
+                    {
+                        Detail = "Error loading agent.",
+                        Duration = 4000,
+                        Severity = NotificationSeverity.Error
+                    });
+            }
+            else
+            {
+                AgentToDisplay = result.Data;
+                StateHasChanged();
+            }
+        }
+
+        DialogService.Close();
+
+    }
+    private async Task LoadSelectInsurerDropDown()
+    {
+        allInsurers = await GetInsurers();
+    }
+    private async Task<List<Insurer>> GetInsurers()
+    {
+        var result = await DataAccess.GetAllInsurers();
+        if (result.Success == false)
+        {
+            LoggingService.LogError("Error getting insurers in Agency Contract Grid", result.Errors.ToString());
+        }
+
+        Debug.Assert(result.Data != null, "result.Data != null");
+        return result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
+    }
+
+    void BusyDialog()
+    {
+        DialogService.Open("", ds =>
+        @<RadzenStack AlignItems="AlignItems.Center" Gap="2rem" class="rz-p-12">
+            <RadzenText TextStyle="TextStyle.H6">Loading, please wait...</RadzenText>
+        </RadzenStack>, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto", CloseDialogOnEsc = false });
+    }
+}

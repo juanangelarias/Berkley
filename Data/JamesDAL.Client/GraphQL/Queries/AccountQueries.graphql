@@ -75,82 +75,77 @@
       }
       reportsTo
     }
-    creditReportImagingId
+    bankPhone {
+      countryCode
+      created
+      extension
+      id
+      mainNumber
+      modified
+    }
+    cpafirm {
+      created
+      entityType
+      familyName
+      fullName
+      givenName
+      id
+      isIndividual
+      middleInitial
+      modified
+      parent
+      taxIdEncrypted
+      website
+      legalEntityPhones {
+        legalEntityId
+        phoneNumberId
+        type
+      }
+    }
+    cpacontact {
+      created
+      entityType
+      familyName
+      fullName
+      givenName
+      id
+      isIndividual
+      middleInitial
+      modified
+      parent
+      taxIdEncrypted
+      website
+    }
+    businessTypeNavigation {
+      businessType
+      created
+      id
+      modified
+    }
+    businessTypeClassNavigation {
+      businessType
+      classCode
+      created
+      id
+      isContract
+      modified
+    }
+    lawFirm {
+      comment
+      idNavigation{
+        fullName
+      }
+      martindaleHubbellRating
+    }
   }
 }
 
 query SearchAccounts($input: String!) {
-  searchAccounts (searchString: $input) {
-    accountingSystem
+  searchAccounts(searchString: $input) {
     accountNum
-    affiliateCompany
-    agencyNumber
-    agentId
-    attorneyId
-    bank
-    bankAverageBalance
-    bankLastContacted
-    bankLoc
-    bankLocexpires
-    bankLochigh
-    bankLochighDate
-    bankLocsecurity
-    bankLocused
-    bankPhoneId
-    bankReferenceName
-    berkleyAffiliate
-    branch
-    branchReviewBy
-    branchReviewed
-    businessType
-    businessTypeClass
-    continuityActiveMultipleOwners
-    continuityFundedBuySell
-    continuityKeyManagementLifeInsurance
-    continuityManagementIncentives
-    cpacontactId
-    cpafirmId
-    created
-    creditReport
-    currentManagementYear
-    division
-    dunBradstreetDate
-    dunBradstreetRate
-    dunBradstreetSic
-    estimatingSignoff
-    estimatingSystem
-    fiscalYearEnd
-    fullName
-    fundsControl
-    geographicSpread
-    homeOfficeLock
-    homeOfficeReviewBy
-    homeOfficeReviewed
-    id
-    indemnityComments
-    indemnityCorp
-    indemnityFull
-    indemnityPerson
-    interimWips
-    lawFirmId
-    mainEmailAddress
-    modified
-    naics
-    openClaim
-    paydexIntelliscore
-    pocinterims
-    polutionLiabilityCarrier
-    polutionLiabilityExpires
-    priorSuretyCompany
-    privatePercent
-    publicPercent
-    rateModifier
-    subcontractPercent
-    subcontractProtection
-    taxBasis
-    underwriterId
-    watchStatus
-    yearOpened
+    idNavigation {
+      fullName
+    }
   }
 }
 
@@ -230,6 +225,26 @@ query GetAccountProgramHistory($input: String!) {
       oldStatus
       statusChangeBy
       statusDate
+    }
+  }
+} 
+query GetAdditionalRelatedParties($input: String!) {
+  additionalRelatedParties(accountNumber: $input) {
+    accountNum
+    comments
+    created
+    financialStatements
+    guarantor
+    id
+    indemnity
+    modified
+    idNavigation {
+      created
+      entityType
+      fullName
+      isIndividual
+      modified
+      parent
     }
   }
 } 

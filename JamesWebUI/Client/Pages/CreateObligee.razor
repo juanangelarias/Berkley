@@ -6,21 +6,22 @@
 
 
 @inherits JamesLayoutComponentBase
+@inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
 
 <Theme />
 
-<RadzenPanel>
+<RadzenPanel Style="border-radius: 20px;">
     <HeaderTemplate>
         <RadzenText Text="Create New Obligee" TextStyle="TextStyle.DisplayH4" />
     </HeaderTemplate>
     <ChildContent>
-        <RadzenTemplateForm TItem="Obligee" Submit="@((Obligee args) => { SubmitObligee(args);})" Data="NewObligee">
+        <RadzenTemplateForm TItem="Obligee" Submit="@(async (Obligee args) => { await SubmitObligee(args);})" Data="NewObligee">
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
                         <ChildContent>
-                            <RadzenTextBox Name="ObligeeName" @bind-Value="@NewObligee.IdNavigation.FullName" />
+                            <RadzenTextBox Name="ObligeeName" @bind-Value="@NewObligee.IdNavigation.FullName"  />
                         </ChildContent>
                         <Helper>
                             <RadzenRequiredValidator Component="ObligeeName" Text="Obligee Name is required." />
@@ -112,7 +113,7 @@
                 <RadzenColumn Size="6">
                     <RadzenStack Orientation="Orientation.Vertical">
                         <RadzenFormField Text="Type" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
-                            <RadzenDropDown TValue="Guid" Name="Type" />
+                            <RadzenDropDown TValue="string" Name="Type" Data="ObligeeTypes" ValueProperty="Type" TextProperty="Type" @bind-Value="@NewObligee.Type" />
                         </RadzenFormField>
                         <RadzenStack Orientation="Orientation.Horizontal">
                             <RadzenCheckBox Name="ReceiveLetters" TriState="false" TValue="bool" @bind-Value="@NewObligee.PrintStatusLetter" />
@@ -130,7 +131,7 @@
                 <RadzenColumn>
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                         <RadzenButton Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Secondary"
-                                      Text="Cancel" />
+                                      Text="Cancel" Click="CancelClicked" />
                         <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit"
                                       Text="Create Obligee and Load" />
                     </RadzenStack>
@@ -142,7 +143,9 @@
 
 
 @code {
+    [Parameter] public bool IsDialog { get; set; } = false;
     private List<State> AllStates { get; set; }
+    private List<ObligeeTypeDm> ObligeeTypes { get; set; } = new List<ObligeeTypeDm>();
 
     private Obligee NewObligee { get; set; } = new Obligee()
     {
@@ -178,6 +181,7 @@
         await base.OnInitializedAsync();
 
         await LoadStates();
+        await LoadObligeeTypes();
     }
     private async Task LoadStates()
     {
@@ -191,10 +195,27 @@
             AllStates = result.Data;
         }
     }
-
+    private async Task LoadObligeeTypes()
+    {
+        var result = await DataAccess.GetObligeeTypes();
+        if (result.Errors.Any())
+        {
+            LoggingService.LogError("Error loading Obligee Types.", result.Errors.ToString());
+        }
+        else
+        {
+            ObligeeTypes = result.Data;
+        }
+    }
+    private async Task CancelClicked()
+    {
+        if (IsDialog)
+            DialogService.Close(null);
+    }
     private async Task SubmitObligee(Obligee newObligee)
     {
-        var result = await DataAccess.CreateObligee(Guid.NewGuid(), newObligee.IdNavigation.FullName, "Public", newObligee.PrintStatusLetter,
+        newObligee.Id = Guid.NewGuid();
+        var result = await DataAccess.CreateObligee(newObligee.Id, newObligee.IdNavigation.FullName, "Public", newObligee.PrintStatusLetter,
         newObligee.Notes, NewAddress.Address1, NewAddress.Address2, NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
         NewPhoneNumber.MainNumber.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", ""), null);
 
@@ -221,7 +242,17 @@
                     CloseOnClick = true,
                     Payload = DateTime.Now
                 });
-            //TODO: Redirect. Need to pull back new obligee number after creation
+
+            //HACK: Need to make the CreateObligee call return the obligee number instead of pulling the data from another data call. 
+            // var createdObligee = await DataAccess.GetObligeeById(newObligee.Id);
+            if (IsDialog)
+            {
+                DialogService.Close(result.Data);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/Obligee/" + result.Data.ObligeeNum);
+            }
         }
     }
 }

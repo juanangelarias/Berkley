@@ -1,8 +1,22 @@
-﻿mutation CreateObligee ($input: CreateObligeeInput!){
-	createObligee(input: $input){
-		obligee{
-			id,
-			obligeeNum
-		}
-	}
+﻿mutation CreateObligee($input: CreateObligeeInput!) {
+  createObligee(input: $input) {
+    obligee {
+      id
+      obligeeNum
+      idNavigation {
+        created
+        entityType
+        familyName
+        fullName
+        givenName
+        id
+        isIndividual
+        middleInitial
+        modified
+        parent
+        taxIdEncrypted
+        website
+      }
+    }
+  }
 }

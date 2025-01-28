@@ -9,3 +9,14 @@ mutation DeleteAddress ($input: DeleteAddressInput!) {
     boolean
   }
 }
+
+mutation CreatePhoneNumber($input: CreatePhoneNumberInput!) {
+	createPhoneNumber(input: $input) {
+	boolean
+	}
+}
+mutation DeletePhoneNumber($input: DeletePhoneNumberInput!) {
+	deletePhoneNumber(input: $input) {
+	boolean
+	}
+}

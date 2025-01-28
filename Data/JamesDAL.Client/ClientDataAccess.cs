@@ -38,10 +38,8 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accountNumber)
         {
-            //TODO: Implement
             return await ExecuteGet<List<AdditionalRelatedParty>>(async () => await jamesClient.GetAdditionalRelatedParties.ExecuteAsync(accountNumber),
                 "AdditionalRelatedParties");
-            //return new DataAccessResult<List<AdditionalRelatedParty>>();
         }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
         {
@@ -67,7 +65,6 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<ObligeeTypeDm>>> GetObligeeTypes()
         {
-            //TODO: Implement
             return await ExecuteGet<List<ObligeeTypeDm>>(async () => await jamesClient.GetObligeeTypes.ExecuteAsync(), "ObligeeTypes");
         }
         public async Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId)
@@ -198,6 +195,11 @@ namespace James.Data.Client
             });
 
             return GraphQLSaveResult(result);
+
+        }
+        public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension, Guid legalEntityId, string phoneType)
+        {
+            return new SaveDataResult();
         }
         public async Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId)
         {
@@ -340,7 +342,6 @@ namespace James.Data.Client
         }
         public async Task<ISaveDataResult> DeleteLicense(Guid licenseId)
         {
-            //TODO:Refactor to call this type of method with all boilerplate similar to ExecuteGet.
             var result = await jamesClient.DeleteLicense.ExecuteAsync(new DeleteLicenseInput { LicenseId = licenseId });
             return GraphQLSaveResult(result);
         }
@@ -407,6 +408,7 @@ namespace James.Data.Client
             var subscriptionToWatch = jamesClient.AddressCollectionModified.Watch(legalEntityId.ToString());
             var addressCollectionModifiedWatch = new AddressCollectionModifiedWatchClass(subscriptionToWatch).SubscribeTo(onNext, onError, onComplete);
             return addressCollectionModifiedWatch;
+            throw new NotImplementedException();
         }
 
         public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory, bool useDocCategoryAsCriteria = true)

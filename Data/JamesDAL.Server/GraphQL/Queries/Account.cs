@@ -32,6 +32,8 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(a => a.Cpacontact)
                 .Include(a => a.BusinessTypeNavigation)
                 .Include(a => a.BusinessTypeClassNavigation)
+                .Include(a => a.LawFirm)
+                .ThenInclude(a => a.IdNavigation)
                 .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim())
                    ?? throw new GraphQLException("No account with this account number exists.");
         }

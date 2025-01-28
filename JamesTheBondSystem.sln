@@ -19,9 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		DeployProd.cmd = DeployProd.cmd
 		DeployTst.cmd = DeployTst.cmd
 		global.json = global.json
-		XCopyDeployTemplate.cmd = XCopyDeployTemplate.cmd
 		LoadItemKey.snippet = LoadItemKey.snippet
 		LoadItemUniversal.snippet = LoadItemUniversal.snippet
+		XCopyDeployTemplate.cmd = XCopyDeployTemplate.cmd
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{C60478F9-28B0-415F-9FC6-39D8506F7B62}"

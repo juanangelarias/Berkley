@@ -86,7 +86,18 @@
                 </RadzenRow>
             </RadzenFieldset>
             <RadzenFieldset Text="Attorney Information">
-
+                <RadzenRow>
+                    <RadzenColumn Size="9">
+                        <RadzenFormField Text="Attorney Name" AllowFloatingLabel="false" Style="width:95%" Variant="Variant.Text">
+                            <RadzenTextBox Value="Placeholder" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="MH Rating" AllowFloatingLabel="false" Style="width:95%" Variant="Variant.Text">
+                            <RadzenTextBox Value="Placeholder" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
             </RadzenFieldset>
         </RadzenStack>
     </RadzenColumn>
@@ -113,14 +124,14 @@
                 <RadzenRow>
                     <RadzenColumn Size="11">
                         <RadzenFormField Text="Amount in Use" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
-                            <RadzenNumeric Format="c0" Value="@AccountToDisplay.BankLoc" />
+                            <RadzenNumeric Format="c0" Value="@AccountToDisplay.BankLocused" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
                         <RadzenFormField Text="When" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
-                            <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay.BankLocexpires" />
+                            <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay.BankLochighDate" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
@@ -134,13 +145,38 @@
                 <RadzenRow>
                     <RadzenColumn Size="11">
                         <RadzenFormField Text="Security" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
-                            <RadzenText Text="@AccountToDisplay.BankLocsecurity" />
+                            <RadzenText Text="@AccountToDisplay?.BankLocsecurity" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenFieldset>
             <RadzenFieldset Text="Law Firm Information">
-
+                <RadzenRow>
+                    <RadzenColumn Size="9">
+                        <RadzenFormField Text="Law Firm Name" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.LawFirm?.IdNavigation?.FullName" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="3">
+                        <RadzenFormField Text="MH Rating" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                            <RadzenTextBox Value="@AccountToDisplay?.LawFirm?.MartindaleHubbellRating" />
+                        </RadzenFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    @{
+                        if (AccountToDisplay?.LawFirm?.Id != null)
+                        {
+                            <RadzenAccordion>
+                                <Items>
+                                    <RadzenAccordionItem Text="Contact Info" >
+                                        <LegalEntityAddressManager LegalEntityId="@AccountToDisplay.LawFirm.Id" />
+                                    </RadzenAccordionItem>
+                                </Items>
+                            </RadzenAccordion>
+                        }
+                    }
+                </RadzenRow>
             </RadzenFieldset>
         </RadzenStack>
     </RadzenColumn>
@@ -149,6 +185,7 @@
 
 @code {
     [Parameter] public Account AccountToDisplay { get; set; }
+    private bool expandLawFirmDetails { get; set; } = false;
 
     protected override async Task OnParametersSetAsync()
     {

@@ -56,10 +56,8 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType, string identifier);
         public Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier);
-            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType);
         public Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType);
-        public Task<ISaveDataResult> DeleteAddress(Guid addressId);
         public Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId);
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
             Guid changedBy, string? comments);

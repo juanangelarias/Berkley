@@ -130,6 +130,13 @@
       isContract
       modified
     }
+    lawFirm {
+      comment
+      idNavigation{
+        fullName
+      }
+      martindaleHubbellRating
+    }
   }
 }
 

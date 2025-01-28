@@ -206,7 +206,7 @@ namespace James.Data.Server
         {
             return await ExecuteSave((async () => await generalMutations.SetAddress(address.Id, address.Address1, address.Address2,
                 address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
-                eventSender, contextFactory, loggingService));
+                eventSender, contextFactory, loggingService)));
         }
         public async Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode,
@@ -217,18 +217,15 @@ namespace James.Data.Server
                 legalEntityId, addressType, identifier, eventSender, contextFactory, loggingService));
 
         }
-        public async Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier)
         public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType)
         {
             return await ExecuteSave(async () => await generalMutations.CreatePhoneNumber(phoneId, countryCode, mainNumber, extension, legalEntityId, phoneType, contextFactory));
         }
-        public async Task<ISaveDataResult> DeleteAddress(Guid addressId)
+        public async Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier)
         {
             return await ExecuteSave(async () =>
             await generalMutations.DeleteAddress(addressId, identifier, eventSender, contextFactory, loggingService));
-
-            return await ExecuteSave(async () => await generalMutations.DeleteAddress(addressId, contextFactory));
         }
         public async Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId)
         {

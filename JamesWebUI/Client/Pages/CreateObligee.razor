@@ -131,7 +131,7 @@
                 <RadzenColumn>
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                         <RadzenButton Variant="Variant.Outlined" ButtonStyle="ButtonStyle.Secondary"
-                                      Text="Cancel" />
+                                      Text="Cancel" Click="CancelClicked" />
                         <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit"
                                       Text="Create Obligee and Load" />
                     </RadzenStack>
@@ -143,6 +143,7 @@
 
 
 @code {
+    [Parameter] public bool IsDialog { get; set; } = false;
     private List<State> AllStates { get; set; }
     private List<ObligeeTypeDm> ObligeeTypes { get; set; } = new List<ObligeeTypeDm>();
 
@@ -206,6 +207,11 @@
             ObligeeTypes = result.Data;
         }
     }
+    private async Task CancelClicked()
+    {
+        if (IsDialog)
+            DialogService.Close(null);
+    }
     private async Task SubmitObligee(Obligee newObligee)
     {
         newObligee.Id = Guid.NewGuid();
@@ -239,7 +245,14 @@
 
             //HACK: Need to make the CreateObligee call return the obligee number instead of pulling the data from another data call. 
             // var createdObligee = await DataAccess.GetObligeeById(newObligee.Id);
-            NavigationManager.NavigateTo("/Obligee/" + result.Data.ObligeeNum);
+            if (IsDialog)
+            {
+                DialogService.Close(result.Data);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/Obligee/" + result.Data.ObligeeNum);
+            }
         }
     }
 }

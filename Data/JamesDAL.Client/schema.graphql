@@ -942,6 +942,7 @@ type Bond {
 type Mutation {
   setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
   setAccountGeneralInfo(input: SetAccountGeneralInfoInput!): SetAccountGeneralInfoPayload!
+  setAccountSystems(input: SetAccountSystemsInput!): SetAccountSystemsPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
@@ -2034,6 +2035,10 @@ type Insurer {
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
+type SetAccountSystemsPayload {
+  boolean: Boolean
+}
+
 type WorkInProgressJob {
   id: UUID!
   created: DateTime!
@@ -2202,6 +2207,15 @@ type State {
 
 type CreateLicensePayload {
   boolean: Boolean
+}
+
+input SetAccountSystemsInput {
+  accountId: UUID!
+  estimatingSystem: String
+  estimatingSignoff: String
+  internalAccountingSystem: String
+  interimWips: Boolean
+  interimPOCs: Boolean
 }
 
 input DeleteAgencyInventoryInput {

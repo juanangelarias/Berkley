@@ -51,7 +51,32 @@ namespace James.Data.Server.GraphQL.Mutations
             }
 
         }
+        [Authorize]
+        public async Task<bool> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem,
+            bool? interimWips, bool? interimPOCs, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var account = await ctx.Accounts
+                    .Include(a => a.IdNavigation)
+                    .FirstOrDefaultAsync(a => a.Id == accountId);
 
+                account.EstimatingSystem = estimatingSystem;
+                account.EstimatingSignoff = estimatingSignoff;
+                account.AccountingSystem = internalAccountingSystem;
+                account.InterimWips = interimWips ?? false;
+                account.Pocinterims = interimPOCs ?? false;
+
+                await ctx.SaveChangesAsync();
+                return true;
+
+            }
+            catch
+            {
+                return false;
+            }
+        }
         [Authorize]
         public async Task<AccountProgram> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

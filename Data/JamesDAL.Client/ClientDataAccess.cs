@@ -300,6 +300,20 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(result);
         }
+        public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs)
+        {
+            //TODO: Implement
+            var result = await jamesClient.SetAccountSystems.ExecuteAsync(new SetAccountSystemsInput
+            {
+                AccountId = accountId,
+                EstimatingSignoff = estimatingSignoff,
+                EstimatingSystem = estimatingSystem,
+                InterimPOCs = interimPOCs ?? false,
+                InterimWips = interimWips ?? false,
+                InternalAccountingSystem = internalAccountingSystem
+            });
+            return GraphQLSaveResult(result);
+        }
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {

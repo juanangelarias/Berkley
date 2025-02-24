@@ -8,6 +8,11 @@ mutation SetAccountGeneralInfo ($input: SetAccountGeneralInfoInput!){
     boolean
   }
 } 
+mutation SetAccountSystems ($input: SetAccountSystemsInput!){
+  setAccountSystems (input: $input) {
+    boolean
+  }
+} 
 mutation SetAccountProgram($input: SetAccountProgramInput!) {
   setAccountProgram(input: $input) {
     accountProgram {

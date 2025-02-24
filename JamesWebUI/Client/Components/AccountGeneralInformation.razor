@@ -14,12 +14,12 @@
                 <RadzenRow JustifyContent="JustifyContent.End">
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Year Started" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.YearOpened" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay.YearOpened" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Curr. Mgt Year" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.CurrentManagementYear" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay.CurrentManagementYear" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="4">
@@ -31,18 +31,18 @@
                 <RadzenRow>
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Business Class" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.BusinessTypeClassNavigation?.BusinessType" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay.BusinessTypeClass" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="8">
                         <RadzenFormField Text="Business Type" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.BusinessType" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay.BusinessType" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenFormField Text="Prior Surety" AllowFloatingLabel="false" Variant="Variant.Text">
-                        <RadzenTextBox Value="@AccountToDisplay?.PriorSuretyCompany" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                        <RadzenTextBox @bind-Value="@AccountToDisplay.PriorSuretyCompany" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                     </RadzenFormField>
                 </RadzenRow>
                 <RadzenRow>
@@ -99,13 +99,13 @@
                     </RadzenColumn>
                     <RadzenColumn Size="3" Visible="@(null!=AccountToDisplay)">
                         <InlineImagingDocument DocumentShortName="Current Credit Report"
-                                               DocumentCategory="ImagingDocumentCategory.Account"
-                                               DocumentId="@AccountToDisplay.CreditReportImagingId"
-                                               DocumentType="CBR"
-                                               LinkableDocumentTypes="CBR,AEXPNR,AOCRPT,AEQFXR"
-                                               ImagingId ="@AccountToDisplay.AccountNum"
-                                               UploadAction="@(guid=> CreditReportUploaded(guid, @AccountToDisplay.AccountNum))" 
-                                               UploadErrorAction=@(msg=>LogUploadError(msg)) />
+                        DocumentCategory="ImagingDocumentCategory.Account"
+                        DocumentId="@AccountToDisplay.CreditReportImagingId"
+                        DocumentType="CBR"
+                        LinkableDocumentTypes="CBR,AEXPNR,AOCRPT,AEQFXR"
+                        ImagingId ="@AccountToDisplay.AccountNum"
+                        UploadAction="@(guid=> CreditReportUploaded(guid, @AccountToDisplay.AccountNum))" 
+                        UploadErrorAction=@(msg=>LogUploadError(msg)) />
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
@@ -299,7 +299,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="3">
                     <RadzenTextBox Value="@(inforceLOAs?.CommercialLOA?.Expiration.ToShortDateString())"
-                                   Style="@($"width: 95%; background-color: {(@inforceLOAs?.CommercialLOA?.Expiration < DateTime.Today ? "yellow": "white")}")" Disabled="true" />
+                    Style="@($"width: 95%; background-color: {(@inforceLOAs?.CommercialLOA?.Expiration < DateTime.Today ? "yellow": "white")}")" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -363,7 +363,37 @@
 
     async Task SaveGenInfoChanges()
     {
-
+        try
+        {
+            //TODO: Handle Est. Annual Premium
+            var result = await DataAccess.SetAccountGeneralInfo(AccountToDisplay.Id, AccountToDisplay.YearOpened, AccountToDisplay.CurrentManagementYear, AccountToDisplay.BusinessTypeClass, AccountToDisplay.BusinessType,
+            AccountToDisplay.PriorSuretyCompany, null);
+            
+            if (result.Errors.Any())
+            {
+                NotificationService.Notify(new NotificationMessage
+                    {
+                        Detail = "Error saving changes.",
+                        Duration = 4000,
+                        Severity = NotificationSeverity.Error
+                    });
+            }
+            else
+            {
+                GenInfoEditMode = !GenInfoEditMode;
+            }
+        }
+        catch
+        {
+            //TODO: Handle/Log Errors
+            NotificationService.Notify(new NotificationMessage
+                {
+                    Detail = "Error saving changes.",
+                    Duration = 4000,
+                    Severity = NotificationSeverity.Error
+                });
+            throw;
+        }
     }
 
     async Task SaveAdditionalInformationChanges()

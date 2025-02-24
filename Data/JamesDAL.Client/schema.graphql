@@ -941,6 +941,7 @@ type Bond {
 
 type Mutation {
   setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
+  setAccountGeneralInfo(input: SetAccountGeneralInfoInput!): SetAccountGeneralInfoPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
@@ -1408,6 +1409,16 @@ input SetPowerOfAttorneyInput {
   status: String!
 }
 
+input SetAccountGeneralInfoInput {
+  accountId: UUID!
+  yearStarted: String
+  currentManagementYear: String
+  businessClass: String
+  businessType: String
+  priorSurety: String
+  estAnnualPremium: Int
+}
+
 type DefaultGeneralLedgerAccount {
   id: UUID!
   created: DateTime!
@@ -1763,6 +1774,10 @@ type ProfitCenter {
   inverseBudgetDefaultNavigation: [ProfitCenter!]!
   lineOfBusinessNavigation: LineOfBusinessDm!
   underWriter: Underwriter
+}
+
+type SetAccountGeneralInfoPayload {
+  boolean: Boolean
 }
 
 type VImagingCategoryTabDivisionType {

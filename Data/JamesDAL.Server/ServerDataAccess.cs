@@ -174,6 +174,11 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetUserProfileByUserName(userName, contextFactory));
         }
+        public async Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
+            string? businessType, string? priorSurety, int? estAnnualPremium)
+        {
+            return await ExecuteSave(async () => await accountMutation.SetAccountGeneralInfo(accountId, yearStarted, currentManagementYear, businessClass, businessType, priorSurety, estAnnualPremium, contextFactory));
+        }
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {

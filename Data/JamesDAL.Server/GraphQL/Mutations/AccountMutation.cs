@@ -25,6 +25,34 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
+        public async Task<bool> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
+            string? businessType, string? priorSurety, int? estAnnualPremium, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            try
+            {
+                var account = await ctx.Accounts
+                    .Include(a => a.IdNavigation)
+                    .FirstOrDefaultAsync(a => a.Id == accountId);
+
+                account.YearOpened = yearStarted;
+                account.CurrentManagementYear = currentManagementYear;
+                account.BusinessTypeClass = businessClass;
+                account.BusinessType = businessType;
+                account.PriorSuretyCompany = priorSurety;
+
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
+        [Authorize]
         public async Task<AccountProgram> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

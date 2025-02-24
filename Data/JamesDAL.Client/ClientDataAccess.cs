@@ -285,6 +285,21 @@ namespace James.Data.Client
             return await ExecuteGet<UserProfile>(async () => await jamesClient.GetUserProfileByUserName.ExecuteAsync(userName),
                 "UserProfileByUserName");
         }
+        public async Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
+    string? businessType, string? priorSurety, int? estAnnualPremium)
+        {
+            var result = await jamesClient.SetAccountGeneralInfo.ExecuteAsync(new SetAccountGeneralInfoInput
+            {
+                AccountId = accountId,
+                YearStarted = yearStarted,
+                CurrentManagementYear = currentManagementYear,
+                BusinessClass = businessClass,
+                BusinessType = businessType,
+                PriorSurety = priorSurety,
+                EstAnnualPremium = estAnnualPremium
+            });
+            return GraphQLSaveResult(result);
+        }
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {

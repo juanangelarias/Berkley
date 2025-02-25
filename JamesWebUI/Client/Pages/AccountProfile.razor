@@ -171,7 +171,7 @@
                     </RadzenTabsItem>
                 </Tabs>
             </RadzenTabs>
-            
+
         </ChildContent>    
     </RadzenPanel>
 </RadzenStack>
@@ -188,8 +188,9 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
+        BusyDialog();
         await LoadAccount();
+        DialogService.Close();
     }
 
     private async Task LoadAccount()
@@ -223,5 +224,12 @@
                 inForceLOAs = result.Data;
             }
         }
+    }
+    void BusyDialog()
+    {
+        DialogService.Open("", ds =>
+            @<RadzenStack AlignItems="AlignItems.Center" Gap="2rem" class="rz-p-12">
+                <RadzenText TextStyle="TextStyle.H6">Loading, please wait...</RadzenText>
+            </RadzenStack>, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto", CloseDialogOnEsc = false });
     }
 }

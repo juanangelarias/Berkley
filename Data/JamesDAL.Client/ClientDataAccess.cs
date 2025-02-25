@@ -317,7 +317,6 @@ namespace James.Data.Client
             bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
             bool? trackCommAccount, bool? berkleyAffiliate, string? comments)
         {
-            //TODO: Implement
             var result = await jamesClient.SetAccountAdditionalInformation.ExecuteAsync(new SetAccountAdditionalInformationInput
             {
                 AccountId = accountId,

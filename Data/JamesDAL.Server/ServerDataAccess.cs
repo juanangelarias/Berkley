@@ -184,6 +184,13 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await accountMutation.SetAccountSystems(accountId, estimatingSystem, estimatingSignoff, internalAccountingSystem, interimWips, interimPOCs, contextFactory));
         }
+        public async Task<ISaveDataResult> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity, bool? personalIndemnity,
+            bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
+            bool? trackCommAccount, bool? berkleyAffiliate, string? comments)
+        {
+            return await ExecuteSave(async () => await accountMutation.SetAccountAdditionalInformation(accountId, fullIndemnity, corpIndemnity, personalIndemnity, keyManagementLifeInsurance,
+                managementIncentives, fundedBuySell, multipleActiveOwners, trackCommAccount, berkleyAffiliate, comments, contextFactory));
+        }
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {

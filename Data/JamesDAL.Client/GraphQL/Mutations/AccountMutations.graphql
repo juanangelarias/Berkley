@@ -13,6 +13,11 @@ mutation SetAccountSystems ($input: SetAccountSystemsInput!){
     boolean
   }
 } 
+ mutation SetAccountAdditionalInformation ($input: SetAccountAdditionalInformationInput!){
+  setAccountAdditionalInformation (input: $input) {
+    boolean
+  }
+} 
 mutation SetAccountProgram($input: SetAccountProgramInput!) {
   setAccountProgram(input: $input) {
     accountProgram {

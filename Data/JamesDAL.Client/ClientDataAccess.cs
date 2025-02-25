@@ -302,7 +302,6 @@ namespace James.Data.Client
         }
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs)
         {
-            //TODO: Implement
             var result = await jamesClient.SetAccountSystems.ExecuteAsync(new SetAccountSystemsInput
             {
                 AccountId = accountId,
@@ -311,6 +310,27 @@ namespace James.Data.Client
                 InterimPOCs = interimPOCs ?? false,
                 InterimWips = interimWips ?? false,
                 InternalAccountingSystem = internalAccountingSystem
+            });
+            return GraphQLSaveResult(result);
+        }
+        public async Task<ISaveDataResult> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity, bool? personalIndemnity,
+            bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
+            bool? trackCommAccount, bool? berkleyAffiliate, string? comments)
+        {
+            //TODO: Implement
+            var result = await jamesClient.SetAccountAdditionalInformation.ExecuteAsync(new SetAccountAdditionalInformationInput
+            {
+                AccountId = accountId,
+                BerkleyAffiliate = berkleyAffiliate,
+                Comments = comments,
+                CorpIndemnity = corpIndemnity,
+                FullIndemnity = fullIndemnity,
+                FundedBuySell = fundedBuySell,
+                KeyManagementLifeInsurance = keyManagementLifeInsurance,
+                ManagementIncentives = managementIncentives,
+                MultipleActiveOwners = multipleActiveOwners,
+                PersonalIndemnity = personalIndemnity,
+                TrackCommAccount = trackCommAccount
             });
             return GraphQLSaveResult(result);
         }

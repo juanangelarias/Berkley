@@ -78,6 +78,37 @@ namespace James.Data.Server.GraphQL.Mutations
             }
         }
         [Authorize]
+        public async Task<bool> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity, bool? personalIndemnity,
+            bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
+            bool? trackCommAccount, bool? berkleyAffiliate, string? comments, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            try
+            {
+                var account = await ctx.Accounts.Include(a => a.IdNavigation).FirstOrDefaultAsync(a => a.Id == accountId);
+
+                account.IndemnityFull = fullIndemnity ?? false;
+                account.IndemnityCorp = corpIndemnity ?? false;
+                account.IndemnityPerson = personalIndemnity ?? false;
+                account.ContinuityKeyManagementLifeInsurance = keyManagementLifeInsurance ?? false;
+                account.ContinuityManagementIncentives = managementIncentives ?? false;
+                account.ContinuityFundedBuySell = fundedBuySell ?? false;
+                account.ContinuityActiveMultipleOwners = multipleActiveOwners ?? false;
+                //TODO: Deal with "trackCommAccount." Seems to be missing from DB.
+                account.BerkleyAffiliate = berkleyAffiliate ?? false;
+                account.IndemnityComments = comments;
+
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+
+            catch
+            {
+                return false;
+            }
+        }
+        [Authorize]
         public async Task<AccountProgram> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

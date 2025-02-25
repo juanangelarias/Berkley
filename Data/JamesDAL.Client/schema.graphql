@@ -943,6 +943,7 @@ type Mutation {
   setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
   setAccountGeneralInfo(input: SetAccountGeneralInfoInput!): SetAccountGeneralInfoPayload!
   setAccountSystems(input: SetAccountSystemsInput!): SetAccountSystemsPayload!
+  setAccountAdditionalInformation(input: SetAccountAdditionalInformationInput!): SetAccountAdditionalInformationPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
@@ -1323,6 +1324,10 @@ type PowerOfAttorneyDocumentStatus {
   comments: String
   documentType: PowerOfAttorneyDocumentNameDm!
   poa: PowerOfAttorney!
+}
+
+type SetAccountAdditionalInformationPayload {
+  boolean: Boolean
 }
 
 type SubscriptionResultOfGuid {
@@ -2673,6 +2678,20 @@ type Agent {
 
 type SetPowerOfAttorneyDocumentStatusPayload {
   powerOfAttorneyDocumentStatus: PowerOfAttorneyDocumentStatus
+}
+
+input SetAccountAdditionalInformationInput {
+  accountId: UUID!
+  fullIndemnity: Boolean
+  corpIndemnity: Boolean
+  personalIndemnity: Boolean
+  keyManagementLifeInsurance: Boolean
+  managementIncentives: Boolean
+  fundedBuySell: Boolean
+  multipleActiveOwners: Boolean
+  trackCommAccount: Boolean
+  berkleyAffiliate: Boolean
+  comments: String
 }
 
 type InforceAccountLOA {

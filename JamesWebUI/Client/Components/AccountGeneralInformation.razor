@@ -91,17 +91,17 @@
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Credit Report" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.CreditReport" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay.CreditReport" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Report Date" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay?.DunBradstreetDate" />
+                            <RadzenDatePicker ShowTime="false" TValue="DateOnly?" @bind-Value="@AccountToDisplay.DunBradstreetDate" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Rating" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.DunBradstreetRate" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay.DunBradstreetRate" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3" Visible="@(null!=AccountToDisplay)">
@@ -118,7 +118,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="SIC Code" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Placeholder="@AccountToDisplay?.DunBradstreetSic" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay.DunBradstreetSic" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn>
@@ -128,14 +128,14 @@
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Paydex/Intelliscore" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.PaydexIntelliscore?.ToString()" />
+                            <RadzenNumeric @bind-Value="@AccountToDisplay.PaydexIntelliscore" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="NAICS" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox Value="@AccountToDisplay?.Naics" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay.Naics" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn>
@@ -149,12 +149,12 @@
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Public" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
-                            <RadzenNumeric Format="p2" @bind-Value="@AccountToDisplay.PublicPercent" Disabled="!JobMixEditMode" />
+                            <RadzenNumeric TValue="double?" Format="###%" @bind-Value="@AccountToDisplay.PublicPercent" Disabled="!JobMixEditMode" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Private" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
-                            <RadzenNumeric Format="p2" @bind-Value="@AccountToDisplay.PrivatePercent" Disabled="!JobMixEditMode" />
+                            <RadzenNumeric TValue="double?" Format="##%" @bind-Value="@AccountToDisplay.PrivatePercent" Disabled="!JobMixEditMode" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">

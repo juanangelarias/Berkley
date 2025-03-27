@@ -13,8 +13,9 @@ namespace James.Data.Server.GraphQL.Mutations
             var ctx = await contextFactory.CreateDbContextAsync();
             try
             {
-                var acct = ctx.Accounts.First(p => p.AccountNum == accountNum);
-                acct.CreditReportImagingId = imagingDocumentId;
+                var account = ctx.Accounts.FirstOrDefault(p => p.AccountNum == accountNum);
+                if (account == null) return false;
+                account.CreditReportImagingId = imagingDocumentId;
                 await ctx.SaveChangesAsync();
                 return true;
             }
@@ -36,6 +37,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     .Include(a => a.IdNavigation)
                     .FirstOrDefaultAsync(a => a.Id == accountId);
 
+                if (account == null) return false;
                 account.YearOpened = yearStarted;
                 account.CurrentManagementYear = currentManagementYear;
                 account.BusinessTypeClass = businessClass;
@@ -62,6 +64,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     .Include(a => a.IdNavigation)
                     .FirstOrDefaultAsync(a => a.Id == accountId);
 
+                if (account == null) return false;
                 account.EstimatingSystem = estimatingSystem;
                 account.EstimatingSignoff = estimatingSignoff;
                 account.AccountingSystem = internalAccountingSystem;
@@ -88,6 +91,7 @@ namespace James.Data.Server.GraphQL.Mutations
             {
                 var account = await ctx.Accounts.Include(a => a.IdNavigation).FirstOrDefaultAsync(a => a.Id == accountId);
 
+                if (account == null) return false;
                 account.IndemnityFull = fullIndemnity ?? false;
                 account.IndemnityCorp = corpIndemnity ?? false;
                 account.IndemnityPerson = personalIndemnity ?? false;

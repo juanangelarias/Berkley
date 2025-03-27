@@ -55,7 +55,7 @@ namespace JamesWebUI.Client.Components
             if (AllTabs.Count > 0 && shouldSwitch)
             {
                 var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
-                if (QueryHelpers.ParseQuery(uri.Query).TryGetValue(TabControlName, out var _tabToSelect) != false)
+                if (QueryHelpers.ParseQuery(uri.Query).TryGetValue(TabControlName, out var _tabToSelect))
                 {
                     var tabToSelect = AllTabs.FirstOrDefault(t => t.TabName == _tabToSelect);
                     if ((tabToSelect?.Index ?? 0) != NewSelectedIndex)

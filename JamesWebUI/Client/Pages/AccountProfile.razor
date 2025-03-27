@@ -100,7 +100,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <RadzenFieldset Text="Contact Info">
-                        <PositionSavingTabs @ref="@contactTabs">
+                        <PositionSavingTabs @ref="@contactTabs" @bind-SelectedIndex="@contactTabs.NewSelectedIndex" TabControlName="ContactTabs">
                             <Tabs>
                                 <PositionSavingTabsItem Text="Addresses" TabName="accountAddresses">
                                     <LegalEntityAddressManager LegalEntityId="@AccountToDisplay.Id" />

@@ -74,3 +74,15 @@ query GetAddressTypes{
     type
   }
 }
+
+query GetCountryList {
+  countryList {
+    abbreviation
+    active
+    code
+    name
+    phoneCode
+    phoneMask
+    postalCodeMask
+  }
+}

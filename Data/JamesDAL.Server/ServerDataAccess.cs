@@ -174,6 +174,23 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetUserProfileByUserName(userName, contextFactory));
         }
+        public async Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
+            string? businessType, string? priorSurety, int? estAnnualPremium)
+        {
+            return await ExecuteSave(async () => await accountMutation.SetAccountGeneralInfo(accountId, yearStarted, currentManagementYear, businessClass, businessType, priorSurety, estAnnualPremium, contextFactory));
+        }
+        public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem,
+            bool? interimWips, bool? interimPOCs)
+        {
+            return await ExecuteSave(async () => await accountMutation.SetAccountSystems(accountId, estimatingSystem, estimatingSignoff, internalAccountingSystem, interimWips, interimPOCs, contextFactory));
+        }
+        public async Task<ISaveDataResult> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity, bool? personalIndemnity,
+            bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
+            bool? trackCommAccount, bool? berkleyAffiliate, string? comments)
+        {
+            return await ExecuteSave(async () => await accountMutation.SetAccountAdditionalInformation(accountId, fullIndemnity, corpIndemnity, personalIndemnity, keyManagementLifeInsurance,
+                managementIncentives, fundedBuySell, multipleActiveOwners, trackCommAccount, berkleyAffiliate, comments, contextFactory));
+        }
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {

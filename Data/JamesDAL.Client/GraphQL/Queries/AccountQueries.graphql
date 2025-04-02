@@ -132,11 +132,43 @@
     }
     lawFirm {
       comment
-      idNavigation{
+      idNavigation {
         fullName
       }
       martindaleHubbellRating
     }
+    yearOpened
+    currentManagementYear
+    creditReport
+    interimWips
+    indemnityPerson
+    indemnityFull
+    indemnityCorp
+    indemnityComments
+    priorSuretyCompany
+    subcontractPercent
+    subcontractProtection
+    taxBasis
+    continuityActiveMultipleOwners
+    continuityFundedBuySell
+    continuityKeyManagementLifeInsurance
+    continuityManagementIncentives
+    businessType
+    businessTypeClass
+    estimatingSignoff
+    estimatingSystem
+    accountingSystem
+    affiliateCompany
+    bankAverageBalance
+    bankLastContacted
+    bankLoc
+    bankLocexpires
+    bankLochigh
+    bankLochighDate
+    bankLocsecurity
+    bankLocused
+    bankReferenceName
+    berkleyAffiliate
   }
 }
 

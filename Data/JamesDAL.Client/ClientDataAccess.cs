@@ -285,6 +285,54 @@ namespace James.Data.Client
             return await ExecuteGet<UserProfile>(async () => await jamesClient.GetUserProfileByUserName.ExecuteAsync(userName),
                 "UserProfileByUserName");
         }
+        public async Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
+    string? businessType, string? priorSurety, int? estAnnualPremium)
+        {
+            var result = await jamesClient.SetAccountGeneralInfo.ExecuteAsync(new SetAccountGeneralInfoInput
+            {
+                AccountId = accountId,
+                YearStarted = yearStarted,
+                CurrentManagementYear = currentManagementYear,
+                BusinessClass = businessClass,
+                BusinessType = businessType,
+                PriorSurety = priorSurety,
+                EstAnnualPremium = estAnnualPremium
+            });
+            return GraphQLSaveResult(result);
+        }
+        public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs)
+        {
+            var result = await jamesClient.SetAccountSystems.ExecuteAsync(new SetAccountSystemsInput
+            {
+                AccountId = accountId,
+                EstimatingSignoff = estimatingSignoff,
+                EstimatingSystem = estimatingSystem,
+                InterimPOCs = interimPOCs ?? false,
+                InterimWips = interimWips ?? false,
+                InternalAccountingSystem = internalAccountingSystem
+            });
+            return GraphQLSaveResult(result);
+        }
+        public async Task<ISaveDataResult> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity, bool? personalIndemnity,
+            bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
+            bool? trackCommAccount, bool? berkleyAffiliate, string? comments)
+        {
+            var result = await jamesClient.SetAccountAdditionalInformation.ExecuteAsync(new SetAccountAdditionalInformationInput
+            {
+                AccountId = accountId,
+                BerkleyAffiliate = berkleyAffiliate,
+                Comments = comments,
+                CorpIndemnity = corpIndemnity,
+                FullIndemnity = fullIndemnity,
+                FundedBuySell = fundedBuySell,
+                KeyManagementLifeInsurance = keyManagementLifeInsurance,
+                ManagementIncentives = managementIncentives,
+                MultipleActiveOwners = multipleActiveOwners,
+                PersonalIndemnity = personalIndemnity,
+                TrackCommAccount = trackCommAccount
+            });
+            return GraphQLSaveResult(result);
+        }
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {

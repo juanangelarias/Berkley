@@ -13,8 +13,9 @@ namespace James.Data.Server.GraphQL.Mutations
             var ctx = await contextFactory.CreateDbContextAsync();
             try
             {
-                var acct = ctx.Accounts.First(p => p.AccountNum == accountNum);
-                acct.CreditReportImagingId = imagingDocumentId;
+                var account = ctx.Accounts.FirstOrDefault(p => p.AccountNum == accountNum);
+                if (account == null) return false;
+                account.CreditReportImagingId = imagingDocumentId;
                 await ctx.SaveChangesAsync();
                 return true;
             }
@@ -24,6 +25,93 @@ namespace James.Data.Server.GraphQL.Mutations
             }
         }
 
+        [Authorize]
+        public async Task<bool> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
+            string? businessType, string? priorSurety, int? estAnnualPremium, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            try
+            {
+                var account = await ctx.Accounts
+                    .Include(a => a.IdNavigation)
+                    .FirstOrDefaultAsync(a => a.Id == accountId);
+
+                if (account == null) return false;
+                account.YearOpened = yearStarted;
+                account.CurrentManagementYear = currentManagementYear;
+                account.BusinessTypeClass = businessClass;
+                account.BusinessType = businessType;
+                account.PriorSuretyCompany = priorSurety;
+
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+        [Authorize]
+        public async Task<bool> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem,
+            bool? interimWips, bool? interimPOCs, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            try
+            {
+                var account = await ctx.Accounts
+                    .Include(a => a.IdNavigation)
+                    .FirstOrDefaultAsync(a => a.Id == accountId);
+
+                if (account == null) return false;
+                account.EstimatingSystem = estimatingSystem;
+                account.EstimatingSignoff = estimatingSignoff;
+                account.AccountingSystem = internalAccountingSystem;
+                account.InterimWips = interimWips ?? false;
+                account.Pocinterims = interimPOCs ?? false;
+
+                await ctx.SaveChangesAsync();
+                return true;
+
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        [Authorize]
+        public async Task<bool> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity, bool? personalIndemnity,
+            bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
+            bool? trackCommAccount, bool? berkleyAffiliate, string? comments, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            try
+            {
+                var account = await ctx.Accounts.Include(a => a.IdNavigation).FirstOrDefaultAsync(a => a.Id == accountId);
+
+                if (account == null) return false;
+                account.IndemnityFull = fullIndemnity ?? false;
+                account.IndemnityCorp = corpIndemnity ?? false;
+                account.IndemnityPerson = personalIndemnity ?? false;
+                account.ContinuityKeyManagementLifeInsurance = keyManagementLifeInsurance ?? false;
+                account.ContinuityManagementIncentives = managementIncentives ?? false;
+                account.ContinuityFundedBuySell = fundedBuySell ?? false;
+                account.ContinuityActiveMultipleOwners = multipleActiveOwners ?? false;
+                //TODO: Deal with "trackCommAccount." Seems to be missing from DB.
+                account.BerkleyAffiliate = berkleyAffiliate ?? false;
+                account.IndemnityComments = comments;
+
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+
+            catch
+            {
+                return false;
+            }
+        }
         [Authorize]
         public async Task<AccountProgram> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

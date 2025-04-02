@@ -941,6 +941,9 @@ type Bond {
 
 type Mutation {
   setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
+  setAccountGeneralInfo(input: SetAccountGeneralInfoInput!): SetAccountGeneralInfoPayload!
+  setAccountSystems(input: SetAccountSystemsInput!): SetAccountSystemsPayload!
+  setAccountAdditionalInformation(input: SetAccountAdditionalInformationInput!): SetAccountAdditionalInformationPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
@@ -1323,6 +1326,10 @@ type PowerOfAttorneyDocumentStatus {
   poa: PowerOfAttorney!
 }
 
+type SetAccountAdditionalInformationPayload {
+  boolean: Boolean
+}
+
 type SubscriptionResultOfGuid {
   identifier: String!
   result: UUID!
@@ -1406,6 +1413,16 @@ input SetPowerOfAttorneyInput {
   currentIssued: Date
   comments: String
   status: String!
+}
+
+input SetAccountGeneralInfoInput {
+  accountId: UUID!
+  yearStarted: String
+  currentManagementYear: String
+  businessClass: String
+  businessType: String
+  priorSurety: String
+  estAnnualPremium: Int
 }
 
 type DefaultGeneralLedgerAccount {
@@ -1765,6 +1782,10 @@ type ProfitCenter {
   underWriter: Underwriter
 }
 
+type SetAccountGeneralInfoPayload {
+  boolean: Boolean
+}
+
 type VImagingCategoryTabDivisionType {
   tabName: String!
   tabDescription: String!
@@ -2019,6 +2040,10 @@ type Insurer {
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
+type SetAccountSystemsPayload {
+  boolean: Boolean
+}
+
 type WorkInProgressJob {
   id: UUID!
   created: DateTime!
@@ -2187,6 +2212,15 @@ type State {
 
 type CreateLicensePayload {
   boolean: Boolean
+}
+
+input SetAccountSystemsInput {
+  accountId: UUID!
+  estimatingSystem: String
+  estimatingSignoff: String
+  internalAccountingSystem: String
+  interimWips: Boolean
+  interimPOCs: Boolean
 }
 
 input DeleteAgencyInventoryInput {
@@ -2644,6 +2678,20 @@ type Agent {
 
 type SetPowerOfAttorneyDocumentStatusPayload {
   powerOfAttorneyDocumentStatus: PowerOfAttorneyDocumentStatus
+}
+
+input SetAccountAdditionalInformationInput {
+  accountId: UUID!
+  fullIndemnity: Boolean
+  corpIndemnity: Boolean
+  personalIndemnity: Boolean
+  keyManagementLifeInsurance: Boolean
+  managementIncentives: Boolean
+  fundedBuySell: Boolean
+  multipleActiveOwners: Boolean
+  trackCommAccount: Boolean
+  berkleyAffiliate: Boolean
+  comments: String
 }
 
 type InforceAccountLOA {

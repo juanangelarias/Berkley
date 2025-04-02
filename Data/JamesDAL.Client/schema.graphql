@@ -164,6 +164,10 @@ input DeleteAddressInput {
 }
 
 type LegalEntity {
+  _LetterInitialsOfIndividual: String!
+  mainAddress: Address
+  mainPhoneNumber: PhoneNumber
+  mainEmail: String
   id: UUID!
   created: DateTime!
   modified: DateTime!
@@ -235,6 +239,17 @@ input SetAgencyLicenseInput {
   licenseNumber: String
   state: String!
   isActive: Boolean!
+}
+
+enum SearchResultType {
+  UNSET
+  ACCOUNT
+  BOND
+  BOND_LIST
+  AGENCY
+  OBLIGEE
+  FILE
+  PERSON
 }
 
 type EmailHistory {
@@ -429,6 +444,11 @@ type DeleteAddressPayload {
   boolean: Boolean
 }
 
+type KeyValuePairOfGuidAndString {
+  key: UUID!
+  value: String!
+}
+
 enum ImagingDocumentCategory {
   INVALID
   ACCOUNT
@@ -536,6 +556,7 @@ type Query {
   accountActiveLinesOfAuthority(accountNumber: String!): InforceAccountLOA!
   accountProgramHistory(accountNumber: String!): [AccountProgram!]!
   accountOnly(accountNumber: String): Account
+  idAccountNumbers: [KeyValuePairOfGuidAndString!]!
   searchAgencies(stringToSearch: String): [Agency!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
   agencyById(agencyId: UUID!): Agency
@@ -552,6 +573,7 @@ type Query {
   allPoaStatuses: [PowerOfAttorneyStatusDm!]!
   agencyRelatedParties(agencyId: UUID!): [Agency!]!
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
+  idAgencyNumbers: [KeyValuePairOfGuidAndString!]!
   agentByAgentId(agentId: UUID!): Agent!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
   bondRequestNumberType(bondNumber: String!): BondRequestNumberType
@@ -564,6 +586,7 @@ type Query {
   allBranches: [Branch!]!
   allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
   addressTypes: [AddressTypeDm!]!
+  allCountries: [CountryDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -576,6 +599,7 @@ type Query {
   searchObligees(searchString: String!): [Obligee!]!
   obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!
   obligeeSecondaryBonds(obligeeId: UUID!): [Bond!]!
+  search(searchTerm: String!): String!
   allStates: [State!]!
 }
 
@@ -1333,6 +1357,7 @@ type DivisionDm {
 }
 
 type Address {
+  cityZipLine: String! @deprecated(reason: "UseAddressPhoneFormatService instead.")
   id: UUID!
   created: DateTime!
   modified: DateTime!
@@ -1929,6 +1954,16 @@ input SetAgencyGeneralInfoInput {
   branchKey: String!
 }
 
+type JamesSearchResult {
+  name: String!
+  entity: LegalEntity!
+  type: SearchResultType!
+  fromDescription: Boolean!
+  bondList: [Bond!]
+  confidence: Int!
+  searchString: String!
+}
+
 type AdditionalObligee {
   id: UUID!
   created: DateTime!
@@ -2199,6 +2234,12 @@ type CountryDm {
   created: DateTime!
   modified: DateTime!
   name: String!
+  abbreviation: String!
+  active: Boolean!
+  phoneCode: String!
+  phoneMask: String!
+  postalCodeMask: String!
+  addressFinalLineFormat: String
   insurers: [Insurer!]!
   states: [State!]!
 }
@@ -2295,6 +2336,11 @@ type RegionDm {
   branches: [Branch!]!
 }
 
+type SubscriptionResultOfListOfJamesSearchResult {
+  identifier: String!
+  result: [JamesSearchResult!]!
+}
+
 input CreateAgencyLicenseDocumentLinkInput {
   licenseId: UUID!
   imagingDocumentId: UUID
@@ -2360,6 +2406,7 @@ type PersonalFinancialStatementTypeDm {
 }
 
 type PhoneNumber {
+  formatted(showCountryCode: Boolean! = false): String!
   id: UUID!
   created: DateTime!
   modified: DateTime!
@@ -2676,6 +2723,7 @@ type Subscription {
   onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
   onAddressCollectionModified(legalEntityId: ID!): SubscriptionResultOfGuid!
   onLicenseModified: AgencyLicense!
+  onSearchResultReady(searchTerm: String!): SubscriptionResultOfListOfJamesSearchResult!
 }
 
 type ImagingChoice {

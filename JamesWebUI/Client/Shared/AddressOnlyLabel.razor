@@ -1,0 +1,42 @@
+﻿@inject AddressPhoneFormatService AddressPhoneFormatService
+
+<RadzenStack>
+    <RadzenText Text="@Address.Address1" />
+    @if ((Address.Address2 ?? "").Length > 0)
+    {
+        <RadzenText Text="@Address.Address2" />
+    }
+    @if ((Address.Address3 ?? "").Length > 0)
+    {
+        <RadzenText Text="@Address.Address3" />
+    }
+    @if (null! != _cityPostalCodeLines)
+    {
+        foreach (var line in _cityPostalCodeLines)
+        //Countries without full address formatting support will have a second line that 
+        //  tells the user that the address may not be properly formatted.
+        {
+            <RadzenText Text="@line" />
+        }
+    }
+    @if ((Address.StateCodeNavigation?.CountryCode ?? "US") != "US")
+    {
+        <RadzenText Text="@_fullCountryName" />
+    }
+</RadzenStack>
+@code {
+    [Parameter]public required Address Address { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        _cityPostalCodeLines = (await AddressPhoneFormatService.GetAddressFinalLineAsync(Address)).Split('|');
+        var countryCode = Address.StateCodeNavigation?.CountryCode ?? "US";
+        if (countryCode != "US")
+            _fullCountryName = await AddressPhoneFormatService.GetFullCountryNameFromCode(countryCode);
+        StateHasChanged();
+    }
+
+    private string[] _cityPostalCodeLines = Array.Empty<string>();
+    private string _fullCountryName = "";
+}

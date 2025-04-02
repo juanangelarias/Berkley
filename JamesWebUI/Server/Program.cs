@@ -21,9 +21,11 @@ using Radzen;
 using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using Blazored.LocalStorage;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
+using JamesWebUI.Client.Services;
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
@@ -99,6 +101,7 @@ try
         options.ReturnUrlParameter = "redirectUri";
     });
     builder.Services.AddRadzenComponents();
+    builder.Services.AddBlazoredLocalStorage();
 
     builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
     builder.Services.AddScoped<IUserShared, UserShared>();
@@ -121,10 +124,12 @@ try
     builder.Services.AddScoped<AccountMutation>();
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
-    builder.Services.AddScoped<GeneralMutations>();
+    builder.Services.AddScoped<GeneralMutation>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents();
+    builder.Services.AddScoped<LocalStorageKeyListingService>();
+    builder.Services.AddScoped<AddressPhoneFormatService>();
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {
         options.ForwardedHeaders =

@@ -222,5 +222,12 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.AgencyCommissions.Where(ac => ac.AgencyId == agencyId).ToListAsync();
         }
+
+        [Authorize]
+        public async Task<Dictionary<Guid, string>> GetIdAgencyNumbers([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.Agencies.ToDictionaryAsync(a => a.Id, a => a.AgencyNumber);
+        }
     }
 }

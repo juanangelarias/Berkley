@@ -19,7 +19,7 @@ namespace James.Data.Client
         {
             return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber)!,
                 "AccountByNumber");
-         
+
         }
         public async Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber)
         {
@@ -115,7 +115,7 @@ namespace James.Data.Client
 
         public async Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId)
         {
-            return await ExecuteSave(async () => await jamesClient.SetPoaDocumentLink.ExecuteAsync(new CreateAgencyPOADocumentLinkInput{ImagingDocumentId = imagingDocumentId, PoaId = poaId}));
+            return await ExecuteSave(async () => await jamesClient.SetPoaDocumentLink.ExecuteAsync(new CreateAgencyPOADocumentLinkInput { ImagingDocumentId = imagingDocumentId, PoaId = poaId }));
         }
 
         public async Task<ISaveDataResult> SetAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId)
@@ -173,11 +173,18 @@ namespace James.Data.Client
 
             return GraphQLSaveResult(result);
         }
+
+        public async Task<IDataAccessResult<List<CountryDm>>> GetAllCountries()
+        {
+            return await ExecuteGet<List<CountryDm>>(
+                async () => await jamesClient.GetAllCountries.ExecuteAsync(), "AllLegalEntityAddresses");
+        }
+
         public async Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId)
         {
             return await ExecuteGet<List<Address>>(
                 async () => await jamesClient.GetAllLegalEntityAddresses.ExecuteAsync(legalEntityId), "AllLegalEntityAddresses");
-            
+
         }
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
@@ -353,9 +360,32 @@ namespace James.Data.Client
             return addressCollectionModifiedWatch;
         }
 
+        public IDisposable SearchResultReady(string searchTerm, Action<SubscriptionResult<List<JamesSearchResult>>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
+        {
+            var subscriptionToWatch = jamesClient.SearchResultReady.Watch(searchTerm);
+            var searchResultReady =
+                new SearchResultReadydWatchClass(subscriptionToWatch).SubscribeTo(onNext, onError, onComplete);
+            return searchResultReady;
+        }
+
+        public async Task<ISaveDataResult> StartSuperSearch(string searchTerm)
+        {
+            return await ExecuteSave(async () => await jamesClient.SuperSearch.ExecuteAsync(searchTerm));
+        }
+
+        public async Task<IDataAccessResult<Dictionary<Guid, string>>> GetIdAccountNumbers()
+        {
+            return await ExecuteGet<Dictionary<Guid, string>>(async () => await jamesClient.GetIdAccountNumbers.ExecuteAsync());
+        }
+
+        public async Task<IDataAccessResult<Dictionary<Guid, string>>> GetIdAgencyNumbers()
+        {
+            return await ExecuteGet<Dictionary<Guid, string>>(async () => await jamesClient.GetIdAgencyNumbers.ExecuteAsync());
+        }
+
         public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory, bool useDocCategoryAsCriteria = true)
         {
-            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory),docCategory.Name());
+            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), docCategory.Name());
             return await ExecuteGet<ImagingSearchCriteria>(async () =>
                 await jamesClient.GetImagingSearchCriteria.ExecuteAsync(id, category, useDocCategoryAsCriteria));
         }
@@ -376,7 +406,7 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
         {
-            return await ExecuteGet< List<PowerOfAttorneyDocumentNameDm>>(async ()=>await jamesClient.GetPOADocumentNames.ExecuteAsync(), "PoaDocumentNames");
+            return await ExecuteGet<List<PowerOfAttorneyDocumentNameDm>>(async () => await jamesClient.GetPOADocumentNames.ExecuteAsync(), "PoaDocumentNames");
         }
 
         public async Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
@@ -393,21 +423,9 @@ namespace James.Data.Client
                 }));
         }
 
-        //public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(ImagingSearchCriteria criteria, KeyValuePair<string, string>[]? searchOptions = null,
-        //    KeyValuePair<string, string>[]? additionalParams = null)
-        //{
-        //    //UNDONE:
-        //    throw new NotImplementedException();
-        //}
-
-        //private AddressModifiedWatchClass AddressModifiedWatch(
-        //    IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription)
-        //{
-        //    throw new NotImplementedException();
-        //}
         private sealed class AddressModifiedWatchClass(IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription) :
-        //IObservable<SubscriptionResult<Address>>,
-            IDisposable
+             //IObservable<SubscriptionResult<Address>>,
+             IDisposable
         {
             private IDisposable? _internalSubscription;
             public IDisposable SubscribeTo(Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
@@ -466,6 +484,40 @@ namespace James.Data.Client
                         Result = ThisToThat.ToEntityType<Guid>(onNextConversion.Data.OnAddressCollectionModified.Identifier)
                     };
                     source.Invoke(subscriptionResultAddress);
+                };
+            }
+
+            public void Dispose()
+            {
+                _internalSubscription?.Dispose();
+            }
+        }
+        private sealed class SearchResultReadydWatchClass(IObservable<IOperationResult<ISearchResultReadyResult>> graphQlSubscription) :
+            IDisposable
+        {
+            private IDisposable? _internalSubscription;
+            public IDisposable SubscribeTo(Action<SubscriptionResult<List<JamesSearchResult>>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
+            {
+                if (null == onError && null == onComplete)
+                    return graphQlSubscription.Subscribe(Conversion(onNext));
+                //If onComplete is not null, OnError is required.
+                ArgumentNullException.ThrowIfNull(onError, nameof(onError));
+                if (null == onComplete)
+                    return graphQlSubscription.Subscribe(Conversion(onNext), onError);
+                return _internalSubscription = graphQlSubscription.Subscribe(Conversion(onNext), onError, onComplete);
+            }
+
+            private static Action<IOperationResult<ISearchResultReadyResult>> Conversion(Action<SubscriptionResult<List<JamesSearchResult>>> source)
+            {
+                return onNextConversion =>
+                {
+                    ArgumentNullException.ThrowIfNull(onNextConversion.Data, "Subscription Payload");
+                    var subscriptionResultSearchResult = new SubscriptionResult<List<JamesSearchResult>>
+                    {
+                        Identifier = onNextConversion.Data.OnSearchResultReady.Identifier,
+                        Result = ThisToThat.ToEntityType<List<JamesSearchResult>>(onNextConversion.Data.OnSearchResultReady.Result)
+                    };
+                    source.Invoke(subscriptionResultSearchResult);
                 };
             }
 

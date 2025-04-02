@@ -100,3 +100,8 @@ a, .btn-link {
         content: var(--blazor-load-percentage-text, "Loading");
     }
 
+/* Below area classes to match font styles used in Figma. */
+/* Stubbed out by Greg, but Stefanie will confirm them when she has a chance */
+.figma-subtable-header{
+    font: bold 14px Inter, sans-serif;
+}

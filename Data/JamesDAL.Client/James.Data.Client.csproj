@@ -26,6 +26,7 @@
     <GraphQL Remove="GraphQL\Queries\BondQueries.graphql" />
     <GraphQL Remove="GraphQL\Queries\General.graphql" />
     <GraphQL Remove="graphql\queries\Imaging.graphql" />
+    <GraphQL Remove="GraphQL\Search.graphql" />
   </ItemGroup>
 
   <ItemGroup>

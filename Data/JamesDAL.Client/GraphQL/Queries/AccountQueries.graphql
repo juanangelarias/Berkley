@@ -233,3 +233,10 @@ query GetAccountProgramHistory($input: String!) {
     }
   }
 } 
+
+query GetIdAccountNumbers {
+  idAccountNumbers {
+    key
+    value
+  }
+}

@@ -10,10 +10,10 @@ using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
 using James.Shared.Server;
+using James.Test.Shared;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -212,45 +212,5 @@ ORDER BY cnt, a.Modified, a.Created");
 
             return serviceCollection.BuildServiceProvider();
         }
-    }
-
-    public class TestContextFactory : IDbContextFactory<JamesDatabaseContext>
-    {
-        private static TestContextFactory? _instance;
-        internal static TestContextFactory Instance => _instance ??= new TestContextFactory();
-
-        public JamesDatabaseContext CreateDbContext()
-        {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables()
-                .Build();
-            var options = new DbContextOptionsBuilder<JamesDatabaseContext>();
-            //TODO: Change to use a Unit test specific local db
-            options.UseSqlServer(config.GetConnectionString("James"));
-
-            return new JamesDatabaseContext(options.Options);
-        }
-    }
-
-    public class TestUserShared : IUserShared
-    {
-        public async Task<SiteUserInfo> GetCurrentUser()
-        {
-            return await Task.FromResult(_fakeTestUser);
-        }
-
-        public async Task<SiteUserInfo> GetUserInfoAsync(string jwtToken)
-        {
-            return await Task.FromResult(_fakeTestUser);
-        }
-        private readonly SiteUserInfo _fakeTestUser = new SiteUserInfo
-        {
-            EntraId = "entraId",
-            FirstName = "first",
-            FullName = "full",
-            Email = "test@fake.com",
-            JWT = "jwt"
-        };
     }
 }

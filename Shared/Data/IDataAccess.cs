@@ -46,6 +46,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType, string identifier);
         public Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier);
+        public Task<IDataAccessResult<List<CountryDm>>> GetAllCountries();
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
             Guid changedBy, string? comments);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
@@ -77,6 +78,15 @@ namespace James.Shared.Data
 
         public IDisposable AddressCollectionModified(Guid legalEntityId, Action<SubscriptionResult<Guid>> onNext,
             Action<Exception>? onError = null, Action? onComplete = null);
+
+        public IDisposable SearchResultReady(string searchTerm,
+            Action<SubscriptionResult<List<JamesSearchResult>>> onNext,
+            Action<Exception>? onError = null, Action? onComplete = null);
+
+        public Task<ISaveDataResult> StartSuperSearch(string searchTerm);
+
+        public Task<IDataAccessResult<Dictionary<Guid, string>>> GetIdAccountNumbers();
+        public Task<IDataAccessResult<Dictionary<Guid, string>>> GetIdAgencyNumbers();
 
         public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true);

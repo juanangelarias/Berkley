@@ -19,5 +19,22 @@ namespace James.Shared
                             await body(partition.Current);
                 }));
         }
+
+        /// <summary>
+        /// Determines if a string contains digits only
+        /// </summary>
+        /// <param name="str">string being checked</param>
+        /// <returns>False if the string contains anything besides a digit 0-9</returns>
+        /// <remarks>Benchmarked as fastest https://stackoverflow.com/questions/7461080/fastest-way-to-check-if-string-contains-only-digits-in-c-sharp</remarks>
+        public static bool IsDigitsOnly(this string str)
+        {
+            foreach (var c in str)
+            {
+                if (c is < '0' or > '9')
+                    return false;
+            }
+
+            return true;
+        }
     }
 }

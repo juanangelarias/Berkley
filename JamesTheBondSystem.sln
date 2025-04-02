@@ -19,9 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		DeployProd.cmd = DeployProd.cmd
 		DeployTst.cmd = DeployTst.cmd
 		global.json = global.json
-		XCopyDeployTemplate.cmd = XCopyDeployTemplate.cmd
 		LoadItemKey.snippet = LoadItemKey.snippet
 		LoadItemUniversal.snippet = LoadItemUniversal.snippet
+		XCopyDeployTemplate.cmd = XCopyDeployTemplate.cmd
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{C60478F9-28B0-415F-9FC6-39D8506F7B62}"
@@ -57,6 +57,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientBusinessLogic.Test", "BusinessLogic\Tests\ClientBusinessLogic.Test\ClientBusinessLogic.Test.csproj", "{5CBA2E3A-9485-4359-8547-F217989DD8DA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedBusinessLogic.Test", "Test\SharedBusinessLogic.Test\SharedBusinessLogic.Test.csproj", "{6E3F4787-EBBC-4C0D-A0D4-98D8E648E8D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "James.Test.Shared", "Test\James.Test.Shared\James.Test.Shared.csproj", "{B95A7FFE-D1EA-4327-ACC0-AD83A7E8EC17}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -123,6 +125,10 @@ Global
 		{6E3F4787-EBBC-4C0D-A0D4-98D8E648E8D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E3F4787-EBBC-4C0D-A0D4-98D8E648E8D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E3F4787-EBBC-4C0D-A0D4-98D8E648E8D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B95A7FFE-D1EA-4327-ACC0-AD83A7E8EC17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B95A7FFE-D1EA-4327-ACC0-AD83A7E8EC17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B95A7FFE-D1EA-4327-ACC0-AD83A7E8EC17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B95A7FFE-D1EA-4327-ACC0-AD83A7E8EC17}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -141,6 +147,7 @@ Global
 		{AA1AE19C-961D-4DFD-951B-F388D4733807} = {15F9E100-B307-4CB4-B4D4-0FC6D27AB22C}
 		{5CBA2E3A-9485-4359-8547-F217989DD8DA} = {69BB7FC5-8EE7-450A-8072-E0A8043515DD}
 		{6E3F4787-EBBC-4C0D-A0D4-98D8E648E8D3} = {69BB7FC5-8EE7-450A-8072-E0A8043515DD}
+		{B95A7FFE-D1EA-4327-ACC0-AD83A7E8EC17} = {69BB7FC5-8EE7-450A-8072-E0A8043515DD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C162C589-90F1-41BB-A1C8-5C250EDB98A3}

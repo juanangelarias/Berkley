@@ -22,25 +22,27 @@ public class ServerSideSubscription<T> : IObservable<T>, IDisposable
         //TODO:End this loop when the cancellation token is canceled.
         await foreach (T message in _source)
         {
-            try
-            {
-                foreach (var observer in _observers)
-                    observer.OnNext(message);
-            }
-            catch (Exception e)
-            {
-                foreach (var observer in _observers)
-                    observer.OnError(e);
-            }
+            lock (_observers)
+                try
+                {
+                    foreach (var observer in _observers)
+                        observer.OnNext(message);
+                }
+                catch (Exception e)
+                {
+                    foreach (var observer in _observers)
+                        observer.OnError(e);
+                }
         }
 
     }
-    
+
     private readonly List<IObserver<T>> _observers = new();
     public IDisposable Subscribe(IObserver<T> observer)
     {
-        if (!_observers.Contains(observer))
-            _observers.Add(observer);
+        lock (_observers)
+            if (!_observers.Contains(observer))
+                _observers.Add(observer);
 
         return new Unsubscriber(_observers, observer);
     }
@@ -48,20 +50,22 @@ public class ServerSideSubscription<T> : IObservable<T>, IDisposable
     {
         public void Dispose()
         {
-            observers?.Remove(observer);
+            lock (observers)
+                observers?.Remove(observer);
         }
     }
 
     public void Dispose()
     {
-        foreach (var observer in _observers)
-            observer.OnCompleted();
+        lock (_observers)
+            foreach (var observer in _observers)
+                observer.OnCompleted();
     }
 }
 
 public class ServerSideSubscriptionSubscriber<T>(Action<T> onNext, Action<Exception>? onError = null, Action? onComplete = null) : IObserver<T>
 {
- 
+
     public void OnCompleted()
     {
         onComplete?.Invoke();

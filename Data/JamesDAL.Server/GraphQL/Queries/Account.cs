@@ -90,5 +90,12 @@ namespace James.Data.Server.GraphQL.Queries
             return await ctx.Accounts
                 .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim());
         }
+
+        [Authorize]
+        public async Task<Dictionary<Guid, string>> GetIdAccountNumbers([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.Accounts.ToDictionaryAsync(a => a.Id, a => a.AccountNum);
+        }
     }
 }

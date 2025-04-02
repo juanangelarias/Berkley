@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 namespace James.Data.Server.GraphQL.Mutations
 {
     [MutationType]
-    public class GeneralMutations
+    public class GeneralMutation
     {
         [Authorize]
         public async Task<bool> CreateAddress(Guid addressId, string address1, string? address2,

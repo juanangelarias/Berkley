@@ -19,13 +19,22 @@ namespace James.Data.Server.GraphQL
         [Topic(nameof(OnAddressCollectionModified))]
         public SubscriptionResult<Guid> OnAddressCollectionModified([ID] Guid legalEntityId, [EventMessage] SubscriptionResult<Guid>  result, CancellationToken cancellationToken) => result;
 
-        public async ValueTask<ISourceStream<SubscriptionResult<string>>> SubscribeToOnAddressCollectionModifiedAsync(
+        public async ValueTask<ISourceStream<SubscriptionResult<Guid>>> SubscribeToOnAddressCollectionModifiedAsync(
             Guid legalEntityId, [Service] ITopicEventReceiver eventReceiver, CancellationToken cancellationToken) =>
-            await eventReceiver.SubscribeAsync<SubscriptionResult<string>>("OnAddressCollectionModified_" + legalEntityId, cancellationToken);
+            await eventReceiver.SubscribeAsync<SubscriptionResult<Guid>>("OnAddressCollectionModified_" + legalEntityId, cancellationToken);
 
         [Subscribe]
         [Topic(nameof(OnLicenseModified))]
-        public AgencyLicense OnLicenseModified([EventMessage] AgencyLicense license) => license;
+        public AgencyLicense OnLicenseModified([EventMessage] AgencyLicense license) => license;//TODO: Implement
+
+        [Subscribe(With = nameof(SubscribeToSearchResultReadyAsync))]
+        [Topic(nameof(OnSearchResultReady))]
+        public SubscriptionResult<List<JamesSearchResult>> OnSearchResultReady(string searchTerm,
+            [EventMessage] SubscriptionResult<List<JamesSearchResult>> results, CancellationToken cancellationToken) => results;
+        public async ValueTask<ISourceStream<SubscriptionResult<List<JamesSearchResult>>>> SubscribeToSearchResultReadyAsync(
+            string searchTerm, [Service] ITopicEventReceiver eventReceiver, CancellationToken cancellationToken) =>
+            await eventReceiver.SubscribeAsync<SubscriptionResult<List<JamesSearchResult>>>("Srch_" + searchTerm, cancellationToken);
+
     }
 
     public static class SubscriptionExtensions

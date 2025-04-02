@@ -75,8 +75,8 @@ query GetAddressTypes{
   }
 }
 
-query GetCountryList {
-  countryList {
+query GetAllCountries {
+  allCountries {
     abbreviation
     active
     code

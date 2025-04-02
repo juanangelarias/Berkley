@@ -302,3 +302,9 @@ query GetPOADocumentNames{
   }
 }
 
+query GetIdAgencyNumbers {
+  idAgencyNumbers {
+    key
+    value
+  }
+}

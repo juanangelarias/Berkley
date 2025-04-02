@@ -1,4 +1,5 @@
 using James.Data.Client;
+using Blazored.LocalStorage;
 using James.Data.Client.GraphQL;
 using James.Shared;
 using James.Shared.Data;
@@ -28,6 +29,9 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("JamesAPI"));
 
 builder.Services.AddRadzenComponents();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<LocalStorageKeyListingService>();
+builder.Services.AddScoped<AddressPhoneFormatService>();
 builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
 builder.Services.AddSingleton<ILoggingService, LoggingService>();
 builder.Services.AddScoped<IDataAccess,ClientDataAccess>();

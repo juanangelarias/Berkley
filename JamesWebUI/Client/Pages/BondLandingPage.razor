@@ -1,0 +1,17 @@
+﻿@page "/Bond/{BondNumber?}"
+<RadzenText TextStyle="TextStyle.DisplayH3" TextAlign="TextAlign.Center">Bond Landing Page during development</RadzenText>
+<br />
+<br />
+<br />
+@if (string.IsNullOrWhiteSpace(BondNumber))
+{
+    <RadzenText TextStyle="TextStyle.DisplayH4">This is where the bond specific search will be</RadzenText>
+}
+else
+{
+    <RadzenText TextStyle="TextStyle.DisplayH4">This will be where details about Bond Number @BondNumber are displayed.</RadzenText>
+}
+
+@code {
+    [Parameter] public string? BondNumber { get; set; }
+}

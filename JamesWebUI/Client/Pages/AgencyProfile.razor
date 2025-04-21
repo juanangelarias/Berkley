@@ -2,6 +2,7 @@
 @using System.Diagnostics
 @using James.Shared
 @using James.Shared.Imaging
+@using Microsoft.AspNetCore.WebUtilities;
 
 @inherits JamesLayoutComponentBase
 @implements IDisposable
@@ -14,7 +15,7 @@
 
 <Theme />
 
-<PageTitle>Agency Profile</PageTitle>
+<PageTitle>BasisTNG - Agency Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
 @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
 
@@ -152,6 +153,7 @@
                                                                     Text="NASBP" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" />
                                                 <RadzenButton Text="Edit" Icon="edit" Visible="!EditMode" Click="@(() => EditMode = !EditMode)" />
                                                 <RadzenButton Text="Save" Icon="save" Visible="EditMode" Click="SaveAgencyChanges" />
+                                                <RadzenButton Text="Cancel" Icon="cancel" Visible="EditMode" Click="@(() => EditMode = !EditMode)" />
                                             </RadzenStack>
                                         </RadzenColumn>
                                     </RadzenRow>
@@ -162,35 +164,35 @@
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <RadzenFieldset Text="Addresses">
-                        <LegalEntityAddressEditor LegalEntityId="@_agencyToDisplay.Id" />
+                        <LegalEntityAddressManager LegalEntityId="@_agencyToDisplay.Id" />
                     </RadzenFieldset>
                 </RadzenColumn>
             </RadzenRow>
         </ChildContent>
     </RadzenPanel>
     <RadzenPanel Style="border-radius: 20px">
-        <RadzenTabs>
+        <PositionSavingTabs @ref="@tabsAgencyProfile" @bind-SelectedIndex="@tabsAgencyProfile.NewSelectedIndex" TabControlName="tabsAgencyProfile">
             <Tabs>
-                <RadzenTabsItem Text="General Info">
+                <PositionSavingTabsItem Text="General Info" TabName="tabGenInfo">
                     <AgencyGeneralInfoGrids agencyId="@_agencyToDisplay.Id" />
-                </RadzenTabsItem>
-                <RadzenTabsItem Text="Contacts">
+                </PositionSavingTabsItem>
+                <PositionSavingTabsItem Text="Contacts" TabName="tabContacts">
                     <AgencyContactsGrid AgencyId="@_agencyToDisplay.Id" />
-                </RadzenTabsItem>
-                <RadzenTabsItem Text="Inventory">
+                </PositionSavingTabsItem>
+                <PositionSavingTabsItem Text="Inventory" TabName="tabInventory">
                     <AgencyInventoryGrid AgencyId="@_agencyToDisplay.Id" />
-                </RadzenTabsItem>
-                <RadzenTabsItem Text="Accounts and Bonds">
+                </PositionSavingTabsItem>
+                <PositionSavingTabsItem Text="Accounts and Bonds" TabName="tabAccountsBonds">
                     <AgencyAccountsAndBonds agencyToDisplay="@_agencyToDisplay" />
-                </RadzenTabsItem>
-                <RadzenTabsItem Text="Commission Rates">
+                </PositionSavingTabsItem>
+                <PositionSavingTabsItem Text="Commission Rates" TabName="tabCommissionRates">
                     <AgencyCommissionRates AgencyId="@_agencyToDisplay.Id" AgencyStatus="@_agencyToDisplay?.Status" />
-                </RadzenTabsItem>
-                <RadzenTabsItem Text="Virtual File">
+                </PositionSavingTabsItem>
+                <PositionSavingTabsItem Text="Virtual File" TabName="tabVirutalFile">
                     <ImagingFull ImagingId="@_agencyToDisplay?.AgencyNumber" DocumentCategory="ImagingDocumentCategory.Agency" />
-                </RadzenTabsItem>
+                </PositionSavingTabsItem>
             </Tabs>
-        </RadzenTabs>
+        </PositionSavingTabs>
     </RadzenPanel>
 </RadzenStack>
 @* ReSharper restore ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
@@ -208,13 +210,16 @@
     private bool ErrorsAndOmissionsEditMode { get; set; }
     private bool EditMode { get; set; }
     private bool ShowTaxId { get; set; }
+
+    public PositionSavingTabs tabsAgencyProfile { get; set; } = new PositionSavingTabs();
     //TODO: Remove after implementing caching
     private List<Branch> AllBranches { get; set; } = new List<Branch>();
+
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
         await LoadBranches();
-
 
         JamesThemeService.Initialize(NavigationManager);
 
@@ -222,9 +227,9 @@
         Notifications =
         [
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
+    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
+    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
+    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
         ];
     }
 
@@ -246,7 +251,7 @@ new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = 
                 },
                 CacheDuration = TimeSpan.FromHours(8)   //Subscription will update this if changed, so long cache time is appropriate.
             };
-    
+
     private IDataAccessResult<List<Branch>> _branchesResult;
     private LoadItem BranchesLoadItem() =>
         new()

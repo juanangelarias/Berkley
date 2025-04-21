@@ -1,12 +1,15 @@
 ﻿@page "/Account/{AccountNumber?}"
 @using James.Shared.Imaging
+@using Microsoft.AspNetCore.WebUtilities;
+
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
+
 @attribute [Authorize]
 
 <Theme />
 
-<PageTitle>Account Profile</PageTitle>
+<PageTitle>BasisTNG - Account Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
@@ -74,7 +77,7 @@
                                     <RadzenRow>
                                         <RadzenColumn Size="6">
                                             <RadzenFormField Text="UW" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox Value="@AccountToDisplay?.Underwriter?.IdNavigation?.FullName"/>
+                                                <RadzenTextBox Value="@AccountToDisplay?.Underwriter?.IdNavigation?.FullName" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                         <RadzenColumn Size="6">
@@ -86,7 +89,7 @@
                                     <RadzenRow>
                                         <RadzenColumn Size="6">
                                             <RadzenFormField Text="Division" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%;">
-                                                <RadzenTextBox Value="@AccountToDisplay?.Division"/>
+                                                <RadzenTextBox Value="@AccountToDisplay?.Division" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
@@ -96,8 +99,17 @@
                     </RadzenFieldset>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
-                    <RadzenFieldset Text="Addresses">
-                        <LegalEntityAddressEditor LegalEntityId="@AccountToDisplay.Id" />
+                    <RadzenFieldset Text="Contact Info">
+                        <PositionSavingTabs @ref="@contactTabs" @bind-SelectedIndex="@contactTabs.NewSelectedIndex" TabControlName="ContactTabs">
+                            <Tabs>
+                                <PositionSavingTabsItem Text="Addresses" TabName="accountAddresses">
+                                    <LegalEntityAddressManager LegalEntityId="@AccountToDisplay.Id" />
+                                </PositionSavingTabsItem>
+                                <PositionSavingTabsItem Text="Phone Numbers" TabName="accountPhoneNumbers">
+                                    <LegalEntityPhoneNumberManager LegalEntityId="@AccountToDisplay.Id" />
+                                </PositionSavingTabsItem>
+                            </Tabs>
+                        </PositionSavingTabs>
                     </RadzenFieldset>
                 </RadzenColumn>
             </RadzenRow>
@@ -107,19 +119,54 @@
         <ChildContent>
             <RadzenTabs>
                 <Tabs>
-                    <RadzenTabsItem Text="General Information">
-                        <AccountGeneralInformation AccountToDisplay="@AccountToDisplay" />
+                    <RadzenTabsItem Text="Account Info">
+                        <RadzenTabs>
+                            <Tabs>
+                                <RadzenTabsItem Text="General Information">
+                                    <AccountGeneralInformation AccountToDisplay="@AccountToDisplay" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Account Program">
+                                    <AccountProgramDisplay AccountNumber="@AccountToDisplay?.AccountNum" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Account References">
+
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Commercial Credit Information">
+
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Key Personnel">
+                                    <RadzenStack Orientation="Orientation.Vertical">
+                                        <AccountAdditionalRelatedParties accountToDisplay="@AccountToDisplay" />
+                                    </RadzenStack>
+                                </RadzenTabsItem>
+                            </Tabs>
+                        </RadzenTabs>
                     </RadzenTabsItem>
-                    <RadzenTabsItem Text="Account Program">
-                        <AccountProgramDisplay AccountNumber="@AccountToDisplay?.AccountNum" />
+                    <RadzenTabsItem Text="Bank and Security">
+                        <RadzenTabs>
+                            <Tabs>
+                                <RadzenTabsItem Text="Bank/CPA/Legal">
+                                    <AccountBankCPALegal AccountToDisplay="@AccountToDisplay" />
+                                </RadzenTabsItem>
+                                <RadzenTabsItem Text="Security">
+
+                                </RadzenTabsItem>
+                            </Tabs>
+                        </RadzenTabs>
                     </RadzenTabsItem>
-                    <RadzenTabsItem Text="Account References">
+                    <RadzenTabsItem Text="Bond Requests">
+                        <AccountBondRequest />
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Bonds">
 
                     </RadzenTabsItem>
-                    <RadzenTabsItem Text="Commercial Credit Information">
+                    <RadzenTabsItem Text="Financial">
 
                     </RadzenTabsItem>
-                    <RadzenTabsItem Text="Key Personnel">
+                    <RadzenTabsItem Text="WIP">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Line of Authority">
 
                     </RadzenTabsItem>
                     <RadzenTabsItem Text="Virtual File">
@@ -127,24 +174,28 @@
                     </RadzenTabsItem>
                 </Tabs>
             </RadzenTabs>
-        </ChildContent>    
+
+        </ChildContent>
     </RadzenPanel>
 </RadzenStack>
 
 @code {
-        [Parameter] public string? AccountNumber { get; set; }
+    [Parameter] public string? AccountNumber { get; set; }
+
     private Account AccountToDisplay { get; set; } = new Account()
-        {
-            IdNavigation = new LegalEntity()
-        };
+            {
+                IdNavigation = new LegalEntity()
+            };
     private InforceAccountLOA inForceLOAs { get; set; } = new InforceAccountLOA();
     private bool ShowTaxId { get; set; }
-
+    private PositionSavingTabs contactTabs { get; set; } = new PositionSavingTabs();
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
+        BusyDialog();
         await LoadAccount();
+
+        DialogService.Close();
     }
 
     private async Task LoadAccount()
@@ -154,13 +205,13 @@
             var result = await DataAccess.GetAccountByNumber(AccountNumber);
             if (result.Errors.Any() || result.Data == null)
             {
-                LoggingService.LogError("Unable to retrieve account.", string.Join(", ",result.Errors));
+                LoggingService.LogError("Unable to retrieve account.", string.Join(", ", result.Errors));
                 NotifyLoadError(result.Errors, "account");
             }
             else
             {
                 AccountToDisplay = result.Data;
-                StateHasChanged();
+                //StateHasChanged();
             }
         }
     }
@@ -175,9 +226,15 @@
             }
             else
             {
-                //TODO: Display them
                 inForceLOAs = result.Data;
             }
         }
+    }
+    void BusyDialog()
+    {
+        DialogService.Open("", ds =>
+    @<RadzenStack AlignItems="AlignItems.Center" Gap="2rem" class="rz-p-12">
+        <RadzenText TextStyle="TextStyle.H6">Loading, please wait...</RadzenText>
+    </RadzenStack>, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto", CloseDialogOnEsc = false });
     }
 }

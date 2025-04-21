@@ -75,6 +75,41 @@ query GetAddressTypes{
   }
 }
 
+query GetPhoneNumber($input: UUID!) {
+	phoneNumber(phoneId: $input) {
+	    countryCode
+	    created
+	    extension
+	    id
+	    mainNumber
+	    modified
+	    legalEntityPhone {
+		    legalEntityId
+		    phoneNumberId
+		    type
+	    }
+    }
+} 
+query GetPhoneTypes {
+	phoneTypes {
+	created
+	id
+	modified
+	order
+	type
+	}
+}
+query GetAllLegalEntityPhoneNumbers($input: UUID!) {
+	allLegalEntityPhoneNumbers(legalEntityId: $input) {
+	countryCode
+	created
+	extension
+	id
+	mainNumber
+	modified
+	}
+}
+
 query GetAllCountries {
   allCountries {
     abbreviation

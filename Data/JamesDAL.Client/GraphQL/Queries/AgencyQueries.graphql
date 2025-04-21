@@ -301,10 +301,10 @@ query GetPOADocumentNames{
     name
   }
 }
-
+  
 query GetIdAgencyNumbers {
   idAgencyNumbers {
-    key
-    value
+    id
+    agencyNumber
   }
 }

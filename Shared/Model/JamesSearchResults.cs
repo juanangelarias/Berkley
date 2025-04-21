@@ -1,30 +1,29 @@
-﻿using System.Collections;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace James.Shared.Model;
 /// <summary>
 /// Contains search results and the functionality to add them safely from background threads
 /// </summary>
-public class JamesSearchResults : IEnumerable<JamesSearchResult>
+public class JamesSearchResults 
 {
-    [JsonInclude]
-    private List<JamesSearchResult> _results = new();
+    private List<JamesSearchResult> _results = [];
     private string _rootSearchTerm;
     private string _searchTerm;
 
-    public IEnumerator<JamesSearchResult> GetEnumerator()
+    /// <summary>
+    /// Prevents performance problems from too many results.  If exceeded, the lowest confidence results will be dropped.
+    /// </summary>
+    public const int MaximumSearchResults = 30;
+
+    public List<JamesSearchResult> ResultItems
     {
-        return _results.GetEnumerator();
+        get => _results;
+        set => _results = value;
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return _results.GetEnumerator();
-    }
-
-    private JamesSearchResult this[int i] => _results[i];
-
+    [JsonRequired]
     public string RootSearchTerm
     {
         get => _rootSearchTerm;
@@ -36,6 +35,7 @@ public class JamesSearchResults : IEnumerable<JamesSearchResult>
         }
     }
 
+    [JsonIgnore]
     public string SearchTerm
     {
         get => _searchTerm;
@@ -57,31 +57,89 @@ public class JamesSearchResults : IEnumerable<JamesSearchResult>
     public void AddRange(IEnumerable<JamesSearchResult> newResults)
     {
         foreach (var jamesSearchResult in newResults)
-            Add(jamesSearchResult);
+            AddWithoutSorting(jamesSearchResult);
+        _results.Sort(SearchResultComparer.Instance);
+        LimitResult();
     }
+
     public JamesSearchResult Add(JamesSearchResult newResult)
+    {
+        var result = AddWithoutSorting(newResult);
+        _results.Sort(SearchResultComparer.Instance);
+        LimitResult();
+        return result;
+    }
+
+    private void LimitResult()
+    {
+        while (_results.Count > MaximumSearchResults)
+            _results.RemoveRange(MaximumSearchResults, _results.Count - MaximumSearchResults);
+    }
+    private JamesSearchResult AddWithoutSorting(JamesSearchResult newResult)
     {
         lock (this)
         {
             var existing = _results.FirstOrDefault(newResult.Equals);
             if (existing == null)
             {
+                //TODO: Insert in order to obviate sorting
                 _results.Add(newResult);
                 return newResult;
             }
 
             //Merge any changed data into the existing result
             Debug.Assert(existing != null, nameof(existing) + " != null");
+            if (existing.Confidence < newResult.Confidence)
+            {
+                existing.Entity = newResult.Entity;
+                existing.AccountNum = newResult.AccountNum;
+                existing.AgencyNumber = newResult.AgencyNumber;
+            }
             //If the same item is found twice, just keep the higher confidence
             existing.Confidence = Math.Max(existing.Confidence, newResult.Confidence);
             //If there are matching FromDescription = true and FromDescription = false records, only use the FromDescription = false
             //This will prevent duplicates if something has its own name in its own description.
             existing.FromDescription = existing.FromDescription && newResult.FromDescription;
             //Use most up-to-date BondList
-            existing.BondList = newResult.BondList;
+            if ((existing.BondList?.Count ?? 0) < (newResult.BondList?.Count ?? 0))
+                existing.BondList = newResult.BondList;
             return existing;
         }
     }
 
     public int Count => _results.Count;
+}
+
+public class SearchResultComparer : IComparer<JamesSearchResult>
+{
+    private SearchResultComparer() { }
+
+    private static SearchResultComparer? _instance;
+    public static SearchResultComparer Instance => _instance ??= new SearchResultComparer();
+    public int Compare(JamesSearchResult? x, JamesSearchResult? y)
+    {
+        if (null == x && null == y) return 0;
+        if (null == x) return -1;
+        if (null == y) return 1;
+        if (x.Confidence.CompareTo(y.Confidence) != 0)
+            return -x.Confidence.CompareTo(y.Confidence);
+        if (x.Type.CompareTo(y.Type) != 0)
+            return x.Type.CompareTo(y.Type);
+        if (x.Name.CompareTo(y.Name) != 0)
+            return x.Name.CompareTo(y.Name);
+        return x.Entity.Id.CompareTo(y.Entity.Id);
+    }
+}
+
+public class JamesSearchResultsConverter : JsonConverter<JamesSearchResults>
+{
+    public override JamesSearchResults? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        throw new NotImplementedException();
+    }
+
+    public override void Write(Utf8JsonWriter writer, JamesSearchResults value, JsonSerializerOptions options)
+    {
+        throw new NotImplementedException();
+    }
 }

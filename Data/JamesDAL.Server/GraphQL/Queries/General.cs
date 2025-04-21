@@ -12,7 +12,14 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No address found with AddressID {addressId}.");
         }
+        [Authorize]
+        public async Task<PhoneNumber> GetPhoneNumber(Guid phoneId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.PhoneNumbers.Where(p => p.Id == phoneId).FirstOrDefaultAsync();
 
+            return result ?? throw new GraphQLException($"No phone number found with PhoneID {phoneId}.");
+        }
         [Authorize]
         public async Task<UserProfile> GetUserProfileByUserName(string userName, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -70,6 +77,34 @@ namespace James.Data.Server.GraphQL.Queries
             catch (Exception ex)
             {
                 throw new GraphQLException($"Error when retrieving Addresses.", ex);
+            }
+        }
+        [Authorize]
+        public async Task<List<PhoneNumber>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.PhoneNumbers
+                .Include(a => a.LegalEntityPhone)
+                .ThenInclude(a => a.TypeNavigation)
+                .Where(a => a.LegalEntityPhone.LegalEntityId == legalEntityId)
+                .OrderBy(a => a.LegalEntityPhone.TypeNavigation.Order)
+                .ToListAsync();
+
+            return result;
+        }
+        [Authorize]
+        public async Task<List<PhoneTypeDm>> GetPhoneTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var result = await ctx.PhoneTypeDms.OrderBy(a => a.Order).ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retrieving Phone Types.", ex);
             }
         }
         [Authorize]

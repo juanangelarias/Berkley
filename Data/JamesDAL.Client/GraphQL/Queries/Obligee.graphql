@@ -41,7 +41,14 @@ query GetObligeeById ($input: UUID!){
   }
 } 
 
-
+query GetObligeeTypes {
+  obligeeTypes {
+    created
+    id
+    modified
+    type
+  }
+} 
 
 query GetObligeePrimaryBonds($input: UUID!){
   obligeePrimaryBonds (obligeeId: $input){

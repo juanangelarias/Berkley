@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace James.Shared.Model
@@ -10,7 +12,7 @@ namespace James.Shared.Model
     public class JamesSearchResult
     {
         public required string Name { get; init; }
-        public required LegalEntity Entity { get; init; }
+        public required LegalEntity Entity { get; set; }
         public SearchResultType Type { get; init; }
         public bool FromDescription { get; set; }
         public int Confidence { get; set; }
@@ -18,6 +20,8 @@ namespace James.Shared.Model
         public List<Bond>? BondList { get; set; } //Used by Type BondList and Bond 
         public ImagingDocument? Document { get; set; } //Used by Type File 
         public LegalEntity? Parent { get; set; } //Used by type Person
+        public string? AccountNum { get; set; }//Used by Accounts
+        public string? AgencyNumber { get; set; }//Used by Agencies
 
         /// <summary>
         /// The full string that matched the search term

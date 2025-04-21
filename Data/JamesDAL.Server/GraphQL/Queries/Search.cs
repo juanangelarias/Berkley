@@ -1,50 +1,26 @@
 ﻿using HotChocolate.Subscriptions;
 using James.Shared;
-using James.Shared.Model;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
-        public async Task<string> Search(string searchTerm, //TODO: Allow settings to limit results
+        public Task<string> Search(string searchTerm, //TODO: Allow settings to limit results
             [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             //TODO: Implement real searches
             //HACK: Not sure why making the _rnd.Next calls return 0 when done in line
-            int actNumAmt = _rnd.Next(2, 10),
-                actNumDelay = _rnd.Next(100) + _rnd.Next(100),
-                actXNumAmt = _rnd.Next(0, 1),
-                actXNumDelay = _rnd.Next(25, 50) + _rnd.Next(200),
-                actNameAmt = _rnd.Next(2, 10),
+            int //actNumAmt = _rnd.Next(2, 10),
+                //actNumDelay = _rnd.Next(100) + _rnd.Next(100),
+                //actXNumAmt = _rnd.Next(0, 1),
+                //actXNumDelay = _rnd.Next(25, 50) + _rnd.Next(200),
+                actNameAmt = _rnd.Next(2, 4),
                 actNameDelay = _rnd.Next(25, 100) + _rnd.Next(100),
                 actXNameAmt = _rnd.Next(0, 1),
                 actXNameDelay = _rnd.Next(25, 100) + _rnd.Next(20),
-                bndNumberAmt = _rnd.Next(2, 10),
+                bndNumberAmt = _rnd.Next(2, 4),
                 bndNumberDelay = _rnd.Next(20, 50) + _rnd.Next(20);
-            var fakeAccountNumberSearch = new FakeSearch(i => new JamesSearchResult
-            {
-                Name = $"Account001{i}",
-                Confidence = 100,
-                Entity = new LegalEntity
-                {
-                    FullName = $"Account001{i}",
-                    LegalEntityAddresses = new List<LegalEntityAddress>(1)
-                            { new () { Type = "Main", Address = GetFakeAddress(i) } },
-                    EntityType = "Account"
-                },
-                SearchString = _rnd.Next(01000, 99999).ToString("D5"),
-                Type = SearchResultType.Account
-            },
-            actNumAmt, actNumDelay, loggingService);
-            //_rnd.Next(2, 10), _rnd.Next(100) + _rnd.Next(100));
             var fakeAccountNameSearch = new FakeSearch(i => new JamesSearchResult
             {
                 Name = $"Abc{searchTerm}xyz Account001{i}",
@@ -56,67 +32,53 @@ namespace James.Data.Server.GraphQL.Queries
                             { new () { Type = "Main", Address = GetFakeAddress(i+232) } },
                     EntityType = "Account"
                 },
+                AccountNum = $"001{i}",
                 SearchString = $"Abc{searchTerm}xyz Account001{i}",
                 Type = SearchResultType.Account
             },
                 actNameAmt, actNameDelay, loggingService);
-            //_rnd.Next(2, 20), _rnd.Next(25, 100) + _rnd.Next(200));
-            var fakeAccountExactNumberSearch = new FakeSearch(i => new JamesSearchResult
+            var fakeAccountExactNameSearch = new FakeSearch(i => new JamesSearchResult
             {
-                Name = $"Account{searchTerm}",
-                Confidence = 105,
+                Name = $"Abc{searchTerm}xyz Account001{i}",
+                Confidence = 110,
                 Entity = new LegalEntity
                 {
-                    FullName = $"Account{searchTerm}",
+                    FullName = $"Abc{searchTerm}xyz Account001{i}",
                     LegalEntityAddresses = new List<LegalEntityAddress>(1)
-                            { new () { Type = "Main", Address = GetFakeAddress(i) } },
+                            { new () { Type = "Main", Address = GetFakeAddress(i+232) } },
                     EntityType = "Account"
                 },
-                SearchString = _rnd.Next(01000, 99999).ToString("D5"),
+                AccountNum = $"001{i}",
+                SearchString = searchTerm+ " fake account",
                 Type = SearchResultType.Account
             },
-            actXNumAmt, actXNumDelay, loggingService);
-            //_rnd.Next(0, 1), _rnd.Next(25, 100) + _rnd.Next(20));
-            var fakeAccountExactNameSearch = new FakeSearch(i => new JamesSearchResult
-                {
-                    Name = $"Abc{searchTerm}xyz Account001{i}",
-                    Confidence = 110,
-                    Entity = new LegalEntity
-                    {
-                        FullName = $"Abc{searchTerm}xyz Account001{i}",
-                        LegalEntityAddresses = new List<LegalEntityAddress>(1)
-                            { new () { Type = "Main", Address = GetFakeAddress(i+232) } },
-                        EntityType = "Account"
-                    },
-                    SearchString = searchTerm,
-                    Type = SearchResultType.Account
-                },
                 actXNameAmt, actXNameDelay, loggingService);
             var fakePeopleSearch = new FakeSearch(i => new JamesSearchResult
-                {
-                    Name = $"John \"{searchTerm}\" {(char)(i+65)} Smith",
-                    Confidence = 110,
-                    Entity = new LegalEntity
-                    {
-                        FullName = $"J{(char)(i + 65)}S Agency, inc",
-                        LegalEntityAddresses = new List<LegalEntityAddress>(1)
-                            { new () { Type = "Main", Address = GetFakeAddress(i+232) } },
-                        EntityType = "Agency"
-                    },
-                    SearchString = searchTerm,
-                    Type = SearchResultType.Account
-                },
-                actNameAmt, actXNameDelay, loggingService);
-            var fakeBondNumberSearch = new FakeSearch(i=> new JamesSearchResult
             {
-                Name=$"Bond No. {i}{searchTerm}",
-                Confidence =  searchTerm.Length switch
+                Name = $"John \"{searchTerm}\" {(char)(i + 65)} Smith",
+                Confidence = 90,
+                AccountNum = $"people{i}",
+                Entity = new LegalEntity
                 {
-                    3=> 40,
-                    4=> 50,
-                    5=> 70,
-                    6=> 85,
-                    7=> 100,
+                    FullName = $"J{(char)(i + 65)}S Agency, inc",
+                    LegalEntityAddresses = new List<LegalEntityAddress>(1)
+                            { new () { Type = "Main", Address = GetFakeAddress(i+232) } },
+                    EntityType = "Agency"
+                },
+                SearchString = searchTerm + " fake person",
+                Type = SearchResultType.Account
+            },
+                actNameAmt, actXNameDelay, loggingService);
+            var fakeBondNumberSearch = new FakeSearch(i => new JamesSearchResult
+            {
+                Name = $"Bond No. {i}{searchTerm}",
+                Confidence = searchTerm.Length switch
+                {
+                    3 => 40,
+                    4 => 50,
+                    5 => 70,
+                    6 => 85,
+                    7 => 100,
                     8 => 115,
                     9 => 130,
                     10 => 140,
@@ -139,18 +101,21 @@ namespace James.Data.Server.GraphQL.Queries
                 },
                 SearchString = $"{i}{searchTerm}",
                 Type = SearchResultType.Bond
-            }, bndNumberAmt, bndNumberDelay, loggingService );
-            Task<List<JamesSearchResult>>[] StringSearches = [
+            }, bndNumberAmt, bndNumberDelay, loggingService);
+            Task<List<JamesSearchResult>>[] stringSearches = [
                 fakeAccountNameSearch.GetResults(searchTerm),
                 fakeAccountExactNameSearch.GetResults(searchTerm),
-                fakePeopleSearch.GetResults(searchTerm)
+                fakePeopleSearch.GetResults(searchTerm),
+                AccountNameSearch(searchTerm, contextFactory),
+                AgencySearch(searchTerm, contextFactory)
             ];
             Task<List<JamesSearchResult>>[] NumberSearches = [
-                fakeAccountNumberSearch.GetResults(searchTerm),
-                fakeAccountExactNumberSearch.GetResults(searchTerm),
-                fakeBondNumberSearch.GetResults(searchTerm)
+                AccountNumberSearch(searchTerm, contextFactory)
             ];
-            var searches = new List<Task<List<JamesSearchResult>>>(StringSearches);
+            var searches = new List<Task<List<JamesSearchResult>>>(stringSearches);
+            if (searchTerm.Length >= 5)
+                //Only do bond searches on 5 characters or more that match the bond number pattern
+                searches.Add(BondNumberSearch(searchTerm, contextFactory));
             if (searchTerm.IsDigitsOnly())
             {
                 //If search term is a number, run searches on numeric fields first
@@ -161,14 +126,14 @@ namespace James.Data.Server.GraphQL.Queries
                 //TODO: Implement for real
                 RunSearches(searchTerm, eventSender, searches.ToArray());
             });
-            return searchTerm;
+            return Task.FromResult(searchTerm);
         }
 
         private async void RunSearches(string searchTerm, ITopicEventSender eventSender, params Task<List<JamesSearchResult>>[] searches)
         {
             var searchOperations = searches.Select<Task<List<JamesSearchResult>>, Task>(async srch =>
                 {
-                    
+
                     var result = await srch;
                     if (result.Any())
                         await eventSender.SendAsync("Srch_" + searchTerm, new SubscriptionResult<List<JamesSearchResult>>
@@ -181,6 +146,8 @@ namespace James.Data.Server.GraphQL.Queries
             ).ToArray();
             await Task.WhenAll(searchOperations.ToArray());
         }
+
+        #region Fake data for early testing
 
         private string GetFakeName(int i, bool isPerson)
         {
@@ -210,10 +177,11 @@ namespace James.Data.Server.GraphQL.Queries
             {
                 IdNavigation = new Employee
                 {
-                    Initials = $"{(char)(i + 65)}{(char)(90 -2*i)}{(char)(2*i + 70)}"
+                    Initials = $"{(char)(i + 65)}{(char)(90 - 2 * i)}{(char)(2 * i + 70)}"
                 }
             };
         }
+
         private class FakeSearch(Func<int, JamesSearchResult> makeFakeResult, int itemsToReturn, int delayMs, ILoggingService loggingService)//TODO:Stopped here.  Make default constructor here.
         {
             public Func<int, JamesSearchResult> MakeFakeResult { get; set; } = makeFakeResult;
@@ -239,6 +207,88 @@ namespace James.Data.Server.GraphQL.Queries
                     throw;
                 }
             }
+        }
+
+        #endregion
+        //TODO: Unit Test
+
+        private async Task<List<JamesSearchResult>> BondNumberSearch(string searchString, IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var matchingBonds = await SearchBondsByBondNumber(searchString, contextFactory);
+            var results = matchingBonds.Select(bnd =>
+                new JamesSearchResult
+                {
+                    Name = "Bond No. " + bnd.BondNumber,
+                    Confidence = bnd.BondNumber.Length == searchString.Length ? 
+                        //Exact match = 140 confidence
+                        140 :
+                        //Partial match:  Higher confidence on longer search terms, lower confidence the longer the bond number is. 
+                        90 - bnd.BondNumber.Length + searchString.Length * 3 
+                        //Rank matches at the beginning of the bond number higher
+                        - bnd.BondNumber.IndexOf(searchString, StringComparison.Ordinal),
+                    Entity = bnd.AccountNumNavigation.IdNavigation,
+                    SearchString = bnd.BondNumber,
+                    Type = SearchResultType.Bond,
+                    BondList = [bnd]
+                }).ToList();
+            if (results.Count > JamesSearchResults.MaximumSearchResults)
+            {
+                //Prune results before sending a silly amount of results.
+                results.Sort(SearchResultComparer.Instance);
+                results.RemoveRange(JamesSearchResults.MaximumSearchResults, results.Count - JamesSearchResults.MaximumSearchResults);
+            }
+
+            return results;
+        }
+
+        private async Task<List<JamesSearchResult>> AccountNumberSearch(string searchString, IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var matchingAccounts = await SearchAccountsByAccountNumber(searchString, contextFactory);
+            return matchingAccounts.Select(acct =>
+                new JamesSearchResult
+                {
+                    Name = acct.IdNavigation.FullName,
+                    Confidence = acct.AccountNum.Length == searchString.Length ? 140 :
+                        100 - acct.AccountNum.Length + searchString.Length * 2,
+                    Entity = acct.IdNavigation,
+                    AccountNum = acct.AccountNum,
+                    SearchString = acct.AccountNum,
+                    Type = SearchResultType.Account
+                }).ToList();
+        }
+
+        private async Task<List<JamesSearchResult>> AccountNameSearch(string searchString, IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var matchingAccounts = await SearchAccountsByName(searchString, contextFactory);
+            return matchingAccounts.Select(acct =>
+                new JamesSearchResult
+                {
+                    Name = acct.IdNavigation.FullName,
+                    Confidence = acct.IdNavigation.FullName.Length == searchString.Length ? 160 :
+                        110 - acct.IdNavigation.FullName.Length + searchString.Length * 2,
+                    Entity = acct.IdNavigation,
+                    AccountNum = acct.AccountNum,
+                    SearchString = acct.IdNavigation.FullName,
+                    Type = SearchResultType.Account
+                }).ToList();
+        }
+
+        private async Task<List<JamesSearchResult>> AgencySearch(string searchString,
+            IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var matchingAgencies = await SearchAgencies(searchString, contextFactory);
+            return matchingAgencies.Select(agency =>
+                new JamesSearchResult
+                {
+                    Name = agency.IdNavigation.FullName,
+                    Confidence = agency.AgencyNumber.Contains(searchString)?(agency.AgencyNumber.Length == searchString.Length ? 140 :
+                        100 - agency.AgencyNumber.Length + searchString.Length * 2):
+                    (agency.IdNavigation.FullName.Length==searchString.Length ? 160 : 110 - agency.IdNavigation.FullName.Length + searchString.Length * 2),
+                    Entity = agency.IdNavigation,
+                    AgencyNumber = agency.AgencyNumber,
+                    SearchString = agency.AgencyNumber.Contains(searchString)?searchString:agency.IdNavigation.FullName,
+                    Type = SearchResultType.Agency
+                }).ToList();
         }
     }
 }

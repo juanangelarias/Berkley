@@ -54,7 +54,40 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+        [Authorize]
+        public async Task<bool> CreatePhoneNumber(Guid phoneId, string countryCode, string mainNumber, string? extension,
+            Guid legalEntityId, string phoneType, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                PhoneNumber newNumber = new PhoneNumber()
+                {
+                    Id = phoneId,
+                    CountryCode = countryCode,
+                    MainNumber = mainNumber,
+                    Extension = extension
+                };
 
+                LegalEntityPhone lePhone = new LegalEntityPhone()
+                {
+                    LegalEntityId = legalEntityId,
+                    PhoneNumberId = phoneId,
+                    Type = phoneType
+                };
+
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                ctx.PhoneNumbers.Add(newNumber);
+                ctx.LegalEntityPhones.Add(lePhone);
+                await ctx.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
         [Authorize]
         public async Task<bool> DeleteAddress(Guid addressId, string identifier,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
@@ -121,6 +154,33 @@ namespace James.Data.Server.GraphQL.Mutations
             await eventSender.SendAsync($"{nameof(Subscription.OnAddressModified)}_{addressId}", new SubscriptionResult<Address>{Identifier = identifier, Result = oldAddress });
 
             return oldAddress;
+        }
+        [Authorize]
+        public async Task<bool> DeletePhoneNumber(Guid phoneId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                var phone = await ctx.PhoneNumbers.SingleOrDefaultAsync(x => x.Id == phoneId);
+                var lePhone = await ctx.LegalEntityPhones.SingleOrDefaultAsync(x => x.PhoneNumberId == phoneId);
+
+                if (lePhone != null)
+                {
+                    ctx.LegalEntityPhones.Remove(lePhone);
+                }
+                if (phone != null)
+                {
+                    ctx.PhoneNumbers.Remove(phone);
+                }
+
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

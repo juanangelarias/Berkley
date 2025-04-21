@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace James.Shared.Data;
 
@@ -81,6 +82,11 @@ public class CachedResult
 
 public class CachedResult<T> : CachedResult
 {
+    private static JsonSerializerOptions ignoreCycles = new JsonSerializerOptions
+    {
+        ReferenceHandler = ReferenceHandler.IgnoreCycles,
+        WriteIndented = false
+    };
     public T Data
     {
         get
@@ -88,7 +94,16 @@ public class CachedResult<T> : CachedResult
             //When a cached value is pulled from browser local storage, the DataObject 
             //  does not always get properly converted to the proper type.
             if (DataObject is JsonElement je)
-                DataObject = JsonSerializer.Deserialize<T>(je.ToString());
+                try
+                {
+                    //DataObject = JsonSerializer.Deserialize<T>(je.ToString());
+                    DataObject = je.Deserialize<T>(ignoreCycles);
+                }
+                catch (Exception ex)
+                {
+                    var msg = $"Exception deserializing cache from local storage.  Type: {typeof(T).Name}";
+                    throw new Exception(msg, ex);
+                }
             return (T)DataObject;
         }
 

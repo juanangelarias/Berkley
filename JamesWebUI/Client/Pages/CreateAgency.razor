@@ -194,12 +194,12 @@
     {
         if (allBranches.Count == 0)
         {
-            var result = await JamesClient.GetBranches.ExecuteAsync();
+            //var result = await JamesClient.GetBranches.ExecuteAsync();
 
-            foreach (var branch in result?.Data?.Branches)
-            {
-                allBranches.Add(ThisToThat.ToEntityType<Branch>(branch));
-            }
+            //foreach (var branch in result?.Data?.Branches)
+            //{
+            //    allBranches.Add(ThisToThat.ToEntityType<Branch>(branch));
+            //}
         }
     }
     public class NewAgency

@@ -1,18 +1,24 @@
 ﻿@using System.Diagnostics
+@using System.Runtime.InteropServices.Marshalling
 @using JamesWebUI.Client.Pages.Controls
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage;
 @inject IDataAccess DataAccess;
 @inject LocalStorageKeyListingService LocalStorageKeyListingService;
 @inherits JamesLayoutComponentBase
 @implements IDisposable
+
+<RenderModeBackground />
 <RadzenFormField Text="Seach for anything">
     <ChildContent>
-        <RadzenTextBox Value="@SearchTerm" @oninput="@SearchTermChanged" AutoCompleteType="AutoCompleteType.Off" />
+        <RadzenTextBox Value="@SearchTerm" @oninput="@SearchTermChanged" 
+                       @onkeydown="@HandleEnterKey"
+                       AutoCompleteType="AutoCompleteType.Off" />
     </ChildContent>
     <End>
         <RadzenStack Orientation="Orientation.Horizontal">
-            <RadzenButton @ref=@_clearSearchTermButton Icon="close" Disabled="@(SearchTerm.Length == 0)" Click="@(() => SearchTerm="")" />
-            <RadzenIcon Icon="search"></RadzenIcon>
+            <RadzenButton @ref=@_clearSearchTermButton Icon="close" Disabled="@(SearchTerm.Length == 0)" Click="@(() => ClearSearch())" />
+            @*Clicking the search icon clears cache and restarts search *@
+            <RadzenButton Icon="search" Disabled="@(SearchTerm.Length < 2)" Click="@(() => ActOnSearchTerm(SearchTerm, true))" />
         </RadzenStack>
     </End>
 </RadzenFormField>
@@ -25,7 +31,7 @@
                     <SearchResult Result="@jsr" />
                 </Template>
                 <EmptyTemplate>
-                    <RadzenText Text="Placeholder: No results found." />
+                    <RadzenText Text="No results found." />
                 </EmptyTemplate>
             </RadzenDataList>
         </RadzenTabsItem>
@@ -37,7 +43,7 @@
                     <SearchResult Result="@jsr" />
                 </Template>
                 <EmptyTemplate>
-                    <RadzenText Text="Placeholder: No results found." />
+                    <RadzenText Text="No people found." />
                 </EmptyTemplate>
             </RadzenDataList>
         </RadzenTabsItem>
@@ -51,12 +57,34 @@
                     <SearchResult Result="@jsr" />
                 </Template>
                 <EmptyTemplate>
-                    <RadzenText Text="Placeholder: No results found." />
+                    <RadzenText Text="No accounts found." />
                 </EmptyTemplate>
             </RadzenDataList>
         </RadzenTabsItem>
-        <RadzenTabsItem Text="Agency"></RadzenTabsItem>
-        <RadzenTabsItem Text="Obligee"></RadzenTabsItem>
+        <RadzenTabsItem Text="Agency">
+            <RadzenDataList TItem="JamesSearchResult"
+                            AllowVirtualization="true"
+                            Data="_results?.Results.Where(jsr => jsr.Type == SearchResultType.Agency)">
+                <Template Context="jsr">
+                    <SearchResult Result="@jsr" />
+                </Template>
+                <EmptyTemplate>
+                    <RadzenText Text="No agencies found." />
+                </EmptyTemplate>
+            </RadzenDataList>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Obligee">
+            <RadzenDataList TItem="JamesSearchResult"
+                            AllowVirtualization="true"
+                            Data="_results?.Results.Where(jsr => jsr.Type == SearchResultType.Agency)">
+                <Template Context="jsr">
+                    <SearchResult Result="@jsr" />
+                </Template>
+                <EmptyTemplate>
+                    <RadzenText Text="No Obligees found." />
+                </EmptyTemplate>
+            </RadzenDataList>
+        </RadzenTabsItem>
         <RadzenTabsItem Text="Description"></RadzenTabsItem>
     </Tabs>
 </RadzenTabs>
@@ -78,21 +106,33 @@
             if (value != _searchTerm)
             {
                 _searchTerm = value;
-                _ = SearchTermChanged(value);
+                SearchTermChanged(value);
             }
         }
     }
 
-    private async Task SearchTermChanged(ChangeEventArgs args)
+    private async Task HandleEnterKey(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter") await ActOnSearchTerm(SearchTerm, true);
+    }
+
+    private async Task ClearSearch()
+    {
+        SearchTerm = "";
+        _results = new JamesSearchResults { RootSearchTerm = "CompletelyFakeRootSearchTermForABlankResultSet" };
+    }
+
+    private void SearchTermChanged(ChangeEventArgs args)
     {
         //This event handler is needed to update the SearchTerm on every character changed instead of waiting for lost focus
         Debug.Assert(args.Value != null, "args.Value != null");
         SearchTerm = args.Value.ToString()!;
     }
 
-    private async Task SearchTermChanged(string newSearchTerm)
+    private void SearchTermChanged(string newSearchTerm)
     {
         //_clearSearchTermButton.Disabled = newSearchTerm.Length == 0;
+        if (newSearchTerm.Length < MinimumCharactersToSearch) return;
         Debounce(SearchThisManyMsAfterTypingStops, () => ActOnSearchTerm(newSearchTerm));
     }
 
@@ -101,10 +141,10 @@
     /// </summary>
     /// <param name="newSearchTerm"></param>
     /// <returns></returns>
-    private async Task ActOnSearchTerm(string newSearchTerm)
+    private async Task ActOnSearchTerm(string newSearchTerm, bool forceNewSearch = false)
     {
-        if (newSearchTerm.Length < MinimumCharactersToSearch) return;
-        if (_results?.RootSearchTerm.Contains(newSearchTerm, StringComparison.InvariantCultureIgnoreCase) != true)
+        if (newSearchTerm.Length < 2) return; //Don't allow single character searches even if they hit the search button
+        if (forceNewSearch || _results?.RootSearchTerm.Contains(newSearchTerm, StringComparison.InvariantCultureIgnoreCase) != true)
         {
             //Search term does not match an exiting search result's root search term
             var oldResults = _results;
@@ -117,19 +157,31 @@
                     _resultsSubscription = null!;
                 }
 
-                var allSrchKeys = (await LocalStorageKeyListingService.GetAllLocalStorageKeys("Srch_"))
-                    .Where(kn => kn[5..].Contains(newSearchTerm) )
-                    .OrderByDescending(k=>k.Length);
-                foreach (var srchKey in allSrchKeys)
-                {
-                    var storedSearch = await LocalStorage.GetItemAsyncWithExpiry<JamesSearchResults>(srchKey);
-                    if (storedSearch != null)
+                if (!forceNewSearch)
+                    try
                     {
-                        //Cached search is found, and will be used to seed the result set.
-                        _results = await RestartOldSearch(storedSearch, newSearchTerm);
-                        return;
+                        var allSrchKeys = (await LocalStorageKeyListingService.GetAllLocalStorageKeys("Srch_"))
+                            .Where(kn => kn[5..].Contains(newSearchTerm))
+                            .OrderByDescending(k => k.Length);
+                        foreach (var srchKey in allSrchKeys)
+                        {
+                            var storedSearch = await LocalStorage.GetItemAsyncWithExpiry<JamesSearchResults>(srchKey);
+                            if (storedSearch != null)
+                            {
+                                //Cached search is found, and will be used to seed the result set.
+                                _results = await RestartOldSearch(storedSearch, newSearchTerm);
+                                return;
+                            }
+                        }
                     }
-                }
+                    catch (JSDisconnectedException)
+                    {
+                        //Ignore this.  Happens when SignalR is disconnected, which prevents reading local storage
+                    }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.LogException(ex, "Acting on search term threw exception");
             }
             finally
             {
@@ -146,7 +198,10 @@
         else
         {
             if (null == _results)
+            {
                 _results = await StartNewResultsSearch(newSearchTerm);
+                await InvokeAsync(StateHasChanged);
+            }
             else
                 _results.SearchTerm = newSearchTerm;
         }
@@ -173,7 +228,8 @@
                 await InvokeAsync(StateHasChanged);
             }
         },
-        onError: ex => LoggingService.LogException(ex, "Exception getting search results"),
+        onError: ex => LoggingService.LogException(ex, "Exception getting search results",
+                        severity:(ex is OperationCanceledException ? Severity.Information: Severity.Error)),
         onComplete: () =>
         {
             _resultsSubscription?.Dispose();

@@ -1,14 +1,14 @@
 ﻿@inject AddressPhoneFormatService AddressPhoneFormatService
 
-<RadzenStack>
-    <RadzenText Text="@Address.Address1" />
-    @if ((Address.Address2 ?? "").Length > 0)
+<RadzenStack Gap="0">
+    <RadzenText Text="@Address?.Address1" class="single-spaced-text" />
+    @if ((Address?.Address2 ?? "").Length > 0)
     {
-        <RadzenText Text="@Address.Address2" />
+        <RadzenText Text="@Address?.Address2" class="single-spaced-text" />
     }
-    @if ((Address.Address3 ?? "").Length > 0)
+    @if ((Address?.Address3 ?? "").Length > 0)
     {
-        <RadzenText Text="@Address.Address3" />
+        <RadzenText Text="@Address?.Address3" class="single-spaced-text" />
     }
     @if (null! != _cityPostalCodeLines)
     {
@@ -16,12 +16,12 @@
         //Countries without full address formatting support will have a second line that 
         //  tells the user that the address may not be properly formatted.
         {
-            <RadzenText Text="@line" />
+            <RadzenText Text="@line" class="single-spaced-text" />
         }
     }
-    @if ((Address.StateCodeNavigation?.CountryCode ?? "US") != "US")
+    @if ((Address?.StateCodeNavigation?.CountryCode ?? "US") != "US")
     {
-        <RadzenText Text="@_fullCountryName" />
+        <RadzenText Text="@_fullCountryName" class="single-spaced-text" />
     }
 </RadzenStack>
 @code {
@@ -30,11 +30,14 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        _cityPostalCodeLines = (await AddressPhoneFormatService.GetAddressFinalLineAsync(Address)).Split('|');
-        var countryCode = Address.StateCodeNavigation?.CountryCode ?? "US";
-        if (countryCode != "US")
-            _fullCountryName = await AddressPhoneFormatService.GetFullCountryNameFromCode(countryCode);
-        StateHasChanged();
+        if (null! != Address)//Still possible in deserialization scenarios
+        {
+            _cityPostalCodeLines = (await AddressPhoneFormatService.GetAddressFinalLineAsync(Address)).Split('|');
+            var countryCode = Address.StateCodeNavigation?.CountryCode ?? "US";
+            if (countryCode != "US")
+                _fullCountryName = await AddressPhoneFormatService.GetFullCountryNameFromCode(countryCode);
+            StateHasChanged();
+        }
     }
 
     private string[] _cityPostalCodeLines = Array.Empty<string>();

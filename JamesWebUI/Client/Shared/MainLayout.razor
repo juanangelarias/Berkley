@@ -46,6 +46,7 @@
                             </ValueTemplate>
                             <Template>
                                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                                    @*Theme example graphic*@
                                     <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; outline: var(--rz-input-border); min-width: 80px;">
                                         <rect width="80" height="60" fill="@context.Base" />
                                         <rect x="0" y="4" width="16" height="56" fill="@context.Sidebar" />
@@ -98,7 +99,7 @@
             <RadzenPanelMenuItem Text="Obligees" Icon="person" Path="Obligee" />
             <RadzenPanelMenuItem Text="Finances" Icon="request_quote" Path="Finances" />
             @if (Environment.MachineName.Equals("localhost", StringComparison.InvariantCultureIgnoreCase) ||
-               Environment.MachineName.StartsWith("USUBL", StringComparison.InvariantCultureIgnoreCase))
+             Environment.MachineName.StartsWith("USUBL", StringComparison.InvariantCultureIgnoreCase))
             {
                 //Show up only on developer machines
                 <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl" />
@@ -111,18 +112,20 @@
         </RadzenPanelMenu>
     </RadzenSidebar>
     <RadzenBody>
-        <RadzenSidebar @bind-Expanded="@notebookExpanded" Responsive="false" Style="position: absolute; width:325px;">
-            <RadzenDataList Data="notifications" TItem="Notification">
-                <Template Context="notification">
-                    <NotificationCard NotificationToDisplay="notification" />
-                </Template>
-            </RadzenDataList>
-        </RadzenSidebar>@*
-            <RadzenPanel>
-                <ChildContent> *@
-        @Body
-        @* </ChildContent>
-            </RadzenPanel> *@
+        <ErrorBoundary >
+            <RadzenSidebar @bind-Expanded="@notebookExpanded" Responsive="false" Style="position: absolute; width:325px;">
+                <RadzenDataList Data="notifications" TItem="Notification">
+                    <Template Context="notification">
+                        <NotificationCard NotificationToDisplay="notification" />
+                    </Template>
+                </RadzenDataList>
+            </RadzenSidebar>@*
+                <RadzenPanel>
+                    <ChildContent> *@
+            @Body
+            @* </ChildContent>
+                </RadzenPanel> *@
+        </ErrorBoundary>
     </RadzenBody>
 
 </RadzenLayout>
@@ -167,8 +170,8 @@
         Draggable = true,
         Resizable = true,
         ShowClose = true,
-        Width = "600px",
-        Height = "600px"
+        Width = "1200px",
+        Height = "800px"
     };
 
     private async Task SuperSearchClicked()

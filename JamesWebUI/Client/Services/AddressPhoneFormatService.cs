@@ -89,7 +89,7 @@ namespace JamesWebUI.Client.Services
         /// <returns>Properly formatted postal code</returns>
         public async ValueTask<string> FormatPostalCodeForCountryAsync(Address address)
         {
-            if (null == address.PostalCode) return string.Empty;
+            if (null == address?.PostalCode) return string.Empty;
             var countryList = await GetCountryList();
             var country = countryList.FirstOrDefault(c => c.Code == address.StateCodeNavigation?.CountryCode)
                           ?? countryList.First(c => c.Code == "US");
@@ -103,7 +103,7 @@ namespace JamesWebUI.Client.Services
 
             var sourceCharIndex = 0;
             var formattedChars = new char[postalCodeMask.Length];
-            for (var maskIndex = 0; maskIndex < postalCodeMask.Length; maskIndex++)
+            for (var maskIndex = 0; maskIndex < postalCodeMask.Length && sourceCharIndex < mainCodeStripped.Length; maskIndex++)
             {
                 if (postalCodeMask[maskIndex] == 'A')
                 {
@@ -131,14 +131,14 @@ namespace JamesWebUI.Client.Services
         /// If the country has an unsupported format, it will be formatted as a US address with "|Address formatting not supported for this country" appended to the result</remarks>
         public async ValueTask<string> GetAddressFinalLineAsync(Address address)
         {
-            var countryCode = address.StateCodeNavigation?.CountryCode ?? "US";
-            var country = address.StateCodeNavigation?.CountryCodeNavigation ??
+            var countryCode = address?.StateCodeNavigation?.CountryCode ?? "US";
+            var country = address?.StateCodeNavigation?.CountryCodeNavigation ??
                           (await GetCountryFromCodeAsync(countryCode));
             //HACK: Hardcoding db values isn't typically good practice, but is good enough here
             switch (country.AddressFinalLineFormat)
             {
                 case "City, State PostalCode":
-                    return $"{address.City}, {address.StateCode} {FormatPostalCodeForCountryAsync(address).Result}";
+                    return $"{address?.City ?? "xxx"}, {address?.StateCode??"xx"} {FormatPostalCodeForCountryAsync(address).Result}";
                 case "City, PostalCode":
                     return $"{address.City}, {(await FormatPostalCodeForCountryAsync(address))}";
                 case "City PostalCode":
@@ -164,8 +164,9 @@ namespace JamesWebUI.Client.Services
                 throw new FormatException("countryCode must be 2 characters.");
             //await LoadCountryData();
             //Debug.Assert(CountryList != null, nameof(CountryList) + " != null");
-            return (await GetCountryList()).FirstOrDefault(c => c.Code == countryCode)
-                   ?? (await GetCountryList()).First(c => c.Code == "US");
+            var countryList = await GetCountryList();
+            return countryList.FirstOrDefault(c => c.Code == countryCode)
+                   ?? countryList.First(c => c.Code == "US") ;
         }
 
         //private bool _loadingCountries = false;
@@ -179,7 +180,7 @@ namespace JamesWebUI.Client.Services
             return (await GetCountryFromCodeAsync(countryCode)).Name;
         }
 
-        private static Dictionary<string, Regex> _postalCodeRegexCache = new Dictionary<string, Regex>();
+        private static readonly Dictionary<string, Regex> _postalCodeRegexCache = new();
         private static Regex GetRegexForPostalCodeMask(string mask)
         {
             if (_postalCodeRegexCache.TryGetValue(mask, out var postalCodeMask))

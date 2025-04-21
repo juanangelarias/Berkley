@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using James.Data.Client;
 using Blazored.LocalStorage;
 using James.Data.Client.GraphQL;
@@ -29,7 +30,10 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("JamesAPI"));
 
 builder.Services.AddRadzenComponents();
-builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredLocalStorage(config =>
+{
+    config.JsonSerializerOptions.ReferenceHandler =ReferenceHandler.IgnoreCycles;
+});
 builder.Services.AddScoped<LocalStorageKeyListingService>();
 builder.Services.AddScoped<AddressPhoneFormatService>();
 builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();

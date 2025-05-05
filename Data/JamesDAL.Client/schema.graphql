@@ -557,8 +557,9 @@ type Query {
   accountOnly(accountNumber: String): Account
   additionalRelatedParties(accountNumber: String): [AdditionalRelatedParty!]!
   idAccountNumbers: [Account!]!
-  searchAccountsByAccountNumber(accountNumberFragment: String!): [Account!]!
-  searchAgencies(stringToSearch: String): [Agency!]!
+  searchAccountsByAccountNumber(accountNumberFragment: String! activeOnly: Boolean!): [Account!]!
+  searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
+  searchAgencies(stringToSearch: String activeOnly: Boolean!): [Agency!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
   agencyById(agencyId: UUID!): Agency
   agencyAccounts(agencyNumber: String!): [Account!]!
@@ -580,7 +581,7 @@ type Query {
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
   bondRequestNumberType(bondNumber: String!): BondRequestNumberType
   bondNumber(bondRequestNumber: String!): String
-  searchBondsByBondNumber(bondNumberFragment: String!): [Bond!]!
+  searchBondsByBondNumber(bondNumberFragment: String! activeOnly: Boolean!): [Bond!]!
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
@@ -605,7 +606,7 @@ type Query {
   searchObligees(searchString: String!): [Obligee!]!
   obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!
   obligeeSecondaryBonds(obligeeId: UUID!): [Bond!]!
-  search(searchTerm: String!): String!
+  search(searchTerm: String! options: SearchOptionsInput!): String!
   allStates: [State!]!
 }
 
@@ -1776,6 +1777,18 @@ input SetAccountProgramInput {
   aggregate: Int!
   comments: String
   statusId: UUID!
+}
+
+input SearchOptionsInput {
+  account: Boolean!
+  activeOnly: Boolean!
+  agency: Boolean!
+  agent: Boolean!
+  bond: Boolean!
+  obligee: Boolean!
+  people: Boolean!
+  personalFinancials: Boolean!
+  virtualFile: Boolean!
 }
 
 input LogUserInput {

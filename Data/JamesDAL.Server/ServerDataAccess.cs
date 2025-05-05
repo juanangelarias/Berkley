@@ -123,9 +123,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAgencyRelatedParties(agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search)
+        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly)
         {
-            return await ExecuteGet(async () => await query.SearchAgencies(search, contextFactory));
+            return await ExecuteGet(async () => await query.SearchAgencies(search, activeOnly, contextFactory));
         }
         public async Task<IDataAccessResult<Address>> GetAddress(Guid addressId)
         {
@@ -518,9 +518,9 @@ namespace James.Data.Server
             return OnSearchResultReady(searchTerm).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<List<JamesSearchResult>>> (onNext,onError,onComplete));
         }
 
-        public Task<ISaveDataResult> StartSuperSearch(string searchTerm)
+        public Task<ISaveDataResult> StartSuperSearch(string searchTerm, SearchOptions options)
         {
-            return ExecuteSave(async ()=> await query.Search(searchTerm, eventSender, contextFactory, loggingService));
+            return ExecuteSave(async ()=> await query.Search(searchTerm, options, eventSender, contextFactory, loggingService));
         }
 
         public Task<IDataAccessResult<List<Account>>> GetIdAccountNumbers()

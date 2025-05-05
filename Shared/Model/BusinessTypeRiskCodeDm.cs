@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class CreditReportDm
+public partial class BusinessTypeRiskCodeDm
 {
     public Guid Id { get; set; }
 
@@ -12,7 +12,11 @@ public partial class CreditReportDm
 
     public DateTime Modified { get; set; }
 
-    public string CreditReport { get; set; } = null!;
+    public string BusinessType { get; set; } = null!;
 
-    public virtual ICollection<CreditReportHistory> CreditReportHistories { get; set; } = new List<CreditReportHistory>();
+    public string? SubType { get; set; }
+
+    public int RiskCode { get; set; }
+
+    public bool IsContract { get; set; }
 }

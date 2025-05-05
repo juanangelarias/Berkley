@@ -17,7 +17,6 @@
     <RadzenRow>
         <RadzenColumn Size="1">
             @if (Result.Type == SearchResultType.Person || Result.Entity.IsIndividual)
-            //TODO:Confirm this with Stefanie
             {
                 <svg xmlns="http://www.w3.org/2000/svg"
                      xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -36,58 +35,62 @@
             }
         </RadzenColumn>
         <RadzenColumn Size="9">
-            <RadzenStack Gap="4px">
-                <RadzenLink Path="@DestinationUrl()">
+            <RadzenLink Path="@DestinationUrl()">
+                <RadzenStack Gap="4px">
                     <RadzenText Text="@Result.Name" TextStyle="TextStyle.DisplayH4" />
-                </RadzenLink>
-                @*TODO: Build templates for bonds and lists that contain inner lists in the result*@
-                @if (Result.Type == SearchResultType.Bond)
-                {
-                    //TODO: Update for Stefanie's new UI in Figma
-                    <RadzenLink Text="@Result.Entity.FullName" />
-                    <br />
-                    <RadzenRow>
-                        @*TODO:  The headers below need to be styled via a css class*@
-                        <RadzenColumn>
-                            <RadzenText class="figma-subtable-header">Bond No.</RadzenText>
-                        </RadzenColumn>
-                        <RadzenColumn>
-                            <RadzenText Style="font-weight:bold">Principal</RadzenText>
-                        </RadzenColumn>
-                        <RadzenColumn>
-                            <RadzenText Style="font-weight:bold">Type</RadzenText>
-                        </RadzenColumn>
-                        <RadzenColumn>
-                            <RadzenText Style="font-weight:bold">UW</RadzenText>
-                        </RadzenColumn>
-                        <RadzenColumn>
-                            <RadzenText Style="font-weight:bold">Branch</RadzenText>
-                        </RadzenColumn>
-                    </RadzenRow>
-                    <RadzenRow>
-                        <RadzenColumn>
-                            <RadzenText Text="@Result.BondList?[0].BondNumber" />
-                        </RadzenColumn>
-                        <RadzenColumn>
-                            <RadzenText Text="@Result.Entity.FullName" />
-                        </RadzenColumn>
-                        <RadzenColumn>
-                            <RadzenText Text="@Result.BondList?[0].BondType?.BondType" />
-                        </RadzenColumn>
-                        <RadzenColumn>
-                            <RadzenText Text="@Result.BondList?[0].UnderWriter.IdNavigation.FullName" />
-                        </RadzenColumn>
-                        <RadzenColumn>
-                            <RadzenText Text="@Result.Entity.AccountIdNavigation?.Branch" />
-                        </RadzenColumn>
-                    </RadzenRow>
-                    <hr />
-                }
-                else
-                {
-                    <AddressOnlyLabel Address="@Result.Entity.GetMainAddress()" />
-                }
-            </RadzenStack>
+                    @*TODO: Build templates for bonds and lists that contain inner lists in the result*@
+                    @if (Result.Type == SearchResultType.Bond)
+                    {
+                        //TODO: Update for Stefanie's new UI in Figma
+                        <RadzenLink Text="@Result.Entity.FullName" />
+                        <br />
+                        <RadzenRow>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">Bond No.</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">Principal</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">Type</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">UW</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">Branch</RadzenText>
+                            </RadzenColumn>
+                        </RadzenRow>
+                        <RadzenRow>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.BondList?[0].BondNumber" />
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.Entity.FullName" />
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.BondList?[0].BondType?.BondType" />
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.BondList?[0].UnderWriter.IdNavigation.FullName" />
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.Entity.AccountIdNavigation?.Branch" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                        <hr />
+                    }
+                    else if (Result.Type == SearchResultType.Account)
+                    {
+                        <AddressOnlyLabel Address="@Result.Entity.GetMainAddress()" />
+                    }
+                    else
+                    {
+                        <RadzenText Text="@Result.Name" class="single-spaced-text" />
+                        <AddressCityState Address="@Result.Entity.GetMainAddress()"/>
+                    }
+                </RadzenStack>
+            </RadzenLink>
         </RadzenColumn>
         <RadzenColumn Size="2">
             <RadzenStack>
@@ -143,8 +146,6 @@
         {
             case SearchResultType.Account:
                 _breadCrumbData.Add(new BreadCrumbPart { Path = "/Account", Text = "Account" });
-                //if (Result.Entity.Id == Guid.Empty)
-                //    _idAccountNumbers.TryAdd(Guid.Empty, "Invalid Account");
                 _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Account/{Result.AccountNum}", Text = Result.Entity.FullName});
                 break;
             case SearchResultType.Agency:
@@ -153,8 +154,6 @@
                 break;
             case SearchResultType.File:
                 _breadCrumbData.Add(new BreadCrumbPart { Path = "/Account", Text = "Account" });
-                //if (Result.Entity.Id == Guid.Empty)
-                //    _idAccountNumbers.TryAdd(Guid.Empty, "Invalid Account");
                 _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Account/{Result.AccountNum}", Text = Result.Entity.FullName });
                 //TODO: Need to update this next line after functionality to go directly to a tab is added
                 _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Account/{Result.AccountNum}", Text = "Virtual File" });
@@ -162,8 +161,6 @@
             case SearchResultType.Bond:
                 //TODO:Confirm links when they have something to point to
                 _breadCrumbData.Add(new BreadCrumbPart{Path = $"/Bond", Text ="Bonds"});
-                //if (Result.Entity.Id == Guid.Empty)
-                //    _idAccountNumbers.TryAdd(Guid.Empty, "Invalid Account");
                 _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Account/{Result.AccountNum}", Text = Result.Entity.FullName });
                 _breadCrumbData.Add(new BreadCrumbPart{Path = DestinationUrl(), Text = $"Bond No. {Result.BondList?[0].BondNumber}"});
                 break;
@@ -173,7 +170,6 @@
                 _breadCrumbData.Add(new BreadCrumbPart { Path = "/", Text = Result.Entity.FullName });
                 break;
         }
-        //_breadCrumbData.Add(new BreadCrumbPart{Path =});
     }
 
     private string DestinationUrl()
@@ -207,13 +203,12 @@
 
     private string GetIconForResultType() => Result.Type switch
     {
-        //TODO:Confirm these with Stefanie
-        SearchResultType.Account => "account_circle",
-        SearchResultType.Agency => "group",
+        SearchResultType.Account => "home_work", 
+        SearchResultType.Agency => "diversity_3",
         SearchResultType.Bond => "gavel",
         SearchResultType.File => "description",
-        SearchResultType.Obligee => "group",
-        SearchResultType.Person => "person",
+        SearchResultType.Obligee => "warehouse",
+        SearchResultType.Person => "account_circle",
         _ => "question_mark"
     };
 

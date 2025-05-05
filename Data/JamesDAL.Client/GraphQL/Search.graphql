@@ -28,6 +28,6 @@
   }
 }
 
-query SuperSearch($searchTerm: String!) {
-  search(searchTerm: $searchTerm) 
+query SuperSearch($searchTerm: String!, $options:SearchOptionsInput!) {
+  search(searchTerm: $searchTerm, options:$options) 
 }

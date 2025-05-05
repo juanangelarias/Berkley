@@ -188,6 +188,8 @@ public partial class Account
 
     public virtual LegalEntity? Cpafirm { get; set; }
 
+    public virtual ICollection<CreditReportHistory> CreditReportHistories { get; set; } = new List<CreditReportHistory>();
+
     public virtual DivisionDm DivisionNavigation { get; set; } = null!;
 
     public virtual ICollection<EmailHistory> EmailHistories { get; set; } = new List<EmailHistory>();

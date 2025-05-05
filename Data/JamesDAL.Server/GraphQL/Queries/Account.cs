@@ -1,5 +1,4 @@
 ﻿using HotChocolate.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 namespace James.Data.Server.GraphQL.Queries
 {
@@ -29,12 +28,12 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(a => a.BranchReviewByNavigation)
                 .Include(a => a.BankPhone)
                 .Include(a => a.Cpafirm)
-                .ThenInclude(c => c.LegalEntityPhones)
+                .ThenInclude(c => c!.LegalEntityPhones)
                 .Include(a => a.Cpacontact)
                 .Include(a => a.BusinessTypeNavigation)
                 .Include(a => a.BusinessTypeClassNavigation)
                 .Include(a => a.LawFirm)
-                .ThenInclude(a => a.IdNavigation)
+                .ThenInclude(a => a!.IdNavigation)
                 .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim())
                    ?? throw new GraphQLException("No account with this account number exists.");
         }
@@ -106,7 +105,7 @@ namespace James.Data.Server.GraphQL.Queries
         {
             if (string.IsNullOrWhiteSpace(accountNumber))
             {
-                return null;
+                return null!;
             }
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.AdditionalRelatedParties
@@ -124,36 +123,66 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<List<Account>> SearchAccountsByAccountNumber(string accountNumberFragment,
+        public async Task<List<Account>> SearchAccountsByAccountNumber(string accountNumberFragment, bool activeOnly,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var matchingAccounts = await ctx.Accounts.Where(a => EF.Functions.Like(a.AccountNum, $"%{accountNumberFragment}%"))
+            //var matchingAccounts = await ctx.VAccounts.Join(ctx.Accounts, vact => vact.Id, act => act.Id, (vact, act) => new { Account = act, Active = vact.AccountStatus == "Active" })
+            //    .Where(a => EF.Functions.Like(a.Account.AccountNum, $"%{accountNumberFragment}%") && (activeOnly == false || a.Active))
+            //    .Include(a => a.Account.IdNavigation)
+            //    .ThenInclude(le => le.LegalEntityAddresses)
+            //    .ThenInclude(lea => lea.Address)
+            //    .ThenInclude(ad => ad.StateCodeNavigation)
+            //    .ThenInclude(sc => sc!.CountryCodeNavigation)
+            //    .Include(a => a.Account.IdNavigation.LegalEntityPhones)
+            //    .ThenInclude(lep => lep.PhoneNumber)
+            //    .Include(a => a.Account.IdNavigation.LegalEntityEmails)
+            //    .Select(a => a.Account)
+            //    .ToListAsync();
+            var matchingAccounts = await ctx.Accounts
                 .Include(a => a.IdNavigation)
                 .ThenInclude(le => le.LegalEntityAddresses)
                 .ThenInclude(lea => lea.Address)
                 .ThenInclude(ad => ad.StateCodeNavigation)
-                .ThenInclude(sc => sc.CountryCodeNavigation)
+                .ThenInclude(sc => sc!.CountryCodeNavigation)
                 .Include(a => a.IdNavigation.LegalEntityPhones)
                 .ThenInclude(lep => lep.PhoneNumber)
                 .Include(a => a.IdNavigation.LegalEntityEmails)
+                .Join(ctx.VAccounts, act => act.AccountNum, vact => vact.AccountNum, (act, vact) => new { Account = act, Active = vact.AccountStatus == "Active" })
+                .Where(a => EF.Functions.Like(a.Account.AccountNum, $"%{accountNumberFragment}%") && (activeOnly == false || a.Active))
+                .Select(a => a.Account)
                 .ToListAsync();
             return matchingAccounts;
         }
         [Authorize]
-        public async Task<List<Account>> SearchAccountsByName(string searchString,
+        public async Task<List<Account>> SearchAccountsByName(string searchString, bool activeOnly,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var matchingAccounts = await ctx.Accounts.Where(a => EF.Functions.Like(a.IdNavigation.FullName, $"%{searchString}%"))
+            //var matchingAccounts = await ctx.VAccounts.Join(ctx.Accounts, vact => vact.Id, act => act.Id, (vact, act) => new { Account = act, Active = vact.AccountStatus == "Active" })
+            //    .Where(a => EF.Functions.Like(a.Account.IdNavigation.FullName, $"%{searchString}%") && (activeOnly == false || a.Active))
+            //    .Include(a => a.Account.IdNavigation)
+            //    .ThenInclude(le => le.LegalEntityAddresses)
+            //    .ThenInclude(lea => lea.Address)
+            //    .ThenInclude(ad => ad.StateCodeNavigation)
+            //    .ThenInclude(sc => sc!.CountryCodeNavigation)
+            //    .Include(a => a.Account.IdNavigation.LegalEntityPhones)
+            //    .ThenInclude(lep => lep.PhoneNumber)
+            //    .Include(a => a.Account.IdNavigation.LegalEntityEmails)
+            //    .Select(a => a.Account)
+            //    .ToListAsync();
+            var matchingAccounts = await ctx.Accounts
                 .Include(a => a.IdNavigation)
                 .ThenInclude(le => le.LegalEntityAddresses)
                 .ThenInclude(lea => lea.Address)
                 .ThenInclude(ad => ad.StateCodeNavigation)
-                .ThenInclude(sc => sc.CountryCodeNavigation)
+                .ThenInclude(sc => sc!.CountryCodeNavigation)
                 .Include(a => a.IdNavigation.LegalEntityPhones)
                 .ThenInclude(lep => lep.PhoneNumber)
                 .Include(a => a.IdNavigation.LegalEntityEmails)
+                .Join(ctx.VAccounts, act => act.AccountNum, vact => vact.AccountNum, (act, vact) => new { Account = act, Active = vact.AccountStatus == "Active" })
+                .Where(a => EF.Functions.Like(a.Account.IdNavigation.FullName, $"%{searchString}%") && (activeOnly == false || a.Active))
+                .Select(a => a.Account)
                 .ToListAsync();
             return matchingAccounts;
         }

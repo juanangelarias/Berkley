@@ -9,10 +9,11 @@ namespace James.Data.Server.GraphQL.Queries
         /// Search agencies by AgencyNumber or full name
         /// </summary>
         /// <param name="stringToSearch">Search string</param>
+        /// <param name="activeOnly">True to only return active results, false to return all statuses</param>
         /// <param name="contextFactory">database context</param>
-        /// <returns></returns>
+        /// <returns>Matching agencies</returns>
         [Authorize]
-        public async Task<List<Agency>> SearchAgencies(string? stringToSearch, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<Agency>> SearchAgencies(string? stringToSearch, bool activeOnly, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             if (!string.IsNullOrWhiteSpace(stringToSearch))
@@ -23,13 +24,13 @@ namespace James.Data.Server.GraphQL.Queries
                     .Include(a => a.IdNavigation.LegalEntityAddresses)
                     .ThenInclude(a => a.Address)
                     .Include(a => a.IdNavigation.LegalEntityEmails)
-                    .Where(a => EF.Functions.Like(a.AgencyNumber, likeString)).ToListAsync() : Task.FromResult(new List<Agency>());
+                    .Where(a => EF.Functions.Like(a.AgencyNumber, likeString) && (activeOnly || a.Status=="Active")).ToListAsync() : Task.FromResult(new List<Agency>());
                 var ctx2 = await contextFactory.CreateDbContextAsync();
                 var byName = ctx2.Agencies.Include(a => a.IdNavigation)
                     .Include(a => a.IdNavigation.LegalEntityAddresses)
                     .ThenInclude(a => a.Address)
                     .Include(a => a.IdNavigation.LegalEntityEmails)
-                    .Where(a => EF.Functions.Like(a.IdNavigation.FullName, likeString)).ToListAsync();
+                    .Where(a => EF.Functions.Like(a.IdNavigation.FullName, likeString) && (activeOnly || a.Status=="Active")).ToListAsync();
                 var results = await byAgencyNum;
                 var byNameResults = await byName;
                 results.AddRange(byNameResults);

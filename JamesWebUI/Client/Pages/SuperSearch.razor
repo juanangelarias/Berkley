@@ -8,20 +8,41 @@
 @implements IDisposable
 
 <RenderModeBackground />
-<RadzenFormField Text="Seach for anything">
-    <ChildContent>
-        <RadzenTextBox Value="@SearchTerm" @oninput="@SearchTermChanged" 
-                       @onkeydown="@HandleEnterKey"
-                       AutoCompleteType="AutoCompleteType.Off" />
-    </ChildContent>
-    <End>
-        <RadzenStack Orientation="Orientation.Horizontal">
-            <RadzenButton @ref=@_clearSearchTermButton Icon="close" Disabled="@(SearchTerm.Length == 0)" Click="@(() => ClearSearch())" />
-            @*Clicking the search icon clears cache and restarts search *@
-            <RadzenButton Icon="search" Disabled="@(SearchTerm.Length < 2)" Click="@(() => ActOnSearchTerm(SearchTerm, true))" />
-        </RadzenStack>
-    </End>
-</RadzenFormField>
+<RadzenStack Orientation="Orientation.Horizontal">
+    <RadzenFormField Text="Seach for anything">
+        <ChildContent>
+            <RadzenTextBox Value="@SearchTerm" @oninput="@SearchTermChanged"
+                           @onkeydown="@HandleEnterKey"
+                           AutoCompleteType="AutoCompleteType.Off" />
+        </ChildContent>
+        <End>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenButton @ref=@_clearSearchTermButton Icon="close" Disabled="@(SearchTerm.Length == 0)" Click="@(() => ClearSearch())" />
+                @*Clicking the search icon clears cache and restarts search *@
+                <RadzenButton Icon="search" Disabled="@(SearchTerm.Length < 2)" Click="@(() => ActOnSearchTerm(SearchTerm, true))" />
+            </RadzenStack>
+        </End>
+    </RadzenFormField>
+    <RadzenToggleButton @bind-Value="@_showOptions" Icon="settings" />
+</RadzenStack>
+<RadzenStack Orientation="Orientation.Horizontal" Visible="@_showOptions">
+    <RadzenCheckBox @bind-Value="@_searchOptions.Account" Name="cbAccount" />
+    <RadzenLabel Text="Accounts" Component="cbAccount" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.Agency" Name="cbAgency" />
+    <RadzenLabel Text="Agencies" Component="cbAgency" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.Bond" Name="cbBond" />
+    <RadzenLabel Text="Bonds" Component="cbBond" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.Obligee" Name="cbObligee" />
+    <RadzenLabel Text="Obligees" Component="cbObligee" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.People" Name="cbPeople" />
+    <RadzenLabel Text="People" Component="cbPeople" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.PersonalFinancials" Name="cbPersonalFinancials" />
+    <RadzenLabel Text="Personal Financials" Component="cbPersonalFinancials" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.VirtualFile" Name="cbVirtualFile" />
+    <RadzenLabel Text="Virtual File System" Component="cbVirtualFile" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.ActiveOnly" Name="cbActiveOnly" />
+    <RadzenLabel Text="Active Items Only" Component="cbActiveOnly" />
+</RadzenStack>
 <RadzenTabs TabPosition="TabPosition.Top" RenderMode="TabRenderMode.Client">
     <Tabs>
         <RadzenTabsItem Text="All">
@@ -93,6 +114,13 @@
     const int SearchThisManyMsAfterTypingStops = 500;
     private JamesSearchResults? _results;
     private RadzenButton _clearSearchTermButton = null!;
+    private bool _showOptions = false;
+
+    private SearchOptions _searchOptions = new()
+    {
+        Account = true, ActiveOnly = true, Agency = true, Bond = true, Obligee = true, 
+        People = true, PersonalFinancials = true, VirtualFile = true
+    };
 
     //private SearchResultClient searchClient = new() { ResultsReturned = async () =>  };
     private IDisposable _resultsSubscription = null!;
@@ -236,7 +264,7 @@
             _resultsSubscription = null;
         });
         //TODO: Begin search
-        await DataAccess.StartSuperSearch(rootSearchTerm);
+        await DataAccess.StartSuperSearch(rootSearchTerm, _searchOptions);
         return search;
     }
 

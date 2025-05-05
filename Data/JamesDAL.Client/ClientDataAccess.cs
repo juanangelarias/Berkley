@@ -257,10 +257,10 @@ namespace James.Data.Client
                 async () => await jamesClient.GetAgencyRelatedParties.ExecuteAsync(agencyId), "AgencyRelatedParties");
         }
 
-        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search)
+        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly)
         {
             return await ExecuteGet<List<Agency>>(
-                async () => await jamesClient.SearchAgencies.ExecuteAsync(search), "SearchAgencies");
+                async () => await jamesClient.SearchAgencies.ExecuteAsync(search, activeOnly), "SearchAgencies");
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
@@ -463,7 +463,6 @@ namespace James.Data.Client
             var subscriptionToWatch = jamesClient.AddressCollectionModified.Watch(legalEntityId.ToString());
             var addressCollectionModifiedWatch = new AddressCollectionModifiedWatchClass(subscriptionToWatch).SubscribeTo(onNext, onError, onComplete);
             return addressCollectionModifiedWatch;
-            throw new NotImplementedException();
         }
 
         public IDisposable SearchResultReady(string searchTerm, Action<SubscriptionResult<List<JamesSearchResult>>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
@@ -474,20 +473,29 @@ namespace James.Data.Client
             return searchResultReady;
         }
 
-        public async Task<ISaveDataResult> StartSuperSearch(string searchTerm)
+        public async Task<ISaveDataResult> StartSuperSearch(string searchTerm, SearchOptions options)
         {
-            return await ExecuteSave(async () => await jamesClient.SuperSearch.ExecuteAsync(searchTerm));
+            return await ExecuteSave(async () => await jamesClient.SuperSearch.ExecuteAsync(searchTerm, new()
+            {
+                Account = options.Account,
+                ActiveOnly = options.ActiveOnly,
+                Agency = options.Agency,
+                Agent = options.Agent,
+                Bond = options.Bond,
+                Obligee = options.Obligee,
+                People = options.People,
+                PersonalFinancials = options.PersonalFinancials,
+                VirtualFile = options.VirtualFile
+            }));
         }
 
         public async Task<IDataAccessResult<List<Account>>> GetIdAccountNumbers()
         {
-            //throw new NotImplementedException();
             return await ExecuteGet<List<Account>>(async () => await jamesClient.GetIdAccountNumbers.ExecuteAsync(), "IdAccountNumbers");
         }
 
         public async Task<IDataAccessResult<List<Agency>>> GetIdAgencyNumbers()
         {
-            //throw new NotImplementedException();
             return await ExecuteGet<List<Agency>>(async () => await jamesClient.GetIdAgencyNumbers.ExecuteAsync(), "IdAgencyNumbers");
         }
 
@@ -692,7 +700,6 @@ namespace James.Data.Client
                 Email = email
             });
             return new DataAccessResult<Obligee>() { Data = ThisToThat.ToEntityType<Obligee>(saveResult.Data.CreateObligee.Obligee) };
-            //return new DataAccessResult<Obligee>();
         }
         public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId,
             bool appointingState,
@@ -798,6 +805,7 @@ namespace James.Data.Client
             return new DataAccessResultString
             { Data = data, Errors = graphQLResult?.Errors.Select(ErrorToString).ToArray() ?? [] };
         }
+
         /// <summary>
         /// Converts the result of a GraphQL query into a DataAccessResult&lt;T&gt;
         /// </summary>
@@ -876,7 +884,12 @@ namespace James.Data.Client
             }
         }
 
-        //TODO:  Needs to be used throughout this class
+        /// <summary>
+        /// Central logic for properly handling any errors when saving data
+        /// </summary>
+        /// <param name="dataFunc">Save data operation</param>
+        /// <param name="graphQlFunctionName">The GraphQl function name to include in exception message if an exception is thrown</param>
+        /// <returns>An SaveDataResult that either confirms success or returns errors in standard format</returns>
         private async Task<ISaveDataResult> ExecuteSave(Func<Task<IOperationResult>> dataFunc,
             [CallerMemberName] string graphQlFunctionName = "GraphQL call")
         {
@@ -895,6 +908,11 @@ namespace James.Data.Client
         }
     }
 
+    /// <summary>
+    /// Class used to get PropertyInfo objects from data types that are cached after reflection returns them for the first time.
+    /// </summary>
+    /// <param name="type">Type that contains the property</param>
+    /// <param name="propertyName">Name of the property to return the PropertyInfo for</param>
     internal sealed class ReflectionProperty(Type type, string propertyName)
     {
         private static readonly Dictionary<ReflectionProperty, PropertyInfo> _reflectedPropertyCache = [];

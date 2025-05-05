@@ -41,7 +41,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
         public Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString);
         public Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId);
-        public Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search);
+        public Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly);
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
         public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
         public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
@@ -114,8 +114,9 @@ namespace James.Shared.Data
         /// Call this after subscribing to the SearchResultsReady subscription
         /// </summary>
         /// <param name="searchTerm">The search term to search for</param>
+        /// <param name="options"></param>
         /// <returns>A simple ISaveDataResult.  Actual results will come through the SearchResultsReady subscription</returns>
-        public Task<ISaveDataResult> StartSuperSearch(string searchTerm);
+        public Task<ISaveDataResult> StartSuperSearch(string searchTerm, SearchOptions options);
 
         public Task<IDataAccessResult<List<Account>>> GetIdAccountNumbers();
         public Task<IDataAccessResult<List<Agency>>> GetIdAgencyNumbers();

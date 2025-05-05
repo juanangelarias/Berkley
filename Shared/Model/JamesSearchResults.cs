@@ -131,15 +131,15 @@ public class SearchResultComparer : IComparer<JamesSearchResult>
     }
 }
 
-public class JamesSearchResultsConverter : JsonConverter<JamesSearchResults>
+public struct SearchOptions
 {
-    public override JamesSearchResults? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override void Write(Utf8JsonWriter writer, JamesSearchResults value, JsonSerializerOptions options)
-    {
-        throw new NotImplementedException();
-    }
+    public bool Account { get; set; }
+    public bool ActiveOnly { get; set; }
+    public bool Agency { get; set; }
+    public bool Agent { get; set; }
+    public bool Bond { get; set; }
+    public bool Obligee { get; set; }
+    public bool People { get; set; }
+    public bool PersonalFinancials { get; set; }
+    public bool VirtualFile { get; set; }
 }

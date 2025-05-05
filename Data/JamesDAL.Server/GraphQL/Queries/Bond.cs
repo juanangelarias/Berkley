@@ -1,6 +1,5 @@
 ﻿using HotChocolate.Authorization;
 using James.Shared.Data;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -32,22 +31,22 @@ public partial class Query
     }
 
     [Authorize]
-    public async Task<List<Bond>> SearchBondsByBondNumber(string bondNumberFragment, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    public async Task<List<Bond>> SearchBondsByBondNumber(string bondNumberFragment, bool activeOnly, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
 
         if (StandardRegularExpressions.BondNumberPattern.IsMatch(bondNumberFragment))
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             //Add what is needed for a search result (Name and address of account)
-            var matchingBonds = await ctx.Bonds.Where(b => EF.Functions.Like(b.BondNumber, $"%{bondNumberFragment}%"))
-                .Include(b=>b.UnderWriter)
-                .ThenInclude(uw=>uw.IdNavigation)
+            var matchingBonds = await ctx.Bonds.Where(b => EF.Functions.Like(b.BondNumber, $"%{bondNumberFragment}%") && (b.Status == "Open" || activeOnly == false))
+                .Include(b => b.UnderWriter)
+                .ThenInclude(uw => uw.IdNavigation)
                 .Include(b => b.AccountNumNavigation)
-                .ThenInclude(act=>act.IdNavigation)
-                .ThenInclude(le=>le.LegalEntityAddresses)
-                .ThenInclude(lea=>lea.Address)  
-                .ThenInclude(ad=>ad.StateCodeNavigation)
-                .ThenInclude(sc=>sc.CountryCodeNavigation)
+                .ThenInclude(act => act.IdNavigation)
+                .ThenInclude(le => le.LegalEntityAddresses)
+                .ThenInclude(lea => lea.Address)
+                .ThenInclude(ad => ad.StateCodeNavigation)
+                .ThenInclude(sc => sc.CountryCodeNavigation)
                 .ToListAsync();
             return matchingBonds;
         }

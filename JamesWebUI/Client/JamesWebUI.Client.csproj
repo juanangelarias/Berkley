@@ -2,12 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-	<RuntimeFrameworkVersion>8.0.8</RuntimeFrameworkVersion>
+	<!-- <RuntimeFrameworkVersion>8.0.8</RuntimeFrameworkVersion> -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 	<NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
 	<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
 	<CompressionEnabled>false</CompressionEnabled>
+	<NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
 
   <ItemGroup>

@@ -23,8 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="8.0.8" />
-    <PackageReference Include="System.Formats.Asn1" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.4" />
     <PackageReference Include="WcfCoreMtomEncoderV2" Version="1.0.1" />
     <PackageReference Include="Winista.MimeDetect" Version="1.1.0" />
   </ItemGroup>

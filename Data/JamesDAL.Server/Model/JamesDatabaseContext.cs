@@ -5033,8 +5033,10 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<VAccount>(entity =>
         {
+            //Needed edit to the generated code.  Do not replace.
             entity
-                .HasNoKey()
+                .HasKey(e => e.AccountNum);
+            entity
                 .ToView("vAccount");
 
             entity.Property(e => e.AccountNum)
@@ -5157,8 +5159,10 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<VAccountStatus>(entity =>
         {
+            //Needed edit to the generated code.  Do not replace.
             entity
-                .HasNoKey()
+                .HasKey(e=>e.AccountNum);
+            entity
                 .ToView("vAccountStatus");
 
             entity.Property(e => e.AccountNum)

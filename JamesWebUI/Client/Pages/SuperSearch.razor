@@ -263,7 +263,8 @@
             _resultsSubscription?.Dispose();
             _resultsSubscription = null;
         });
-        //TODO: Begin search
+
+        //Note: Starting the search returns no data.  Search result data is returned via the subscription
         await DataAccess.StartSuperSearch(rootSearchTerm, _searchOptions);
         return search;
     }

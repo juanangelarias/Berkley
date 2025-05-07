@@ -41,7 +41,6 @@
                     @*TODO: Build templates for bonds and lists that contain inner lists in the result*@
                     @if (Result.Type == SearchResultType.Bond)
                     {
-                        //TODO: Update for Stefanie's new UI in Figma
                         <RadzenLink Text="@Result.Entity.FullName" />
                         <br />
                         <RadzenRow>
@@ -189,8 +188,7 @@
                 switch (Result.Parent.EntityType)
                 {
                     case "Agency":
-                        //TODO: Need to update this next line after functionality to go directly to a tab is added
-                        return $"/Agency/{Result.AgencyNumber}";
+                        return $"/Agency/{Result.AgencyNumber}?tabsAgencyProfile=tabContacts";
                     default:
                         return "/NotYetSupportedPersonUrl";
                 }

@@ -51,7 +51,7 @@ namespace James.Data.Server.GraphQL.Queries
             }
             else
             {
-                return new List<Account>();
+                return [];
             }
         }
         [Authorize]
@@ -127,18 +127,6 @@ namespace James.Data.Server.GraphQL.Queries
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            //var matchingAccounts = await ctx.VAccounts.Join(ctx.Accounts, vact => vact.Id, act => act.Id, (vact, act) => new { Account = act, Active = vact.AccountStatus == "Active" })
-            //    .Where(a => EF.Functions.Like(a.Account.AccountNum, $"%{accountNumberFragment}%") && (activeOnly == false || a.Active))
-            //    .Include(a => a.Account.IdNavigation)
-            //    .ThenInclude(le => le.LegalEntityAddresses)
-            //    .ThenInclude(lea => lea.Address)
-            //    .ThenInclude(ad => ad.StateCodeNavigation)
-            //    .ThenInclude(sc => sc!.CountryCodeNavigation)
-            //    .Include(a => a.Account.IdNavigation.LegalEntityPhones)
-            //    .ThenInclude(lep => lep.PhoneNumber)
-            //    .Include(a => a.Account.IdNavigation.LegalEntityEmails)
-            //    .Select(a => a.Account)
-            //    .ToListAsync();
             var matchingAccounts = await ctx.Accounts
                 .Include(a => a.IdNavigation)
                 .ThenInclude(le => le.LegalEntityAddresses)
@@ -148,7 +136,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(a => a.IdNavigation.LegalEntityPhones)
                 .ThenInclude(lep => lep.PhoneNumber)
                 .Include(a => a.IdNavigation.LegalEntityEmails)
-                .Join(ctx.VAccounts, act => act.AccountNum, vact => vact.AccountNum, (act, vact) => new { Account = act, Active = vact.AccountStatus == "Active" })
+                .Join(ctx.VAccountStatuses, act => act.AccountNum, vact => vact.AccountNum, (act, vact) => new { Account = act, Active = vact.AccountStatus == "Active" })
                 .Where(a => EF.Functions.Like(a.Account.AccountNum, $"%{accountNumberFragment}%") && (activeOnly == false || a.Active))
                 .Select(a => a.Account)
                 .ToListAsync();
@@ -159,18 +147,6 @@ namespace James.Data.Server.GraphQL.Queries
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            //var matchingAccounts = await ctx.VAccounts.Join(ctx.Accounts, vact => vact.Id, act => act.Id, (vact, act) => new { Account = act, Active = vact.AccountStatus == "Active" })
-            //    .Where(a => EF.Functions.Like(a.Account.IdNavigation.FullName, $"%{searchString}%") && (activeOnly == false || a.Active))
-            //    .Include(a => a.Account.IdNavigation)
-            //    .ThenInclude(le => le.LegalEntityAddresses)
-            //    .ThenInclude(lea => lea.Address)
-            //    .ThenInclude(ad => ad.StateCodeNavigation)
-            //    .ThenInclude(sc => sc!.CountryCodeNavigation)
-            //    .Include(a => a.Account.IdNavigation.LegalEntityPhones)
-            //    .ThenInclude(lep => lep.PhoneNumber)
-            //    .Include(a => a.Account.IdNavigation.LegalEntityEmails)
-            //    .Select(a => a.Account)
-            //    .ToListAsync();
             var matchingAccounts = await ctx.Accounts
                 .Include(a => a.IdNavigation)
                 .ThenInclude(le => le.LegalEntityAddresses)
@@ -180,7 +156,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(a => a.IdNavigation.LegalEntityPhones)
                 .ThenInclude(lep => lep.PhoneNumber)
                 .Include(a => a.IdNavigation.LegalEntityEmails)
-                .Join(ctx.VAccounts, act => act.AccountNum, vact => vact.AccountNum, (act, vact) => new { Account = act, Active = vact.AccountStatus == "Active" })
+                .Join(ctx.VAccountStatuses, act => act.AccountNum, vact => vact.AccountNum, (act, vact) => new { Account = act, Active = vact.AccountStatus == "Active" })
                 .Where(a => EF.Functions.Like(a.Account.IdNavigation.FullName, $"%{searchString}%") && (activeOnly == false || a.Active))
                 .Select(a => a.Account)
                 .ToListAsync();

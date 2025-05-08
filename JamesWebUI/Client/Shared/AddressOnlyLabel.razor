@@ -1,0 +1,15 @@
+﻿<RadzenStack Gap="0">
+    <RadzenText Text="@Address?.Address1" class="single-spaced-text" />
+    @if ((Address?.Address2 ?? "").Length > 0)
+    {
+        <RadzenText Text="@Address?.Address2" class="single-spaced-text" />
+    }
+    @if ((Address?.Address3 ?? "").Length > 0)
+    {
+        <RadzenText Text="@Address?.Address3" class="single-spaced-text" />
+    }
+    <AddressCityState Address="@Address" />
+</RadzenStack>
+@code {
+    [Parameter]public required Address Address { get; set; }
+}

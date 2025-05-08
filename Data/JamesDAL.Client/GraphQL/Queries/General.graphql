@@ -109,3 +109,15 @@ query GetAllLegalEntityPhoneNumbers($input: UUID!) {
 	modified
 	}
 }
+
+query GetAllCountries {
+  allCountries {
+    abbreviation
+    active
+    code
+    name
+    phoneCode
+    phoneMask
+    postalCodeMask
+  }
+}

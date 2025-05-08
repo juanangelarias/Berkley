@@ -50,8 +50,21 @@ public class ThisToThatTests
         var source = Enumerable.Range(0, sampleSize).Select(s => new ComplexA(s)).ToList();
         var copiedSource = ThisToThat.ToEntityType<Collection<ComplexB>>(source);
         Assert.Equal(source.Count, copiedSource.Count);
-        for (var i = 0;i<sampleSize;i++)
+        for (var i = 0; i < sampleSize; i++)
             CompareComplex(source[i], copiedSource[i]);
+    }
+
+    [Fact]
+    public void CopyEnum()
+    {
+        foreach (EnumA enA in Enum.GetValues<EnumA>())
+        {
+            var origName = Enum.GetName(typeof(EnumA), enA);
+            var origClass = new EnumAClass { TestVal = enA };
+            var newClass = ThisToThat.ToEntityType<EnumBClass>(origClass);
+            var newName = Enum.GetName(typeof(EnumB), newClass.TestVal);
+            Assert.Equal(origName.ToLower(), newName.ToLower());
+        }
     }
 
     private static void CompareComplex(ComplexA source, ComplexB copiedSource)
@@ -99,7 +112,7 @@ public class ThisToThatTests
 
         public SimpleA(int seed)
         {
-            I=seed;
+            I = seed;
             Cheese = (seed % 10) switch
             {
                 0 => "Mozzarella",
@@ -128,7 +141,7 @@ public class ThisToThatTests
         public SimpleB(int seed)
         {
             I = seed;
-            Cheese = ((3+seed)  % 10) switch
+            Cheese = ((3 + seed) % 10) switch
             {
                 0 => "Mozzarella",
                 1 => "Pepper Jack",
@@ -252,8 +265,8 @@ public class ThisToThatTests
             DateTime2 = DateTime.Now.AddDays(seed);
             Date1 = DateOnly.FromDateTime(DateTime.Now.AddMonths(seed));
             IncompatibleId = new Guid();
-            NotInA = 2.345f*seed;
-            IncompatibleField = DateTime.Now.AddMinutes(seed*123);
+            NotInA = 2.345f * seed;
+            IncompatibleField = DateTime.Now.AddMinutes(seed * 123);
         }
 
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -300,8 +313,8 @@ public class ThisToThatTests
         public float PropNotInB { get; set; }
     }
     private class ComplexB
-    { 
-        public ComplexB() { }                      
+    {
+        public ComplexB() { }
         public ComplexB(int seed)
         {
             var listLength = 4 + seed % 6;
@@ -323,5 +336,22 @@ public class ThisToThatTests
         public string Name { get; set; }
         public float NotInA;
         public float PropNotInA { get; set; }
+    }
+
+    private class EnumAClass
+    {
+        public EnumA TestVal { get; set; }
+    }
+    private enum EnumA
+    {
+        a, b, c, d
+    }
+    private class EnumBClass
+    {
+        public EnumB TestVal { get; set; }
+    }
+    private enum EnumB
+    {
+        A, B, C, D
     }
 }

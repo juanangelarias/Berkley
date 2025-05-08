@@ -1,22 +1,44 @@
 ﻿using HotChocolate.Authorization;
+using James.Shared;
 
 namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
+        /// <summary>
+        /// Search agencies by AgencyNumber or full name
+        /// </summary>
+        /// <param name="stringToSearch">Search string</param>
+        /// <param name="activeOnly">True to only return active results, false to return all statuses</param>
+        /// <param name="contextFactory">database context</param>
+        /// <returns>Matching agencies</returns>
         [Authorize]
-        public async Task<List<Agency>> SearchAgencies(string? stringToSearch, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<Agency>> SearchAgencies(string? stringToSearch, bool activeOnly, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             if (!string.IsNullOrWhiteSpace(stringToSearch))
-                return await ctx.Agencies.Include(a => a.IdNavigation)
+            {
+                var likeString = $"%{stringToSearch}%";
+                //NOTE:This assumes that AgencyNumbers are always digits only
+                var byAgencyNum = stringToSearch.IsDigitsOnly() ? ctx.Agencies.Include(a => a.IdNavigation)
                     .Include(a => a.IdNavigation.LegalEntityAddresses)
                     .ThenInclude(a => a.Address)
-                    .Where(a => a.IdNavigation.FullName.ToLower().Contains(stringToSearch.ToLower()))
-                    .ToListAsync();
-            else
-                return await ctx.Agencies.Include(a => a.IdNavigation)
-                    .ToListAsync();
+                    .Include(a => a.IdNavigation.LegalEntityEmails)
+                    .Where(a => EF.Functions.Like(a.AgencyNumber, likeString) && (activeOnly || a.Status=="Active")).ToListAsync() : Task.FromResult(new List<Agency>());
+                var ctx2 = await contextFactory.CreateDbContextAsync();
+                var byName = ctx2.Agencies.Include(a => a.IdNavigation)
+                    .Include(a => a.IdNavigation.LegalEntityAddresses)
+                    .ThenInclude(a => a.Address)
+                    .Include(a => a.IdNavigation.LegalEntityEmails)
+                    .Where(a => EF.Functions.Like(a.IdNavigation.FullName, likeString) && (activeOnly || a.Status=="Active")).ToListAsync();
+                var results = await byAgencyNum;
+                var byNameResults = await byName;
+                results.AddRange(byNameResults);
+                return results;
+            }
+            //Allow this for testing, but shouldn't be allowed by UI
+            return await ctx.Agencies.Include(a => a.IdNavigation)
+                .ToListAsync();
         }
 
         [Authorize]
@@ -106,7 +128,7 @@ namespace James.Data.Server.GraphQL.Queries
             }
             catch (Exception ex)
             {
-                throw new GraphQLException($"Error when retreiving status log for agency {agencyNumber}", ex);
+                throw new GraphQLException($"Error when retrieving status log for agency {agencyNumber}", ex);
             }
 
         }
@@ -138,7 +160,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(ag => ag.Insurer)
                 .ThenInclude(ag => ag.IdNavigation)
                 .Where(ag => ag.AgencyId == agencyId)
-                .Select(aia=>aia.Agent)
+                .Select(aia => aia.Agent)
                 .ToListAsync();
         }
 
@@ -147,7 +169,7 @@ namespace James.Data.Server.GraphQL.Queries
         {
             var ctx = contextFactory.CreateDbContext();
             var result = await ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
-                .Include(lic=>lic.Agency)
+                .Include(lic => lic.Agency)
                 .Include(lic => lic.Insurer)
                 .ThenInclude(lic => lic.IdNavigation)
                 .ToListAsync();
@@ -173,7 +195,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(p => p.PowerOfAttorneyDocumentStatuses)
                 .ThenInclude(p => p.DocumentType)
                 .Include(p => p.StatusNavigation)
-                .Include(p=>p.Agency)
+                .Include(p => p.Agency)
                 .ToListAsync();
         }
 
@@ -201,8 +223,8 @@ namespace James.Data.Server.GraphQL.Queries
             {
                 var relatedPartyIds = await ctx.VAgencyParents.Where(a => a.Parent == topParent.Parent).Select(a => a.Id).ToListAsync();
                 var relatedAgencies = await ctx.Agencies.Where(a => relatedPartyIds.Contains(a.Id))
-                    .Include(a=>a.AgencyLicenses)
-                    .ThenInclude(al=>al.Agent)
+                    .Include(a => a.AgencyLicenses)
+                    .ThenInclude(al => al.Agent)
                     .Include(a => a.IdNavigation)
                     .ThenInclude(a => a.LegalEntityAddresses.Where(lea => lea.Type == "Main"))
                     .ThenInclude(a => a.Address)
@@ -221,6 +243,14 @@ namespace James.Data.Server.GraphQL.Queries
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             return await ctx.AgencyCommissions.Where(ac => ac.AgencyId == agencyId).ToListAsync();
+        }
+
+        [Authorize]
+        public async Task<List<Agency>> GetIdAgencyNumbers([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var agencyList = await ctx.Agencies.ToListAsync();
+            return agencyList;
         }
     }
 }

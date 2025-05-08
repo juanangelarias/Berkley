@@ -183,7 +183,7 @@ namespace James.Data.Server.Model
         {
             //Free conums obtained by the following query:
             //SELECT TOP 25 Number
-            //FROM Data.Number n
+            //FROM DataObject.Number n
             //	left JOIN Basis.Company c ON c.conum = n.number
             //	WHERE Number>1001 AND c.conum IS null
             //	ORDER BY Number

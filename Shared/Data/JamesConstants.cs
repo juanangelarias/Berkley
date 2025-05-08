@@ -1,4 +1,6 @@
-﻿namespace James.Shared.Data
+﻿using System.Text.RegularExpressions;
+
+namespace James.Shared.Data
 {
     /// <summary>
     /// Constants used by multiple assemblies
@@ -22,5 +24,11 @@
         public const string Obligee = "Obligee";
         public const string Bond = "Bond";
         public const string DataAccess = "Data Access";
+        public const string BrowserFeatures = "Browser Features";//For issues with browser features like LocalStorage, etc.
+    }
+
+    public static class StandardRegularExpressions
+    {
+        public static readonly Regex BondNumberPattern = new Regex(@"^\.?[A-Z]{0,3} ?\d{3,12}([\s]+|[A-Z]|-([A-Z]|\d{1,3))?", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     }
 }

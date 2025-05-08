@@ -29,7 +29,7 @@
 
     private async Task SearchAgency(LoadDataArgs args)
     {
-        var result = await _dataAccess.SearchAgencies(args.Filter);
+        var result = await _dataAccess.SearchAgencies(args.Filter, false);
 
         if (result.Errors.Any())
         {

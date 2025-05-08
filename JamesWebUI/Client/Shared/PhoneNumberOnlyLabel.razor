@@ -1,0 +1,31 @@
+﻿@using System.Diagnostics.CodeAnalysis
+@inject AddressPhoneFormatService AddressPhoneFormatService
+<RadzenText Text="@_phoneNumberText" />
+@code {
+
+    [Parameter]
+    public required PhoneNumber PhoneNumber
+    {
+        get => _phoneNumber;
+        [MemberNotNull(nameof(_phoneNumber))]
+        set
+        {
+            _phoneNumber = value;
+            if (string.IsNullOrWhiteSpace(_phoneNumberText))
+                //Show unformatted text as skeleton until formatting completes
+                _phoneNumberText = PhoneNumber.MainNumber;
+        }
+    }
+
+    [Parameter]
+    public bool AlwaysShowCountryCode { get; set; }
+
+    private string _phoneNumberText;
+    private PhoneNumber _phoneNumber;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        _phoneNumberText = await AddressPhoneFormatService.FormatPhoneNumberForCountryAsync(PhoneNumber);
+    }
+}

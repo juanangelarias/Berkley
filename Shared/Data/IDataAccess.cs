@@ -41,7 +41,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
         public Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString);
         public Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId);
-        public Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search);
+        public Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly);
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
         public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
         public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
@@ -65,6 +65,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType);
         public Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId);
+        public Task<IDataAccessResult<List<CountryDm>>> GetAllCountries();
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
             Guid changedBy, string? comments);
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
@@ -96,6 +97,29 @@ namespace James.Shared.Data
 
         public IDisposable AddressCollectionModified(Guid legalEntityId, Action<SubscriptionResult<Guid>> onNext,
             Action<Exception>? onError = null, Action? onComplete = null);
+
+        /// <summary>
+        /// Returns super search results when they are ready
+        /// </summary>
+        /// <param name="searchTerm">The search term to search for</param>
+        /// <param name="onNext">handle of the returned results</param>
+        /// <param name="onError">error handler</param>
+        /// <param name="onComplete">handle to dispose of the subscription after all results are returned.</param>
+        /// <returns>IDisposable reference to the subscription object</returns>
+        public IDisposable SearchResultReady(string searchTerm,
+            Action<SubscriptionResult<List<JamesSearchResult>>> onNext,
+            Action<Exception>? onError = null, Action? onComplete = null);
+
+        /// <summary>
+        /// Call this after subscribing to the SearchResultsReady subscription
+        /// </summary>
+        /// <param name="searchTerm">The search term to search for</param>
+        /// <param name="options"></param>
+        /// <returns>A simple ISaveDataResult.  Actual results will come through the SearchResultsReady subscription</returns>
+        public Task<ISaveDataResult> StartSuperSearch(string searchTerm, SearchOptions options);
+
+        public Task<IDataAccessResult<List<Account>>> GetIdAccountNumbers();
+        public Task<IDataAccessResult<List<Agency>>> GetIdAgencyNumbers();
 
         public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true);

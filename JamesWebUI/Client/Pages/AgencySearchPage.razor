@@ -5,6 +5,7 @@
 @using James.Data.Client.GraphQL.Components;
 @using James.Shared
 @using StrawberryShake;
+@using SearchOptions = James.Shared.Model.SearchOptions
 
 @inherits JamesLayoutComponentBase
 
@@ -118,6 +119,7 @@
     private IReadOnlyList<Agency> agencyResults;
     private RadzenTextBox txtAgencyNameSearch;
     private string AgencySearchString;
+    private SearchOptions _searchOptions = new SearchOptions{Agency=true};
     public ISearchAgencies_SearchAgencies selectedAgency;
     public List<String> BranchFilter = null;
     public List<String> StatusFilter = null;
@@ -131,7 +133,7 @@
     }
     async Task SearchAgencies()
     {
-        var results = await DataAccess.SearchAgencies(txtAgencyNameSearch.Value);
+        var results = await DataAccess.SearchAgencies(txtAgencyNameSearch.Value, _searchOptions.ActiveOnly);
         if (results.Success)
             agencyResults = results.Data;
         else

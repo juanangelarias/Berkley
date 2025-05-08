@@ -13,4 +13,6 @@ public partial class CreditReportDm
     public DateTime Modified { get; set; }
 
     public string CreditReport { get; set; } = null!;
+
+    public virtual ICollection<CreditReportHistory> CreditReportHistories { get; set; } = new List<CreditReportHistory>();
 }

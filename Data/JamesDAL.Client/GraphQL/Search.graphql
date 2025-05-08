@@ -1,0 +1,33 @@
+﻿subscription SearchResultReady($searchTerm: String!) {
+  onSearchResultReady(searchTerm: $searchTerm) {
+    identifier
+    result {
+      confidence
+      fromDescription
+      name
+      searchString
+      type
+      accountNum
+      agencyNumber
+      entity {
+        id
+        isIndividual
+        fullName
+        entityType
+        legalEntityAddresses {
+          type
+          address {
+            address1
+            city
+            postalCode
+            stateCode
+          }
+        }
+      }
+    }
+  }
+}
+
+query SuperSearch($searchTerm: String!, $options:SearchOptionsInput!) {
+  search(searchTerm: $searchTerm, options:$options) 
+}

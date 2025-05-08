@@ -1,8 +1,16 @@
-﻿namespace James.Shared.Data;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+
+namespace James.Shared.Data;
 
 public class LoadItem : IDisposable
 {
+    /// <summary>
+    /// Unique key that describes the dataset to load
+    /// </summary>
+    /// <remarks>For caching to work across pages, the same key must be uses across all pages.</remarks>
     public required string Key { get; set; }
+
     /// <summary>
     /// Argumentless lambda expression or function that sets external IDataAccessResult variables
     /// </summary>
@@ -15,11 +23,17 @@ public class LoadItem : IDisposable
     public required Action<object?> CacheLoadTask { get; init; }
 
     /// <summary>
+    /// Action to take on the loaded data when loaded from Cache
+    /// </summary>
+    /// <remarks>Data is retrieved as an object and needs to be copied to the result variable as a strongly typed object.</remarks>
+    public Func<Task<object?>>? LocalStorageCacheLoadTask { get; init; }
+
+    /// <summary>
     /// Argumentless lambda expression or function that returns the result variable.
     /// </summary>
     /// <remarks>This must be a function because the result variable will not be set until the AsyncLoadTask has run.
     /// </remarks>
-    /// <returns>Returns a reference to the IDataAccessResult base class, ISaveDataResult, that is non-generic and only cares about success and errors</returns>
+    /// <returns>Returns a reference to the IDataAccessResult base class that is non-generic</returns>
     public required Func<IDataAccessResult> ResultVariable { get; init; }
 
     /// <summary>
@@ -34,7 +48,7 @@ public class LoadItem : IDisposable
     /// </summary>
     /// <remarks>Everything should be cached, at minimum, for a minute to protect from multiple queries.
     /// When subscriptions are implemented, the cache can be held much longer.</remarks>
-    public TimeSpan CacheDuration { get; set; }= TimeSpan.FromHours(1);
+    public TimeSpan CacheDuration { get; set; } = TimeSpan.FromHours(1);
 
     /// <summary>
     /// Action taken after the data has loaded either from the source or from the cache
@@ -47,11 +61,11 @@ public class LoadItem : IDisposable
     {
         Loaded?.Invoke(this, EventArgs.Empty);
     }
-    
+
     public event EventHandler<LoadErrorEventArgs> LoadError;
 
     internal void LoadErrorsEncountered(string[] errors, bool fatal) =>
-        LoadError?.Invoke(this, new LoadErrorEventArgs(){Errors = errors, Fatal = fatal});
+        LoadError?.Invoke(this, new LoadErrorEventArgs() { Errors = errors, Fatal = fatal });
 
     public void Dispose()
     {
@@ -59,11 +73,42 @@ public class LoadItem : IDisposable
     }
 }
 
-internal class CachedResult
+public class CachedResult
 {
-    internal object? Data { get; set; }
+    public object? DataObject { get; set; }
 
-    internal required DateTime CachedUntil { get; init; } = DateTime.Now;
+    public required DateTime CacheUntil { get; init; } = DateTime.Now;
+}
+
+public class CachedResult<T> : CachedResult
+{
+    private static JsonSerializerOptions ignoreCycles = new JsonSerializerOptions
+    {
+        ReferenceHandler = ReferenceHandler.IgnoreCycles,
+        WriteIndented = false
+    };
+    public T Data
+    {
+        get
+        {
+            //When a cached value is pulled from browser local storage, the DataObject 
+            //  does not always get properly converted to the proper type.
+            if (DataObject is JsonElement je)
+                try
+                {
+                    //DataObject = JsonSerializer.Deserialize<T>(je.ToString());
+                    DataObject = je.Deserialize<T>(ignoreCycles);
+                }
+                catch (Exception ex)
+                {
+                    var msg = $"Exception deserializing cache from local storage.  Type: {typeof(T).Name}";
+                    throw new Exception(msg, ex);
+                }
+            return (T)DataObject;
+        }
+
+        set => DataObject = value;
+    }
 }
 
 public class LoadErrorEventArgs : EventArgs

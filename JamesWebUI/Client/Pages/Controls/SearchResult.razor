@@ -1,0 +1,225 @@
+﻿@using System.Diagnostics
+@using Blazored.LocalStorage
+@inherits JamesLayoutComponentBase
+@inject IDataAccess DataAccess
+@inject ILocalStorageService LocalStorageService
+<RadzenCard>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenBreadCrumb>
+                @foreach (var bcp in _breadCrumbData)
+                {
+                    <RadzenBreadCrumbItem Path="@bcp.Path" Text="@bcp.Text"></RadzenBreadCrumbItem>
+                }
+            </RadzenBreadCrumb>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn Size="1">
+            @if (Result.Type == SearchResultType.Person || Result.Entity.IsIndividual)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     xmlns:xlink="http://www.w3.org/1999/xlink"
+                     xml:space="preserve"
+                     style="shape-rendering:geometricPrecision; text-rendering:geometricPrecision; image-rendering:optimizeQuality; fill-rule:evenodd; clip-rule:evenodd"
+                     viewBox="0 0 500 500">
+                    <g id="UrTavla">
+                        <circle style="fill:url(#toning);stroke:#010101;stroke-width:1.6871;stroke-miterlimit:10;" cx="250" cy="250" r="245"></circle>
+                        <text x="50%" y="50%" stroke="#51c5cf" stroke-width="2px" dy=".3em">@Result.Entity.Get2LetterInitialsOfIndividual()</text>
+                    </g>
+                </svg>
+            }
+            else
+            {
+                <RadzenIcon Icon="@GetIconForResultType()"></RadzenIcon>
+            }
+        </RadzenColumn>
+        <RadzenColumn Size="9">
+            <RadzenLink Path="@DestinationUrl()">
+                <RadzenStack Gap="4px">
+                    <RadzenText Text="@Result.Name" TextStyle="TextStyle.DisplayH4" />
+                    @*TODO: Build templates for bonds and lists that contain inner lists in the result*@
+                    @if (Result.Type == SearchResultType.Bond)
+                    {
+                        <RadzenLink Text="@Result.Entity.FullName" />
+                        <br />
+                        <RadzenRow>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">Bond No.</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">Principal</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">Type</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">UW</RadzenText>
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText class="figma-subtable-header">Branch</RadzenText>
+                            </RadzenColumn>
+                        </RadzenRow>
+                        <RadzenRow>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.BondList?[0].BondNumber" />
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.Entity.FullName" />
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.BondList?[0].BondType?.BondType" />
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.BondList?[0].UnderWriter.IdNavigation.FullName" />
+                            </RadzenColumn>
+                            <RadzenColumn>
+                                <RadzenText Text="@Result.Entity.AccountIdNavigation?.Branch" />
+                            </RadzenColumn>
+                        </RadzenRow>
+                        <hr />
+                    }
+                    else if (Result.Type == SearchResultType.Account)
+                    {
+                        <AddressOnlyLabel Address="@Result.Entity.GetMainAddress()" />
+                    }
+                    else
+                    {
+                        <RadzenText Text="@Result.Name" class="single-spaced-text" />
+                        <AddressCityState Address="@Result.Entity.GetMainAddress()"/>
+                    }
+                </RadzenStack>
+            </RadzenLink>
+        </RadzenColumn>
+        <RadzenColumn Size="2">
+            <RadzenStack>
+                @if (Result.Type == SearchResultType.Account)
+                {
+                    <RadzenText Text="@($"Acct#{Result.AccountNum}")" />
+                }
+                @if (Result.Type == SearchResultType.Agency)
+                {
+                    <RadzenText Text="@($"Agency#{Result.AgencyNumber}")" />
+                }
+                @if (!string.IsNullOrWhiteSpace(Result.Entity.GetMainEmail()))
+                {
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenIcon Icon="mail" />
+                        <RadzenText Text="@Result.Entity.GetMainEmail()" />
+                    </RadzenStack>
+                }
+                @if (!string.IsNullOrWhiteSpace(Result.Entity.GetMainPhoneNumber()?.MainNumber))
+                {
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenIcon Icon="call" />
+                        <PhoneNumberOnlyLabel PhoneNumber="@Result.Entity.GetMainPhoneNumber()" />
+                    </RadzenStack>
+                }
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public required JamesSearchResult Result { get; set; }
+
+    private List<BreadCrumbPart> _breadCrumbData = []; 
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        //await DataCache.ParallelGetCacheOrDataAsync(IdAccountLoadItem(), IdAgencyLoadItem());
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await FillBreadCrumb();
+    }
+
+    private async Task FillBreadCrumb()
+    {
+        _breadCrumbData.Clear();
+        switch (Result.Type)
+        {
+            case SearchResultType.Account:
+                _breadCrumbData.Add(new BreadCrumbPart { Path = "/Account", Text = "Account" });
+                _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Account/{Result.AccountNum}", Text = Result.Entity.FullName});
+                break;
+            case SearchResultType.Agency:
+                _breadCrumbData.Add(new BreadCrumbPart { Path = "/Agency", Text = "Agency" });
+                _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Agency/{Result.AgencyNumber}", Text = Result.Entity.FullName });
+                break;
+            case SearchResultType.File:
+                _breadCrumbData.Add(new BreadCrumbPart { Path = "/Account", Text = "Account" });
+                _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Account/{Result.AccountNum}", Text = Result.Entity.FullName });
+                //TODO: Need to update this next line after functionality to go directly to a tab is added
+                _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Account/{Result.AccountNum}", Text = "Virtual File" });
+                break;
+            case SearchResultType.Bond:
+                //TODO:Confirm links when they have something to point to
+                _breadCrumbData.Add(new BreadCrumbPart{Path = $"/Bond", Text ="Bonds"});
+                _breadCrumbData.Add(new BreadCrumbPart { Path = $"/Account/{Result.AccountNum}", Text = Result.Entity.FullName });
+                _breadCrumbData.Add(new BreadCrumbPart{Path = DestinationUrl(), Text = $"Bond No. {Result.BondList?[0].BondNumber}"});
+                break;
+            //TODO:  Finish these scenarios
+            default:
+                _breadCrumbData.Add(new BreadCrumbPart { Path = "/", Text = "Development not finished." });
+                _breadCrumbData.Add(new BreadCrumbPart { Path = "/", Text = Result.Entity.FullName });
+                break;
+        }
+    }
+
+    private string DestinationUrl()
+    {
+        switch (Result.Type)
+        {
+            case SearchResultType.Account:
+                return $"/Account/{Result.AccountNum}";
+            case SearchResultType.Agency:
+                return $"/Agency/{Result.AgencyNumber}";
+            case SearchResultType.File:
+                Debug.Assert(Result.Document != null, "SearchResultYpe.File should always contain a document");
+                return $"/ImagingRepository/GetDocument/{Result.Document!.DocumentClass}/{Result.Document!.Guid}";
+            case SearchResultType.Person:
+                //TODO:Expand for Obligees and Related Parties when that functionality is done
+                Debug.Assert(Result.Parent != null, "SearchResultYpe.Person should always contain a Parent");
+                switch (Result.Parent.EntityType)
+                {
+                    case "Agency":
+                        return $"/Agency/{Result.AgencyNumber}?tabsAgencyProfile=tabContacts";
+                    default:
+                        return "/NotYetSupportedPersonUrl";
+                }
+            case SearchResultType.Bond:
+                return $"/Bond/{Result.BondList?[0].BondNumber}";
+            default:
+                return "/NotYetSupportedSearchResultType";
+        }
+    }
+
+    private string GetIconForResultType() => Result.Type switch
+    {
+        SearchResultType.Account => "home_work", 
+        SearchResultType.Agency => "diversity_3",
+        SearchResultType.Bond => "gavel",
+        SearchResultType.File => "description",
+        SearchResultType.Obligee => "warehouse",
+        SearchResultType.Person => "account_circle",
+        _ => "question_mark"
+    };
+
+    private string GetPathToBreadCrumbPart(LegalEntity entity)
+    {
+        return entity.EntityType switch
+        {
+            "Account" => $""
+        };
+    }
+    private class BreadCrumbPart
+    {
+        public string Path { get; set; }
+        public string Text { get; set; }
+    }
+}

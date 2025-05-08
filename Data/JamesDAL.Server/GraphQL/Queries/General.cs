@@ -122,5 +122,20 @@ namespace James.Data.Server.GraphQL.Queries
                 throw new GraphQLException($"Error when retrieving Address Types.", ex);
             }
         }
+        [Authorize]
+        public async Task<List<CountryDm>> GetAllCountries([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var result = await ctx.CountryDms.ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retrieving country list.", ex);
+            }
+        }
     }
 }

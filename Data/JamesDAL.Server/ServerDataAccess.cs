@@ -9,11 +9,11 @@ using James.Shared.Imaging;
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutations generalMutations, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutation generalMutation, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
     {
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
-            return await ExecuteGet(async () => await query.GetAccountByNumber(accountNumber, contextFactory));
+            return (await ExecuteGet(async () => await query.GetAccountByNumber(accountNumber, contextFactory)))!;
         }
         public async Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber)
         {
@@ -123,10 +123,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAgencyRelatedParties(agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search)
+        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly)
         {
-            //TODO: Port to Execute Get
-            return await ExecuteGet(async () => await query.SearchAgencies(search, contextFactory));
+            return await ExecuteGet(async () => await query.SearchAgencies(search, activeOnly, contextFactory));
         }
         public async Task<IDataAccessResult<Address>> GetAddress(Guid addressId)
         {
@@ -221,7 +220,7 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
-            return await ExecuteSave((async () => await generalMutations.SetAddress(address.Id, address.Address1, address.Address2,
+            return await ExecuteSave((async () => await generalMutation.SetAddress(address.Id, address.Address1, address.Address2,
                 address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
                 eventSender, contextFactory, loggingService)));
         }
@@ -230,23 +229,28 @@ namespace James.Data.Server
             Guid legalEntityId, string addressType, string identifier)
         {
             return await ExecuteSave(async () =>
-                await generalMutations.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode, 
+                await generalMutation.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode, 
                 legalEntityId, addressType, identifier, eventSender, contextFactory, loggingService));
 
         }
         public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType)
         {
-            return await ExecuteSave(async () => await generalMutations.CreatePhoneNumber(phoneId, countryCode, mainNumber, extension, legalEntityId, phoneType, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.CreatePhoneNumber(phoneId, countryCode, mainNumber, extension, legalEntityId, phoneType, contextFactory));
         }
         public async Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier)
         {
             return await ExecuteSave(async () =>
-            await generalMutations.DeleteAddress(addressId, identifier, eventSender, contextFactory, loggingService));
+            await generalMutation.DeleteAddress(addressId, identifier, eventSender, contextFactory, loggingService));
+        }
+
+        public async Task<IDataAccessResult<List<CountryDm>>> GetAllCountries()
+        {
+            return await ExecuteGet(async()=>await query.GetAllCountries(contextFactory));
         }
         public async Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId)
         {
-            return await ExecuteSave(async () => await generalMutations.DeletePhoneNumber(phoneId, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.DeletePhoneNumber(phoneId, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
@@ -358,7 +362,7 @@ namespace James.Data.Server
             {
                 var result = await agencyMutation.CreateAgencyInventory(inventoryId, agencyId, dateSent, quantity, documentType, addressee,
                     address1, address2, address3, city, stateCode, postalCode, approverId, eventSender, contextFactory);
-                return new DataAccessResult<bool>(); /*{  Data = result };*/
+                return new DataAccessResult<bool>(); /*{  DataObject = result };*/
             }
             catch (AggregateException ae)
             {
@@ -401,7 +405,7 @@ namespace James.Data.Server
             //    var result = await agencyMutation.SetAgencyLicense(licenseId,agencyId, agentId, appointingState,
             //        comments, appointment, expiration, termination,
             //        insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory);
-            //    return new DataAccessResult<AgencyLicense> { Data = result };
+            //    return new DataAccessResult<AgencyLicense> { DataObject = result };
             //}
             //catch (AggregateException ae)
             //{
@@ -509,6 +513,26 @@ namespace James.Data.Server
             return OnAddressCollectionModified(addressId).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<Guid>>(onNext, onError, onComplete));
         }
 
+        public IDisposable SearchResultReady(string searchTerm, Action<SubscriptionResult<List<JamesSearchResult>>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
+        {
+            return OnSearchResultReady(searchTerm).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<List<JamesSearchResult>>> (onNext,onError,onComplete));
+        }
+
+        public Task<ISaveDataResult> StartSuperSearch(string searchTerm, SearchOptions options)
+        {
+            return ExecuteSave(async ()=> await query.Search(searchTerm, options, eventSender, contextFactory, loggingService));
+        }
+
+        public Task<IDataAccessResult<List<Account>>> GetIdAccountNumbers()
+        {
+            return ExecuteGet(async () => await query.GetIdAccountNumbers(contextFactory));
+        }
+
+        public Task<IDataAccessResult<List<Agency>>> GetIdAgencyNumbers()
+        {
+            return ExecuteGet(async () => await query.GetIdAgencyNumbers(contextFactory));
+        }
+
         public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory, string? documentType = null)
         {
             return await ExecuteGet(async () =>
@@ -597,13 +621,28 @@ namespace James.Data.Server
         {
             lock (_onAddressCollectionModified)
             {
-                if (_onAddressModified.ContainsKey(legalEntityId) == false)
+                if (_onAddressCollectionModified.ContainsKey(legalEntityId) == false)
                 {
                     _onAddressCollectionModified[legalEntityId] = new(eventReceiver
                         .SubscribeAsync<SubscriptionResult<Guid>>("OnAddressCollectionModified_" + legalEntityId).Result.ReadEventsAsync(), CancellationToken.None);
                 }
 
                 return _onAddressCollectionModified[legalEntityId];
+            }
+        }
+        private readonly Dictionary<string, ServerSideSubscription<SubscriptionResult<List<JamesSearchResult>>>> _onSearchResultReady = new();
+
+        private ServerSideSubscription<SubscriptionResult<List<JamesSearchResult>>> OnSearchResultReady(string searchTerm)
+        {
+            lock (_onSearchResultReady)
+            {
+                if (_onSearchResultReady.ContainsKey(searchTerm) == false)
+                {
+                    _onSearchResultReady[searchTerm] = new(eventReceiver
+                        .SubscribeAsync<SubscriptionResult<List<JamesSearchResult>>>("Srch_" + searchTerm).Result.ReadEventsAsync(), CancellationToken.None);
+                }
+
+                return _onSearchResultReady[searchTerm];
             }
         }
     }

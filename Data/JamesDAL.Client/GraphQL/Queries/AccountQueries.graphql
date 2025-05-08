@@ -177,6 +177,34 @@ query SearchAccounts($input: String!) {
     accountNum
     idNavigation {
       fullName
+      legalEntityAddresses {
+        type
+        address {
+          address1
+          address2
+          address3
+          city
+          stateCode
+          stateCodeNavigation {
+            countryCode
+            countryCodeNavigation {
+              name
+            }
+          }
+          postalCode
+        }
+      }
+      legalEntityPhones {
+        type
+        phoneNumber {
+          mainNumber
+          extension
+        }
+      }
+      legalEntityEmails {
+        type
+        emailAddress
+      }
     }
   }
 }
@@ -279,4 +307,11 @@ query GetAdditionalRelatedParties($input: String!) {
       parent
     }
   }
-} 
+}
+
+query GetIdAccountNumbers {
+  idAccountNumbers {
+      id
+      accountNum
+  }
+}

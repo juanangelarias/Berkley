@@ -2,15 +2,24 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using James.Shared.Data;
 
 namespace James.Shared
 {
     public static partial class ThisToThat
     {
-
+        public static ILoggingService? LoggingService { get; set; }
         public static TDest ToEntityType<TDest>(object? source) where TDest : new()
         {
-            return (TDest)ToEntityType(source, typeof(TDest));
+            try
+            {
+                return (TDest)ToEntityType(source, typeof(TDest));
+            }
+            catch (InvalidCastException icex)
+            {
+                LoggingService?.LogException(icex, $"Invalid Cast in ThisToThat", category:StandardLoggingCategories.DataAccess, data: new Dictionary<string, string>{{"sourceType", source?.GetType().Name ?? "null"}, {"destType" ,typeof(TDest).Name}});
+                throw;
+            }
         }
 
         private static readonly Type _genericListType = typeof(List<>);
@@ -23,6 +32,7 @@ namespace James.Shared
             {
                 return CopyIEnumerable((IEnumerable)source, destinationType);
             }
+
             var dConstructor = destinationType.GetConstructor([]) ??
                                throw new Exception("Destination type must have a no argument constructor");
             var result = dConstructor.Invoke([]);
@@ -85,6 +95,12 @@ namespace James.Shared
 
                             propMatch.dProp.SetValue(result, dateOnlyProperty);
                         }
+                    }
+                    else if(propMatch.sProp.PropertyType.IsEnum && propMatch.dProp.PropertyType.IsEnum )
+                    {
+                        var enumText = Enum.GetName(propMatch.sProp.PropertyType, propMatch.sProp.GetValue(source));
+                        var destVal = Enum.Parse(propMatch.dProp.PropertyType, enumText, true);
+                        propMatch.dProp.SetValue(result, destVal);
                     }
                     else
                     {

@@ -1,0 +1,316 @@
+﻿@using System.Diagnostics
+@using System.Runtime.InteropServices.Marshalling
+@using JamesWebUI.Client.Pages.Controls
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage;
+@inject IDataAccess DataAccess;
+@inject LocalStorageKeyListingService LocalStorageKeyListingService;
+@inherits JamesLayoutComponentBase
+@implements IDisposable
+
+<RenderModeBackground />
+<RadzenStack Orientation="Orientation.Horizontal">
+    <RadzenFormField Text="Seach for anything">
+        <ChildContent>
+            <RadzenTextBox Value="@SearchTerm" @oninput="@SearchTermChanged"
+                           @onkeydown="@HandleEnterKey"
+                           AutoCompleteType="AutoCompleteType.Off" />
+        </ChildContent>
+        <End>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenButton @ref=@_clearSearchTermButton Icon="close" Disabled="@(SearchTerm.Length == 0)" Click="@(() => ClearSearch())" />
+                @*Clicking the search icon clears cache and restarts search *@
+                <RadzenButton Icon="search" Disabled="@(SearchTerm.Length < 2)" Click="@(() => ActOnSearchTerm(SearchTerm, true))" />
+            </RadzenStack>
+        </End>
+    </RadzenFormField>
+    <RadzenToggleButton @bind-Value="@_showOptions" Icon="settings" />
+</RadzenStack>
+<RadzenStack Orientation="Orientation.Horizontal" Visible="@_showOptions">
+    <RadzenCheckBox @bind-Value="@_searchOptions.Account" Name="cbAccount" />
+    <RadzenLabel Text="Accounts" Component="cbAccount" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.Agency" Name="cbAgency" />
+    <RadzenLabel Text="Agencies" Component="cbAgency" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.Bond" Name="cbBond" />
+    <RadzenLabel Text="Bonds" Component="cbBond" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.Obligee" Name="cbObligee" />
+    <RadzenLabel Text="Obligees" Component="cbObligee" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.People" Name="cbPeople" />
+    <RadzenLabel Text="People" Component="cbPeople" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.PersonalFinancials" Name="cbPersonalFinancials" />
+    <RadzenLabel Text="Personal Financials" Component="cbPersonalFinancials" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.VirtualFile" Name="cbVirtualFile" />
+    <RadzenLabel Text="Virtual File System" Component="cbVirtualFile" />
+    <RadzenCheckBox @bind-Value="@_searchOptions.ActiveOnly" Name="cbActiveOnly" />
+    <RadzenLabel Text="Active Items Only" Component="cbActiveOnly" />
+</RadzenStack>
+<RadzenTabs TabPosition="TabPosition.Top" RenderMode="TabRenderMode.Client">
+    <Tabs>
+        <RadzenTabsItem Text="All">
+            <RadzenDataList TItem="JamesSearchResult"
+                            AllowVirtualization="true" Data="_results?.Results">
+                <Template Context="jsr">
+                    <SearchResult Result="@jsr" />
+                </Template>
+                <EmptyTemplate>
+                    <RadzenText Text="No results found." />
+                </EmptyTemplate>
+            </RadzenDataList>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="People">
+            <RadzenDataList TItem="JamesSearchResult"
+                            AllowVirtualization="true"
+                            Data="_results?.Results.Where(jsr => jsr.Type == SearchResultType.Person)">
+                <Template Context="jsr">
+                    <SearchResult Result="@jsr" />
+                </Template>
+                <EmptyTemplate>
+                    <RadzenText Text="No people found." />
+                </EmptyTemplate>
+            </RadzenDataList>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Files"></RadzenTabsItem>
+        <RadzenTabsItem Text="Bonds"></RadzenTabsItem>
+        <RadzenTabsItem Text="Account">
+            <RadzenDataList TItem="JamesSearchResult"
+                            AllowVirtualization="true"
+                            Data="_results?.Results.Where(jsr => jsr.Type == SearchResultType.Account)">
+                <Template Context="jsr">
+                    <SearchResult Result="@jsr" />
+                </Template>
+                <EmptyTemplate>
+                    <RadzenText Text="No accounts found." />
+                </EmptyTemplate>
+            </RadzenDataList>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Agency">
+            <RadzenDataList TItem="JamesSearchResult"
+                            AllowVirtualization="true"
+                            Data="_results?.Results.Where(jsr => jsr.Type == SearchResultType.Agency)">
+                <Template Context="jsr">
+                    <SearchResult Result="@jsr" />
+                </Template>
+                <EmptyTemplate>
+                    <RadzenText Text="No agencies found." />
+                </EmptyTemplate>
+            </RadzenDataList>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Obligee">
+            <RadzenDataList TItem="JamesSearchResult"
+                            AllowVirtualization="true"
+                            Data="_results?.Results.Where(jsr => jsr.Type == SearchResultType.Agency)">
+                <Template Context="jsr">
+                    <SearchResult Result="@jsr" />
+                </Template>
+                <EmptyTemplate>
+                    <RadzenText Text="No Obligees found." />
+                </EmptyTemplate>
+            </RadzenDataList>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Description"></RadzenTabsItem>
+    </Tabs>
+</RadzenTabs>
+@code {
+    const int MinimumCharactersToSearch = 3;
+    const int SearchThisManyMsAfterTypingStops = 500;
+    private JamesSearchResults? _results;
+    private RadzenButton _clearSearchTermButton = null!;
+    private bool _showOptions = false;
+
+    private SearchOptions _searchOptions = new()
+    {
+        Account = true, ActiveOnly = true, Agency = true, Bond = true, Obligee = true, 
+        People = true, PersonalFinancials = true, VirtualFile = true
+    };
+
+    //private SearchResultClient searchClient = new() { ResultsReturned = async () =>  };
+    private IDisposable _resultsSubscription = null!;
+
+    //NOTES:  Search results won't use the data cache functionality, but will keep its data in the local browser db
+    string SearchTerm
+    {
+        get => _searchTerm;
+        set
+        {
+            if (value != _searchTerm)
+            {
+                _searchTerm = value;
+                SearchTermChanged(value);
+            }
+        }
+    }
+
+    private async Task HandleEnterKey(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter") await ActOnSearchTerm(SearchTerm, true);
+    }
+
+    private async Task ClearSearch()
+    {
+        SearchTerm = "";
+        _results = new JamesSearchResults { RootSearchTerm = "CompletelyFakeRootSearchTermForABlankResultSet" };
+    }
+
+    private void SearchTermChanged(ChangeEventArgs args)
+    {
+        //This event handler is needed to update the SearchTerm on every character changed instead of waiting for lost focus
+        Debug.Assert(args.Value != null, "args.Value != null");
+        SearchTerm = args.Value.ToString()!;
+    }
+
+    private void SearchTermChanged(string newSearchTerm)
+    {
+        //_clearSearchTermButton.Disabled = newSearchTerm.Length == 0;
+        if (newSearchTerm.Length < MinimumCharactersToSearch) return;
+        Debounce(SearchThisManyMsAfterTypingStops, () => ActOnSearchTerm(newSearchTerm));
+    }
+
+    /// <summary>
+    /// Begin receiving results for new search term
+    /// </summary>
+    /// <param name="newSearchTerm"></param>
+    /// <returns></returns>
+    private async Task ActOnSearchTerm(string newSearchTerm, bool forceNewSearch = false)
+    {
+        if (newSearchTerm.Length < 2) return; //Don't allow single character searches even if they hit the search button
+        if (forceNewSearch || _results?.RootSearchTerm.Contains(newSearchTerm, StringComparison.InvariantCultureIgnoreCase) != true)
+        {
+            //Search term does not match an exiting search result's root search term
+            var oldResults = _results;
+            try
+            {
+                if (null != _results)
+                {
+                    //Unsubscribe from results
+                    _resultsSubscription?.Dispose();
+                    _resultsSubscription = null!;
+                }
+
+                if (!forceNewSearch)
+                    try
+                    {
+                        var allSrchKeys = (await LocalStorageKeyListingService.GetAllLocalStorageKeys("Srch_"))
+                            .Where(kn => kn[5..].Contains(newSearchTerm))
+                            .OrderByDescending(k => k.Length);
+                        foreach (var srchKey in allSrchKeys)
+                        {
+                            var storedSearch = await LocalStorage.GetItemAsyncWithExpiry<JamesSearchResults>(srchKey);
+                            if (storedSearch != null)
+                            {
+                                //Cached search is found, and will be used to seed the result set.
+                                _results = await RestartOldSearch(storedSearch, newSearchTerm);
+                                return;
+                            }
+                        }
+                    }
+                    catch (JSDisconnectedException)
+                    {
+                        //Ignore this.  Happens when SignalR is disconnected, which prevents reading local storage
+                    }
+            }
+            catch (Exception ex)
+            {
+                LoggingService.LogException(ex, "Acting on search term threw exception");
+            }
+            finally
+            {
+                if (null != oldResults && oldResults.Results.Any())
+                {
+                    //Save old search result in local storage to be cached for 20 min
+                    await LocalStorage.SetItemAsyncWithExpiry($"Srch_{oldResults.RootSearchTerm}", TimeSpan.FromMinutes(20), oldResults);
+                }
+            }
+
+
+            _results = await StartNewResultsSearch(newSearchTerm);
+        }
+        else
+        {
+            if (null == _results)
+            {
+                _results = await StartNewResultsSearch(newSearchTerm);
+                await InvokeAsync(StateHasChanged);
+            }
+            else
+                _results.SearchTerm = newSearchTerm;
+        }
+    }
+
+    private async Task<JamesSearchResults> RestartOldSearch(JamesSearchResults oldSearch, string newSearchTerm)
+    {
+        return await StartNewResultsSearch(oldSearch, newSearchTerm);
+    }
+    private async Task<JamesSearchResults> StartNewResultsSearch(string rootSearchTerm)
+    {
+        var newResults = new JamesSearchResults() { RootSearchTerm = rootSearchTerm };
+        return await StartNewResultsSearch(newResults, rootSearchTerm);
+    }
+    private async Task<JamesSearchResults> StartNewResultsSearch(JamesSearchResults search, string rootSearchTerm)
+    {
+        //Setup Subscription to receive results
+        _resultsSubscription = DataAccess.SearchResultReady(rootSearchTerm,
+        onNext: async result =>
+        {
+            if (search.RootSearchTerm == result.Identifier)
+            {
+                search.AddRange(result.Result);
+                await InvokeAsync(StateHasChanged);
+            }
+        },
+        onError: ex => LoggingService.LogException(ex, "Exception getting search results",
+                        severity:(ex is OperationCanceledException ? Severity.Information: Severity.Error)),
+        onComplete: () =>
+        {
+            _resultsSubscription?.Dispose();
+            _resultsSubscription = null;
+        });
+
+        //Note: Starting the search returns no data.  Search result data is returned via the subscription
+        await DataAccess.StartSuperSearch(rootSearchTerm, _searchOptions);
+        return search;
+    }
+
+    public void Dispose()
+    {
+        if (null != _results && _results.Results.Any())
+        {
+            //Save search result in local storage to be cached for 20 min
+            LocalStorage.SetItemAsyncWithExpiry($"Srch_{_results.RootSearchTerm}", TimeSpan.FromMinutes(20), _results);
+        }
+        _resultsSubscription?.Dispose();
+    }
+
+    //HACK:Copied the below from Radzen.Blazor\Common.cs since Radzen doesn't expose it
+    System.Timers.Timer? _timer;
+    private string _searchTerm = "";
+
+    private void Debounce(int interval, Func<Task> action)
+    {
+        _timer?.Stop();
+        _timer = null;
+        _timer = new System.Timers.Timer
+        {
+            Interval = interval,
+            Enabled = false,
+            AutoReset = false
+        };
+        _timer.Elapsed += (_, _) =>
+        {
+            if (_timer == null)
+                return;
+
+            _timer?.Stop();
+            _timer = null;
+
+            try
+            {
+                Task.Run(action);
+            }
+            catch (TaskCanceledException)
+            {
+                //
+            }
+        };
+
+        _timer.Start();
+    }
+}

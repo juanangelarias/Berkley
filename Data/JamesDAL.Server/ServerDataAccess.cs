@@ -5,11 +5,13 @@ using James.Data.Server.GraphQL.Queries;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Imaging;
+using James.Shared.Server;
+using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutation generalMutation, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutation generalMutation, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService, IHttpContextAccessor contextAccessor, IUserShared userShared) : IDataAccess
     {
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
@@ -449,6 +451,21 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
         {
             return await ExecuteGet(async () => await query.GetAllImagingCategoryTabDivisionType(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
+        {
+            return await ExecuteGet(async () => new Dictionary<string, string>( await query.GetUserSettings(contextFactory, contextAccessor)));
+        }
+
+        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async ()=> await generalMutation.SetUserSetting(key, value, contextFactory, userShared, loggingService));
+        }
+
+        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService));
         }
 
         public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(

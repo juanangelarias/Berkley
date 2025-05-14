@@ -119,6 +119,7 @@ try
     builder.Services.AddScoped<ImagingKong0Helper>();
     builder.Services.AddScoped<ServerImagingAccess>();
     builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
+    builder.Services.AddScoped<UserSettingService>();
     if (OperatingSystem.IsWindows())
     {
         //Imaging Kong0 setup

@@ -41,6 +41,10 @@ namespace JamesWebUI.Server.SharedServices
             {FullName = "Unknown", FirstName = "Not", LastName = "Known", Username = "unknown"};
         public async Task<SiteUserInfo> GetCurrentUser()
         {
+            ClaimsPrincipal claimsPrincipal = null == _httpContextAccessor.HttpContext ?
+                (await _authenticationStateProvider.GetAuthenticationStateAsync()).User
+                :
+                    _httpContextAccessor.HttpContext?.User!;
             var fromAuthState = await GetUserInfoAsync((await _authenticationStateProvider.GetAuthenticationStateAsync())
                     .User);
             if (!string.IsNullOrWhiteSpace(fromAuthState.Username))

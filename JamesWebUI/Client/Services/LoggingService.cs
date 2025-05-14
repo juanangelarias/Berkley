@@ -5,14 +5,8 @@ using Severity = James.Shared.Model.Severity;
 
 namespace JamesWebUI.Client.Services
 {
-    public class LoggingService : LoggingServiceBase
+    public class LoggingService(JamesClient jamesClient) : LoggingServiceBase
     {
-        private readonly JamesClient _jamesClient;
-        public LoggingService(JamesClient jamesClient)
-        {
-            _jamesClient = jamesClient;
-        }
-
         public override async Task<bool> Log(EventId eventId, string message, string details, Severity severity,
             string category = "General", string? exceptionDetails = null, 
             Dictionary<string, string>? data = null)
@@ -36,7 +30,7 @@ namespace JamesWebUI.Client.Services
                         Severity = (James.Data.Client.GraphQL.Severity)Enum.Parse(typeof(Severity), Enum.GetName(severity)!, true),
                         Data = graphQlData
                     };
-                    await _jamesClient.LogMessage.ExecuteAsync(callData);
+                    await jamesClient.LogMessage.ExecuteAsync(callData);
                 }
                 else
                 {
@@ -50,7 +44,7 @@ namespace JamesWebUI.Client.Services
                         Data = graphQlData,
                         Exception = exceptionDetails
                     };
-                    await _jamesClient.LogException.ExecuteAsync(callData);
+                    await jamesClient.LogException.ExecuteAsync(callData);
                 }
                 return true;
             }

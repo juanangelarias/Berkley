@@ -4,6 +4,20 @@ schema {
   subscription: Subscription
 }
 
+type CreditReportHistory {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  creditReport: String!
+  pulled: DateTime!
+  rating: String
+  definition: String
+  remarks: String
+  accountNumNavigation: Account!
+  creditReportNavigation: CreditReportDm!
+}
+
 type SetPowerOfAttorneyPayload {
   powerOfAttorney: PowerOfAttorney
 }
@@ -16,8 +30,8 @@ type PowerOfAttorney {
   agencyId: UUID!
   limit: Int
   referenceNumber: String
-  firstIssued: Date
-  currentIssued: Date
+  firstIssued: LocalDate
+  currentIssued: LocalDate
   comments: String
   imagingId: UUID
   status: String!
@@ -50,11 +64,11 @@ type BondRequest {
   modified: DateTime!
   bondRequestNumber: String!
   accountNum: String!
-  requested: Date!
-  bidDate: Date
+  requested: LocalDate!
+  bidDate: LocalDate
   obligeeId: UUID
-  estimatedStart: Date
-  estimatedFinish: Date
+  estimatedStart: LocalDate
+  estimatedFinish: LocalDate
   contractNumber: String
   projectName: String
   description: String
@@ -71,13 +85,13 @@ type BondRequest {
   comments: String
   conditions: String
   wipworkOnHand: Long
-  wipdate: Date
+  wipdate: LocalDate
   newContractsLowBids: Int
   estimatedBacklogRunoff: Int
   totalWorkOnHand: Long
   lineOfCreditSingle: Int
   lineOfCreditAggregate: Int
-  lineOfCreditExpiration: Date
+  lineOfCreditExpiration: LocalDate
   requestedBy: String
   approvedBy: String
   bondNumber: String
@@ -118,7 +132,7 @@ type PersonalFinancialHeader {
   created: DateTime!
   modified: DateTime!
   accountNum: String!
-  statementDate: Date!
+  statementDate: LocalDate!
   type: String
   basis: String
   taxBasis: String
@@ -231,9 +245,9 @@ input SetAgencyLicenseInput {
   agentId: UUID
   appointingState: Boolean!
   comments: String
-  appointment: Date
-  expiration: Date
-  termination: Date
+  appointment: LocalDate
+  expiration: LocalDate
+  termination: LocalDate
   insurerId: UUID!
   isResident: Boolean!
   licenseNumber: String
@@ -276,7 +290,7 @@ type WorkInProgressSummary {
   created: DateTime!
   modified: DateTime!
   accountNum: String!
-  wipdate: Date!
+  wipdate: LocalDate!
   contractPrice: Long!
   estimatedCost: Long!
   estimatedGrossProfit: Long!
@@ -347,7 +361,7 @@ type Indemnitor {
   created: DateTime!
   modified: DateTime!
   accountNum: String!
-  agreementDate: Date!
+  agreementDate: LocalDate!
   agreementType: String
   agreementForm: String
   netLiquidAssets: Int
@@ -420,8 +434,8 @@ input CreateAgencyPOAInput {
   agencyId: UUID!
   limit: Int!
   referenceNumber: String
-  firstIssued: Date
-  currentIssued: Date
+  firstIssued: LocalDate
+  currentIssued: LocalDate
   comments: String
   status: String!
 }
@@ -442,6 +456,10 @@ type AgencyCommission {
   rate: Float!
   effective: DateTime!
   expires: DateTime
+}
+
+type SetDefaultUserSettingPayload {
+  boolean: Boolean
 }
 
 type DeleteAddressPayload {
@@ -495,8 +513,8 @@ type Surcharge {
   modified: DateTime!
   state: String!
   amount: Float!
-  effective: Date!
-  expiration: Date!
+  effective: LocalDate!
+  expiration: LocalDate!
   exclude: Boolean!
   type: String!
   createdBy: UUID!
@@ -536,7 +554,7 @@ type BalanceSheet {
   created: DateTime!
   modified: DateTime!
   accountNum: String!
-  statementDate: Date!
+  statementDate: LocalDate!
   accountType: String!
   sequence: Int!
   accountName: String
@@ -594,6 +612,7 @@ type Query {
   phoneTypes: [PhoneTypeDm!]!
   addressTypes: [AddressTypeDm!]!
   allCountries: [CountryDm!]!
+  userSettings: [KeyValuePairOfStringAndString!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -796,9 +815,14 @@ type AccountProgramStatusHistory {
   accountProgram: AccountProgram!
 }
 
+type KeyValuePairOfStringAndString {
+  key: String!
+  value: String!
+}
+
 input CreatePhoneNumberInput {
   phoneId: UUID!
-  countryCode: String!
+  countryCode: String
   mainNumber: String!
   extension: String
   legalEntityId: UUID!
@@ -813,6 +837,9 @@ type LegalEntityAddress {
   legalEntity: LegalEntity!
   typeNavigation: AddressTypeDm!
 }
+
+"The `LocalDate` scalar type represents a ISO date string, represented as UTF-8 character sequences YYYY-MM-DD. The scalar follows the specification defined in RFC3339"
+scalar LocalDate
 
 type ImagingProperty {
   choiceOption: [ImagingChoice!]
@@ -861,7 +888,7 @@ type PersonalFinancialStatement {
   created: DateTime!
   modified: DateTime!
   accountNum: String!
-  statementDate: Date!
+  statementDate: LocalDate!
   accountType: String!
   sequence: Int!
   accountName: String
@@ -988,6 +1015,8 @@ type Mutation {
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
   deletePhoneNumber(input: DeletePhoneNumberInput!): DeletePhoneNumberPayload!
+  setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
+  setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1059,7 +1088,7 @@ type BondTransaction {
   surcharge: Float!
   municipalTax: Float!
   comments: String
-  accountingDate: Date!
+  accountingDate: LocalDate!
   paidToDate: Float!
   agencyId: UUID!
   netDue: Float!
@@ -1254,10 +1283,10 @@ type BondHold {
   municipality: String
   effective: DateTime
   expiration: DateTime
-  billDate: Date
+  billDate: LocalDate
   sfaacode: Int
   sfaaclassCode: Int
-  statusLetterNext: Date
+  statusLetterNext: LocalDate
   contractAmount: Int
   bondAmount: Int
   payBondAmout: Int
@@ -1274,7 +1303,7 @@ type BondHold {
   cancellable: Boolean!
   renewalProvision: Boolean
   currentTreatyYear: Int
-  accountingDate: Date
+  accountingDate: LocalDate
   bidNumber: String
   homeOfficeApproved: DateTime
   homeOfficeApprovedBy: UUID
@@ -1318,8 +1347,8 @@ type BondStatusLetter {
   created: DateTime!
   modified: DateTime!
   bondNumber: String!
-  sent: Date!
-  receivedBack: Date
+  sent: LocalDate!
+  receivedBack: LocalDate
   percentComplete: Float
   bondNumberNavigation: Bond!
 }
@@ -1330,7 +1359,7 @@ type AgencyErrorAndOmission {
   modified: DateTime!
   agencyId: UUID!
   carrier: String!
-  expiration: Date!
+  expiration: LocalDate!
   coverageLimit: Int!
   agency: Agency!
 }
@@ -1340,8 +1369,8 @@ type PowerOfAttorneyDocumentStatus {
   created: DateTime!
   modified: DateTime!
   poaid: UUID!
-  requested: Date
-  received: Date
+  requested: LocalDate
+  received: LocalDate
   documentTypeId: UUID!
   comments: String
   documentType: PowerOfAttorneyDocumentNameDm!
@@ -1432,8 +1461,8 @@ input SetPowerOfAttorneyInput {
   insurerId: UUID!
   limit: Int
   referenceNumber: String
-  firstIssued: Date
-  currentIssued: Date
+  firstIssued: LocalDate
+  currentIssued: LocalDate
   comments: String
   status: String!
 }
@@ -1465,15 +1494,15 @@ type BondRequestCommercial {
   modified: DateTime!
   bondRequestNumber: String!
   accountNum: String!
-  requested: Date!
+  requested: LocalDate!
   legacyBidNumber: Int
   status: String!
-  estimatedStart: Date
-  estimatedFinish: Date
+  estimatedStart: LocalDate
+  estimatedFinish: LocalDate
   obligeeId: UUID
   amount: Int
   recordedBy: UUID
-  recorded: Date
+  recorded: LocalDate
   recordedMessageSent: DateTime
   homeOfficeAction: String
   homeOfficeActionDate: DateTime
@@ -1486,7 +1515,7 @@ type BondRequestCommercial {
   ccto: UUID
   lineOfCreditSingle: Int
   lineOfCreditAggregate: Int
-  lineOfCreditExpiration: Date
+  lineOfCreditExpiration: LocalDate
   exposure: Int
   adjustments: Int
   totalExposure: Int
@@ -1553,6 +1582,14 @@ type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
 }
 
+type CreditReportDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  creditReport: String!
+  creditReportHistories: [CreditReportHistory!]!
+}
+
 type Account {
   id: UUID!
   created: DateTime!
@@ -1563,18 +1600,18 @@ type Account {
   branch: String!
   agencyNumber: String
   dunBradstreetRate: String
-  dunBradstreetDate: Date
+  dunBradstreetDate: LocalDate
   dunBradstreetSic: String
   bank: String
   bankReferenceName: String
   bankAverageBalance: Int
   bankPhoneId: UUID
-  bankLastContacted: Date
+  bankLastContacted: LocalDate
   bankLoc: Int
-  bankLocexpires: Date
+  bankLocexpires: LocalDate
   bankLocused: Int
   bankLochigh: Int
-  bankLochighDate: Date
+  bankLochighDate: LocalDate
   bankLocsecurity: String
   publicPercent: Float
   privatePercent: Float
@@ -1613,7 +1650,7 @@ type Account {
   businessTypeClass: String
   fundsControl: Boolean!
   polutionLiabilityCarrier: String
-  polutionLiabilityExpires: Date
+  polutionLiabilityExpires: LocalDate
   affiliateCompany: Boolean!
   creditReport: String
   estimatingSystem: String
@@ -1645,6 +1682,7 @@ type Account {
   coPrincipals: [CoPrincipal!]!
   cpacontact: LegalEntity
   cpafirm: LegalEntity
+  creditReportHistories: [CreditReportHistory!]!
   divisionNavigation: DivisionDm!
   emailHistories: [EmailHistory!]!
   homeOfficeReviewByNavigation: UserProfile
@@ -1806,8 +1844,8 @@ type ProfitCenter {
   locationOverview: String!
   budgetDefault: UUID
   underWriterId: UUID
-  effective: Date!
-  expiration: Date!
+  effective: LocalDate!
+  expiration: LocalDate!
   commercialRegion: String
   budgetDefaultNavigation: ProfitCenter
   commercialRegionNavigation: CommercialRegionDm
@@ -1837,7 +1875,7 @@ type UserLineOfAuthority {
   userId: UUID!
   single: Int!
   aggregate: Int!
-  expiration: Date!
+  expiration: LocalDate!
   divisionCode: String!
   bondType: String!
   createdBy: UUID!
@@ -1874,9 +1912,9 @@ input CreateLicenseInput {
   agentId: UUID
   appointingState: Boolean!
   comments: String
-  appointment: Date
-  expiration: Date
-  termination: Date
+  appointment: LocalDate
+  expiration: LocalDate
+  termination: LocalDate
   insurerId: UUID!
   isResident: Boolean!
   licenseNumber: String
@@ -1955,10 +1993,10 @@ type AgencyLicense {
   licenseNumber: String
   isResident: Boolean!
   insurerId: UUID!
-  expiration: Date
+  expiration: LocalDate
   comments: String
-  appointment: Date
-  termination: Date
+  appointment: LocalDate
+  termination: LocalDate
   appointingState: Boolean!
   isActive: Boolean!
   imagingId: UUID
@@ -1999,7 +2037,7 @@ type Collateral {
   accountNum: String!
   type: String
   amount: Int
-  expiration: Date
+  expiration: LocalDate
   autoRenew: Boolean!
   description: String
   bondNumber: String
@@ -2098,7 +2136,7 @@ type WorkInProgressJob {
   created: DateTime!
   modified: DateTime!
   accountNum: String!
-  wipdate: Date!
+  wipdate: LocalDate!
   jobNumber: String!
   description: String!
   bondNumber: String
@@ -2130,6 +2168,10 @@ type WorkInProgressJob {
   workInProgressSummary: WorkInProgressSummary!
 }
 
+type SetUserSettingPayload {
+  boolean: Boolean
+}
+
 type Sic {
   id: UUID!
   created: DateTime!
@@ -2148,7 +2190,7 @@ type CashFlowStatement {
   created: DateTime!
   modified: DateTime!
   accountNum: String!
-  statementDate: Date!
+  statementDate: LocalDate!
   type: String!
   basis: String
   scaling: String!
@@ -2270,6 +2312,11 @@ input SetAccountSystemsInput {
   internalAccountingSystem: String
   interimWips: Boolean
   interimPOCs: Boolean
+}
+
+input SetDefaultUserSettingInput {
+  key: String!
+  value: String!
 }
 
 input DeleteAgencyInventoryInput {
@@ -2400,6 +2447,11 @@ type AccountProgram {
   status: AccountProgramStatusDm!
 }
 
+input SetUserSettingInput {
+  key: String!
+  value: String
+}
+
 type TaxBasisDm {
   id: UUID!
   created: DateTime!
@@ -2436,9 +2488,6 @@ input CreateAgencyLicenseDocumentLinkInput {
   licenseId: UUID!
   imagingDocumentId: UUID
 }
-
-"The `Date` scalar represents an ISO-8601 compliant date type."
-scalar Date
 
 type UserProfile {
   id: UUID!
@@ -2596,7 +2645,7 @@ type Ratio {
   created: DateTime!
   modified: DateTime!
   accountNum: String!
-  statementDate: Date!
+  statementDate: LocalDate!
   statementType: String
   statementBasis: String
   statementTaxBasis: String

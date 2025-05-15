@@ -1,4 +1,6 @@
 ﻿using HotChocolate.Authorization;
+using James.Shared.Server;
+using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries
 {
@@ -135,6 +137,31 @@ namespace James.Data.Server.GraphQL.Queries
             catch (Exception ex)
             {
                 throw new GraphQLException($"Error when retrieving country list.", ex);
+            }
+        }
+
+        [Authorize]
+        public async Task<List<KeyValuePair<string, string>>> GetUserSettings([Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IHttpContextAccessor contextAccessor)
+        {
+            try
+            {
+                var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+                if (null == username)
+                    throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var ctx2 = await contextFactory.CreateDbContextAsync();
+                var userSettingsTask = ctx.UserPreferences.Where(up => up.Username == username).Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
+                var defaultSettingsTask = ctx2.UserPreferences.Where(up => up.Username == "Default").Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
+                Task[] parallelTasks = [userSettingsTask, defaultSettingsTask];
+                await Task.WhenAll(parallelTasks);
+                var settings = defaultSettingsTask.Result.ToDictionary();
+                foreach (var kvp in userSettingsTask.Result)
+                    settings[kvp.Key] = kvp.Value;
+                return settings.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new GraphQLException($"Error when retrieving user settings.", ex);
             }
         }
     }

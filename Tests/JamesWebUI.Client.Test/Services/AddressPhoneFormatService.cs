@@ -25,7 +25,7 @@ using System.Net.Http.Headers;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace JamesWebUI.Client.Test
+namespace JamesWebUI.Client.Test.Services
 {
     public class AddressPhoneFormatServiceTests
     {
@@ -156,7 +156,7 @@ namespace JamesWebUI.Client.Test
         {
             var scsb = new SqlConnectionStringBuilder
             {
-                DataSource = "usilg01-dwd057",
+                DataSource = "usilg01-dwd217",
                 InitialCatalog = "JamesDev",
                 TrustServerCertificate = true,
                 MultipleActiveResultSets = true,

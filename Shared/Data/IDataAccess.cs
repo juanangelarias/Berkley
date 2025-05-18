@@ -93,6 +93,12 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes();
         public Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes();
 
+        #region UserSettings
+        public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
+        public Task<ISaveDataResult> SetUserSetting(string key, string? value);
+        public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
+        #endregion
+
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
 
         public IDisposable AddressCollectionModified(Guid legalEntityId, Action<SubscriptionResult<Guid>> onNext,

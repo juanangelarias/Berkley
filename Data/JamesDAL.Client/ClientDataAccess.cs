@@ -451,6 +451,25 @@ namespace James.Data.Client
             return await ExecuteGet<List<VImagingCategoryTabDivisionType>>(async () => await jamesClient.GetAllImagingCategoryTabDivisionTypes.ExecuteAsync(), "AllImagingCategoryTabDivisionType");
         }
 
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
+        {
+            var settingList =
+                await ExecuteGet<List<KeyValuePair<string, string>>>(
+                    async () => await jamesClient.GetUserSettings.ExecuteAsync(), "UserSettings");
+            return new DataAccessResult<Dictionary<string, string>>
+                { Data = settingList.Data?.ToDictionary(), Errors = settingList.Errors };
+        }
+
+        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string value)
+        {
+            throw new NotImplementedException();
+        }
+
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
             var subscriptionToWatch = jamesClient.AddressModified.Watch(addressId.ToString());

@@ -7,20 +7,20 @@ namespace JamesWebUI.Client.Services
     {
         public class Theme
         {
-            public string Text { get; set; }
-            public string Value { get; set; }
-            public string Primary { get; set; }
-            public string Secondary { get; set; }
-            public string Base { get; set; }
-            public string Header { get; set; }
-            public string Sidebar { get; set; }
-            public string Content { get; set; }
-            public string TitleText { get; set; }
-            public string ContentText { get; set; }
+            public string Text { get; set; } = null!;
+            public string Value { get; set; } = null!;
+            public string Primary { get; set; } = null!;
+            public string Secondary { get; set; } = null!;
+            public string Base { get; set; } = null!;
+            public string Header { get; set; } = null!;
+            public string Sidebar { get; set; } = null!;
+            public string Content { get; set; } = null!;
+            public string TitleText { get; set; } = null!;
+            public string ContentText { get; set; } = null!;
             public bool Premium { get; set; }
         }
-        public static readonly Theme[] Themes = new[]
-        {
+        public static readonly Theme[] Themes =
+        [
             new Theme {
                 Text = "Material",
                 Value = "material",
@@ -93,7 +93,7 @@ namespace JamesWebUI.Client.Services
                 TitleText = "#28363c",
                 ContentText = "#95a4a8"
             }
-        };
+        ];
 
         public const string DefaultTheme = "material";
         public const string QueryParameter = "theme";
@@ -106,7 +106,7 @@ namespace JamesWebUI.Client.Services
             var query = HttpUtility.ParseQueryString(uri.Query);
             var value = query.Get(QueryParameter);
 
-            if (Themes.Any(theme => theme.Value == value))
+            if (value != null && Themes.Any(theme => theme.Value == value))
             {
                 CurrentTheme = value;
             }

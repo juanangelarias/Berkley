@@ -37,7 +37,7 @@ public class ExportColumnSubstitution
     /// User-friendly title given to the column in the exported file.
     /// </summary>
     /// <remarks>Limited to characters that can be used as variable names in .NET, and the space character</remarks>
-    public string Title
+    public string? Title
     {
         get => _title ?? (string.IsNullOrWhiteSpace(Original) ? Property : Original);
         init => _title = value;
@@ -46,7 +46,7 @@ public class ExportColumnSubstitution
     /// <summary>
     /// Property to use instead of what is in the RadzenDataGridColumn "Property" property
     /// </summary>
-    public string Property
+    public string? Property
     {
         get => _property ?? Original;
         init => _property = value;

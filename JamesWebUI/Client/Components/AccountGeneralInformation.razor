@@ -14,12 +14,12 @@
                 <RadzenRow JustifyContent="JustifyContent.End">
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Year Started" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.YearOpened" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.YearOpened" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Curr. Mgt Year" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.CurrentManagementYear" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.CurrentManagementYear" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="4">
@@ -31,18 +31,18 @@
                 <RadzenRow>
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Business Class" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.BusinessTypeClass" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.BusinessTypeClass" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="8">
                         <RadzenFormField Text="Business Type" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.BusinessType" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.BusinessType" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenFormField Text="Prior Surety" AllowFloatingLabel="false" Variant="Variant.Text">
-                        <RadzenTextBox @bind-Value="@AccountToDisplay.PriorSuretyCompany" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
+                        <RadzenTextBox @bind-Value="@AccountToDisplay!.PriorSuretyCompany" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
                     </RadzenFormField>
                 </RadzenRow>
                 <RadzenRow>
@@ -55,7 +55,7 @@
                 <RadzenRow JustifyContent="JustifyContent.End">
                     <RadzenColumn Size="10">
                         <RadzenFormField Text="Estimating System" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.EstimatingSystem" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.EstimatingSystem" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="2">
@@ -66,23 +66,23 @@
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenFormField Text="Estimating Sign-Off" AllowFloatingLabel="false" Variant="Variant.Text">
-                        <RadzenTextBox @bind-Value="@AccountToDisplay.EstimatingSignoff" Disabled="@(!MasterEditMode && !SystemsEditMode)" />
+                        <RadzenTextBox @bind-Value="@AccountToDisplay!.EstimatingSignoff" Disabled="@(!MasterEditMode && !SystemsEditMode)" />
                     </RadzenFormField>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenFormField Text="Internal Accounting System" AllowFloatingLabel="false" Variant="Variant.Text">
-                        <RadzenTextBox @bind-Value="@AccountToDisplay.AccountingSystem" Disabled="@(!MasterEditMode && !SystemsEditMode)" />
+                        <RadzenTextBox @bind-Value="@AccountToDisplay!.AccountingSystem" Disabled="@(!MasterEditMode && !SystemsEditMode)" />
                     </RadzenFormField>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenCheckBox Name="chkInterimWIPs" @bind-Value="@AccountToDisplay.InterimWips" />
+                        <RadzenCheckBox Name="chkInterimWIPs" @bind-Value="@AccountToDisplay!.InterimWips" />
                         <RadzenLabel Text="Can Create Interim WIPs" Component="chkInterimWIPs" Disabled="@(!MasterEditMode && !SystemsEditMode)" />
                     </RadzenStack>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenCheckBox Name="chkInterimPOCs" @bind-Value="@AccountToDisplay.Pocinterims" />
+                        <RadzenCheckBox Name="chkInterimPOCs" @bind-Value="@AccountToDisplay!.Pocinterims" />
                         <RadzenLabel Text="Can Create POC Interims" Component="chkInterimPOCs" Disabled="@(!MasterEditMode && !SystemsEditMode)" />
                     </RadzenStack>
                 </RadzenRow>
@@ -91,34 +91,34 @@
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Credit Report" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.CreditReport" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.CreditReport" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Report Date" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenDatePicker ShowTime="false" TValue="DateOnly?" @bind-Value="@AccountToDisplay.DunBradstreetDate" />
+                            <RadzenDatePicker ShowTime="false" TValue="DateOnly?" @bind-Value="@AccountToDisplay!.DunBradstreetDate" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Rating" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.DunBradstreetRate" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.DunBradstreetRate" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3" Visible="@(null!=AccountToDisplay)">
                         <InlineImagingDocument DocumentShortName="Current Credit Report"
                                                DocumentCategory="ImagingDocumentCategory.Account"
-                                               DocumentId="@AccountToDisplay.CreditReportImagingId"
+                                               DocumentId="@AccountToDisplay?.CreditReportImagingId"
                                                DocumentType="CBR"
                                                LinkableDocumentTypes="CBR,AEXPNR,AOCRPT,AEQFXR"
-                                               ImagingId="@AccountToDisplay.AccountNum"
-                                               UploadAction="@(guid=> CreditReportUploaded(guid, @AccountToDisplay.AccountNum))"
+                                               ImagingId="@AccountToDisplay?.AccountNum"
+                                               UploadAction="@(async guid=> await CreditReportUploaded(guid, @AccountToDisplay!.AccountNum))"
                                                UploadErrorAction=@(msg=>LogUploadError(msg)) />
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="SIC Code" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.DunBradstreetSic" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.DunBradstreetSic" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn>
@@ -128,14 +128,14 @@
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Paydex/Intelliscore" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenNumeric @bind-Value="@AccountToDisplay.PaydexIntelliscore" />
+                            <RadzenNumeric @bind-Value="@AccountToDisplay!.PaydexIntelliscore" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="NAICS" AllowFloatingLabel="false" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.Naics" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.Naics" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn>
@@ -149,17 +149,17 @@
                 <RadzenRow>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Public" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
-                            <RadzenNumeric TValue="double?" Format="###%" @bind-Value="@AccountToDisplay.PublicPercent" Disabled="!JobMixEditMode" />
+                            <RadzenNumeric TValue="double?" Format="###%" @bind-Value="@AccountToDisplay!.PublicPercent" Disabled="!JobMixEditMode" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Private" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
-                            <RadzenNumeric TValue="double?" Format="##%" @bind-Value="@AccountToDisplay.PrivatePercent" Disabled="!JobMixEditMode" />
+                            <RadzenNumeric TValue="double?" Format="##%" @bind-Value="@AccountToDisplay!.PrivatePercent" Disabled="!JobMixEditMode" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenFormField Text="Subbed" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
-                            <RadzenNumeric Format="p2" @bind-Value="@AccountToDisplay.SubcontractPercent" Disabled="!JobMixEditMode" />
+                            <RadzenNumeric Format="p2" @bind-Value="@AccountToDisplay!.SubcontractPercent" Disabled="!JobMixEditMode" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
@@ -171,12 +171,12 @@
                 <RadzenRow>
                     <RadzenColumn Size="4">
                         <RadzenFormField Text="Sub Protection" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.SubcontractProtection" Disabled="!JobMixEditMode" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.SubcontractProtection" Disabled="!JobMixEditMode" />
                         </RadzenFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="8">
                         <RadzenFormField Text="Geographic Spread of Work" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 100%;">
-                            <RadzenTextBox @bind-Value="@AccountToDisplay.GeographicSpread" Disabled="!JobMixEditMode" />
+                            <RadzenTextBox @bind-Value="@AccountToDisplay!.GeographicSpread" Disabled="!JobMixEditMode" />
                         </RadzenFormField>
                     </RadzenColumn>
                 </RadzenRow>
@@ -222,25 +222,25 @@
                     </RadzenRow>
                     <RadzenRow>
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenCheckBox Name="chkKeyManagementLifeInsurance" @bind-Value="@AccountToDisplay.ContinuityKeyManagementLifeInsurance" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenCheckBox Name="chkKeyManagementLifeInsurance" @bind-Value="@AccountToDisplay!.ContinuityKeyManagementLifeInsurance" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
                             <RadzenLabel Text="Key Management Life Insurance" Component="chkKeyManagement" />
                         </RadzenStack>
                     </RadzenRow>
                     <RadzenRow>
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenCheckBox Name="chkManagementIncentives" @bind-Value="@AccountToDisplay.ContinuityManagementIncentives" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenCheckBox Name="chkManagementIncentives" @bind-Value="@AccountToDisplay!.ContinuityManagementIncentives" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
                             <RadzenLabel Text="Management Incentives" Component="chkManagementIncentives" />
                         </RadzenStack>
                     </RadzenRow>
                     <RadzenRow>
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenCheckBox Name="chkFundedBuySell" @bind-Value="@AccountToDisplay.ContinuityFundedBuySell" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenCheckBox Name="chkFundedBuySell" @bind-Value="@AccountToDisplay!.ContinuityFundedBuySell" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
                             <RadzenLabel Text="Funded Buy/Sell" Component="chkFundedBuySell" />
                         </RadzenStack>
                     </RadzenRow>
                     <RadzenRow>
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenCheckBox Name="chkActiveMultipleOwners" @bind-Value="@AccountToDisplay.ContinuityActiveMultipleOwners" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenCheckBox Name="chkActiveMultipleOwners" @bind-Value="@AccountToDisplay!.ContinuityActiveMultipleOwners" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
                             <RadzenLabel Text="Active Multiple Owners/Indemnitors" Component="chkActiveMultipleOwners" />
                         </RadzenStack>
                     </RadzenRow>
@@ -261,14 +261,14 @@
                     </RadzenRow>
                     <RadzenRow>
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenCheckBox Name="chkBerkleyAffiliate" @bind-Value="@AccountToDisplay.BerkleyAffiliate" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                            <RadzenCheckBox Name="chkBerkleyAffiliate" @bind-Value="@AccountToDisplay!.BerkleyAffiliate" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
                             <RadzenLabel Text="Berkley Affiliate" Component="chkBerkleyAffiliate" />
                         </RadzenStack>
                     </RadzenRow>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <RadzenFormField Text="Comments" AllowFloatingLabel="true" Variant="Variant.Outlined">
-                        <RadzenTextArea Rows="3" Style="width: 95%" @bind-Value="@AccountToDisplay.IndemnityComments" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
+                        <RadzenTextArea Rows="3" Style="width: 95%" @bind-Value="@AccountToDisplay!.IndemnityComments" Disabled="@(!MasterEditMode && !AddlInfoEditMode)" />
                     </RadzenFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -293,13 +293,13 @@
                     Contract LOA
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenNumeric Value="@inforceLOAs?.ContractLOA?.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs.ContractLOA?.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenNumeric Value="@inforceLOAs?.ContractLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs.ContractLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Value="@(inforceLOAs?.ContractLOA?.Expiration.ToShortDateString())"
+                    <RadzenTextBox Value="@(inforceLOAs.ContractLOA?.Expiration.ToShortDateString())"
                                    Style="@($"width: 95%; background-color: {(@inforceLOAs?.ContractLOA?.Expiration < DateTime.Today ? "yellow": "white")}")" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
@@ -308,13 +308,13 @@
                     Commercial LOA
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenNumeric Value="@inforceLOAs?.CommercialLOA?.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs.CommercialLOA?.Loasingle" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenNumeric Value="@inforceLOAs?.CommercialLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
+                    <RadzenNumeric Value="@inforceLOAs.CommercialLOA?.Loaaggregate" Format="c0" Style="width: 95%" Disabled="true" />
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenTextBox Value="@(inforceLOAs?.CommercialLOA?.Expiration.ToShortDateString())"
+                    <RadzenTextBox Value="@(inforceLOAs.CommercialLOA?.Expiration.ToShortDateString())"
                                    Style="@($"width: 95%; background-color: {(@inforceLOAs?.CommercialLOA?.Expiration < DateTime.Today ? "yellow": "white")}")" Disabled="true" />
                 </RadzenColumn>
             </RadzenRow>
@@ -384,12 +384,12 @@
         try
         {
             //TODO: Handle Est. Annual Premium
-            var result = await DataAccess.SetAccountGeneralInfo(AccountToDisplay.Id, AccountToDisplay.YearOpened, AccountToDisplay.CurrentManagementYear, AccountToDisplay.BusinessTypeClass, AccountToDisplay.BusinessType,
-            AccountToDisplay.PriorSuretyCompany, null);
+            var result = await DataAccess.SetAccountGeneralInfo(AccountToDisplay?.Id ?? Guid.Empty, AccountToDisplay?.YearOpened, AccountToDisplay?.CurrentManagementYear, 
+                AccountToDisplay?.BusinessTypeClass, AccountToDisplay?.BusinessType, AccountToDisplay?.PriorSuretyCompany, null);
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString());
+                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString() ?? "");
                 NotificationService.Notify(new NotificationMessage
                     {
                         Detail = "Error saving changes.",
@@ -418,12 +418,12 @@
     {
         try
         {
-            var result = await DataAccess.SetAccountSystems(AccountToDisplay.Id, AccountToDisplay.EstimatingSystem, AccountToDisplay.EstimatingSignoff,
-            AccountToDisplay.AccountingSystem, AccountToDisplay.InterimWips, AccountToDisplay.Pocinterims);
+            var result = await DataAccess.SetAccountSystems(AccountToDisplay?.Id ?? Guid.Empty, AccountToDisplay?.EstimatingSystem, AccountToDisplay?.EstimatingSignoff,
+                AccountToDisplay?.AccountingSystem, AccountToDisplay?.InterimWips, AccountToDisplay?.Pocinterims);
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString());
+                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString() ?? "");
                 NotificationService.Notify(new NotificationMessage
                     {
                         Detail = "Error saving changes.",
@@ -452,13 +452,13 @@
         try
         {
             //TODO: Deal with Track Comm Acct. Looks to be missing from DB.
-            var result = await DataAccess.SetAccountAdditionalInformation(AccountToDisplay.Id, AccountToDisplay.IndemnityFull, AccountToDisplay.IndemnityCorp, AccountToDisplay.IndemnityPerson,
-            AccountToDisplay.ContinuityKeyManagementLifeInsurance, AccountToDisplay.ContinuityManagementIncentives, AccountToDisplay.ContinuityFundedBuySell, AccountToDisplay.ContinuityActiveMultipleOwners,
-            false, AccountToDisplay.BerkleyAffiliate, AccountToDisplay.IndemnityComments);
+            var result = await DataAccess.SetAccountAdditionalInformation(AccountToDisplay?.Id ?? Guid.Empty, AccountToDisplay?.IndemnityFull, AccountToDisplay?.IndemnityCorp, AccountToDisplay?.IndemnityPerson,
+                AccountToDisplay?.ContinuityKeyManagementLifeInsurance, AccountToDisplay?.ContinuityManagementIncentives, AccountToDisplay?.ContinuityFundedBuySell, AccountToDisplay?.ContinuityActiveMultipleOwners,
+                false, AccountToDisplay?.BerkleyAffiliate, AccountToDisplay?.IndemnityComments);
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account Additional Information changes.", result.Errors.ToString());
+                LoggingService.LogError("Error saving Account Additional Information changes.", result.Errors.ToString() ?? "");
                 NotificationService.Notify(new NotificationMessage
                     {
                         Detail = "Error saving changes.",
@@ -488,13 +488,13 @@
     }
     async Task LoadInforceLOAs()
     {
-        if (!string.IsNullOrWhiteSpace(AccountToDisplay.AccountNum))
+        if (!string.IsNullOrWhiteSpace(AccountToDisplay?.AccountNum))
         {
             var result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountToDisplay.AccountNum);
 
             if (result.Errors.Any() || null == result.Data)
             {
-                LoggingService.LogError("Error loading inforce LOAs for this account.", result.Errors.ToString());
+                LoggingService.LogError("Error loading inforce LOAs for this account.", result.Errors.ToString() ?? "");
                 NotificationService.Notify(new NotificationMessage
                     {
                         Detail = "Error loading Account LOAs.",
@@ -524,10 +524,10 @@
             "Uploading a credit report to imaging returned an error",
             "Imaging",
             data: new Dictionary<string, string>
-                                {
+            {
                 { "Error Message", message },
-                { "AccountNum", AccountToDisplay.AccountNum}
-                                });
+                { "AccountNum", AccountToDisplay?.AccountNum ?? "" }
+            });
         NotifySaveError([message], "credit report");
     }
 }

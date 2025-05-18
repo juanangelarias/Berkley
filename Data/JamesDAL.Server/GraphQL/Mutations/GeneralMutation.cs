@@ -109,7 +109,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 }
 
                 await ctx.SaveChangesAsync();
-                eventSender.SendAsync($"{nameof(Subscription.OnAddressCollectionModified)}_{leAddress.LegalEntityId}",
+                await eventSender.SendAsync($"{nameof(Subscription.OnAddressCollectionModified)}_{leAddress?.LegalEntityId}",
                     new SubscriptionResult<string>() { Identifier = identifier, Result = identifier });
                 return true;
             }

@@ -41,13 +41,13 @@ namespace James.Data.Server.GraphQL.TypeExtensions
             if (null == agency.Accounts)
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
-                if (!agency.Accounts.Any())
+                if (!agency.Accounts!.Any())
                 {
                     agency.Accounts = await ctx.Accounts.Where(ac => ac.AgencyNumber == agency.AgencyNumber).ToArrayAsync();
                     
                 }
             }
-            return agency.Accounts.ToArray();
+            return agency.Accounts?.ToArray() ?? [];
         }
         public async Task<OnlineBondSystem[]> OnlineBondSystems([Parent] Agency agency,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

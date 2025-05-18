@@ -236,7 +236,7 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType)
         {
-            return await ExecuteSave(async () => await generalMutation.CreatePhoneNumber(phoneId, countryCode, mainNumber, extension, legalEntityId, phoneType, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.CreatePhoneNumber(phoneId, countryCode ?? "", mainNumber, extension, legalEntityId, phoneType, contextFactory));
         }
         public async Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier)
         {
@@ -433,7 +433,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
         {
-            return await ExecuteGet(async () => await query.GetBondRequestNumberType(bondNumber, contextFactory));
+            return (await ExecuteGet(async () => await query.GetBondRequestNumberType(bondNumber, contextFactory)))!;
         }
 
         public async Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber)
@@ -572,7 +572,7 @@ namespace James.Data.Server
                     var bidBondType = (await GetBondRequestNumberType(id)).Data;
                     //TODO: Handle errors above
                     criteria.WhereClause =
-                        $"({criteria.WhereClause} OR {(string.Equals(bidBondType.Type, "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ImagingAccessBase.ContBidId : ImagingAccessBase.CommBidId)} = '{bidBondType.BondRequestNumber}')";
+                        $"({criteria.WhereClause} OR {(string.Equals(bidBondType?.Type, "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ImagingAccessBase.ContBidId : ImagingAccessBase.CommBidId)} = '{bidBondType.BondRequestNumber}')";
                     break;
                 case ImagingDocumentCategory.Agency: //3
                     criteria.WhereClause = $"{ImagingAccessBase.AgencyNo} = '{id}'";

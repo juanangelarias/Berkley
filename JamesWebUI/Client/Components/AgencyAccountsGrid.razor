@@ -71,7 +71,7 @@
     [Parameter] public required string AgencyNumber { get; set; }
 
     private List<Account> _agencyAccounts = new();
-    private RadzenDataGrid<Account> agencyAccountGrid;
+    private RadzenDataGrid<Account> agencyAccountGrid = null!;
     private bool _isLoading = false;
 
     protected override async Task OnInitializedAsync()
@@ -92,7 +92,9 @@
     private async Task LoadAgencyAccounts()
     {
         var result = await _dataAccess.GetAgencyAccounts(AgencyNumber);
-        agencyAccountGrid.Data = _agencyAccounts = result.Data;
+        
+        // ToDo: Don't know what to do in this case
+        agencyAccountGrid.Data = _agencyAccounts = result.Data!;
             await agencyAccountGrid.Reload();
     }
     protected async Task ShowLoading()

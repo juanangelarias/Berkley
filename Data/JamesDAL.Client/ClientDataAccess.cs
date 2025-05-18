@@ -38,7 +38,7 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accountNumber)
         {
-            return await ExecuteGet<List<AdditionalRelatedParty>>(async () => await jamesClient.GetAdditionalRelatedParties.ExecuteAsync(accountNumber),
+            return await ExecuteGet<List<AdditionalRelatedParty>>(async () => await jamesClient.GetAdditionalRelatedParties.ExecuteAsync(accountNumber ?? ""),
                 "AdditionalRelatedParties");
         }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
@@ -77,8 +77,8 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber)
         {
-            return await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
-                "AgencyByAgencyNumber");
+            return (await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
+                "AgencyByAgencyNumber"))!;
 
         }
 
@@ -86,7 +86,7 @@ namespace James.Data.Client
         {
             var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyNameAndNumberById.ExecuteAsync(agencyId),
                 "AgencyByAgencyNumber");
-            return result;
+            return result!;
         }
 
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
@@ -699,7 +699,7 @@ namespace James.Data.Client
                 PhoneNumber = phoneNumber,
                 Email = email
             });
-            return new DataAccessResult<Obligee>() { Data = ThisToThat.ToEntityType<Obligee>(saveResult.Data.CreateObligee.Obligee) };
+            return new DataAccessResult<Obligee>() { Data = ThisToThat.ToEntityType<Obligee>(saveResult.Data?.CreateObligee.Obligee) };
         }
         public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId,
             bool appointingState,

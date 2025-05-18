@@ -30,7 +30,7 @@
 
 
 @code {
-    [Parameter] public Agent agentToDisplay { get; set; }
+    [Parameter] public Agent agentToDisplay { get; set; } = null!;
     
     protected override async Task OnInitializedAsync()
     {

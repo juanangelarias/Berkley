@@ -63,8 +63,8 @@
             Id = Guid.NewGuid()
         };
 
-    private RadzenDropDown<string> phoneTypeDropDown { get; set; }
-    private string phoneNumberType { get; set; }
+    private RadzenDropDown<string> phoneTypeDropDown { get; set; } = null!;
+    private string phoneNumberType { get; set; } = "";
     private List<PhoneTypeDm> PhoneNumberTypes { get; set; } = new List<PhoneTypeDm>();
 
     protected override async Task OnParametersSetAsync()
@@ -84,7 +84,7 @@
 
         if (result.Errors.Any())
         {
-            LoggingService.LogError($"Error loading phone types.", result.Errors.ToString());
+            LoggingService.LogError($"Error loading phone types.", result.Errors.ToString() ?? "");
             NotificationService.Notify(new NotificationMessage
                 {
                     Severity = NotificationSeverity.Error,

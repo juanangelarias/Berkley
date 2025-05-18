@@ -112,7 +112,7 @@
 @code {
     [Parameter] public Guid AgencyId { get; set; }
 
-    private RadzenDataGrid<PowerOfAttorney> poaGrid { get; set; }
+    private RadzenDataGrid<PowerOfAttorney> poaGrid { get; set; } = null!;
 
     private List<PowerOfAttorney> powerOfAttorneys { get; set; } = new List<PowerOfAttorney>();
 
@@ -122,10 +122,10 @@
     private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
     private List<PowerOfAttorneyStatusDm> AllStatuses { get; set; } = new List<PowerOfAttorneyStatusDm>();
 
-    private List<String> InsurerFilter = null;
-    private List<Guid> StatusFilter = null;
+    private List<string>? InsurerFilter;
+    private List<Guid>? StatusFilter;
 
-    private RadzenDropDown<Guid> filterInsurerDropDown { get; set; }
+    private RadzenDropDown<Guid> filterInsurerDropDown { get; set; } = null!;
 
 
     private bool isLoading = false;
@@ -165,7 +165,7 @@
         }
         else
         {
-            LoggingService.LogError("Error loading POAs in the AgencyPOAGrid", result.Errors.ToString());
+            LoggingService.LogError("Error loading POAs in the AgencyPOAGrid", result.Errors.ToString() ?? "");
         }
     }
     async Task SavePoaRow(PowerOfAttorney powerOfAttorney)
@@ -274,7 +274,7 @@
         var result = await DataAccess.CreateAgencyPOA(powerOfAttorney.Id,
             powerOfAttorney.Insurer.Id,
             AgencyId,
-            (int)powerOfAttorney.Limit,
+            Convert.ToInt32(powerOfAttorney.Limit),
             powerOfAttorney.ReferenceNumber,
             powerOfAttorney.FirstIssued,
             powerOfAttorney.CurrentIssued,

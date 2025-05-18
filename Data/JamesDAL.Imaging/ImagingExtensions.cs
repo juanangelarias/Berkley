@@ -13,7 +13,7 @@ namespace James.Data.Imaging
     {
         public static string? GetProperty(this document? doc, string propertyName)
         {
-            return doc.properties.GetProperty(propertyName);
+            return doc?.properties.GetProperty(propertyName);
         }
 
         public static string? GetProperty(this property[] props, string propertyName)
@@ -96,7 +96,7 @@ namespace James.Data.Imaging
             return doc.properties.GetPropertyDate(propertyName);
         }
 
-        public static DateTime?[] GetPropertyDateList(this property[] props, string propertyName)
+        public static DateTime?[]? GetPropertyDateList(this property[] props, string propertyName)
         {
             //Match first on name, then DisplayName if name it does not exist.
             var prop =

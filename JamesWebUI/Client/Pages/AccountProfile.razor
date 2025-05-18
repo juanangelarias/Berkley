@@ -222,11 +222,11 @@
             var result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber);
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Unable to retrieve Account Inforce LOAs.", result.Errors.ToString());
+                LoggingService.LogError("Unable to retrieve Account Inforce LOAs.", result.Errors.ToString() ?? "");
             }
             else
             {
-                inForceLOAs = result.Data;
+                inForceLOAs = result.Data!;
             }
         }
     }

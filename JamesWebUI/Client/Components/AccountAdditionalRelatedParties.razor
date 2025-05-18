@@ -39,7 +39,7 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Account accountToDisplay { get; set; }
+    [Parameter] public Account accountToDisplay { get; set; } = null!;
     private List<AdditionalRelatedParty> relatedParties { get; set; } = new List<AdditionalRelatedParty>();
 
     protected override async Task OnParametersSetAsync()
@@ -57,7 +57,7 @@
 
             if (result.Success)
             {
-                relatedParties = result.Data;
+                relatedParties = result.Data!;
             }
             else
             {

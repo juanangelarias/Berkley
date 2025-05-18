@@ -152,10 +152,10 @@
 @* ReSharper disable CSharpWarnings::CS8618 *@
 @* ReSharper disable InconsistentNaming *@
 @code {
-    RadzenUpload uploadDD;
+    RadzenUpload uploadDD = null!;
     RadzenTextBox tbDescription;
-    RadzenText uploadedBytes;
-    RadzenDataList<ImagingDocument> existingList;
+    RadzenText uploadedBytes = null!;
+    RadzenDataList<ImagingDocument> existingList = null!;
     ImagingDocument[] existingDocuments = [];
 
     [Parameter] public string Title { get; set; } = "Upload File To Imaging";
@@ -170,11 +170,7 @@
     bool existingLoading = true;
     string uploadError = "", searchError = "";
 
-    string currentDescription
-    {
-        get;
-        set;
-    }
+    string currentDescription { get; set; } = "";
     FileInfo? currentFile;
     bool waitingForFileSelection = true;
     bool linkingToExisting;

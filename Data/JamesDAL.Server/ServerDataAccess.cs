@@ -158,10 +158,6 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));
         }
-        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPOADocumentNames()
-        {
-            return await ExecuteGet(async () => await query.GetPOADocumentNames(contextFactory));
-        }
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
             return await ExecuteGet(async () => await query.GetAllPoaStatuses(contextFactory));

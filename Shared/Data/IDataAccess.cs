@@ -36,7 +36,6 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);
-        public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPOADocumentNames();
         //public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
         public Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString);

@@ -268,10 +268,6 @@ namespace James.Data.Client
             return await ExecuteGet<List<PowerOfAttorney>>(async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId),
                 "AgencyPOAs");
         }
-        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPOADocumentNames()
-        {
-            return await ExecuteGet<List<PowerOfAttorneyDocumentNameDm>>(async () => await jamesClient.GetPOADocumentNames.ExecuteAsync());
-        }
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
             return await ExecuteGet<List<PowerOfAttorneyStatusDm>>(async () => await jamesClient.GetAllPoaStatuses.ExecuteAsync(),

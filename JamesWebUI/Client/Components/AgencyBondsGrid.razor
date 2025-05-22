@@ -48,19 +48,19 @@
                               FilterValue="BondTypeFilter" FilterProperty="BondType.BondType" FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@BondTypeFilter" @ref="bondTypeFilterDropDown" Change="BondTypeFilterChange"
-                    TValue="List<string>" Multiple="true" AllowClear="true" 
-                    Data="@agencyBonds.Select(b=>b.BondType!.BondType).Distinct().ToList()"/>
+                                TValue="List<string>" Multiple="true" AllowClear="true" 
+                                Data="@agencyBonds.Select(b=>b.BondType!.BondType).Distinct().ToList()"/>
             </FilterTemplate>    
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" Formatstring="{0:d}" Width="175px" />
-        <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" Formatstring="{0:d}" Width="175px" SortOrder="SortOrder.Descending" />
+        <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" Width="175px" />
+        <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" Width="175px" SortOrder="SortOrder.Descending" />
         <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" Width="200px"/>
-        <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" Formatstring="{0:d}" Width="75px" />
+        <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="75px" />
         <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName"  Width="200px"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" Formatstring="{0:d}" Width="200px" />
+        <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" FormatString="{0:d}" Width="200px" />
         <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass"
                               Filterable="true" FilterValue="@ClassFilter" FilterProperty="BondClass" FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)"
-            Formatstring="{0:d}" Width="200px">
+            FormatString="{0:d}" Width="200px">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@ClassFilter" @ref="classFilterDropDown" Change="ClassFilterChange"
                                 TValue="List<string>" Multiple="true" AllowClear="true"

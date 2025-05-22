@@ -1,5 +1,6 @@
 ﻿using HotChocolate.Subscriptions;
 using James.Data.Imaging;
+using James.Data.Server.Exceptions;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Shared;
@@ -234,7 +235,7 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType)
         {
-            return await ExecuteSave(async () => await generalMutation.CreatePhoneNumber(phoneId, countryCode ?? "", mainNumber, extension, legalEntityId, phoneType, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.CreatePhoneNumber(phoneId, countryCode, mainNumber, extension, legalEntityId, phoneType, contextFactory));
         }
         public async Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier)
         {
@@ -431,7 +432,13 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
         {
-            return (await ExecuteGet(async () => await query.GetBondRequestNumberType(bondNumber, contextFactory)))!;
+            var response =
+                await ExecuteGet(async () => await query.GetBondRequestNumberType(bondNumber, contextFactory));
+            
+            if (response == null)
+                throw new NotFoundException("Bond Request Number Type not found");
+
+            return response!;
         }
 
         public async Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber)

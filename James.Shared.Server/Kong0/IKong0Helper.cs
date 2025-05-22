@@ -54,10 +54,8 @@ namespace James.Shared.Server.Kong0
             {
                 var tokenRetrievalClient = httpClientFactory.CreateClient(HttpClientName);
                 
-                // ToDo: This methow is Obsolete
-#pragma warning disable SYSLIB0014
+                // ToDo: This method is Obsolete
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-#pragma warning restore SYSLIB0014
 
                 var tokenRequestCredentials = KongTokenRequest.GetRequest(GetType());
                 var requestPayload = JsonSerializer.Serialize(tokenRequestCredentials, JsonOptions);

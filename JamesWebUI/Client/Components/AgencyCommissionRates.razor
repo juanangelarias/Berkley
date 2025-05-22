@@ -49,11 +49,11 @@
 
     string _agencyStatus = "";
     bool _editMode;
-    List<AgencyCommission> _commissionRates;
-    List<ITieredValue<double>> _commercialRates;
-    List<ITieredValue<double>> _contractRates;
-    TieredValueEditor<Double> _contractEditor;
-    TieredValueEditor<Double> _commercialEditor;
+    List<AgencyCommission> _commissionRates = null!;
+    List<ITieredValue<double>> _commercialRates = null!;
+    List<ITieredValue<double>> _contractRates = null!;
+    TieredValueEditor<double> _contractEditor = null!;
+    TieredValueEditor<double> _commercialEditor = null!;
 
     protected override async Task OnParametersSetAsync()
     {

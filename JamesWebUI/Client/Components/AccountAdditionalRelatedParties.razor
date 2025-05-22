@@ -1,11 +1,11 @@
-﻿@using James.Shared
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
+// ToDo (JAA) Is this required?.
 @inject NavigationManager NavigationManager
 
 @inject IDataAccess DataAccess
 
-<RadzenDataGrid Data="relatedParties">
+<RadzenDataGrid Data="RelatedParties">
     <HeaderTemplate>
         <RadzenButton Variant="Variant.Outlined" Icon="add" Text="Add New Related Party"/>
     </HeaderTemplate>
@@ -39,8 +39,8 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Account accountToDisplay { get; set; }
-    private List<AdditionalRelatedParty> relatedParties { get; set; } = new List<AdditionalRelatedParty>();
+    [Parameter, EditorRequired] public Account AccountToDisplay { get; set; } = null!;
+    private List<AdditionalRelatedParty> RelatedParties { get; set; } = [];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -51,18 +51,25 @@
 
     private async Task LoadRelatedParties()
     {
-        if (null != accountToDisplay)
-        {
-            var result = await DataAccess.GetAdditionalRelatedParties(accountToDisplay.AccountNum);
+        // ToDo (JAA) Expression "null != AccountToDisplay" is always true. accountToDisplay is not nullable.
+        var result = await DataAccess.GetAdditionalRelatedParties(AccountToDisplay.AccountNum);
 
-            if (result.Success)
-            {
-                relatedParties = result.Data;
-            }
-            else
-            {
-                //TODO: Handle errors
-            }
+        if (result.Success)
+        {
+            RelatedParties = result.Data!;
         }
+        else
+        {
+            await HandleLoadError(result);
+        }
+    }
+    
+    private async Task HandleLoadError(IDataAccessResult<List<AdditionalRelatedParty>>? result)
+    {
+        var errorMessage = result == null
+            ? ["Failed to load related parties: No Response"]
+            : result.Errors;
+
+        await InvokeAsync(() => NotifyLoadError(errorMessage));
     }
 }

@@ -1,8 +1,5 @@
 ﻿@inherits JamesLayoutComponentBase
 
-// ToDo (JAA) Is this required?.
-@inject NavigationManager NavigationManager
-
 @inject IDataAccess DataAccess
 
 <RadzenDataGrid Data="RelatedParties">
@@ -51,17 +48,28 @@
 
     private async Task LoadRelatedParties()
     {
-        // ToDo (JAA) Expression "null != AccountToDisplay" is always true. accountToDisplay is not nullable.
-        var result = await DataAccess.GetAdditionalRelatedParties(AccountToDisplay.AccountNum);
+        IDataAccessResult<List<AdditionalRelatedParty>> result = null!;
+
+        var loadItem = new LoadItem
+        {
+            Key = $"GetAccountAdditionalRelatedParties{AccountToDisplay.Id}",
+            AsyncLoadTask = async () =>
+            {
+                result = await DataAccess.GetAdditionalRelatedParties(AccountToDisplay.AccountNum);
+            },
+            CacheLoadTask = cache => result = new DataAccessResult<List<AdditionalRelatedParty>>
+            {
+                Data = (List<AdditionalRelatedParty>)cache!
+            },
+            ResultVariable = () => result
+        };
+
+        await DataCache.GetCacheOrLoadDataAsync(AddEventNotify(loadItem));
 
         if (result.Success)
-        {
             RelatedParties = result.Data!;
-        }
         else
-        {
             await HandleLoadError(result);
-        }
     }
     
     private async Task HandleLoadError(IDataAccessResult<List<AdditionalRelatedParty>>? result)

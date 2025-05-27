@@ -50,34 +50,22 @@
     {
         IDataAccessResult<List<AdditionalRelatedParty>> result = null!;
 
-        var loadItem = new LoadItem
+        var loadItem = AddEventNotify(new LoadItem
         {
-            Key = $"GetAccountAdditionalRelatedParties{AccountToDisplay.Id}",
-            AsyncLoadTask = async () =>
-            {
-                result = await DataAccess.GetAdditionalRelatedParties(AccountToDisplay.AccountNum);
-            },
+            Key = $"GetAccountAdditionalRelatedParties{AccountToDisplay.AccountNum}",
+            AsyncLoadTask = async () => { result = await DataAccess.GetAdditionalRelatedParties(AccountToDisplay.AccountNum); },
             CacheLoadTask = cache => result = new DataAccessResult<List<AdditionalRelatedParty>>
             {
                 Data = (List<AdditionalRelatedParty>)cache!
             },
             ResultVariable = () => result
-        };
+        });
 
-        await DataCache.GetCacheOrLoadDataAsync(AddEventNotify(loadItem));
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
 
         if (result.Success)
             RelatedParties = result.Data!;
         else
-            await HandleLoadError(result);
-    }
-    
-    private async Task HandleLoadError(IDataAccessResult<List<AdditionalRelatedParty>>? result)
-    {
-        var errorMessage = result == null
-            ? ["Failed to load related parties: No Response"]
-            : result.Errors;
-
-        await InvokeAsync(() => NotifyLoadError(errorMessage));
+            await HandleLoadError("Failed to load related parties: No Response", result.Errors);
     }
 }

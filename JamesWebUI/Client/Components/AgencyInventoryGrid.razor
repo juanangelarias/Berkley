@@ -1,37 +1,34 @@
-﻿@using System.Globalization;
-@using James.Shared
-@using StrawberryShake;
+﻿@using System.ComponentModel.DataAnnotations
 
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
-@inject IDataAccess _dataAccess
-@inject ILoggingService _logging
+@inject IDataAccess DataAccess
 
 <Theme />
 <RenderModeBackground />
 
-<RadzenDataGrid TItem="AgencyInventory" @ref="@inventoryGrid" Data="@agencyInventories"
+<RadzenDataGrid TItem="AgencyInventory" @ref="@InventoryGrid" Data="@AgencyInventories"
                 Style="border-radius: 10px; height: 400px;" Density="Density.Compact" EmptyText="No records to display"
                 AllowSorting="true" AllowGrouping="true" EditMode="DataGridEditMode.Single" AllowColumnPicking="true"
                 AllowFiltering="true" FilterMode="FilterMode.Simple" SelectionMode="DataGridSelectionMode.Single"
                 RowUpdate="UpdateInventoryRow" RowCreate="CreateInventoryRow"
-                IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow" />
             <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(args => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@IsLoading" />
             <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(args => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@IsLoading" />
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Date Sent" Property="Sent" FormatString="{0:d}"
                               Filterable="false" SortOrder="SortOrder.Descending" Width="200px">
             <Template Context="inventory">
-                <RadzenText Text="@(inventory?.Sent?.ToShortDateString())" />
+                <RadzenText Text="@(inventory.Sent?.ToShortDateString())" />
             </Template>
             <EditTemplate Context="inventory">
                 <RadzenDatePicker TValue="DateTime?" ShowTime="false" @bind-Value="@inventory.Sent" />
@@ -64,71 +61,71 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Address" Property="Address.Address1">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address.Address1" />
+                <RadzenText Text="@inventory.Address?.Address1" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address.Address1" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.Address1" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Address2" Property="Address.Address2"
                               Visible="false">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address.Address2" />
+                <RadzenText Text="@inventory.Address?.Address2" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address.Address2" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.Address2" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Address3" Property="Address.Address3"
                               Visible="false">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address.Address3" />
+                <RadzenText Text="@inventory.Address?.Address3" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address.Address3" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.Address3" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="City" Property="Address.City"
                               Width="150px">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address.City" />
+                <RadzenText Text="@inventory.Address!.City" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address.City" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.City" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="State" Property="Address.StateCode"
                               Width="150px">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address.StateCode" />
+                <RadzenText Text="@inventory.Address?.StateCode" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenDropDown TValue="string" @ref="stateDropDown" Data="AllStates" @bind-Value="@inventory.Address.StateCode"
+                <RadzenDropDown TValue="string" @ref="StateDropDown" Data="AllStates" @bind-Value="@inventory.Address!.StateCode"
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Zip Code" Property="Address.PostalCode"
                               Visible="false">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address.PostalCode" />
+                <RadzenText Text="@inventory.Address?.PostalCode" />
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address.PostalCode" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.PostalCode" />
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyInventory" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="inventory">
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(args => EditInventoryRow(inventory))" @onclick:stopPropagation="true">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(_ => EditInventoryRow(inventory))" @onclick:stopPropagation="true">
                 </RadzenButton>
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(args => DeleteInventoryRow(inventory))" @onclick:stopPropagation="true">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => DeleteInventoryRow(inventory))" @onclick:stopPropagation="true">
                 </RadzenButton>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@((args) => SaveInventoryRow(inventory))">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(_ => SaveInventoryRow(inventory))">
                 </RadzenButton>
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" class="my-1 ms-1" Click="@((args) => CancelInventoryEdit(inventory))">
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelInventoryEdit(inventory))">
                 </RadzenButton>
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(args => DeleteInventoryRow(inventory))">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => DeleteInventoryRow(inventory))">
                 </RadzenButton>
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -140,101 +137,171 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
-    private RadzenDataGrid<AgencyInventory> inventoryGrid { get; set; }
-    private List<AgencyInventory> agencyInventories { get; set; }
-    private List<AgencyInventory> inventoriesToInsert { get; set; } = new List<AgencyInventory>();
-    private List<AgencyInventory> inventoriesToUpdate { get; set; } = new List<AgencyInventory>();
-    private bool isLoading { get; set; } = false;
+    [Parameter, Required] public Guid AgencyId { get; set; }
+
+    private RadzenDataGrid<AgencyInventory> InventoryGrid { get; set; } = null!;
+    private List<AgencyInventory> AgencyInventories { get; set; } = [];
+    private List<AgencyInventory> InventoriesToInsert { get; set; } = [];
+    private List<AgencyInventory> InventoriesToUpdate { get; set; } = [];
+    private bool IsLoading { get; set; }
 
     //TODO: Implement an AllUsers list.
-    private List<State> AllStates { get; set; } = new List<State>();
-    private List<InventoryDocumentDm> AllDocTypes { get; set; } = new List<InventoryDocumentDm>();
-    private RadzenDropDown<string> stateDropDown { get; set; }
+    private List<State> AllStates { get; set; } = [];
+    private List<InventoryDocumentDm> AllDocTypes { get; set; } = [];
+    private RadzenDropDown<string> StateDropDown { get; set; } = null!;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         await ShowLoading();
-        await LoadStates();
-        await LoadDocTypes();
-        await LoadInventory();
+        await LoadData();
     }
-    private async Task LoadStates()
+
+    private async Task LoadData()
     {
-        var result = await _dataAccess.GetAllStates();
-        if (result.Success == false)
-            //UNDONE: Add actual errors as data
-            _logging.LogError("Error getting all States in Agency License Grid");
-        else
-        {
-            AllStates = result.Data;
-        }
+        if (AgencyId == Guid.Empty)
+            return;
+        IDataAccessResult<List<State>> states = null!;
+        IDataAccessResult<List<InventoryDocumentDm>> docTypes = null!;
+        IDataAccessResult<List<AgencyInventory>> inventory = null!;
+
+        LoadItem[] loadItems =
+        [
+            AddEventNotify(new LoadItem
+            {
+                Key = "States",
+                AsyncLoadTask = async () => states = await DataAccess.GetAllStates(),
+                CacheLoadTask = cache => states = new DataAccessResult<List<State>>
+                {
+                    Data = (List<State>)cache!
+                },
+                ResultVariable = () => states
+            }, "States"),
+            AddEventNotify(new LoadItem
+            {
+                Key = "DocumentTypes",
+                AsyncLoadTask = async () => docTypes = await DataAccess.GetAllInventoryDocTypes(),
+                CacheLoadTask = cache => docTypes = new DataAccessResult<List<InventoryDocumentDm>>
+                {
+                    Data = (List<InventoryDocumentDm>)cache!
+                },
+                ResultVariable = () => docTypes
+            }, "Document Types"),
+            AddEventNotify(new LoadItem
+            {
+                Key = $"Inventory{AgencyId}",
+                AsyncLoadTask = async () => inventory = await DataAccess.GetAgencyInventory(AgencyId),
+                CacheLoadTask = cache => inventory = new DataAccessResult<List<AgencyInventory>>
+                {
+                    Data = (List<AgencyInventory>)cache!
+                },
+                ResultVariable = () => inventory
+            }, "Agency Inventory")
+        ];
+
+        await DataCache.ParallelGetCacheOrDataAsync(async void () => await AfterLoad(states, docTypes, inventory), loadItems);
+
     }
-    private async Task LoadDocTypes()
+    
+    private async Task AfterLoad(IDataAccessResult<List<State>> states,
+        IDataAccessResult<List<InventoryDocumentDm>> docTypes,
+        IDataAccessResult<List<AgencyInventory>> inventory)
     {
-        var result = await _dataAccess.GetAllInventoryDocTypes();
-        if (result.Success == false)
-        {
-            _logging.LogError("Error getting all Inventory Doc Types in Agency License Grid.");
-        }
-        else
-        {
-            AllDocTypes = result.Data;
-        }
+        await HandleStateLoadResult(states);
+        await HandleDocumentTypeLoadResult(docTypes);
+        await HandleAgencyInventoriesLoadResult(inventory);
     }
+
+    private async Task HandleAgencyInventoriesLoadResult(IDataAccessResult<List<AgencyInventory>> inventory)
+    {
+        if (inventory.Success)
+            AgencyInventories = inventory.Data!;
+        else
+            await HandleLoadError("Error loading Agency Inventory", inventory.Errors);
+    }
+
+    private async Task HandleDocumentTypeLoadResult(IDataAccessResult<List<InventoryDocumentDm>> docTypes)
+    {
+        if (docTypes.Success)
+            AllDocTypes = docTypes.Data!;
+        else
+            await HandleLoadError("Error loading Document Types", docTypes.Errors);
+    }
+
+    private async Task HandleStateLoadResult(IDataAccessResult<List<State>> states)
+    {
+        if (states.Success)
+            AllStates = states.Data!;
+        else
+            await HandleLoadError("Error loading States", states.Errors);
+    }
+
     void Reset()
     {
-        inventoriesToInsert.Clear();
-        inventoriesToUpdate.Clear();
+        InventoriesToInsert.Clear();
+        InventoriesToUpdate.Clear();
     }
+
     void Reset(AgencyInventory inventory)
     {
-        inventoriesToInsert.Remove(inventory);
-        inventoriesToUpdate.Remove(inventory);
+        InventoriesToInsert.Remove(inventory);
+        InventoriesToUpdate.Remove(inventory);
     }
+
     private async Task LoadInventory()
     {
         await ShowLoading();
-        var result = await _dataAccess.GetAgencyInventory(AgencyId);
-        if (result.Success)
+
+        IDataAccessResult<List<AgencyInventory>> inventory = null!;
+
+        var loadItem = AddEventNotify(new LoadItem
         {
-            if (result.Data != null)
-                agencyInventories = result.Data;
-        }
-        else
-        {
-            _logging.LogError("Error Getting Agency Inventory in the Agency Inventory Grid.", result.Errors.ToString());
-        }
+            Key = $"Inventory{AgencyId}",
+            AsyncLoadTask = async () => inventory = await DataAccess.GetAgencyInventory(AgencyId),
+            CacheLoadTask = cache => inventory = new DataAccessResult<List<AgencyInventory>>
+            {
+                Data = (List<AgencyInventory>)cache!
+            },
+            ResultVariable = () => inventory
+        }, "Agency Inventory");
+
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+
+        await HandleAgencyInventoriesLoadResult(inventory);
     }
-    async Task EditInventoryRow(AgencyInventory inventory)
+
+    private async Task EditInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
         Reset();
-        inventoriesToUpdate.Add(inventory);
-        await inventoryGrid.EditRow(inventory);
+        InventoriesToUpdate.Add(inventory);
+        await InventoryGrid.EditRow(inventory);
     }
-    async Task DeleteInventoryRow(AgencyInventory inventory)
+
+    private async Task DeleteInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
         Reset(inventory);
-        var result = await _dataAccess.DeleteAgencyInventory(inventory.Id);
+        _ = await DataAccess.DeleteAgencyInventory(inventory.Id);
         await LoadInventory();
     }
-    async Task SaveInventoryRow(AgencyInventory inventory)
+
+    private async Task SaveInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
-        await inventoryGrid.UpdateRow(inventory);
+        await InventoryGrid.UpdateRow(inventory);
         await LoadInventory();
     }
-    async Task CancelInventoryEdit(AgencyInventory inventory)
+
+    private async Task CancelInventoryEdit(AgencyInventory inventory)
     {
         await ShowLoading();
         Reset(inventory);
-        inventoryGrid.CancelEditRow(inventory);
+        InventoryGrid.CancelEditRow(inventory);
         await LoadInventory();
     }
-    async Task InsertInventoryRow()
+
+    private async Task InsertInventoryRow()
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
@@ -244,43 +311,47 @@
             Id = Guid.NewGuid(),
             Address = new Address() { Id = Guid.NewGuid() }
         };
-        inventoriesToInsert.Add(newInventory);
-        await inventoryGrid.InsertRow(newInventory);
+        InventoriesToInsert.Add(newInventory);
+        await InventoryGrid.InsertRow(newInventory);
     }
-    async Task UpdateInventoryRow(AgencyInventory inventory)
+
+    private async Task UpdateInventoryRow(AgencyInventory inventory)
     {
         Reset(inventory);
         //This is where the actual update is handled.
-        var result = await _dataAccess.SetAgencyInventory(inventory.Id,
-        inventory.Sent,
-        inventory.Quantity,
-        inventory.DocumentType,
-        inventory.Addressee,
-        inventory.Address.Id,
-        inventory.Address.Address1,
-        inventory.Address.Address2,
-        inventory.Address.Address3,
-        inventory.Address.City,
-        inventory.Address.StateCode,
-        inventory.Address.PostalCode);
-
+        _ = await DataAccess.SetAgencyInventory(inventory.Id,
+            inventory.Sent,
+            inventory.Quantity,
+            inventory.DocumentType,
+            inventory.Addressee,
+            inventory.Address!.Id,
+            inventory.Address.Address1,
+            inventory.Address.Address2,
+            inventory.Address.Address3,
+            inventory.Address.City,
+            inventory.Address.StateCode,
+            inventory.Address.PostalCode);
     }
-    async Task CreateInventoryRow(AgencyInventory inventory)
+
+    private async Task CreateInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
-        var result = await _dataAccess.CreateAgencyInventory(inventory.Id, AgencyId, (DateTime)inventory.Sent, (int)inventory.Quantity, inventory.DocumentType, inventory.Addressee,
-        inventory.Address.Address1, inventory.Address.Address2, inventory.Address.Address3, inventory.Address.City, inventory.Address.StateCode, inventory.Address.PostalCode,
-        inventory.Approver);
+        _ = await DataAccess.CreateAgencyInventory(inventory.Id, AgencyId, Convert.ToDateTime(inventory.Sent),
+            Convert.ToInt32(inventory.Quantity), inventory.DocumentType, inventory.Addressee ?? "",
+            inventory.Address?.Address1 ?? "", inventory.Address?.Address2 ?? "", inventory.Address?.Address3 ?? "",
+            inventory.Address?.City ?? "", inventory.Address?.StateCode ?? "", inventory.Address?.PostalCode ?? "",
+            inventory.Approver);
 
-        inventoriesToInsert.Remove(inventory);
+        InventoriesToInsert.Remove(inventory);
     }
+
     protected async Task ShowLoading()
     {
-        isLoading = true;
+        IsLoading = true;
 
         await Task.Yield();
 
-        isLoading = false;
+        IsLoading = false;
     }
 
     private void ExportLicenseGrid(ExportFormat format)
@@ -295,8 +366,8 @@
         substitutions.AddSubstitution("Address.City", title: "City");
         substitutions.AddSubstitution("Address.StateCode", title: "State");
         substitutions.AddSubstitution("Address.PostalCode", title: "Zip Code");
-        NavigationManager.NavigateTo(ExportDataGridUrl(inventoryGrid,
-$"/export/AgencyInventory/{AgencyId}", format, substitutions),
-true);
+        NavigationManager.NavigateTo(ExportDataGridUrl(InventoryGrid,
+                $"/export/AgencyInventory/{AgencyId}", format, substitutions),
+            true);
     }
 }

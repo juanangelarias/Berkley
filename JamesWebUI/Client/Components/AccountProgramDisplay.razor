@@ -116,20 +116,30 @@
 
     private async Task LoadPrograms()
     {
-        if (!string.IsNullOrWhiteSpace(AccountNumber))
-        {
-            var result = await DataAccess.GetAccountProgramHistory(AccountNumber);
+        if (string.IsNullOrWhiteSpace(AccountNumber))
+            return;
 
-            if (result.Errors.Any())
+        IDataAccessResult<List<AccountProgram>> result = null!;
+
+        var loadItem = AddEventNotify(new LoadItem
+        {
+            Key = $"AccountProgramDisplay{AccountNumber}",
+            AsyncLoadTask = async () => result = await DataAccess.GetAccountProgramHistory(AccountNumber),
+            CacheLoadTask = cache => result = new DataAccessResult<List<AccountProgram>>
             {
-                //TODO: Handle Errors
-            }
-            else
-            {
-                ProgramsToDisplay = result.Data;
-            }
-        }
+                Data = (List<AccountProgram>)cache!
+            },
+            ResultVariable = () => result
+        });
+
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+
+        if (result.Success)
+            ProgramsToDisplay = result.Data!;
+        else
+            await HandleLoadError("Failed to load Account Programs: No Response", result.Errors);
     }
+
     protected async Task ShowLoading()
     {
         isLoading = true;

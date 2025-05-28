@@ -55,7 +55,6 @@
                 <RadzenText Text="@account.Bonds.Count().ToString()"/>
             </Template>
         </RadzenDataGridColumn>
-
     </Columns>
     <EmptyTemplate>
         No Records to Display
@@ -96,12 +95,12 @@
         if (string.IsNullOrEmpty(AgencyNumber))
             return;
 
-        DataAccessResult<List<Account>> result = null!;
+        IDataAccessResult<List<Account>> result = null!;
 
         var loadItem = AddEventNotify(new LoadItem
         {
             Key = $"Accounts{AgencyNumber}",
-            AsyncLoadTask = async () => await DataAccess.GetAgencyAccounts(AgencyNumber),
+            AsyncLoadTask = async () => result = await DataAccess.GetAgencyAccounts(AgencyNumber),
             CacheLoadTask = cache => result = new DataAccessResult<List<Account>>
             {
                 Data = (List<Account>)cache!

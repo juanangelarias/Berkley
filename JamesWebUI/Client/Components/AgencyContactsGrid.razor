@@ -1,24 +1,24 @@
-﻿@using System.Diagnostics
-@using James.Shared;
+﻿@using System.ComponentModel.DataAnnotations
+@using System.Diagnostics
+
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-
 @inject IDataAccess DataAccess
 
 <Theme />
 <RenderModeBackground />
 
-<RadzenDataGrid TItem="Agent" Data="@agents" @ref="@agentsGrid" Density="Density.Compact"
+<RadzenDataGrid TItem="Agent" Data="@Agents" @ref="@AgentsGrid" Density="Density.Compact"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
                 AllowPaging="true" PageSize="10" AllowSorting="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(args => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading" />
             <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(args => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading" />
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
@@ -64,7 +64,7 @@
                         <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
                     </Template>
                     <EditTemplate Context="license">
-                        <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" Data="AllInsurers" Style="width:95%"
+                        <RadzenDropDown TValue="Guid" @ref="DropSelectInsurer" Data="AllInsurers" Style="width:95%"
                                         TextProperty="IdNavigation.FullName" ValueProperty="Id" @bind-Value="@license.InsurerId" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
@@ -97,45 +97,64 @@
 
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
-    private List<Agent> agents { get; set; } = new List<Agent>();
-    private RadzenDataGrid<Agent> agentsGrid { get; set; }
-    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
-    private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
-    private bool isLoading = true;
+    [Parameter, Required] public Guid AgencyId { get; set; }
+    
+    private List<Agent> Agents { get; set; } = [];
+    private RadzenDataGrid<Agent> AgentsGrid { get; set; } = null!;
+    private RadzenDropDown<Guid> DropSelectInsurer { get; set; } = null!;
+    private List<Insurer> AllInsurers { get; set; } = [];
+    private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
         await LoadAgents();
-        isLoading = false;
+        _isLoading = false;
     }
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
         await LoadAgents();
     }
+    
     private async Task LoadAgents()
     {
-        var result = await DataAccess.GetAgencyAgents(AgencyId);
+        if(AgencyId == Guid.Empty)
+            return;
+
+        IDataAccessResult<List<Agent>> result = null!;
+
+        var loadItem = AddEventNotify(new LoadItem
+        {
+            Key = $"AgencyContacts{AgencyId}",
+            AsyncLoadTask = async () => result = await DataAccess.GetAgencyAgents(AgencyId),
+            CacheLoadTask = cache => result = new DataAccessResult<List<Agent>>
+            {
+                Data = (List<Agent>)cache!
+            },
+            ResultVariable = () => result
+        });
+
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
 
         if (result.Success)
         {
-            agents = result.Data!;
-            await agentsGrid.Reload();
+            Agents = result.Data!;
+            await AgentsGrid.Reload();
         }
         else
-        {
-            NotifyLoadError(result.Errors, "agents");
-            LogGraphQlLoadError(result.Errors,"Error loading agents in AgencyContactsGrid", "agents");
-        }
+            await HandleLoadError("Error loading agents in Agency Contacts Grid", result.Errors);
     }
+    
+    // ToDo (JAA) It seems that the following two methods are not used
     private async Task LoadSelectInsurerDropDown()
     {
         AllInsurers = await GetInsurers();
     }
+    
     private async Task<List<Insurer>> GetInsurers()
     {
         var result = await DataAccess.GetAllInsurers();
@@ -145,7 +164,7 @@
             LogGraphQlLoadError(result.Errors, "Error getting insurers in Agency Contract Grid");
         }
 
-        Debug.Assert(result.Data != null, "result.Data != null");
+        Debug.Assert(result.Data != null);
         return result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
     }
 
@@ -161,8 +180,8 @@
         substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
         substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
         substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
-        NavigationManager.NavigateTo(ExportDataGridUrl(agentsGrid,
-$"/export/AgencyContacts/{AgencyId}", format, substitutions),
-true);
+        NavigationManager.NavigateTo(ExportDataGridUrl(AgentsGrid,
+                $"/export/AgencyContacts/{AgencyId}", format, substitutions),
+            true);
     }
 }

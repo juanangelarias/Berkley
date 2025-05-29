@@ -180,22 +180,102 @@
     {
         await base.OnParametersSetAsync();
 
-        if (AllStates.Count == 0)
-            await LoadStates();
-        if (AllInsurers.Count == 0)
-            await LoadInsurers();
-
-        if (AgencyId != Guid.Empty)
-        {
-            await LoadLicenses();
-        }
+        await LoadData();
     }
-    void Reset()
+
+    // ToDo (JAA) This way will not work when trying to reload licenses
+    // after add, edit or delete a license because it will read from
+    // the cache and not from the database.
+    // We need to use subscriptions for the reloading of agencyLicenses
+    // or add a boolean parameter in the DataCache.ParallelGetCacheOrDataAsync and
+    // DataCache.GetCacheOrLoadDataAsync that when it is true force the load from 
+    // the database
+    private async Task LoadData()
+    {
+        if(AgencyId == Guid.Empty)
+            return;
+        
+        IDataAccessResult<List<State>> states = null!;
+        IDataAccessResult<List<Insurer>> insurers = null!;
+        IDataAccessResult<List<AgencyLicense>> licenses = null!;
+
+        LoadItem[] loadItems =
+        [
+            AddEventNotify(new LoadItem
+            {
+                Key = "States",
+                AsyncLoadTask = async () => states = await DataAccess.GetAllStates(),
+                CacheLoadTask = cache => states = new DataAccessResult<List<State>>
+                {
+                    Data = (List<State>)cache!
+                },
+                ResultVariable = () => states
+            }, "States"),
+            AddEventNotify(new LoadItem
+            {
+                Key = "Insurers",
+                AsyncLoadTask = async () => insurers = await DataAccess.GetAllInsurers(),
+                CacheLoadTask = cache => insurers = new DataAccessResult<List<Insurer>>
+                {
+                    Data = (List<Insurer>)cache!
+                },
+                ResultVariable = () => insurers
+            }),
+            AddEventNotify(new LoadItem
+            {
+                Key = $"AgencyLicenses{AgencyId}",
+                AsyncLoadTask = async () => licenses = await DataAccess.GetAgencyLicenses(AgencyId),
+                CacheLoadTask = cache => licenses = new DataAccessResult<List<AgencyLicense>>
+                {
+                    Data = (List<AgencyLicense>)cache!
+                },
+                ResultVariable = () => licenses
+            })
+        ];
+
+        await DataCache.ParallelGetCacheOrDataAsync(async void () => await AfterLoad(states, insurers, licenses), loadItems);
+    }
+
+    private async Task AfterLoad(IDataAccessResult<List<State>> states,
+        IDataAccessResult<List<Insurer>> insurers,
+        IDataAccessResult<List<AgencyLicense>> licenses)
+    {
+        await HandleStateLoadResult(states);
+        await HandleInsurerLoadResult(insurers);
+        await HandleAgencyLicensesLoadResult(licenses);
+    }
+
+    private async Task HandleStateLoadResult(IDataAccessResult<List<State>> state)
+    {
+        if (state.Success)
+            AllStates = state.Data!;
+        else
+            await HandleLoadError("Error loading States", state.Errors);
+    }
+    
+    private async Task HandleInsurerLoadResult(IDataAccessResult<List<Insurer>> insurers)
+    {
+        if (insurers.Success)
+            AllInsurers = insurers.Data!;
+        else
+            await HandleLoadError("Error loading Insurers", insurers.Errors);
+    }
+    
+    private async Task HandleAgencyLicensesLoadResult(IDataAccessResult<List<AgencyLicense>> licenses)
+    {
+        if (licenses.Success)
+            agencyLicenses = licenses.Data!;
+        else
+            await HandleLoadError("Error loading Agency Licenses", licenses.Errors);
+    }
+
+    private void Reset()
     {
         licensesToInsert.Clear();
         licensesToUpdate.Clear();
     }
-    void Reset(AgencyLicense license)
+
+    private void Reset(AgencyLicense license)
     {
         licensesToInsert.Remove(license);
         licensesToUpdate.Remove(license);
@@ -203,39 +283,33 @@
 
     private async Task LoadLicenses()
     {
-        await ShowLoading();
-        var result = await DataAccess.GetAgencyLicenses(AgencyId);
-        if (result.Success)
+        IDataAccessResult<List<AgencyLicense>> licenses = null!;
+
+        var loadItem = AddEventNotify(new LoadItem
         {
-            if (result.Data != null)
+            Key = $"AgencyLicenses{AgencyId}",
+            AsyncLoadTask = async () => licenses = await DataAccess.GetAgencyLicenses(AgencyId),
+            CacheLoadTask = cache => licenses = new DataAccessResult<List<AgencyLicense>>
             {
-                agencyLicenses = result.Data;
-            }
+                Data = (List<AgencyLicense>)cache!
+            },
+            ResultVariable = () => licenses
+        });
+
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+
+        if (!licenses.Success)
+        {
+            await HandleLoadError("Error loading Agency Licenses", licenses.Errors);
         }
         else
-            //UNDONE: Add actual errors as data
-            Logging.LogError("Error getting Agency Licenses in Agency License Grid");
-
-        await licenseGrid.Reload();
-    }
-    private async Task LoadStates()
-    {
-        var result = await DataAccess.GetAllStates();
-        if (result.Success == false)
-            //UNDONE: Add actual errors as data
-            Logging.LogError("Error getting all States in Agency License Grid");
-        AllStates = result.Data;
-    }
-    private async Task LoadInsurers()
-    {
-        var result = await DataAccess.GetAllInsurers();
-        if (result.Success == false)
-            //UNDONE: Add actual errors as data
-            Logging.LogError("Error getting all Insurers in Agency License Grid");
-        AllInsurers = result.Data;
+        {
+            agencyLicenses = licenses.Data!;
+            await licenseGrid.Reload();
+        }
     }
 
-    async Task InsertLicenseRow()
+    private async Task InsertLicenseRow()
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
@@ -244,21 +318,24 @@
         licensesToInsert.Add(newLicense);
         await licenseGrid.InsertRow(newLicense);
     }
-    async Task EditLicenseRow(AgencyLicense license)
+
+    private async Task EditLicenseRow(AgencyLicense license)
     {
         await ShowLoading();
         Reset();
         licensesToUpdate.Add(license);
         await licenseGrid.EditRow(license);
     }
-    async Task DeleteLicenseRow(AgencyLicense license)
+
+    private async Task DeleteLicenseRow(AgencyLicense license)
     {
         await ShowLoading();
         Reset(license);
         var result = await DataAccess.DeleteLicense(license.Id);
         await LoadLicenses();
     }
-    async Task SaveLicenseRow(AgencyLicense license)
+
+    private async Task SaveLicenseRow(AgencyLicense license)
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Update/Insert is done in those methods.
@@ -266,64 +343,70 @@
         await licenseGrid.UpdateRow(license);
         await LoadLicenses();
     }
-    async Task OnLicenseCreate(AgencyLicense license)
+
+    private async Task OnLicenseCreate(AgencyLicense license)
     {
         //This is where we handle row inserts.
 
         var result = await DataAccess.CreateLicense(
-        license.Id,
-        AgencyId,
-        null,
-        license.AppointingState,
-        license.Comments,
-        license.Appointment,
-        license.Expiration,
-        license.Termination,
-        license.Insurer.Id,
-        license.IsResident,
-        license.LicenseNumber,
-        license.State,
-        license.IsActive
-    );
+            license.Id,
+            AgencyId,
+            null,
+            license.AppointingState,
+            license.Comments,
+            license.Appointment,
+            license.Expiration,
+            license.Termination,
+            license.Insurer.Id,
+            license.IsResident,
+            license.LicenseNumber,
+            license.State,
+            license.IsActive
+        );
 
         licensesToInsert.Remove(license);
         //await LoadLicenses();
         //TODO: Check for errors and notify.
     }
-    async void CancelLicenseEdit(AgencyLicense license)
+
+    private async void CancelLicenseEdit(AgencyLicense license)
     {
         await ShowLoading();
         Reset(license);
         licenseGrid.CancelEditRow(license);
         await LoadLicenses();
     }
-    async Task UpdateLicenseRow(AgencyLicense license)
+
+    private async Task UpdateLicenseRow(AgencyLicense license)
     {
         Reset(license);
         //This is where we handle row Updates.
         var result = await DataAccess.SetAgencyLicense(license.Id,
-                license.AgencyId,
-                license.AgentId,
-                license.AppointingState,
-                license.Comments,
-                license.Appointment,
-                license.Expiration,
-                license.Termination,
-                license.InsurerId,
-                license.IsResident,
-                license.LicenseNumber,
-                license.State,
-                license.IsActive
-            );
+            license.AgencyId,
+            license.AgentId,
+            license.AppointingState,
+            license.Comments,
+            license.Appointment,
+            license.Expiration,
+            license.Termination,
+            license.InsurerId,
+            license.IsResident,
+            license.LicenseNumber,
+            license.State,
+            license.IsActive
+        );
     }
-    async Task StateFilterChange()
+
+    private async Task StateFilterChange()
     {
         if (StateFilter != null && !StateFilter.Any())
         {
             StateFilter = null;
         }
+
         await licenseGrid.Reload();
     }
+
     protected async Task ShowLoading()
     {
         isLoading = true;
@@ -349,23 +432,23 @@
             "Uploading a file to imaging returned an error",
             "Imaging",
             data: new Dictionary<string, string>
-                {
+            {
                 { "Error Message", message },
-                { "AgencyNumber", license.Agency.AgencyNumber},
-                { "License Id", license.Id.ToString()}
-                    });
+                { "AgencyNumber", license.Agency.AgencyNumber },
+                { "License Id", license.Id.ToString() }
+            });
         NotifySaveError([message], "license certificate");
     }
 
     private void ExportLicenseGrid(ExportFormat format)
     {
         var substitutions = new ExportColumnSubstitutions();
-        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName" );
+        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName");
         substitutions.AddSubstitution("IsActive", title: "Is Active");
         substitutions.AddSubstitution("IsResident", title: "Is Resident");
         substitutions.AddSubstitution("AppointingState", title: "Appointing State");
         NavigationManager.NavigateTo(ExportDataGridUrl(licenseGrid,
-    $"/export/AgencyLicenses/{AgencyId}", format, substitutions),
-    true);
+                $"/export/AgencyLicenses/{AgencyId}", format, substitutions),
+            true);
     }
 }

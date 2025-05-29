@@ -157,6 +157,13 @@
         await LoadData();
     }
 
+    // ToDo (JAA) This way will not work when trying to reload licenses
+    // after add, edit or delete an inventory because it will read from
+    // the cache and not from the database.
+    // We need to use subscriptions for the reloading of AgencyInventories
+    // or add a boolean parameter in the DataCache.ParallelGetCacheOrDataAsync and
+    // DataCache.GetCacheOrLoadDataAsync that when it is true force the load from 
+    // the database
     private async Task LoadData()
     {
         if (AgencyId == Guid.Empty)
@@ -266,8 +273,11 @@
         }, "Agency Inventory");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        await HandleAgencyInventoriesLoadResult(inventory);
+        
+        if (inventory.Success)
+            AgencyInventories = inventory.Data!;
+        else
+            await HandleLoadError("Error loading Agency Inventory", inventory.Errors);
     }
 
     private async Task EditInventoryRow(AgencyInventory inventory)

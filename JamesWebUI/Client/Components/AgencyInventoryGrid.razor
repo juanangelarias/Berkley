@@ -196,7 +196,7 @@
             }, "Document Types"),
             AddEventNotify(new LoadItem
             {
-                Key = $"Inventory{AgencyId}",
+                Key = $"AgencyInventory{AgencyId}",
                 AsyncLoadTask = async () => inventory = await DataAccess.GetAgencyInventory(AgencyId),
                 CacheLoadTask = cache => inventory = new DataAccessResult<List<AgencyInventory>>
                 {

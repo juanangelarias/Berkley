@@ -207,7 +207,6 @@
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(async void () => await AfterLoad(states, docTypes, inventory), loadItems);
-
     }
     
     private async Task AfterLoad(IDataAccessResult<List<State>> states,

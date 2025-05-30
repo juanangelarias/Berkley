@@ -1,25 +1,25 @@
 ﻿@page "/Agency/{Id?}"
+
 @using System.Diagnostics
 @using James.Shared
 @using James.Shared.Imaging
-@using Microsoft.AspNetCore.WebUtilities;
 
 @inherits JamesLayoutComponentBase
 @implements IDisposable
 
 @inject NavigationManager NavigationManager
-
 @inject IDataAccess DataAccess
 @inject ILoggingService Logging
+
 @attribute [Authorize]
 
 <Theme />
 
 <PageTitle>BasisTNG - Agency Profile</PageTitle>
+
 <RenderModeBackground></RenderModeBackground>
+
 @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
-
-
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
     <RadzenPanel Style="border-radius: 20px;" Collapsed="_summaryView" class="rz-shadow-7">
@@ -171,10 +171,10 @@
         </ChildContent>
     </RadzenPanel>
     <RadzenPanel Style="border-radius: 20px">
-        <PositionSavingTabs @ref="@tabsAgencyProfile" @bind-SelectedIndex="@tabsAgencyProfile.NewSelectedIndex" TabControlName="tabsAgencyProfile">
+        <PositionSavingTabs @ref="@TabsAgencyProfile" @bind-SelectedIndex="@TabsAgencyProfile.NewSelectedIndex" TabControlName="tabsAgencyProfile">
             <Tabs>
                 <PositionSavingTabsItem Text="General Info" TabName="tabGenInfo">
-                    <AgencyGeneralInfoGrids agencyId="@_agencyToDisplay.Id" />
+                    <AgencyGeneralInfoGrids AgencyId="@_agencyToDisplay.Id" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Contacts" TabName="tabContacts">
                     <AgencyContactsGrid AgencyId="@_agencyToDisplay.Id" />
@@ -188,33 +188,26 @@
                 <PositionSavingTabsItem Text="Commission Rates" TabName="tabCommissionRates">
                     <AgencyCommissionRates AgencyId="@_agencyToDisplay.Id" AgencyStatus="@_agencyToDisplay?.Status" />
                 </PositionSavingTabsItem>
-                <PositionSavingTabsItem Text="Virtual File" TabName="tabVirutalFile">
+                <PositionSavingTabsItem Text="Virtual File" TabName="tabVirtualFile">
                     <ImagingFull ImagingId="@_agencyToDisplay?.AgencyNumber" DocumentCategory="ImagingDocumentCategory.Agency" />
                 </PositionSavingTabsItem>
             </Tabs>
         </PositionSavingTabs>
     </RadzenPanel>
 </RadzenStack>
+
 @* ReSharper restore ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
 
 @code {
     [Parameter] public string? Id { get; set; }
-    public Notification[]? Notifications;
     private Agency _agencyToDisplay = new();
-    private Address _mainAddress = new();
-    private Address _billingAddress = new();
     private bool _summaryView;
-    private string EditorIdentifier { get; } = Guid.NewGuid().ToString();
-    AddressDisplay? _mainAddressEditor, _billingAddressEditor;
-
-    private bool ErrorsAndOmissionsEditMode { get; set; }
     private bool EditMode { get; set; }
     private bool ShowTaxId { get; set; }
 
-    public PositionSavingTabs tabsAgencyProfile { get; set; } = new PositionSavingTabs();
+    private PositionSavingTabs TabsAgencyProfile { get; set; } = new();
     //TODO: Remove after implementing caching
-    private List<Branch> AllBranches { get; set; } = new List<Branch>();
-
+    private List<Branch> AllBranches { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -224,45 +217,35 @@
         JamesThemeService.Initialize(NavigationManager);
 
         //TODO: Remove this once testing of notification window is done.
-        Notifications =
-        [
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-    new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-        ];
     }
 
-    private IDataAccessResult<Agency> _agencyResult;
+    private IDataAccessResult<Agency> _agencyResult = null!;
     private LoadItem AgencyByAgencyNumberLoadItem(string agencyNumber) =>
             new LoadItem()
             {
                 Key = $"Agency{agencyNumber}",
-                AsyncLoadTask = async () => _agencyResult = await DataAccess.GetAgencyByAgencyNumber(agencyNumber),
-                CacheLoadTask = cache => _agencyResult = new DataAccessResult<Agency> { Data = (Agency)cache },
+                AsyncLoadTask = async () => _agencyResult = (await DataAccess.GetAgencyByAgencyNumber(agencyNumber))!,
+                CacheLoadTask = cache => _agencyResult = new DataAccessResult<Agency> { Data = (Agency)cache! },
                 ResultVariable = () => _agencyResult,
                 AfterLoad = () =>
                 {
                     Debug.Assert(_agencyResult.Data != null, "AgencyResult.Data != null if result.Success == true");
                     _agencyToDisplay = _agencyResult.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
-
-                    _mainAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Main")?.Address ?? new Address();
-                    _billingAddress = _agencyToDisplay?.IdNavigation.LegalEntityAddresses.FirstOrDefault(a => a.Type == "Billing")?.Address ?? new Address();
                 },
-                CacheDuration = TimeSpan.FromHours(8)   //Subscription will update this if changed, so long cache time is appropriate.
+                CacheDuration = TimeSpan.FromHours(8)   //Subscription will update this if changed, so a long cache time is appropriate.
             };
 
-    private IDataAccessResult<List<Branch>> _branchesResult;
+    private IDataAccessResult<List<Branch>> _branchesResult = null!;
     private LoadItem BranchesLoadItem() =>
         new()
         {
             Key = "branches",
             AsyncLoadTask = async () => _branchesResult = await DataAccess.GetAllBranches(),
-            CacheLoadTask = cache => _branchesResult = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache },
+            CacheLoadTask = cache => _branchesResult = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache! },
             ResultVariable = () => _branchesResult,
             AfterLoad = () =>
             {
-                Debug.Assert(_branchesResult.Data != null, "_branchesResult.Data != null");
+                Debug.Assert(_branchesResult.Data != null);
                 AllBranches = _branchesResult.Data.OrderBy(b => b.Name).ToList();
             }
         };
@@ -275,12 +258,13 @@
             loadItems.Add(AgencyByAgencyNumberLoadItem(Id));
         await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
     }
+    
     private async Task LoadBranches()
     {
         var result = await DataAccess.GetAllBranches();
         if (result.Success)
         {
-            Debug.Assert(result.Data != null, "result.Data != null");
+            Debug.Assert(result.Data != null);
             AllBranches = result.Data.OrderBy(b => b.Name).ToList();
         }
         else
@@ -288,27 +272,15 @@
             Logging.LogWarning("GetAllBranches returned error(s)", string.Join("\r\n", result.Errors), "GraphQL");
         }
     }
+    
     private async Task SaveAgencyChanges()
     {
         //TODO: Handle errors
         await DataAccess.SetAgencyGeneralInfo(_agencyToDisplay.Id, _agencyToDisplay.IdNavigation.FullName, _agencyToDisplay.IdNavigation.ParentNavigation!.Id,
             _agencyToDisplay.IdNavigation.TaxIdEncrypted, _agencyToDisplay.NationalProducerNumber, _agencyToDisplay.W9, _agencyToDisplay.Need1099,
-            _agencyToDisplay.Nasbp, _agencyToDisplay.Branch!);
+            _agencyToDisplay.Nasbp, _agencyToDisplay.Branch);
         EditMode = !EditMode;
         NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
-    }
-    void ShowNotification(string nameOfInformation)
-    {
-        ShowNotification(new NotificationMessage
-        {
-            Severity = NotificationSeverity.Info,
-            Detail = nameOfInformation + " on this page has been changed by another user.",
-            Duration = 4000
-        });
-    }
-    void ShowNotification(NotificationMessage message)
-    {
-        NotificationService.Notify(message);
     }
 
     public void Dispose()

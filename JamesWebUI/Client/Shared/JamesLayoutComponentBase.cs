@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using System.Text.RegularExpressions;
-using Blazorise;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
@@ -206,6 +205,15 @@ namespace JamesWebUI.Client.Shared
                 Select = selectColumnString
             };
             return query.ToUrl($"{url}/{(format == ExportFormat.CSV ? "CSV" : "Excel")}");
+        }
+
+        protected async Task HandleLoadError(string defaultError, string[] errors)
+        {
+            var errorMessage = errors.Length == 0
+                ? [defaultError]
+                : errors;
+
+            await InvokeAsync(() => NotifyLoadError(errorMessage));
         }
 
         #endregion

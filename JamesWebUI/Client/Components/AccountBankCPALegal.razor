@@ -1,12 +1,6 @@
-﻿@using System.Globalization
-@using James.Shared;
+﻿@inherits JamesLayoutComponentBase
 
-
-@inherits JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
-
-@inject IDataAccess DataAccess
+<RenderModeBackground />
 
 <RadzenRow>
     <RadzenColumn Size="6">
@@ -184,13 +178,11 @@
 
 
 @code {
-    [Parameter] public Account AccountToDisplay { get; set; }
-    private bool expandLawFirmDetails { get; set; } = false;
+    [Parameter, EditorRequired] public Account AccountToDisplay { get; set; } = null!;
+    private bool ExpandLawFirmDetails { get; set; } = false;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
-
     }
 }

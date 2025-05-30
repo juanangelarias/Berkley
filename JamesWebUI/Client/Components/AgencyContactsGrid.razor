@@ -97,7 +97,7 @@
 
 
 @code {
-    [Parameter, Required] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public Guid AgencyId { get; set; }
     
     private List<Agent> Agents { get; set; } = [];
     private RadzenDataGrid<Agent> AgentsGrid { get; set; } = null!;
@@ -109,7 +109,6 @@
     {
         await base.OnInitializedAsync();
 
-        await LoadAgents();
         _isLoading = false;
     }
     
@@ -143,7 +142,6 @@
         if (result.Success)
         {
             Agents = result.Data!;
-            await AgentsGrid.Reload();
         }
         else
             await HandleLoadError("Error loading agents in Agency Contacts Grid", result.Errors);

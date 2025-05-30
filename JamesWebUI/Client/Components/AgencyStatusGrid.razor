@@ -1,19 +1,12 @@
-﻿@using System.Globalization;
-@using James.Shared
-@using StrawberryShake;
+﻿@inherits JamesLayoutComponentBase
 
-@inherits JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
-
-@inject IDataAccess _dataAccess
-@inject ILoggingService _logging
+@inject IDataAccess DataAccess
 
 <Theme />
 <RenderModeBackground />
 <AuthorizeView>
     <Authorized>
-        <RadzenDataGrid @ref="statusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
+        <RadzenDataGrid @ref="StatusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
                         Style="border-radius: 20px;"
                         RowCreate="@OnStatusCreate">
             <HeaderTemplate>
@@ -47,10 +40,10 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Created By" Property="ChangedByNavigation.Initials">
                     <Template Context="statusLog">
-                        <RadzenText Text="@statusLog.ChangedByNavigation.FullName" Style="width: 95%" />
+                        <RadzenText Text="@statusLog.ChangedByNavigation?.FullName" Style="width: 95%" />
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenText @ref="txtUserName" Text="@(context.User.Identity.Name)" Style="width: 95%" />
+                        <RadzenText @ref="TxtUserName" Text="@(context.User.Identity?.Name)" Style="width: 95%" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments">
@@ -67,7 +60,7 @@
 
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@((args) => SaveStatusLogRow(statusLog))">
+                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(_ => SaveStatusLogRow(statusLog))">
                         </RadzenButton>
                     </EditTemplate>
                 </RadzenDataGridColumn>
@@ -77,13 +70,14 @@
     </Authorized>
 </AuthorizeView>
 @code {
-    [Parameter] public string AgencyNumber { get; set; }
-    [Parameter] public string CurrentStatus { get; set; }
+    [Parameter, EditorRequired] public string AgencyNumber { get; set; } = null!;
+    [Parameter, EditorRequired] public string CurrentStatus { get; set; } = null!;
+    
     private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
-    private bool isLoading { get; set; } = false;
-    private RadzenDataGrid<AgencyStatusLog> statusLogGrid { get; set; }
-    private List<AgencyStatusLog> statusLogsToInsert { get; set; } = new List<AgencyStatusLog>();
-    private RadzenText txtUserName { get; set; } 
+    private bool IsLoading { get; set; }
+    private RadzenDataGrid<AgencyStatusLog> StatusLogGrid { get; set; } = null!;
+    private List<AgencyStatusLog> StatusLogsToInsert { get; set; } = [];
+    private RadzenText TxtUserName { get; set; } = null!; 
 
     //TODO: Remove this once we implement caching
     private List<AgencyStatusDm> AllStatuses { get; set; } = new List<AgencyStatusDm>();
@@ -92,57 +86,105 @@
     {
         await base.OnParametersSetAsync();
 
-        await LoadAllStatuses();
-        await LoadAgencyStatusLog();
+        await LoadData();
+    }
 
-    }
-    void Reset()
+    private async Task LoadData()
     {
-        statusLogsToInsert.Clear();
-        statusLogsToInsert.Clear();
+        IDataAccessResult<List<AgencyStatusDm>> statuses = null!;
+        IDataAccessResult<List<AgencyStatusLog>> statusLogs = null!;
+
+        LoadItem[] loadItems =
+        [
+            AddEventNotify(new LoadItem
+            {
+                Key = "AgencyStatuses",
+                AsyncLoadTask = async () => statuses = await DataAccess.GetAgencyStatuses(),
+                CacheLoadTask = cache => statuses = new DataAccessResult<List<AgencyStatusDm>>
+                {
+                    Data = (List<AgencyStatusDm>)cache!
+                },
+                ResultVariable = () => statuses
+            }),
+            AddEventNotify(new LoadItem
+            {
+                Key = $"AgencyStatusLog{AgencyNumber}",
+                AsyncLoadTask = async () => statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
+                CacheLoadTask = cache => statusLogs = new DataAccessResult<List<AgencyStatusLog>>
+                {
+                    Data = (List<AgencyStatusLog>)cache!
+                },
+                ResultVariable = () => statusLogs
+            })
+        ];
+
+        await DataCache.ParallelGetCacheOrDataAsync(async void () => await AfterLoad(statuses, statusLogs), loadItems);
     }
-    void Reset(AgencyStatusLog statusLog)
+
+    private async Task AfterLoad(IDataAccessResult<List<AgencyStatusDm>> statuses,
+        IDataAccessResult<List<AgencyStatusLog>> statusLogs)
     {
-        statusLogsToInsert.Remove(statusLog);
-        statusLogsToInsert.Remove(statusLog);
+        await HandleAgencyStatusesLoadResult(statuses);
+        await HandleAgencyStatusLogsLoadResult(statusLogs);
     }
+
+    private async Task HandleAgencyStatusesLoadResult(IDataAccessResult<List<AgencyStatusDm>> statuses)
+    {
+        if (statuses.Success)
+            AllStatuses = statuses.Data!;
+        else
+            await HandleLoadError("Error getting agency statuses for Agency Status Grid.", statuses.Errors);
+    }
+    
+    private async Task HandleAgencyStatusLogsLoadResult(IDataAccessResult<List<AgencyStatusLog>> statusLogs)
+    {
+        if (statusLogs.Success)
+            AgencyStatusLogs = statusLogs.Data!;
+        else
+            await HandleLoadError("Error get AgencyStatusLog in AgencyStatusGrid.", statusLogs.Errors);
+    }
+    
     private async Task LoadAgencyStatusLog()
     {
-        var result = await _dataAccess.GetAgencyStatusLog(AgencyNumber);
-        if (result.Success == false)
+        IDataAccessResult<List<AgencyStatusLog>> statusLogs = null!;
+        var loadItem = AddEventNotify(new LoadItem
         {
-            _logging.LogError("Error get AgencyStatusLog in AgencyStatusGrid");
-        }
-        else
-        {
-            if (null != result?.Data)
+            Key = $"AgencyStatusLog{AgencyNumber}",
+            AsyncLoadTask = async () => statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
+            CacheLoadTask = cache => statusLogs = new DataAccessResult<List<AgencyStatusLog>>
             {
-                AgencyStatusLogs = result.Data;
-            }
-        }
-    }
-    async Task LoadAllStatuses()
-    {
-        var result = await _dataAccess.GetAgencyStatuses();
+                Data = (List<AgencyStatusLog>)cache!
+            },
+            ResultVariable = () => statusLogs
+        });
 
-        if (result.Errors.Count() == 0 && null != result.Data)
-        {
-            AllStatuses = result.Data;
-        }
-        else
-        {
-            _logging.LogError("Error getting agency statuses for Agency Status Grid.", result.Errors.ToString());
-        }
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+
+        await HandleAgencyStatusLogsLoadResult(statusLogs);
     }
-    async Task SaveStatusLogRow(AgencyStatusLog statusLog)
+    
+    private void Reset()
+    {
+        StatusLogsToInsert.Clear();
+        StatusLogsToInsert.Clear();
+    }
+    
+    private void Reset(AgencyStatusLog statusLog)
+    {
+        StatusLogsToInsert.Remove(statusLog);
+        StatusLogsToInsert.Remove(statusLog);
+    }
+    
+    private async Task SaveStatusLogRow(AgencyStatusLog statusLog)
     {
         await ShowLoading();
-        var userProfile = await _dataAccess.GetUserProfileByUserName(txtUserName.Text);
+        var userProfile = await DataAccess.GetUserProfileByUserName(TxtUserName.Text);
         statusLog.ChangedByNavigation = userProfile.Data;
-        await statusLogGrid.UpdateRow(statusLog);
+        await StatusLogGrid.UpdateRow(statusLog);
         await LoadAgencyStatusLog();
     }
-    async Task InsertStatusRow()
+    
+    private async Task InsertStatusRow()
     {
         await ShowLoading();
         var newStatusLog = new AgencyStatusLog()
@@ -151,33 +193,35 @@
                 OldStatus = CurrentStatus,
                 Effective = DateTime.Today
             };
-        statusLogsToInsert.Add(newStatusLog);
-        await statusLogGrid.InsertRow(newStatusLog);
+        StatusLogsToInsert.Add(newStatusLog);
+        await StatusLogGrid.InsertRow(newStatusLog);
     }
-    async Task OnStatusCreate(AgencyStatusLog statusLog)
+    
+    private async Task OnStatusCreate(AgencyStatusLog statusLog)
     {
         //TODO: Get UserID
-        var userName = txtUserName.Text;
-        var userProfile = await _dataAccess.GetUserProfileByUserName(userName);
+        var userName = TxtUserName.Text;
+        var userProfile = await DataAccess.GetUserProfileByUserName(userName);
 
-        var result = await _dataAccess.CreateAgencyStatusLog(
+        _ = await DataAccess.CreateAgencyStatusLog(
             statusLog.Id,
             AgencyNumber,
             statusLog.Effective,
             CurrentStatus,
-            statusLog.NewStatus,
-            userProfile.Data.Id,
+            statusLog.NewStatus!,
+            userProfile.Data!.Id,
             statusLog.Comments
         );
 
-        statusLogsToInsert.Remove(statusLog);
+        StatusLogsToInsert.Remove(statusLog);
     }
+    
     protected async Task ShowLoading()
     {
-        isLoading = true;
+        IsLoading = true;
 
         await Task.Yield();
 
-        isLoading = false;
+        IsLoading = false;
     }
 }

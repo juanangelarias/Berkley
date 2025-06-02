@@ -1,19 +1,14 @@
 ﻿@page "/AgentLicenses/{agentId}"
 
-
-@using System.Globalization;
-@using James.Data.Client.GraphQL;
-@using James.Data.Client.GraphQL.Components;
-@using StrawberryShake;
-@using James.Shared;
 @inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
 <Theme />
 
-<RadzenDataGrid TItem="AgencyLicense" @ref="licenseGrid"
-                EditMode="DataGridEditMode.Multiple" Density="Density.Compact">
+<RadzenDataGrid TItem="AgencyLicense" @ref="_licenseGrid"
+                EditMode="DataGridEditMode.Multiple" Density="Density.Compact"
+                Data="_licenses">
     <HeaderTemplate>
         <RadzenButton Icon="edit" Text="Edit All" Click="EditAll" />
     </HeaderTemplate>
@@ -46,19 +41,20 @@
                 <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
             </Template>
             <EditTemplate Context="license">
-                <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" LoadData="LoadSelectInsurerDropDown" Style="width:95%"
-                                TextProperty="IdNavigation.FullName" ValueProperty="Id" @bind-Value="@license.InsurerId" />
+                <RadzenDropDown TValue="Guid" Style="width:95%" Data="_insurers" TextProperty="IdNavigation.FullName" 
+                                ValueProperty="Id" @bind-Value="@license.InsurerId" />
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public string agentId { get; set; }
-    private RadzenDataGrid<AgencyLicense> licenseGrid;
-    private List<AgencyLicense> licenses = new List<AgencyLicense>();
-    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
-
+    // ToDo (JAA) Could not test it... this component is not called/used
+    
+    [Parameter] public string AgentId { get; set; } = null!;
+    private RadzenDataGrid<AgencyLicense> _licenseGrid = null!;
+    private List<AgencyLicense> _licenses = [];
+    private List<Insurer> _insurers = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,9 +65,45 @@
 
     private async Task LoadLicenses()
     {
-        var result = await DataAccess.GetAgent(Guid.Parse(agentId));
+        IDataAccessResult<Agent> agent = null!;
+        IDataAccessResult<List<Insurer>> insurers = null!;
 
-        if (result.Success)
+        LoadItem[] items =
+        [
+            AddEventNotify(new LoadItem
+            {
+                Key = $"Agent{AgentId}",
+                AsyncLoadTask = async () => agent = await DataAccess.GetAgent(Guid.Parse(AgentId)),
+                CacheLoadTask = cache => agent = new DataAccessResult<Agent>
+                {
+                    Data = (Agent)cache!
+                },
+                ResultVariable = () => agent
+            }),
+            AddEventNotify(new LoadItem
+            {
+                Key = "Insurers",
+                AsyncLoadTask = async () => insurers = await DataAccess.GetAllInsurers(),
+                CacheLoadTask = cache => insurers = new DataAccessResult<List<Insurer>>
+                {
+                    Data = (List<Insurer>)cache!
+                },
+                ResultVariable = () => insurers
+            })
+        ];
+
+
+        await DataCache.ParallelGetCacheOrDataAsync(async void () => await AfterLoad(agent, insurers), items);
+
+
+        // ToDo (JAA) the following commented code is the original one. As I can see the field "licenses or now _licenses" is 
+        //            never updated with a list of licenses. So I took the liberty to assign the "Result.Data.AgencyLicenses" 
+        //            to it. And changed the grid to point the property "Data" to the field _licenses.
+        // ToDo (JAA) This comments and the commented code should be removed before the PR!
+
+        /*var res = await DataAccess.GetAgent(Guid.Parse(agentId));
+
+        if (res.Success)
         {
             licenseGrid.Data = licenses;
             licenseGrid.Reload();
@@ -80,24 +112,49 @@
         {
             //TODO:Add error details
             LoggingService.LogError("Error loading licenses in Agent License Edit Grid");
-        }
+        }*/
+    }
+
+    private async Task AfterLoad(IDataAccessResult<Agent> agentResult, IDataAccessResult<List<Insurer>> insurersResult)
+    {
+        await HandleAgentResult(agentResult);
+        await HandleInsurersResult(insurersResult);
+    }
+    
+    private async Task HandleAgentResult(IDataAccessResult<Agent> agentResult)
+    {
+        if (agentResult.Success)
+            _licenses = agentResult.Data?.AgencyLicenses.ToList() ?? [];
+        else
+            await HandleLoadError("Error loading licenses in Agent License Edit Grid", agentResult.Errors);
+    }
+
+    private async Task HandleInsurersResult(IDataAccessResult<List<Insurer>> insurersResult)
+    {
+        if (insurersResult.Success)
+            _insurers = insurersResult.Data?.ToList() ?? [];
+        else
+            await HandleLoadError("Error loading insurers", insurersResult.Errors);
     }
 
     async Task EditAll()
     {
-        await licenseGrid.EditRows(licenses);
+        await _licenseGrid.EditRows(_licenses);
     }
-    private async Task LoadSelectInsurerDropDown()
+    
+    /*private async Task LoadSelectInsurerDropDown()
     {
-        dropSelectInsurer.Data = await GetInsurers();
+        _insurers = await GetInsurers();
     }
     private async Task<List<Insurer>> GetInsurers()
     {
-        var result = await DataAccess.GetAllInsurers();
-        if (result.Success)
-            return result.Data!.OrderBy(i => i.IdNavigation.FullName).ToList();
+        IDataAccessResult<List<Insurer>> result = null!;
+        
+        var res = await DataAccess.GetAllInsurers();
+        if (res.Success)
+            return res.Data!.OrderBy(i => i.IdNavigation.FullName).ToList();
         //TODO:Add error details
         LoggingService.LogError("Error getting insurers in Agent Licence Edit Grid");
         return [];
-    }
+    }*/
 }

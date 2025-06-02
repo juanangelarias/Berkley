@@ -1,11 +1,4 @@
-﻿@using System.Globalization
-@using James.Shared;
-@using ClientBusinessLogic
-
-
-@inherits JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
@@ -19,7 +12,8 @@
 
 @code {
     [Parameter] public Guid ObligeeId { get; set; }
-    private Obligee ObligeeToDisplay { get; set; }
+    
+    private Obligee ObligeeToDisplay { get; set; } = null!;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -29,15 +23,22 @@
     }    
     private async Task LoadObligee()
     {
-        var result = await DataAccess.GetObligeeById(ObligeeId);
+        IDataAccessResult<Obligee?> obligeeResult = null!;
+        var loadItem = AddEventNotify(new LoadItem
+        {
+            Key = $"Obligee{ObligeeId}",
+            AsyncLoadTask = async () => obligeeResult = await DataAccess.GetObligeeById(ObligeeId),
+            CacheLoadTask = cache => obligeeResult = new DataAccessResult<Obligee?> { Data = (Obligee)cache! },
+            ResultVariable = () => obligeeResult,
+            AfterLoad = async void () =>
+            {
+                if (obligeeResult.Success)
+                    ObligeeToDisplay = obligeeResult.Data!;
+                else
+                    await HandleLoadError("Error loading Obligee", obligeeResult.Errors);
+            }
+        });
 
-        if (result.Errors.Any())
-        {
-            //TODO: Handle errors
-        }
-        else
-        {
-            ObligeeToDisplay = result.Data;
-        }
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }
 }

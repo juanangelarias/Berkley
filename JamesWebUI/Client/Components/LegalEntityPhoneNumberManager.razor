@@ -1,22 +1,15 @@
-﻿@using System.Globalization
-@using James.Shared;
-@using ClientBusinessLogic
-
-
-@inherits JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
-<RadzenTabs @ref="@phoneTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab" >
+<RadzenTabs TabPosition="TabPosition.Left" @bind-SelectedIndex="@SelectedTab" >
     <Tabs>
         @{
             if (AllPhoneNumbers.Any())
             {
                 foreach (var a in AllPhoneNumbers)
                 {
-                    <RadzenTabsItem Text="@(a.LegalEntityPhone.Type)">
+                    <RadzenTabsItem Text="@(a.LegalEntityPhone!.Type)">
                         <PhoneDisplay PhoneId="a.Id" StateChanged="@(() => LoadPhoneNumbers())" />
                     </RadzenTabsItem>
                     if (a == AllPhoneNumbers.Last())
@@ -40,11 +33,9 @@
 
 @code {
     [Parameter] public Guid LegalEntityId { get; set; }
-    private List<PhoneNumber> AllPhoneNumbers {get;set;} = new List<PhoneNumber>();
 
-    private RadzenTabs phoneTabs { get; set; }
-    private int selectedTab { get; set; } = 0;
-
+    private List<PhoneNumber> AllPhoneNumbers {get;set;} = [];
+    private int SelectedTab { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -55,51 +46,36 @@
 
     private async Task LoadPhoneNumbers()
     {
-        var result = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId);
+        IDataAccessResult<List<PhoneNumber>> pnResult = null!;
 
-        if (result.Errors.Any())
+        var loadItem = AddEventNotify(new LoadItem
         {
-            LoggingService.LogError("GetAllLegalEntityPhoneNumbers returned error(s)", string.Join("\r\n", result.Errors), "GraphQL");
-            NotificationService.Notify(new NotificationMessage()
-                    {
-                        Severity = NotificationSeverity.Error,
-                        Detail = "Error loading Phone Numbers.",
-                        Duration = 4000
-                    });
-        }
-        else
-        {
-            AllPhoneNumbers = result.Data;
-        }
+            Key = $"PhoneNumbers{LegalEntityId}",
+            AsyncLoadTask = async () => pnResult = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId),
+            CacheLoadTask = cache => pnResult = new DataAccessResult<List<PhoneNumber>>
+            {
+                Data = (List<PhoneNumber>)cache!
+            },
+            ResultVariable = () => pnResult,
+            AfterLoad = async void () =>
+            {
+                if (pnResult.Success)
+                    AllPhoneNumbers = pnResult.Data!;
+                else
+                    await HandleLoadError("GetAllLegalEntityPhoneNumbers returned error(s)", pnResult.Errors);
+            }
+        });
+
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }
 
     private async Task PhoneNumberCreated(Guid phoneToSelect)
     {
-        var result = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId);
-
-        if (result.Errors.Any())
-        {
-            LoggingService.LogError("GetAllLegalEntityPhoneNumbers return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
-            NotificationService.Notify(new NotificationMessage()
-                {
-                    Severity = NotificationSeverity.Error,
-                    Detail = "Error creating new phone number.",
-                    Duration = 4000
-                });
-        }
-        else
-        {
-            AllPhoneNumbers = result.Data;
-
-            var selected = AllPhoneNumbers.FirstOrDefault(a => a.Id == phoneToSelect);
-            if (null != selected)
-            {
-                selectedTab = AllPhoneNumbers.IndexOf(selected);
-            }
-            else
-            {
-                selectedTab = 0;
-            }
-        }
+        await LoadPhoneNumbers();
+        
+        var selected = AllPhoneNumbers.FirstOrDefault(a => a.Id == phoneToSelect);
+        SelectedTab = null != selected 
+            ? AllPhoneNumbers.IndexOf(selected) 
+            : 0;
     }
 }

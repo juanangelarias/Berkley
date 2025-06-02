@@ -1,16 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-
-using Microsoft.JSInterop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Radzen;
 using Radzen.Blazor;
 using Microsoft.AspNetCore.WebUtilities;
-using Blazorise;
-using System.Runtime.CompilerServices;
 
 namespace JamesWebUI.Client.Components
 {

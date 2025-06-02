@@ -44,15 +44,17 @@
             {
                 Data = (List<Agent>)cache!
             },
-            ResultVariable = () => searchResult
+            ResultVariable = () => searchResult,
+            AfterLoad = async void () =>
+            {
+                if (searchResult.Success)
+                    SearchResults = searchResult.Data!;
+                else
+                    await HandleLoadError("Error loading search results.", searchResult.Errors);
+            }
         });
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (searchResult.Success)
-            SearchResults = searchResult.Data!;
-        else
-            await HandleLoadError("Error loading search results.", searchResult.Errors);
     }
     
     private async Task ResultSelected(dynamic args)

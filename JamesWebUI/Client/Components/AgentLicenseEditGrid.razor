@@ -60,10 +60,10 @@
     {
         await base.OnInitializedAsync();
 
-        await LoadLicenses();
+        await LoadData();
     }
 
-    private async Task LoadLicenses()
+    private async Task LoadData()
     {
         IDataAccessResult<Agent> agent = null!;
         IDataAccessResult<List<Insurer>> insurers = null!;
@@ -78,7 +78,14 @@
                 {
                     Data = (Agent)cache!
                 },
-                ResultVariable = () => agent
+                ResultVariable = () => agent,
+                AfterLoad = async void () =>
+                {
+                    if (agent.Success)
+                        _licenses = agent.Data?.AgencyLicenses.ToList() ?? [];
+                    else
+                        await HandleLoadError("Error loading licenses in Agent License Edit Grid", agent.Errors);
+                }
             }),
             AddEventNotify(new LoadItem
             {
@@ -88,12 +95,19 @@
                 {
                     Data = (List<Insurer>)cache!
                 },
-                ResultVariable = () => insurers
+                ResultVariable = () => insurers,
+                AfterLoad = async void () =>
+                {
+                    if (insurers.Success)
+                        _insurers = insurers.Data?.ToList() ?? [];
+                    else
+                        await HandleLoadError("Error loading insurers", insurers.Errors);
+                }
             })
         ];
 
 
-        await DataCache.ParallelGetCacheOrDataAsync(async void () => await AfterLoad(agent, insurers), items);
+        await DataCache.ParallelGetCacheOrDataAsync(items);
 
 
         // ToDo (JAA) the following commented code is the original one. As I can see the field "licenses or now _licenses" is 
@@ -113,28 +127,6 @@
             //TODO:Add error details
             LoggingService.LogError("Error loading licenses in Agent License Edit Grid");
         }*/
-    }
-
-    private async Task AfterLoad(IDataAccessResult<Agent> agentResult, IDataAccessResult<List<Insurer>> insurersResult)
-    {
-        await HandleAgentResult(agentResult);
-        await HandleInsurersResult(insurersResult);
-    }
-    
-    private async Task HandleAgentResult(IDataAccessResult<Agent> agentResult)
-    {
-        if (agentResult.Success)
-            _licenses = agentResult.Data?.AgencyLicenses.ToList() ?? [];
-        else
-            await HandleLoadError("Error loading licenses in Agent License Edit Grid", agentResult.Errors);
-    }
-
-    private async Task HandleInsurersResult(IDataAccessResult<List<Insurer>> insurersResult)
-    {
-        if (insurersResult.Success)
-            _insurers = insurersResult.Data?.ToList() ?? [];
-        else
-            await HandleLoadError("Error loading insurers", insurersResult.Errors);
     }
 
     async Task EditAll()

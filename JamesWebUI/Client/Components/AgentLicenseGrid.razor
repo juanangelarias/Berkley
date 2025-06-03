@@ -174,7 +174,8 @@
                 {
                     Data = (List<State>)cache!
                 },
-                ResultVariable = () => statesResult
+                ResultVariable = () => statesResult,
+                AfterLoad = async void () => { await HandleStateLoadResult(statesResult); }
             }),
             AddEventNotify(new LoadItem
             {
@@ -184,7 +185,8 @@
                 {
                     Data = (List<Insurer>)cache!
                 },
-                ResultVariable = () => insurersResult
+                ResultVariable = () => insurersResult,
+                AfterLoad = async void () => { await HandleInsurerLoadResult(insurersResult); }
             }),
             AddEventNotify(new LoadItem
             {
@@ -194,22 +196,14 @@
                 {
                     Data = (Agent)cache!
                 },
-                ResultVariable = () => agentResult
+                ResultVariable = () => agentResult,
+                AfterLoad = async void () => { await HandleAgentLoadResult(agentResult); }
             })
         ];
 
-        await DataCache.ParallelGetCacheOrDataAsync(async void () => await AfterLoad(statesResult, insurersResult, agentResult), items);
+        await DataCache.ParallelGetCacheOrDataAsync(items);
     }
 
-    private async Task AfterLoad(IDataAccessResult<List<State>> statesResult,
-        IDataAccessResult<List<Insurer>> insurersResult,
-        IDataAccessResult<Agent> agentResult)
-    {
-        await HandleStateLoadResult(statesResult);
-        await HandleInsurerLoadResult(insurersResult);
-        await HandleAgentLoadResult(agentResult);
-    }
-    
     private async Task HandleAgentLoadResult(IDataAccessResult<Agent> agentResult)
     {
         if (agentResult.Success)
@@ -260,15 +254,11 @@
             {
                 Data = (Agent)cache!
             },
-            ResultVariable = () => agentResult
+            ResultVariable = () => agentResult,
+            AfterLoad = async void () => { await HandleAgentLoadResult(agentResult); }
         });
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (agentResult.Success)
-            AgencyLicenses = agentResult.Data!.AgencyLicenses.ToList();
-        else
-            await HandleLoadError("Error loading Agency Licences", agentResult.Errors);
     }
 
     private async Task InsertLicenseRow()

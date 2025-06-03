@@ -141,15 +141,15 @@
 
     private async Task LoadData()
     {
-        if(AgencyId == Guid.Empty)
+        if (AgencyId == Guid.Empty)
             return;
 
         IDataAccessResult<List<Insurer>> insurers = null!;
         IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses = null!;
         IDataAccessResult<List<PowerOfAttorney>> poas = null!;
 
-        var loadItems = new List<LoadItem>
-        {
+        LoadItem[] loadItems =
+        [
             AddEventNotify(new LoadItem
             {
                 Key = $"AgencyPOAs{AgencyId}",
@@ -158,52 +158,36 @@
                 {
                     Data = (List<PowerOfAttorney>)cache!
                 },
-                ResultVariable = () => poas
+                ResultVariable = () => poas,
+                AfterLoad = async void () => { await HandlePowerOfAttorneyResult(poas); }
+            }),
+            AddEventNotify(new LoadItem
+            {
+                Key = "Insurers",
+                AsyncLoadTask = async () => insurers = await DataAccess.GetAllInsurers(),
+                CacheLoadTask = cache => insurers = new DataAccessResult<List<Insurer>>
+                {
+                    Data = (List<Insurer>)cache!
+                },
+                ResultVariable = () => insurers,
+                AfterLoad = async void () => { await HandleInsurersResult(insurers); }
+            }),
+            AddEventNotify(new LoadItem
+            {
+                Key = "Statuses",
+                AsyncLoadTask = async () => statuses = await DataAccess.GetAllPoaStatuses(),
+                CacheLoadTask = cache => statuses = new DataAccessResult<List<PowerOfAttorneyStatusDm>>
+                {
+                    Data = (List<PowerOfAttorneyStatusDm>)cache!
+                },
+                ResultVariable = () => statuses,
+                AfterLoad = async void () => { await HandleStatusesResult(statuses); }
             })
-        };
+        ];
 
-        if (!AllInsurers.Any())
-            loadItems.Add(
-                AddEventNotify(new LoadItem
-                {
-                    Key = "Insurers",
-                    AsyncLoadTask = async () => insurers = await DataAccess.GetAllInsurers(),
-                    CacheLoadTask = cache => insurers = new DataAccessResult<List<Insurer>>
-                    {
-                        Data = (List<Insurer>)cache!
-                    },
-                    ResultVariable = () => insurers
-                }));
-        
-        if (!AllStatuses.Any())
-            loadItems.Add(
-                AddEventNotify(new LoadItem
-                {
-                    Key = "Statuses",
-                    AsyncLoadTask = async () => statuses = await DataAccess.GetAllPoaStatuses(),
-                    CacheLoadTask = cache => statuses = new DataAccessResult<List<PowerOfAttorneyStatusDm>>
-                    {
-                        Data = (List<PowerOfAttorneyStatusDm>)cache!
-                    },
-                    ResultVariable = () => statuses
-                }));
-        
-        await DataCache.ParallelGetCacheOrDataAsync(async void () => await AfterLoad(poas, insurers, statuses), loadItems.ToArray());
+        await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
     }
 
-    private async Task AfterLoad(IDataAccessResult<List<PowerOfAttorney>> poas, 
-        IDataAccessResult<List<Insurer>> insurers, 
-        IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses)
-    {
-        await HandlePowerOfAttorneyResult(poas);
-        
-        if(!AllInsurers.Any())
-            await HandleInsurersResult(insurers);
-        
-        if(!AllStatuses.Any())
-            await HandleStatusesResult(statuses);
-    }
-    
     private async Task HandlePowerOfAttorneyResult(IDataAccessResult<List<PowerOfAttorney>> poas)
     {
         if (poas.Success)
@@ -269,15 +253,11 @@
             {
                 Data = (List<PowerOfAttorney>)cache!
             },
-            ResultVariable = () => poas
+            ResultVariable = () => poas,
+            AfterLoad = async void () => { await HandlePowerOfAttorneyResult(poas); }
         });
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (poas.Success)
-            PowerOfAttorneys = poas.Data!;
-        else
-            await HandleLoadError("Error loading POAs in the AgencyPOAGrid", poas.Errors);
     }
     
     private async Task SavePoaRow(PowerOfAttorney powerOfAttorney)

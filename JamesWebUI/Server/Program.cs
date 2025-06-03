@@ -159,7 +159,8 @@ try
         options.AddDefaultPolicy(policy =>
         {
             policy
-                .WithOrigins(corsSettings!.Origins)
+                .WithOrigins(corsSettings?.Origins ?? "*")
+                .AllowCredentials()
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });

@@ -1,5 +1,4 @@
-﻿@using System.ComponentModel.DataAnnotations
-@using James.Shared.Imaging
+﻿@using James.Shared.Imaging
 @using SharedBusinessLogic
 
 @inherits JamesLayoutComponentBase
@@ -46,7 +45,7 @@
                 <RadzenText Text="@poa.Status" />
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Insurer" Property="Insurer.IdNavigation.FullName"Width="300px" Type="typeof(string)"
+        <RadzenDataGridColumn Title="Insurer" Property="Insurer.IdNavigation.FullName" Width="300px" Type="typeof(string)"
                               FilterValue="@_insurerFilter" FilterProperty="Insurer.IdNavigation.FullName" FilterOperator="FilterOperator.Contains">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@_insurerFilter" AllowClear="true" Style="width:95%"
@@ -124,8 +123,6 @@
 
     private List<string> _insurerList = [];
     private List<string> _statusList = [];
-
-    private RadzenDropDown<Guid> FilterInsurerDropDown { get; set; } = null!;
 
     private bool _isLoading;
     private bool _poaEditMode;

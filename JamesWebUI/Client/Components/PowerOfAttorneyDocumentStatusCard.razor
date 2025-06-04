@@ -67,7 +67,7 @@
             IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>> docResult = null!;
             var loadItem = AddEventNotify(new LoadItem
             {
-                Key = "Could not load POA document types",
+                Key = "POADocumentName",
                 AsyncLoadTask = async () => docResult = await DataAccess.GetPoaDocumentNames(),
                 CacheLoadTask = cache => docResult = new DataAccessResult<List<PowerOfAttorneyDocumentNameDm>>
                 {
@@ -81,7 +81,7 @@
                     else
                         await HandleLoadError("Could not load POA document types.", docResult.Errors);
                 }
-            });
+            }, "POADocumentName");
 
             await DataCache.GetCacheOrLoadDataAsync(loadItem);
         }

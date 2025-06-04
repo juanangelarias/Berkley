@@ -81,7 +81,7 @@
                 Data = (List<AgencyCommission>)cache!
             },
             ResultVariable = () => result
-        });        
+        }, $"AgencyCommissionRates {AgencyId}");        
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
 

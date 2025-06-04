@@ -145,6 +145,20 @@
     private List<string>? _stateFilter;
 
     private bool _isLoading;
+    
+    private IDataAccessResult<Agent> _agentResult = null!;
+
+    private LoadItem LicencesLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"Licenses{AgentId}",
+            AsyncLoadTask = async () => _agentResult = await DataAccess.GetAgent(AgentId),
+            CacheLoadTask = cache => _agentResult = new DataAccessResult<Agent>
+            {
+                Data = (Agent)cache!
+            },
+            ResultVariable = () => _agentResult,
+            AfterLoad = async void () => { await HandleAgentLoadResult(_agentResult); }
+        }, $"Licenses {AgentId}");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -162,7 +176,6 @@
         
         IDataAccessResult<List<State>> statesResult = null!;
         IDataAccessResult<List<Insurer>> insurersResult = null!;
-        IDataAccessResult<Agent> agentResult = null!;
 
         LoadItem[] items =
         [
@@ -176,7 +189,7 @@
                 },
                 ResultVariable = () => statesResult,
                 AfterLoad = async void () => { await HandleStateLoadResult(statesResult); }
-            }),
+            }, "States"),
             AddEventNotify(new LoadItem
             {
                 Key = "Insurers",
@@ -187,18 +200,8 @@
                 },
                 ResultVariable = () => insurersResult,
                 AfterLoad = async void () => { await HandleInsurerLoadResult(insurersResult); }
-            }),
-            AddEventNotify(new LoadItem
-            {
-                Key = $"Licenses{AgentId}",
-                AsyncLoadTask = async () => agentResult = await DataAccess.GetAgent(AgentId),
-                CacheLoadTask = cache => agentResult = new DataAccessResult<Agent>
-                {
-                    Data = (Agent)cache!
-                },
-                ResultVariable = () => agentResult,
-                AfterLoad = async void () => { await HandleAgentLoadResult(agentResult); }
-            })
+            }, "Insurers"),
+            LicencesLoad
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(items);
@@ -243,22 +246,8 @@
     private async Task LoadLicenses()
     {
         await ShowLoading();
-
-        IDataAccessResult<Agent> agentResult = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"Licenses{AgentId}",
-            AsyncLoadTask = async () => agentResult = await DataAccess.GetAgent(AgentId),
-            CacheLoadTask = cache => agentResult = new DataAccessResult<Agent>
-            {
-                Data = (Agent)cache!
-            },
-            ResultVariable = () => agentResult,
-            AfterLoad = async void () => { await HandleAgentLoadResult(agentResult); }
-        });
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        
+        await DataCache.GetCacheOrLoadDataAsync(LicencesLoad);
     }
 
     private async Task InsertLicenseRow()

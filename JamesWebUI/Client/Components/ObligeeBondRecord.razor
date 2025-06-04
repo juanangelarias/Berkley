@@ -97,7 +97,7 @@
                 else
                     await HandleLoadError("Error loading Obligee bonds", result.Errors);
             }
-        });
+        }, $"ObligeeBonds {ObligeeId}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }

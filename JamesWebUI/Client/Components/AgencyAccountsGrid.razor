@@ -106,7 +106,7 @@
                 Data = (List<Account>)cache!
             },
             ResultVariable = () => result
-        });
+        }, $"Accounts {AgencyNumber}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
 

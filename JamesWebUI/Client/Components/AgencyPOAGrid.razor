@@ -127,6 +127,8 @@
     private bool _isLoading;
     private bool _poaEditMode;
     
+    private IDataAccessResult<List<PowerOfAttorney>> _poas = null!;
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -136,6 +138,19 @@
         await LoadData();
     }
 
+
+    private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"AgencyPOAs{AgencyId}",
+            AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(AgencyId),
+            CacheLoadTask = cache => _poas = new DataAccessResult<List<PowerOfAttorney>>
+            {
+                Data = (List<PowerOfAttorney>)cache!
+            },
+            ResultVariable = () => _poas,
+            AfterLoad = async void () => { await HandlePowerOfAttorneyResult(_poas); }
+        }, $"Agency POAs {AgencyId}");
+
     private async Task LoadData()
     {
         if (AgencyId == Guid.Empty)
@@ -143,21 +158,10 @@
 
         IDataAccessResult<List<Insurer>> insurers = null!;
         IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses = null!;
-        IDataAccessResult<List<PowerOfAttorney>> poas = null!;
 
         LoadItem[] loadItems =
         [
-            AddEventNotify(new LoadItem
-            {
-                Key = $"AgencyPOAs{AgencyId}",
-                AsyncLoadTask = async () => poas = await DataAccess.GetAgencyPoas(AgencyId),
-                CacheLoadTask = cache => poas = new DataAccessResult<List<PowerOfAttorney>>
-                {
-                    Data = (List<PowerOfAttorney>)cache!
-                },
-                ResultVariable = () => poas,
-                AfterLoad = async void () => { await HandlePowerOfAttorneyResult(poas); }
-            }),
+            AgencyPoasLoad,
             AddEventNotify(new LoadItem
             {
                 Key = "Insurers",
@@ -168,7 +172,7 @@
                 },
                 ResultVariable = () => insurers,
                 AfterLoad = async void () => { await HandleInsurersResult(insurers); }
-            }),
+            }, "Insurers"),
             AddEventNotify(new LoadItem
             {
                 Key = "Statuses",
@@ -179,7 +183,7 @@
                 },
                 ResultVariable = () => statuses,
                 AfterLoad = async void () => { await HandleStatusesResult(statuses); }
-            })
+            }, "Statuses")
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
@@ -241,20 +245,7 @@
     
     private async Task LoadPOAs()
     {
-        IDataAccessResult<List<PowerOfAttorney>> poas = null!;
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"AgencyPOAs{AgencyId}",
-            AsyncLoadTask = async () => poas = await DataAccess.GetAgencyPoas(AgencyId),
-            CacheLoadTask = cache => poas = new DataAccessResult<List<PowerOfAttorney>>
-            {
-                Data = (List<PowerOfAttorney>)cache!
-            },
-            ResultVariable = () => poas,
-            AfterLoad = async void () => { await HandlePowerOfAttorneyResult(poas); }
-        });
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(AgencyPoasLoad);
     }
     
     private async Task SavePoaRow(PowerOfAttorney powerOfAttorney)
@@ -342,10 +333,10 @@
 
         }
     }
-    
+
     private async Task OnPoaCreate(PowerOfAttorney powerOfAttorney)
     {
-        var result = await DataAccess.CreateAgencyPOA(powerOfAttorney.Id,
+        _ = await DataAccess.CreateAgencyPOA(powerOfAttorney.Id,
             powerOfAttorney.Insurer.Id,
             AgencyId,
             Convert.ToInt32(powerOfAttorney.Limit),
@@ -356,7 +347,7 @@
             powerOfAttorney.Status);
         _poasToInsert.Remove(powerOfAttorney);
     }
-    
+
     private async Task DeletePoaRow(PowerOfAttorney powerOfAttorney)
     {
         await ShowLoading();

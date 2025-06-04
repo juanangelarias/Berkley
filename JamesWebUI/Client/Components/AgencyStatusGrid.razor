@@ -81,6 +81,21 @@
 
     //TODO: Remove this once we implement caching
     private List<AgencyStatusDm> AllStatuses { get; set; } = new List<AgencyStatusDm>();
+    
+    private IDataAccessResult<List<AgencyStatusLog>> _statusLogs = null!;
+
+    private LoadItem AgencyStatusLogLoad =>
+        AddEventNotify(new LoadItem
+            {
+                Key = $"AgencyStatusLog{AgencyNumber}",
+                AsyncLoadTask = async () => _statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
+                CacheLoadTask = cache => _statusLogs = new DataAccessResult<List<AgencyStatusLog>>
+                {
+                    Data = (List<AgencyStatusLog>)cache!
+                },
+                ResultVariable = () => _statusLogs,
+                AfterLoad = async void () => { await StatusLogsAfterLoad(_statusLogs); }
+            }, $"AgencyStatusLog {AgencyNumber}");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -92,7 +107,6 @@
     private async Task LoadData()
     {
         IDataAccessResult<List<AgencyStatusDm>> statuses = null!;
-        IDataAccessResult<List<AgencyStatusLog>> statusLogs = null!;
 
         LoadItem[] loadItems =
         [
@@ -112,18 +126,8 @@
                     else
                         await HandleLoadError("Error getting agency statuses for Agency Status Grid.", statuses.Errors);
                 }
-            }),
-            AddEventNotify(new LoadItem
-            {
-                Key = $"AgencyStatusLog{AgencyNumber}",
-                AsyncLoadTask = async () => statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
-                CacheLoadTask = cache => statusLogs = new DataAccessResult<List<AgencyStatusLog>>
-                {
-                    Data = (List<AgencyStatusLog>)cache!
-                },
-                ResultVariable = () => statusLogs,
-                AfterLoad = async void () => { await StatusLogsAfterLoad(statusLogs); }
-            })
+            }, "AgencyStatuses"),
+            AgencyStatusLogLoad
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(loadItems);
@@ -131,20 +135,7 @@
 
     private async Task LoadAgencyStatusLog()
     {
-        IDataAccessResult<List<AgencyStatusLog>> statusLogs = null!;
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"AgencyStatusLog{AgencyNumber}",
-            AsyncLoadTask = async () => statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
-            CacheLoadTask = cache => statusLogs = new DataAccessResult<List<AgencyStatusLog>>
-            {
-                Data = (List<AgencyStatusLog>)cache!
-            },
-            ResultVariable = () => statusLogs,
-            AfterLoad = async void () => { await StatusLogsAfterLoad(statusLogs); }
-        });
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(AgencyStatusLogLoad);
     }
     
     private async Task StatusLogsAfterLoad(IDataAccessResult<List<AgencyStatusLog>> statusLogs)

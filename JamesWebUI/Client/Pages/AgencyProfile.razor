@@ -221,7 +221,7 @@
 
     private IDataAccessResult<Agency> _agencyResult = null!;
     private LoadItem AgencyByAgencyNumberLoadItem(string agencyNumber) =>
-            new LoadItem()
+        AddEventNotify(new LoadItem
             {
                 Key = $"Agency{agencyNumber}",
                 AsyncLoadTask = async () => _agencyResult = (await DataAccess.GetAgencyByAgencyNumber(agencyNumber))!,
@@ -232,12 +232,12 @@
                     Debug.Assert(_agencyResult.Data != null, "AgencyResult.Data != null if result.Success == true");
                     _agencyToDisplay = _agencyResult.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
                 },
-                CacheDuration = TimeSpan.FromHours(8)   //Subscription will update this if changed, so a long cache time is appropriate.
-            };
+                CacheDuration = TimeSpan.FromHours(8) //Subscription will update this if changed, so a long cache time is appropriate.
+            }, $"Agency {agencyNumber}");
 
     private IDataAccessResult<List<Branch>> _branchesResult = null!;
     private LoadItem BranchesLoadItem() =>
-        new()
+        AddEventNotify(new LoadItem
         {
             Key = "branches",
             AsyncLoadTask = async () => _branchesResult = await DataAccess.GetAllBranches(),
@@ -248,7 +248,7 @@
                 Debug.Assert(_branchesResult.Data != null);
                 AllBranches = _branchesResult.Data.OrderBy(b => b.Name).ToList();
             }
-        };
+        }, "Branches");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -261,16 +261,7 @@
     
     private async Task LoadBranches()
     {
-        var result = await DataAccess.GetAllBranches();
-        if (result.Success)
-        {
-            Debug.Assert(result.Data != null);
-            AllBranches = result.Data.OrderBy(b => b.Name).ToList();
-        }
-        else
-        {
-            Logging.LogWarning("GetAllBranches returned error(s)", string.Join("\r\n", result.Errors), "GraphQL");
-        }
+        await DataCache.GetCacheOrLoadDataAsync(BranchesLoadItem());        
     }
     
     private async Task SaveAgencyChanges()

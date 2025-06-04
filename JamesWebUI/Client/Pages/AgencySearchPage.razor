@@ -133,15 +133,27 @@
     }
     async Task SearchAgencies()
     {
-        var results = await DataAccess.SearchAgencies(txtAgencyNameSearch.Value, _searchOptions.ActiveOnly);
-        if (results.Success)
-            agencyResults = results.Data;
-        else
+        IDataAccessResult<List<Agency>> result = null!;
+
+        var loadItem = AddEventNotify(new LoadItem
         {
-            //TODO:Add error details
-            _logging.LogError("Error searching agencies in AgencySearch");
-        }
+            Key = "SearchAgencies",
+            AsyncLoadTask = async () => result = await DataAccess.SearchAgencies(txtAgencyNameSearch.Value, _searchOptions.ActiveOnly),
+            CacheLoadTask = cache => result = new DataAccessResult<List<Agency>> { Data = (List<Agency>)cache! },
+            ResultVariable = () => result,
+            AfterLoad = async void () =>
+            {
+                if (result.Success)
+                    agencyResults = result.Data;
+                else
+                    await HandleLoadError("Error searching agencies in AgencySearch", result.Errors);
+            },
+            CacheDuration = TimeSpan.FromSeconds(1)
+        }, "Search Agencies");
+
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }
+    
     // async Task SearchAgencies(string searchString)
     // {
     //     var results = await DataAccess.SearchAgencies(searchString);

@@ -52,7 +52,7 @@
                 else
                     await HandleLoadError("Error loading search results.", searchResult.Errors);
             }
-        });
+        }, $"SearchResult {SelectedAgentId}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }

@@ -64,7 +64,7 @@
                 else
                     await HandleLoadError("GetAllLegalEntityPhoneNumbers returned error(s)", pnResult.Errors);
             }
-        });
+        }, $"PhoneNumbers {LegalEntityId}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }

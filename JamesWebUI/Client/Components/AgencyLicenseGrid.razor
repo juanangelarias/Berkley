@@ -170,6 +170,21 @@
         await LoadData();
     }
 
+    private IDataAccessResult<List<AgencyLicense>> _licenses = null!;
+
+    private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"AgencyLicenses{AgencyId}",
+            AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(AgencyId),
+            CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
+            {
+                Data = (List<AgencyLicense>)cache!
+            },
+            ResultVariable = () => _licenses,
+            AfterLoad = async void () => { await HandleAgencyLicensesLoadResult(_licenses); }
+        }, $"AgencyLicenses {AgencyId}");
+
+
     // ToDo (JAA) This way will not work when trying to reload licenses
     // after add, edit or delete a license because it will read from
     // the cache and not from the database.
@@ -184,7 +199,6 @@
         
         IDataAccessResult<List<State>> states = null!;
         IDataAccessResult<List<Insurer>> insurers = null!;
-        IDataAccessResult<List<AgencyLicense>> licenses = null!;
 
         LoadItem[] loadItems =
         [
@@ -209,18 +223,8 @@
                 },
                 ResultVariable = () => insurers,
                 AfterLoad = async void () => { await HandleInsurerLoadResult(insurers); }
-            }),
-            AddEventNotify(new LoadItem
-            {
-                Key = $"AgencyLicenses{AgencyId}",
-                AsyncLoadTask = async () => licenses = await DataAccess.GetAgencyLicenses(AgencyId),
-                CacheLoadTask = cache => licenses = new DataAccessResult<List<AgencyLicense>>
-                {
-                    Data = (List<AgencyLicense>)cache!
-                },
-                ResultVariable = () => licenses,
-                AfterLoad = async void () => { await HandleAgencyLicensesLoadResult(licenses); }
-            })
+            }, "Insurers"),
+            AgencyLicensesLoad
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(loadItems);
@@ -264,21 +268,7 @@
 
     private async Task LoadLicenses()
     {
-        IDataAccessResult<List<AgencyLicense>> licenses = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"AgencyLicenses{AgencyId}",
-            AsyncLoadTask = async () => licenses = await DataAccess.GetAgencyLicenses(AgencyId),
-            CacheLoadTask = cache => licenses = new DataAccessResult<List<AgencyLicense>>
-            {
-                Data = (List<AgencyLicense>)cache!
-            },
-            ResultVariable = () => licenses,
-            AfterLoad = async void () => { await HandleAgencyLicensesLoadResult(licenses); }
-        });
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(AgencyLicensesLoad);
     }
 
     private async Task InsertLicenseRow()

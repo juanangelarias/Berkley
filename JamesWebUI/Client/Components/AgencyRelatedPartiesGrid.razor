@@ -92,7 +92,7 @@
                 Data = (List<Agency>)cache!
             },
             ResultVariable = () => result
-        });
+        }, $"RelatedParties {AgencyId}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
 
@@ -123,7 +123,7 @@
         substitutions.AddSubstitution("MainAddress.State", title: "State");
         substitutions.AddSubstitution("MainAddress.PostalCode", title: "Zip Code");
         NavigationManager.NavigateTo(ExportDataGridUrl(RelatedPartiesGrid,
-    $"/export/AgencyRelatedParties/{AgencyId}", format, substitutions),
-true);
+                $"/export/AgencyRelatedParties/{AgencyId}", format, substitutions),
+            true);
     }
 }

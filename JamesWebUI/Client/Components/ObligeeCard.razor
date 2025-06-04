@@ -37,7 +37,7 @@
                 else
                     await HandleLoadError("Error loading Obligee", obligeeResult.Errors);
             }
-        });
+        }, $"Obligee {ObligeeId}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }

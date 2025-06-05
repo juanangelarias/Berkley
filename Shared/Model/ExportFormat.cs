@@ -21,12 +21,13 @@ public class ExportColumnSubstitution
     public const char SpaceSubstitution = '\u4f60';
     public ExportColumnSubstitution()
     {
+        Original = "";
     }
 
     public ExportColumnSubstitution(string original, string? property = null, string? title = null)
     {
         Original = original;
-        Property = property;
+        Property = property ?? "";
         Title = title;
     }
 
@@ -46,7 +47,7 @@ public class ExportColumnSubstitution
     /// <summary>
     /// Property to use instead of what is in the RadzenDataGridColumn "Property" property
     /// </summary>
-    public string? Property
+    public string Property
     {
         get => _property ?? Original;
         init => _property = value;
@@ -76,7 +77,7 @@ public class ExportColumnSubstitutions : IDictionary<string, ExportColumnSubstit
     }
     public void AddSubstitution(string original, string? property = null, string? title = null)
     {
-        AddSubstitution(new ExportColumnSubstitution { Original = original, Property = property, Title = title });
+        AddSubstitution(new ExportColumnSubstitution { Original = original, Property = property ?? "", Title = title });
     }
 
     public void Add(string key, ExportColumnSubstitution value)

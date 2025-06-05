@@ -238,8 +238,6 @@
             new LoadItem()
             {
                 Key = $"Agency{agencyNumber}",
-                // ToDo: This is one way to manage it but if the following don't break the logic I will prefer to use in line 236
-                //       private IDataAccessResult<Agency>? _agencyResult;
                 AsyncLoadTask = async () => _agencyResult = (await DataAccess.GetAgencyByAgencyNumber(agencyNumber))!,
                 CacheLoadTask = cache => _agencyResult = new DataAccessResult<Agency> { Data = (Agency)cache! },
                 ResultVariable = () => _agencyResult,

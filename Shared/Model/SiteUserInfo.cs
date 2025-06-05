@@ -4,6 +4,7 @@ namespace James.Shared.Model
 {
     public partial class SiteUserInfo : IActiveDirectoryUserInfo, IJwtUserInfo, IAuth0UserInfo, IApplicationUserInfo
     {
+        // ToDo: Review this class after the upgrade process from .NET 6 authentication to .NET 9 is complete
         public string EntraId { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;

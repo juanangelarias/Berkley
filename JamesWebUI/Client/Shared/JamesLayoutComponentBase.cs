@@ -158,8 +158,8 @@ namespace JamesWebUI.Client.Shared
             return loadItem;
         }
 
-        private static string? SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-            string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property;
+        private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+            string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property ?? "";
 
         private static string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
         {

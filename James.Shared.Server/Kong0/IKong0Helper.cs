@@ -53,10 +53,7 @@ namespace James.Shared.Server.Kong0
             if (null == cachedToken || cachedToken.IsExpired)
             {
                 var tokenRetrievalClient = httpClientFactory.CreateClient(HttpClientName);
-                
-                // ToDo: This method is Obsolete
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
                 var tokenRequestCredentials = KongTokenRequest.GetRequest(GetType());
                 var requestPayload = JsonSerializer.Serialize(tokenRequestCredentials, JsonOptions);
                 if (DetailedLogging)

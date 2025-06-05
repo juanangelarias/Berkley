@@ -1,5 +1,6 @@
 using ApplicationLog;
 using Auth0.AspNetCore.Authentication;
+using Blazored.LocalStorage;
 using James.Data.Imaging;
 using James.Data.Server;
 using James.Data.Server.GraphQL;
@@ -10,23 +11,22 @@ using James.Shared.Data;
 using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Server.AuthenticationStateSyncer;
-using JamesWebUI.Server.SharedServices;
+using JamesWebUI.Client.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using Blazored.LocalStorage;
+using System.Text.Json.Serialization;
+using JamesWebUI.Shared.Services;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
-using JamesWebUI.Client.Services;
-using System.Text.Json.Serialization;
+using ThemeService = JamesWebUI.Shared.Services.ThemeService;
+
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
@@ -37,27 +37,27 @@ try
     // Add services to the container.
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.AddCascadingAuthenticationState();
-    builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+    //builder.Services.AddCascadingAuthenticationState();
+    //builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
     ConfirmAppSettingsEntry("Auth0:Authority");
     ConfirmAppSettingsEntry("Auth0:ClientId");
     ConfirmAppSettingsEntry("Auth0:ClientSecret");
-    var auth0Authority = config["Auth0:Authority"]!;
+    //var auth0Authority = config["Auth0:Authority"]!;
 
 
-    var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
-    builder.Services
-        .AddAuth0WebAppAuthentication(options =>
-        {
-            options.Domain = domain;
-            options.ClientId = builder.Configuration["Auth0:ClientId"]!;
-            options.ClientSecret = builder.Configuration["Auth0:ClientSecret"]!;
-        })
-        .WithAccessToken(options =>
-        {
-            options.Audience = builder.Configuration["Auth0:Audience"];
-        });
+    //var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
+    //builder.Services
+    //    .AddAuth0WebAppAuthentication(options =>
+    //    {
+    //        options.Domain = domain;
+    //        options.ClientId = builder.Configuration["Auth0:ClientId"]!;
+    //        options.ClientSecret = builder.Configuration["Auth0:ClientSecret"]!;
+    //    })
+    //    .WithAccessToken(options =>
+    //    {
+    //        options.Audience = builder.Configuration["Auth0:Audience"];
+    //    });
 
     //ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
     var kong0TokenUrl = new Uri(config["Kong0:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
@@ -81,7 +81,6 @@ try
             o.EnableSensitiveDataLogging();//TODO: Disable in production environment
             //o.UseMemoryCache()
         });
-    builder.Services.AddAuthorization();
     builder.Services
         .AddGraphQLServer()
         .AddAuthorization()
@@ -102,9 +101,9 @@ try
         options.ReturnUrlParameter = "redirectUri";
     });
     builder.Services.AddRadzenComponents();
-    builder.Services.AddBlazoredLocalStorage(config =>
+    builder.Services.AddBlazoredLocalStorage(localStorageConfig =>
     {
-        config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        localStorageConfig.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
     builder.Services.AddSignalR(e =>
@@ -112,7 +111,7 @@ try
         e.EnableDetailedErrors = true;
         e.MaximumReceiveMessageSize = 1024*1024*4;//4MB since some cached values are over 3MB
     });
-    builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
+    builder.Services.AddScoped<ThemeService>();
     builder.Services.AddScoped<IUserShared, UserShared>();
     builder.Services.AddScoped<ILoggingShared, LoggingShared>();
     builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
@@ -136,7 +135,8 @@ try
     builder.Services.AddScoped<GeneralMutation>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
-         .AddInteractiveWebAssemblyComponents();
+         .AddInteractiveWebAssemblyComponents()
+         .AddAuthenticationStateSerialization();
     builder.Services.AddScoped<LocalStorageKeyListingService>();
     builder.Services.AddScoped<AddressPhoneFormatService>();
     builder.Services.Configure<ForwardedHeadersOptions>(options =>

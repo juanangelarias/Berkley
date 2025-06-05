@@ -285,8 +285,17 @@
     {
         await ShowLoading();
         Reset(inventory);
-        _ = await DataAccess.DeleteAgencyInventory(inventory.Id);
-        await LoadInventory();
+        var result = await DataAccess.DeleteAgencyInventory(inventory.Id);
+
+        if (result.Success)
+        {
+            NotifySuccessfulSave("Agency Inventory Deleted");
+            await LoadInventory();
+        }
+        else
+        {
+            NotifySaveError(result.Errors, "Agency Inventory deletion");
+        }
     }
 
     private async Task SaveInventoryRow(AgencyInventory inventory)
@@ -322,7 +331,7 @@
     {
         Reset(inventory);
         //This is where the actual update is handled.
-        _ = await DataAccess.SetAgencyInventory(inventory.Id,
+        var result = await DataAccess.SetAgencyInventory(inventory.Id,
             inventory.Sent,
             inventory.Quantity,
             inventory.DocumentType,
@@ -334,18 +343,35 @@
             inventory.Address.City,
             inventory.Address.StateCode,
             inventory.Address.PostalCode);
+
+        if (result.Success)
+        {
+            NotifySuccessfulSave("Update Agency Inventory");
+        }
+        else
+        {
+            NotifySaveError(result.Errors, "Update Agency Inventory");
+        }
     }
 
     private async Task CreateInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
-        _ = await DataAccess.CreateAgencyInventory(inventory.Id, AgencyId, Convert.ToDateTime(inventory.Sent),
+        var result = await DataAccess.CreateAgencyInventory(inventory.Id, AgencyId, Convert.ToDateTime(inventory.Sent),
             Convert.ToInt32(inventory.Quantity), inventory.DocumentType, inventory.Addressee ?? "",
             inventory.Address?.Address1 ?? "", inventory.Address?.Address2 ?? "", inventory.Address?.Address3 ?? "",
             inventory.Address?.City ?? "", inventory.Address?.StateCode ?? "", inventory.Address?.PostalCode ?? "",
             inventory.Approver);
 
-        InventoriesToInsert.Remove(inventory);
+        if (result.Success)
+        {
+            InventoriesToInsert.Remove(inventory);
+            NotifySuccessfulSave("Agency Inventory");
+        }
+        else
+        {
+            NotifySaveError(result.Errors, "Create Agency Inventory");
+        }
     }
 
     protected async Task ShowLoading()

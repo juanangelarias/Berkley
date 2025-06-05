@@ -28,7 +28,7 @@ public class ExportColumnSubstitution
     {
         Original = original;
         Property = property ?? "";
-        Title = title;
+        Title = title ?? "";
     }
 
     private readonly string? _title;
@@ -38,7 +38,7 @@ public class ExportColumnSubstitution
     /// User-friendly title given to the column in the exported file.
     /// </summary>
     /// <remarks>Limited to characters that can be used as variable names in .NET, and the space character</remarks>
-    public string? Title
+    public string Title
     {
         get => _title ?? (string.IsNullOrWhiteSpace(Original) ? Property : Original);
         init => _title = value;

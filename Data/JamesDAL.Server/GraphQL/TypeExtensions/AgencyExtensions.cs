@@ -38,17 +38,15 @@ namespace James.Data.Server.GraphQL.TypeExtensions
 
         public async Task<Account[]> Accounts([Parent] Agency agency, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            // ToDo (JAA):
-            //      The condition "null == agency.Accounts" is always false because Agency.Accounts is always initialized as new list!
-            if (agency.Accounts.Count == 0)
+            if (null == agency.Accounts)
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
-                if (!agency.Accounts!.Any())
+                if (!agency.Accounts.Any())
                 {
                     agency.Accounts = await ctx.Accounts.Where(ac => ac.AgencyNumber == agency.AgencyNumber).ToArrayAsync();
+                    
                 }
             }
-            
             return agency.Accounts.ToArray();
         }
         public async Task<OnlineBondSystem[]> OnlineBondSystems([Parent] Agency agency,

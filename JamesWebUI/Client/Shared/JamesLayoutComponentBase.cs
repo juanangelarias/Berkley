@@ -173,8 +173,8 @@ namespace JamesWebUI.Client.Shared
             return originalFilter;
         }
 
-        private string? SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-                string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title;
+        private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+                string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";
 
         public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
             ExportColumnSubstitutions? propertySubstitutions = null)

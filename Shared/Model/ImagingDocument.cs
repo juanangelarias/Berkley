@@ -73,8 +73,8 @@ namespace James.Shared.Model
 
     public class ImagingContent
     {
-        public string Filename { get; set; } = string.Empty;
-        public string MimeType { get; set; } = string.Empty;
+        public string Filename { get; set; } = null!;
+        public string MimeType { get; set; } = null!;
     }
 
     public class ImagingSearchCriteria

@@ -15,9 +15,9 @@
             return ToString().GetHashCode();
         }
 
-        public override bool Equals(object? obj)
+        public override bool Equals(object obj)
         {
-            return GetHashCode()==obj!.GetHashCode();
+            return GetHashCode()==obj.GetHashCode();
         }
     }
 }

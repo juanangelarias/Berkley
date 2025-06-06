@@ -147,7 +147,7 @@
     private List<State> AllStates { get; set; }
     private List<ObligeeTypeDm> ObligeeTypes { get; set; } = new List<ObligeeTypeDm>();
 
-    private Obligee NewObligee { get; set; } = new Obligee()
+    private Obligee NewObligee { get; set; } = new()
     {
         PrintStatusLetter = true,
         Type = "Unknown",

@@ -125,6 +125,7 @@
 
 @code {
     private Guid _agentId;
+    
     [Parameter]
     public Guid AgentId
     {
@@ -133,18 +134,18 @@
         {
             if (_agentId == value) return;
             _agentId = value;
-            LoadAgent();
+            _ = LoadAgent();
         }
     }
-    private Agent AgentToDisplay { get; set; } = new Agent()
-        {
-            IdNavigation = new LegalEntity()
-        };
+
+    private Agent AgentToDisplay { get; set; } = new()
+    {
+        IdNavigation = new LegalEntity()
+    };
 
 
-    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
-    private List<Insurer> allInsurers { get; set; } = new List<Insurer>();
-
+    private RadzenDropDown<Guid> DropSelectInsurer { get; set; } = null!;
+    private List<Insurer> AllInsurers { get; set; } = [];
 
     protected override async Task OnParametersSetAsync()
     {
@@ -157,48 +158,57 @@
     }
     private async Task LoadAgent()
     {
+        if(AgentId == Guid.Empty)
+            return;
+        
         BusyDialog();
-        if (Guid.Empty != AgentId)
-        {
-            var result = await DataAccess.GetAgent((Guid)AgentId);
 
-            if (result.Errors.Any() && null != result.Data)
+        IDataAccessResult<Agent> result = null!;
+        var loadItem = AddEventNotify(new LoadItem
+        {
+            Key = $"Agent{AgentId}",
+            AsyncLoadTask = async () => result = await DataAccess.GetAgent(AgentId),
+            CacheLoadTask = cache => result = new DataAccessResult<Agent> { Data = (Agent)cache! },
+            ResultVariable = () => result,
+            AfterLoad = async void () =>
             {
-                LoggingService.LogError("Error when loading agent.", result.Errors.ToString());
-                NotificationService.Notify(new NotificationMessage
-                    {
-                        Detail = "Error loading agent.",
-                        Duration = 4000,
-                        Severity = NotificationSeverity.Error
-                    });
+                if (result.Success)
+                    AgentToDisplay = result.Data!;
+                else
+                    await HandleLoadError("Error when loading agent.", result.Errors);
             }
-            else
-            {
-                AgentToDisplay = result.Data;
-                StateHasChanged();
-            }
-        }
+        }, $"Agent {AgentId}");
+
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
 
         DialogService.Close();
-
     }
+    
     private async Task LoadSelectInsurerDropDown()
     {
-        allInsurers = await GetInsurers();
-    }
-    private async Task<List<Insurer>> GetInsurers()
-    {
-        var result = await DataAccess.GetAllInsurers();
-        if (result.Success == false)
+        IDataAccessResult<List<Insurer>> result = null!;
+        var loadItem = AddEventNotify(new LoadItem
         {
-            LoggingService.LogError("Error getting insurers in Agency Contract Grid", result.Errors.ToString());
-        }
+            Key = "Insurers",
+            AsyncLoadTask = async () => result = await DataAccess.GetAllInsurers(),
+            CacheLoadTask = cache => result = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
+            ResultVariable = () => result,
+            AfterLoad = async void () =>
+            {
+                if (result.Success)
+                {
+                    Debug.Assert(result.Data != null, "result.Data != null");
+                    AllInsurers = result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
+                }
+                else
+                    await HandleLoadError("Error getting insurers in Agency Contract Grid", result.Errors);
+            }
+        }, "Insurers");
 
-        Debug.Assert(result.Data != null, "result.Data != null");
-        return result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }
 
-    void BusyDialog()
+    private void BusyDialog()
     {
         DialogService.Open("", ds =>
         @<RadzenStack AlignItems="AlignItems.Center" Gap="2rem" class="rz-p-12">

@@ -1,13 +1,10 @@
 ﻿@page "/Obligee/{ObligeeNumber?}"
 
-@using System.Diagnostics
-@using James.Shared
-
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
+@inject IDataAccess DataAccess
 
-@inject IDataAccess _dataAccess
 @attribute [Authorize]
 
 <RenderModeBackground></RenderModeBackground>
@@ -90,17 +87,14 @@
     </RadzenPanel>
 </RadzenStack>
 
-
-
-
 @code {
     [Parameter] public string ObligeeNumber { get; set; } = "";
     private bool PossibleDuplicates { get; set; } = false;
 
-    public James.Shared.Model.Obligee ObligeeToDisplay { get; set; } = new Obligee()
-        {
-            IdNavigation = new LegalEntity()
-        };
+    public Obligee ObligeeToDisplay { get; set; } = new()
+    {
+        IdNavigation = new LegalEntity()
+    };
 
 
     protected override async Task OnParametersSetAsync()
@@ -112,20 +106,27 @@
 
     private async Task LoadObligee()
     {
-        if (!String.IsNullOrWhiteSpace(ObligeeNumber))
-        {
-            var result = await _dataAccess.GetObligeeByObligeeNumber(ObligeeNumber);
+        if (string.IsNullOrWhiteSpace(ObligeeNumber))
+            return;
 
-            if (result.Errors.Any() && result.Data != null)
+        IDataAccessResult<Obligee?> result = null!;
+        var loadItem = AddEventNotify(new LoadItem
             {
-                //TODO: Log errors
-            }
-            else
-            {
-                ObligeeToDisplay = result.Data;
-            }
-        }
+                Key = $"Obligee{ObligeeNumber}",
+                AsyncLoadTask = async () =>result = await DataAccess.GetObligeeByObligeeNumber(ObligeeNumber),
+                CacheLoadTask = cache => result = new DataAccessResult<Obligee>{Data = (Obligee?)cache}!,
+                ResultVariable = () => result,
+                AfterLoad = async void () =>
+                {
+                    if (result.Success)
+                        ObligeeToDisplay = result.Data!;
+                    else
+                        await HandleLoadError("Obligee failed to load.", result.Errors);
+                }
+            }, $"Obligee {ObligeeNumber}");
+        await DataCache.GetCacheOrLoadDataAsync(loadItem);
     }
+    
     private async Task LoadPossibleDuplicates()
     {
 

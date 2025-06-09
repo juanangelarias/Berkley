@@ -18,7 +18,7 @@ namespace James.Data.Imaging
             Debug.WriteLine("In AfterReceiveRequest handler");
         }
 
-        public object BeforeSendRequest(ref Message request, IClientChannel channel)
+        public object? BeforeSendRequest(ref Message request, IClientChannel channel)
         {
             Debug.WriteLine("In BeforeSendRequest handler");
             var headers = request.Headers;

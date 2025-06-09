@@ -57,7 +57,7 @@
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@BondTypeFilter" @ref="bondTypeFilterDropDown" Change="BondTypeFilterChange"
                                 TValue="List<String>" Multiple="true" AllowClear="true"
-                                Data="@ObligeeBonds.Select(b=>b.BondType.BondType).Distinct().ToList()" />
+                                Data="@ObligeeBonds.Select(b=>b.BondType!.BondType).Distinct().ToList()" />
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Begin Date" Property="Effective" FormatString="{0:d}" />
@@ -74,12 +74,12 @@
 
     private List<Bond> ObligeeBonds { get; set; } = new List<Bond>();
     private bool isLoading { get; set; } = false;
-    private RadzenDataGrid<Bond> obligeePrimaryBondsGrid;
-    private RadzenDropDown<List<String>> bondTypeFilterDropDown { get; set; }
+    private RadzenDataGrid<Bond> obligeePrimaryBondsGrid = null!;
+    private RadzenDropDown<List<String>> bondTypeFilterDropDown { get; set; } = null!;
 
-    private List<String> StatusFilter = null;
-    private List<String> BondTypeFilter = null;
-    private RadzenDropDown<List<String>> statusFilterDropDown { get; set; }
+    private List<String>? StatusFilter = null;
+    private List<String>? BondTypeFilter = null;
+    private RadzenDropDown<List<String>> statusFilterDropDown { get; set; } = null!;
 
     protected override async Task OnParametersSetAsync()
     {

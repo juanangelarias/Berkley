@@ -54,10 +54,10 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public string agentId { get; set; }
-    private RadzenDataGrid<AgencyLicense> licenseGrid;
+    [Parameter] public string agentId { get; set; } = "";
+    private RadzenDataGrid<AgencyLicense> licenseGrid = null!;
     private List<AgencyLicense> licenses = new List<AgencyLicense>();
-    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
+    private RadzenDropDown<Guid> dropSelectInsurer { get; set; } = null!;
 
 
     protected override async Task OnInitializedAsync()

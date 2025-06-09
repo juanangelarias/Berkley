@@ -98,8 +98,8 @@ namespace James.Shared
                     }
                     else if(propMatch.sProp.PropertyType.IsEnum && propMatch.dProp.PropertyType.IsEnum )
                     {
-                        var enumText = Enum.GetName(propMatch.sProp.PropertyType, propMatch.sProp.GetValue(source));
-                        var destVal = Enum.Parse(propMatch.dProp.PropertyType, enumText, true);
+                        var enumText = Enum.GetName(propMatch.sProp.PropertyType, propMatch.sProp.GetValue(source)!);
+                        var destVal = Enum.Parse(propMatch.dProp.PropertyType, enumText!, true);
                         propMatch.dProp.SetValue(result, destVal);
                     }
                     else

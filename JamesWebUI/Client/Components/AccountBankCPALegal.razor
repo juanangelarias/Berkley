@@ -184,7 +184,7 @@
 
 
 @code {
-    [Parameter] public Account AccountToDisplay { get; set; }
+    [Parameter] public Account AccountToDisplay { get; set; } = null!;
     private bool expandLawFirmDetails { get; set; } = false;
 
     protected override async Task OnParametersSetAsync()

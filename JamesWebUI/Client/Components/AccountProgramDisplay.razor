@@ -96,9 +96,9 @@
 </RadzenRow>
 
 @code {
-    [Parameter] public string AccountNumber { get; set; }
+    [Parameter] public string AccountNumber { get; set; } = "";
     private List<AccountProgram> ProgramsToDisplay { get; set; } = new List<AccountProgram>();
-    private RadzenDataGrid<AccountProgram> programGrid { get; set; }
+    private RadzenDataGrid<AccountProgram> programGrid { get; set; } = null!;
 
     private List<AccountProgram> programsToInsert = new List<AccountProgram>();
     private List<AccountProgram> programsToUpdate = new List<AccountProgram>();
@@ -126,7 +126,7 @@
             }
             else
             {
-                ProgramsToDisplay = result.Data;
+                ProgramsToDisplay = result.Data!;
             }
         }
     }
@@ -172,7 +172,7 @@
 
         if (result.Errors.Any())
         {
-            LoggingService.LogError("Error saving account program changes", result.Errors.ToString());
+            LoggingService.LogError("Error saving account program changes", result.Errors.ToString() ?? "");
             NotificationService.Notify(new NotificationMessage
                 {
                     Detail = "Error saving account program.",

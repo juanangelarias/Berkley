@@ -10,7 +10,7 @@
                 </RadzenGravatar>
             </Template>
             <ChildContent>
-                <RadzenProfileMenuItem Text="@("Hello, " + context.User.Identity.Name)" />
+                <RadzenProfileMenuItem Text="@("Hello, " + context.User.Identity?.Name)" />
                 <RadzenProfileMenuItem Text="My Profile" Path="profile" Icon="account_circle" />
                 <RadzenProfileMenuItem Text="My Dashboard" Path="" Icon="home" />
                 <RadzenProfileMenuItem Text="Logout" Icon="logout" />

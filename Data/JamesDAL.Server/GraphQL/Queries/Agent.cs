@@ -9,11 +9,13 @@ namespace James.Data.Server.GraphQL.Queries
         {
             var ctx = await contextFactory.CreateDbContextAsync();
 
-            return await ctx.Agents
+            var agent = await ctx.Agents
                 .Include(a => a.IdNavigation)
                 .Include(a => a.AgencyLicenses)
                 .ThenInclude(a => a.Insurer.IdNavigation)
                 .Where(a => a.Id == agentId).FirstOrDefaultAsync();
+            
+            return agent ?? throw new Exception("Agent Id not found");
         }
         [Authorize]
         public async Task<List<Agent>> SearchAgents(string searchString, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

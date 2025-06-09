@@ -21,13 +21,14 @@ public class ExportColumnSubstitution
     public const char SpaceSubstitution = '\u4f60';
     public ExportColumnSubstitution()
     {
+        Original = "";
     }
 
     public ExportColumnSubstitution(string original, string? property = null, string? title = null)
     {
         Original = original;
-        Property = property;
-        Title = title;
+        Property = property ?? "";
+        Title = title ?? "";
     }
 
     private readonly string? _title;
@@ -76,7 +77,7 @@ public class ExportColumnSubstitutions : IDictionary<string, ExportColumnSubstit
     }
     public void AddSubstitution(string original, string? property = null, string? title = null)
     {
-        AddSubstitution(new ExportColumnSubstitution { Original = original, Property = property, Title = title });
+        AddSubstitution(new ExportColumnSubstitution { Original = original, Property = property ?? "", Title = title });
     }
 
     public void Add(string key, ExportColumnSubstitution value)

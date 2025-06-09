@@ -29,13 +29,13 @@ namespace James.Shared.Model
                         if ((value?.Id ?? Guid.Empty) == Guid.Empty)
                         {
 
-                            value.Id = Guid.NewGuid();
+                            value!.Id = Guid.NewGuid();
                         }
 
                         var newLea = new LegalEntityAddress
                         {
                             Type = "Main",
-                            AddressId = value.Id,
+                            AddressId = value!.Id,
                             Address = value
                         };
                         lea = newLea;
@@ -43,7 +43,7 @@ namespace James.Shared.Model
                         {
                             IdNavigation = new LegalEntity();
                         }
-                        IdNavigation.LegalEntityAddresses.Add(lea);
+                        IdNavigation.LegalEntityAddresses?.Add(lea);
                     }
 
                     lea.Address = value;

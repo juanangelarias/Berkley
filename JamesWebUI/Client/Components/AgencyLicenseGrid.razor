@@ -155,24 +155,24 @@
 @code {
     [Parameter] public Guid AgencyId { get; set; }
 
-    private RadzenDataGrid<AgencyLicense> licenseGrid { get; set; }
+    private RadzenDataGrid<AgencyLicense> licenseGrid { get; set; } = null!;
 
     private List<AgencyLicense> agencyLicenses { get; set; } = new List<AgencyLicense>();
 
     private List<AgencyLicense> licensesToInsert = new List<AgencyLicense>();
     private List<AgencyLicense> licensesToUpdate = new List<AgencyLicense>();
 
-    private RadzenDropDown<Insurer> dropSelectInsurer { get; set; }
-    private RadzenDropDown<Guid> filterInsurerDropDown { get; set; }
-    private RadzenDropDown<string> stateDropDown { get; set; }
-    private RadzenDropDown<string> stateFilterDropDown { get; set; }
+    private RadzenDropDown<Insurer> dropSelectInsurer { get; set; } = null!;
+    private RadzenDropDown<Guid> filterInsurerDropDown { get; set; } = null!;
+    private RadzenDropDown<string> stateDropDown { get; set; } = null!;
+    private RadzenDropDown<string> stateFilterDropDown { get; set; } = null!;
 
 
     //TODO: Remove this stuff once we figure out caching
     private static List<Insurer> AllInsurers { get; set; } = new();
     private static List<State> AllStates { get; set; } = new();
 
-    private List<String> StateFilter = null;
+    private List<String>? StateFilter = null;
 
     private bool isLoading = false;
 
@@ -224,7 +224,7 @@
         if (result.Success == false)
             //UNDONE: Add actual errors as data
             Logging.LogError("Error getting all States in Agency License Grid");
-        AllStates = result.Data;
+        AllStates = result.Data!;
     }
     private async Task LoadInsurers()
     {
@@ -232,7 +232,8 @@
         if (result.Success == false)
             //UNDONE: Add actual errors as data
             Logging.LogError("Error getting all Insurers in Agency License Grid");
-        AllInsurers = result.Data;
+        else
+            AllInsurers = result.Data!;
     }
 
     async Task InsertLicenseRow()

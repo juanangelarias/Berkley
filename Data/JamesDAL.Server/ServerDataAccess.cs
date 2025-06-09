@@ -1,15 +1,18 @@
 ﻿using HotChocolate.Subscriptions;
 using James.Data.Imaging;
+using James.Data.Server.Exceptions;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Imaging;
+using James.Shared.Server;
+using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server
 {
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutation generalMutation, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutation generalMutation, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService, IHttpContextAccessor contextAccessor, IUserShared userShared) : IDataAccess
     {
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
@@ -155,10 +158,6 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));
-        }
-        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPOADocumentNames()
-        {
-            return await ExecuteGet(async () => await query.GetPOADocumentNames(contextFactory));
         }
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
@@ -433,7 +432,13 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
         {
-            return await ExecuteGet(async () => await query.GetBondRequestNumberType(bondNumber, contextFactory));
+            var response =
+                await ExecuteGet(async () => await query.GetBondRequestNumberType(bondNumber, contextFactory));
+            
+            if (response == null)
+                throw new NotFoundException("Bond Request Number Type not found");
+
+            return response!;
         }
 
         public async Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber)
@@ -449,6 +454,21 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
         {
             return await ExecuteGet(async () => await query.GetAllImagingCategoryTabDivisionType(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
+        {
+            return await ExecuteGet(async () => new Dictionary<string, string>( await query.GetUserSettings(contextFactory, contextAccessor)));
+        }
+
+        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async ()=> await generalMutation.SetUserSetting(key, value, contextFactory, userShared, loggingService));
+        }
+
+        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService));
         }
 
         public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
@@ -572,7 +592,7 @@ namespace James.Data.Server
                     var bidBondType = (await GetBondRequestNumberType(id)).Data;
                     //TODO: Handle errors above
                     criteria.WhereClause =
-                        $"({criteria.WhereClause} OR {(string.Equals(bidBondType.Type, "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ImagingAccessBase.ContBidId : ImagingAccessBase.CommBidId)} = '{bidBondType.BondRequestNumber}')";
+                        $"({criteria.WhereClause} OR {(string.Equals(bidBondType?.Type, "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ImagingAccessBase.ContBidId : ImagingAccessBase.CommBidId)} = '{bidBondType.BondRequestNumber}')";
                     break;
                 case ImagingDocumentCategory.Agency: //3
                     criteria.WhereClause = $"{ImagingAccessBase.AgencyNo} = '{id}'";

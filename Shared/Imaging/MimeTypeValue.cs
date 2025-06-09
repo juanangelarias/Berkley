@@ -2,8 +2,8 @@
 {
     internal class MimeTypeValue
     {
-        internal string MimeType { get; set; }
-        internal string FileExtension { get; set; }
+        internal string MimeType { get; set; } = string.Empty;
+        internal string FileExtension { get; set; } = string.Empty;
         internal bool IsMaster { get; set; }
         public override string ToString()
         {

@@ -64,7 +64,7 @@
 @code {
     [Parameter] public Guid AgencyId { get; set; }
     private List<Agency> relatedParties { get; set; } = new List<Agency>();
-    private RadzenDataGrid<Agency> relatedPartiesGrid { get; set; }
+    private RadzenDataGrid<Agency> relatedPartiesGrid { get; set; } = null!;
     private bool isLoading = false;
 
     protected override async Task OnParametersSetAsync()
@@ -81,7 +81,11 @@
         // var result = await JamesClient.GetAgencyRelatedParties.ExecuteAsync(AgencyId);
         var result = await DataAccess.GetAgencyRelatedParties(AgencyId);
         //TODO:  Handle errors
-        relatedParties = result.Data;
+        
+        // ToDo: Should the await line be inside the If statement?
+        if(result.Data != null)
+            relatedParties = result.Data;
+        
         await relatedPartiesGrid.Reload();
     }
     protected async Task ShowLoading()

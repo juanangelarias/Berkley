@@ -32,13 +32,14 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 builder.Services.AddRadzenComponents();
 builder.Services.AddBlazoredLocalStorage(config =>
 {
-    config.JsonSerializerOptions.ReferenceHandler =ReferenceHandler.IgnoreCycles;
+    config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 builder.Services.AddScoped<LocalStorageKeyListingService>();
 builder.Services.AddScoped<AddressPhoneFormatService>();
 builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
 builder.Services.AddSingleton<ILoggingService, LoggingService>();
-builder.Services.AddScoped<IDataAccess,ClientDataAccess>();
+builder.Services.AddScoped<IDataAccess, ClientDataAccess>();
+builder.Services.AddScoped<UserSettingService>();
 
 builder.Services.AddOidcAuthentication(options =>
 {

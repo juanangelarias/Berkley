@@ -20,7 +20,7 @@
     [Parameter]
     public bool AlwaysShowCountryCode { get; set; }
 
-    private string _phoneNumberText;
+    private string _phoneNumberText = "";
     private PhoneNumber _phoneNumber;
 
     protected override async Task OnParametersSetAsync()

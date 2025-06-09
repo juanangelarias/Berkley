@@ -1,16 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
-
-using Microsoft.JSInterop;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Radzen;
 using Radzen.Blazor;
 using Microsoft.AspNetCore.WebUtilities;
-using Blazorise;
-using System.Runtime.CompilerServices;
 
 namespace JamesWebUI.Client.Components
 {
@@ -20,12 +10,12 @@ namespace JamesWebUI.Client.Components
     /// </summary>
     public partial class PositionSavingTabs : RadzenTabs
     {
-        [Inject]
-        NavigationManager NavigationManager { get; set; }
+        [Inject] 
+        private NavigationManager NavigationManager { get; set; } = null!;
 
-        [Parameter]
-        public string TabControlName { get; set; }
-        public List<PositionSavingTabsItem> AllTabs { get; set; } = new List<PositionSavingTabsItem>();
+        [Parameter] 
+        public string TabControlName { get; set; } = null!;
+        public List<PositionSavingTabsItem> AllTabs { get; set; } = [];
 
         private bool shouldSwitch = true;
 

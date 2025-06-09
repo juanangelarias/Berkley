@@ -189,8 +189,8 @@ namespace James.Data.Server.GraphQL.Mutations
                     Comments = comments,
                     ChangedBy = changedBy
                 };
-                var agency = ctx.Agencies.Where(a => a.AgencyNumber == agencyNumber).FirstOrDefault();
-                agency.Status = newStatus;
+                var agency = ctx.Agencies.FirstOrDefault(a => a.AgencyNumber == agencyNumber);
+                agency!.Status = newStatus;
                 ctx.Add(newStatusLog);
                 ctx.Update(agency);
                 await ctx.SaveChangesAsync();
@@ -271,6 +271,9 @@ namespace James.Data.Server.GraphQL.Mutations
             try
             {
                 var poa = ctx.PowerOfAttorneys.FirstOrDefault(p => p.Id == poaId);
+                if (poa == null)
+                    return false;
+                
                 var poaDocs = ctx.PowerOfAttorneyDocumentStatuses.Where(p => p.Poaid == poaId).ToList();
                 ctx.PowerOfAttorneys.Remove(poa);
                 foreach (var poaDoc in poaDocs) { 
@@ -473,6 +476,9 @@ namespace James.Data.Server.GraphQL.Mutations
                 var ctx = await contextFactory.CreateDbContextAsync();
 
                 var legalEntity = await ctx.LegalEntities.FirstOrDefaultAsync(l => l.Id == agencyId);
+                if(legalEntity == null)
+                    return false;
+                
                 var agency = await ctx.Agencies.FirstOrDefaultAsync(a => a.Id == agencyId);
 
                 if (null != agency)

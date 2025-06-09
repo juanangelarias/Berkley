@@ -47,10 +47,10 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Created By" Property="ChangedByNavigation.Initials">
                     <Template Context="statusLog">
-                        <RadzenText Text="@statusLog.ChangedByNavigation.FullName" Style="width: 95%" />
+                        <RadzenText Text="@statusLog.ChangedByNavigation?.FullName" Style="width: 95%" />
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenText @ref="txtUserName" Text="@(context.User.Identity.Name)" Style="width: 95%" />
+                        <RadzenText @ref="txtUserName" Text="@(context.User.Identity?.Name)" Style="width: 95%" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments">
@@ -77,13 +77,13 @@
     </Authorized>
 </AuthorizeView>
 @code {
-    [Parameter] public string AgencyNumber { get; set; }
-    [Parameter] public string CurrentStatus { get; set; }
+    [Parameter] public string AgencyNumber { get; set; } = "";
+    [Parameter] public string CurrentStatus { get; set; } = "";
     private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
     private bool isLoading { get; set; } = false;
-    private RadzenDataGrid<AgencyStatusLog> statusLogGrid { get; set; }
+    private RadzenDataGrid<AgencyStatusLog> statusLogGrid { get; set; } = null!;
     private List<AgencyStatusLog> statusLogsToInsert { get; set; } = new List<AgencyStatusLog>();
-    private RadzenText txtUserName { get; set; } 
+    private RadzenText txtUserName { get; set; } = null!;
 
     //TODO: Remove this once we implement caching
     private List<AgencyStatusDm> AllStatuses { get; set; } = new List<AgencyStatusDm>();
@@ -131,7 +131,7 @@
         }
         else
         {
-            _logging.LogError("Error getting agency statuses for Agency Status Grid.", result.Errors.ToString());
+            _logging.LogError("Error getting agency statuses for Agency Status Grid.", result.Errors.ToString() ?? "");
         }
     }
     async Task SaveStatusLogRow(AgencyStatusLog statusLog)
@@ -160,15 +160,19 @@
         var userName = txtUserName.Text;
         var userProfile = await _dataAccess.GetUserProfileByUserName(userName);
 
-        var result = await _dataAccess.CreateAgencyStatusLog(
-            statusLog.Id,
-            AgencyNumber,
-            statusLog.Effective,
-            CurrentStatus,
-            statusLog.NewStatus,
-            userProfile.Data.Id,
-            statusLog.Comments
-        );
+        // ToDo "result" is not used.
+        if(userProfile.Data != null)
+        {
+            var result = await _dataAccess.CreateAgencyStatusLog(
+                statusLog.Id,
+                AgencyNumber,
+                statusLog.Effective,
+                CurrentStatus,
+                statusLog.NewStatus ?? "",
+                userProfile.Data.Id,
+                statusLog.Comments
+            );
+        }
 
         statusLogsToInsert.Remove(statusLog);
     }

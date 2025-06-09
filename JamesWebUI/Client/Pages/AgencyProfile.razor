@@ -233,13 +233,13 @@
         ];
     }
 
-    private IDataAccessResult<Agency> _agencyResult;
+    private IDataAccessResult<Agency> _agencyResult = null!;
     private LoadItem AgencyByAgencyNumberLoadItem(string agencyNumber) =>
             new LoadItem()
             {
                 Key = $"Agency{agencyNumber}",
-                AsyncLoadTask = async () => _agencyResult = await DataAccess.GetAgencyByAgencyNumber(agencyNumber),
-                CacheLoadTask = cache => _agencyResult = new DataAccessResult<Agency> { Data = (Agency)cache },
+                AsyncLoadTask = async () => _agencyResult = (await DataAccess.GetAgencyByAgencyNumber(agencyNumber))!,
+                CacheLoadTask = cache => _agencyResult = new DataAccessResult<Agency> { Data = (Agency)cache! },
                 ResultVariable = () => _agencyResult,
                 AfterLoad = () =>
                 {
@@ -252,13 +252,13 @@
                 CacheDuration = TimeSpan.FromHours(8)   //Subscription will update this if changed, so long cache time is appropriate.
             };
 
-    private IDataAccessResult<List<Branch>> _branchesResult;
+    private IDataAccessResult<List<Branch>> _branchesResult = null!;
     private LoadItem BranchesLoadItem() =>
         new()
         {
             Key = "branches",
             AsyncLoadTask = async () => _branchesResult = await DataAccess.GetAllBranches(),
-            CacheLoadTask = cache => _branchesResult = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache },
+            CacheLoadTask = cache => _branchesResult = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache! },
             ResultVariable = () => _branchesResult,
             AfterLoad = () =>
             {

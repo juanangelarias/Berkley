@@ -61,12 +61,12 @@
 </RadzenRow>
 @code {
     //See code file
-    [Parameter] public string DataFriendlyName { get; set; }
-    [Parameter] public Dictionary<string, ComparedValues> Conflicts { get; set; }
+    [Parameter] public string DataFriendlyName { get; set; } = "";
+    [Parameter] public Dictionary<string, ComparedValues> Conflicts { get; set; } = null!;
     //NOTE: IgnoreNulls treats items with one side being null as items to ignore.
     [Parameter] public bool IgnoreNulls { get; set; } = false;
-    [Parameter] public Object OurData { get; set; }
-    [Parameter] public Object TheirData { get; set; }
+    [Parameter] public Object OurData { get; set; } = null!;
+    [Parameter] public Object TheirData { get; set; } = null!;
     private bool AllConflictsResolved => _resolvers.All(r => r.ResolveEditor.HasValue);
     private List<ConflictResolver> _resolvers = new List<ConflictResolver>();
     protected override void OnParametersSet()

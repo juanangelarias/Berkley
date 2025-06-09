@@ -67,7 +67,7 @@
             var result = await DataAccess.GetPoaDocumentNames();
             List<PowerOfAttorneyDocumentNameDm> results = new List<PowerOfAttorneyDocumentNameDm>();
             if (result.Success)
-                foreach (var docName in result.Data)
+                foreach (var docName in result.Data!)
                 {
                     results.Add(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>(docName));
                 }

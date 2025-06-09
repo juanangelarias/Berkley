@@ -158,7 +158,7 @@ namespace JamesWebUI.Shared
         }
 
         private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-            string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property;
+            string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property ?? "";
 
         private static string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
         {
@@ -166,14 +166,14 @@ namespace JamesWebUI.Shared
             foreach (var substitution in substitutions)
             {
                 originalFilter = Regex.Replace(originalFilter, $"(?<=[(\\s\\(^]){substitution.Original}(?=[\\s\\)])",
-                    substitution.Property);
+                    substitution.Property ?? "");
             }
 
             return originalFilter;
         }
 
         private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-                string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title;
+                string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";
 
         public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
             ExportColumnSubstitutions? propertySubstitutions = null)
@@ -192,12 +192,12 @@ namespace JamesWebUI.Shared
                 selectColumns
                     .Select(cSub => cSub with
                     {
-                        Title = cSub.Title.Replace(".", "_")
+                        Title = cSub.Title?.Replace(".", "_")
                     })
                     .Select(pt =>
                         pt.Property == pt.Title
                             ? pt.Property
-                            : $"{pt.Property} as {pt.Title.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
+                            : $"{pt.Property} as {pt.Title?.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
             var query = new Query()
             {
                 OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),

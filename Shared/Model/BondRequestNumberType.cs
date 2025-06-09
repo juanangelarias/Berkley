@@ -8,7 +8,7 @@ namespace James.Shared.Model
 {
     public class BondRequestNumberType
     {
-        public string BondRequestNumber { get; set; }
-        public string Type { get; set; }
+        public string BondRequestNumber { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
     }
 }

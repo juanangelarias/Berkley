@@ -16,7 +16,7 @@
             {
                 foreach (var a in AllPhoneNumbers)
                 {
-                    <RadzenTabsItem Text="@(a.LegalEntityPhone.Type)">
+                    <RadzenTabsItem Text="@(a.LegalEntityPhone?.Type)">
                         <PhoneDisplay PhoneId="a.Id" StateChanged="@(() => LoadPhoneNumbers())" />
                     </RadzenTabsItem>
                     if (a == AllPhoneNumbers.Last())
@@ -42,7 +42,7 @@
     [Parameter] public Guid LegalEntityId { get; set; }
     private List<PhoneNumber> AllPhoneNumbers {get;set;} = new List<PhoneNumber>();
 
-    private RadzenTabs phoneTabs { get; set; }
+    private RadzenTabs phoneTabs { get; set; } = null!;
     private int selectedTab { get; set; } = 0;
 
 
@@ -69,7 +69,7 @@
         }
         else
         {
-            AllPhoneNumbers = result.Data;
+            AllPhoneNumbers = result.Data!;
         }
     }
 
@@ -89,7 +89,7 @@
         }
         else
         {
-            AllPhoneNumbers = result.Data;
+            AllPhoneNumbers = result.Data!;
 
             var selected = AllPhoneNumbers.FirstOrDefault(a => a.Id == phoneToSelect);
             if (null != selected)

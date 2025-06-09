@@ -17,7 +17,7 @@
             {
                 foreach (var a in AllAddresses)
                 {
-                    <RadzenTabsItem Text="@(a.LegalEntityAddress.Type)" >
+                    <RadzenTabsItem Text="@(a.LegalEntityAddress!.Type)" >
                         <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress.Type]" AddressId="a.Id" 
                                         StateChanged="@(() => LoadAddresses())"
                                         AddSubscription="@(()=>DataAccess.AddressModified(a.Id, async sra =>
@@ -51,7 +51,7 @@
     [Parameter]
     public Guid LegalEntityId { get; set; }
     private Guid _legalEntityId = Guid.Empty;
-    private RadzenTabs addressTabs { get; set; }
+    private RadzenTabs addressTabs { get; set; } = null!;
     private List<Address> AllAddresses { get; set; } = new List<Address>();
     private Dictionary<string, AddressDisplay> _addressDisplays = [];
     private int selectedTab { get; set; } = 0;
@@ -63,7 +63,7 @@
             await LoadAddresses();
     }
 
-    private IDataAccessResult<List<Address>> _addressesLoadResult;
+    private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
     private LoadItem AddressesLoadItem(Guid id) =>
         new()
         {
@@ -109,7 +109,7 @@
         }
         else
         {
-            AllAddresses = result.Data;
+            AllAddresses = result.Data!;
 
             var selected = AllAddresses.FirstOrDefault(a => a.Id == addressToSelect);
             if (null != selected)

@@ -116,14 +116,14 @@
     string[] dropDownValues = { "Test1", "Test2", "Test3" };
 
     //DropDown Data
-    private IReadOnlyList<Agency> agencyResults;
-    private RadzenTextBox txtAgencyNameSearch;
-    private string AgencySearchString;
+    private IReadOnlyList<Agency> agencyResults = null!;
+    private RadzenTextBox txtAgencyNameSearch = null!;
+    private string AgencySearchString = "";
     private SearchOptions _searchOptions = new SearchOptions{Agency=true};
-    public ISearchAgencies_SearchAgencies selectedAgency;
-    public List<String> BranchFilter = null;
-    public List<String> StatusFilter = null;
-    public RadzenDataGrid<ISearchAgencies_SearchAgencies> AgencyResultsGrid;
+    public ISearchAgencies_SearchAgencies selectedAgency = null!;
+    public List<string>? BranchFilter = null;
+    public List<string>? StatusFilter = null;
+    public RadzenDataGrid<ISearchAgencies_SearchAgencies> AgencyResultsGrid = null!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -135,7 +135,7 @@
     {
         var results = await DataAccess.SearchAgencies(txtAgencyNameSearch.Value, _searchOptions.ActiveOnly);
         if (results.Success)
-            agencyResults = results.Data;
+            agencyResults = results.Data!;
         else
         {
             //TODO:Add error details

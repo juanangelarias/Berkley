@@ -44,6 +44,7 @@ builder.Services.AddScoped<ThemeService>();
 builder.Services.AddScoped<IUserShared, UserShared>();
 builder.Services.AddSingleton<ILoggingService, LoggingService>();
 builder.Services.AddScoped<IDataAccess, ClientDataAccess>();
+builder.Services.AddScoped<UserSettingService>();
 
 builder.Services.AddOidcAuthentication(options =>
 {

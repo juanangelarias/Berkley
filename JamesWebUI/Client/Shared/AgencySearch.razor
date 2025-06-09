@@ -24,8 +24,8 @@
 
 @code {
     private List<Agency> SearchResults { get; set; } = new List<Agency>();
-    private Agency SelectedAgency { get; set; }
-    private RadzenAutoComplete autoComplete { get; set; }
+    private Agency SelectedAgency { get; set; } = null!;
+    private RadzenAutoComplete autoComplete { get; set; } = null!;
 
     private async Task SearchAgency(LoadDataArgs args)
     {
@@ -37,7 +37,7 @@
         }
         else
         {
-            SearchResults = result.Data;
+            SearchResults = result.Data!;
         }
     }
     private async Task ResultSelected(dynamic args)

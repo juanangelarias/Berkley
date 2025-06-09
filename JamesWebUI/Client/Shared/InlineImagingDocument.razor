@@ -88,10 +88,10 @@
         var dialogArguments = new Dictionary<string, object>() { { "Title", "Upload POA Document" },
             { "DocumentCategory", DocumentCategory },
             {"DocumentType",DocumentType },
-            {"DocumentId",DocumentId},
+            {"DocumentId",DocumentId ?? Guid.Empty},
             {"ImagingId",ImagingId},
-            {"LinkableDocumentTypes",LinkableDocumentTypes},
-            {"UploadAction", UploadAction}
+            {"LinkableDocumentTypes",LinkableDocumentTypes ?? ""},
+            {"UploadAction", UploadAction!}
         };
         var result = await DialogService.OpenAsync<VirtualFileSimpleUpload>("Attach POA Document", dialogArguments,
             new DialogOptions { Width = "700px" });//TODO:Set DialogOptions

@@ -41,7 +41,7 @@
     }
     private List<Agent> SearchResults { get; set; } = new List<Agent>();
     private Agent SelectedAgent { get; set; } = new Agent();
-    private RadzenAutoComplete autoComplete { get; set; }
+    private RadzenAutoComplete autoComplete { get; set; } = null!;
 
 
 
@@ -51,7 +51,7 @@
 
         if (result.Errors.Any())
         {
-            LoggingService.LogError("Error searching for agents", result.Errors.ToString());
+            LoggingService.LogError("Error searching for agents", result.Errors.ToString() ?? "");
             NotificationService.Notify(new NotificationMessage()
                 {
                     Detail = "Error searching for agents",
@@ -61,7 +61,7 @@
         }
         else
         {
-            SearchResults = result.Data;
+            SearchResults = result.Data!;
         }
     }
     private async Task ResultSelected(dynamic args)

@@ -13,7 +13,7 @@ public class ServerSideSubscription<T> : IObservable<T>, IDisposable
         _publishTask = WaitAndPublish();
     }
 
-    public static ServerLoggingService LoggingService { get; set; }
+    public static ServerLoggingService LoggingService { get; set; } = null!;
     private readonly Task _publishTask;
     private readonly IAsyncEnumerable<T> _source;
 

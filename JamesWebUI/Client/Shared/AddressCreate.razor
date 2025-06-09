@@ -90,8 +90,8 @@
     {
         Id = Guid.NewGuid()
     };
-    private RadzenDropDown<string> addressTypeDropDown { get; set;}
-    private string addressType { get; set; }
+    private RadzenDropDown<string> addressTypeDropDown { get; set;} = null!;
+    private string addressType { get; set; } = "";
     private List<AddressTypeDm> AddressTypes { get; set; } = new List<AddressTypeDm>();
 
     protected override async Task OnParametersSetAsync()
@@ -132,6 +132,7 @@
         //TODO: Disallow address types that already exist.
         var result = await DataAccess.GetAddressTypes();
         //TODO: Check for errors
-        AddressTypes = result.Data;
+        if(result.Data != null)
+            AddressTypes = result.Data;
     }
 }

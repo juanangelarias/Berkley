@@ -24,7 +24,7 @@
 @code {
     private List<Account> SearchResults { get; set; } = new List<Account>();
     private Account SelectedAccount { get; set; } = new Account();
-    private RadzenAutoComplete autoComplete { get; set; }
+    private RadzenAutoComplete autoComplete { get; set; } = null!;
 
 
     private async Task SearchAccount(LoadDataArgs args)
@@ -37,7 +37,7 @@
         }
         else
         {
-            SearchResults = result.Data;
+            SearchResults = result.Data!;
         }
     }
 

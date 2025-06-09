@@ -123,7 +123,7 @@
     };
 
     //private SearchResultClient searchClient = new() { ResultsReturned = async () =>  };
-    private IDisposable _resultsSubscription = null!;
+    private IDisposable? _resultsSubscription;
 
     //NOTES:  Search results won't use the data cache functionality, but will keep its data in the local browser db
     string SearchTerm

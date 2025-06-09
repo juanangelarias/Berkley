@@ -9,8 +9,8 @@ namespace James.Shared.Model;
 public class JamesSearchResults 
 {
     private List<JamesSearchResult> _results = [];
-    private string _rootSearchTerm;
-    private string _searchTerm;
+    private string _rootSearchTerm = "";
+    private string _searchTerm = "";
 
     /// <summary>
     /// Prevents performance problems from too many results.  If exceeded, the lowest confidence results will be dropped.

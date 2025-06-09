@@ -26,8 +26,8 @@
 
 @code {
     private List<Obligee> SearchResults { get; set; } = new List<Obligee>();
-    private Obligee SelectedObligee { get; set; }
-    private RadzenAutoComplete autoComplete { get; set; }
+    private Obligee SelectedObligee { get; set; } = null!;
+    private RadzenAutoComplete autoComplete { get; set; } = null!;
 
     private async Task SearchObligee(LoadDataArgs args)
     {
@@ -39,7 +39,7 @@
         }
         else
         {
-            SearchResults = result.Data;
+            SearchResults = result.Data!;
         }
     }
     private async Task ResultSelected(dynamic args)

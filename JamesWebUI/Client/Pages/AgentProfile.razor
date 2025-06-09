@@ -142,7 +142,7 @@
         };
 
 
-    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
+    private RadzenDropDown<Guid> dropSelectInsurer { get; set; } = null!;
     private List<Insurer> allInsurers { get; set; } = new List<Insurer>();
 
 
@@ -164,7 +164,7 @@
 
             if (result.Errors.Any() && null != result.Data)
             {
-                LoggingService.LogError("Error when loading agent.", result.Errors.ToString());
+                LoggingService.LogError("Error when loading agent.", result.Errors.ToString() ?? "");
                 NotificationService.Notify(new NotificationMessage
                     {
                         Detail = "Error loading agent.",
@@ -174,7 +174,7 @@
             }
             else
             {
-                AgentToDisplay = result.Data;
+                AgentToDisplay = result.Data!;
                 StateHasChanged();
             }
         }
@@ -191,7 +191,7 @@
         var result = await DataAccess.GetAllInsurers();
         if (result.Success == false)
         {
-            LoggingService.LogError("Error getting insurers in Agency Contract Grid", result.Errors.ToString());
+            LoggingService.LogError("Error getting insurers in Agency Contract Grid", result.Errors.ToString() ?? "");
         }
 
         Debug.Assert(result.Data != null, "result.Data != null");

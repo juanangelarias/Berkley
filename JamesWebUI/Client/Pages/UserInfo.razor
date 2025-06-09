@@ -126,8 +126,8 @@
 
 
 @code {
-    RadzenUpload uploadDD;
-    RadzenTextBox tbFilename;
+    RadzenUpload uploadDD = null!;
+    RadzenTextBox tbFilename = null!;
 
     string currentFileName = null!, DocumentType = "AEXPNR", ImagingId = "1005";
 
@@ -169,8 +169,9 @@
         Debug.WriteLine(args.Message);
         NotificationService.Notify(NotificationSeverity.Error, args.Message);
     }
-    private SiteUserInfo SiteUserInfo;
-    private string result;
+    private SiteUserInfo SiteUserInfo = null!;
+    // ToDo: Variable result is not used!
+    private string result = "";
 
     protected override async Task OnInitializedAsync()
     {

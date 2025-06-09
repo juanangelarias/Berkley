@@ -53,7 +53,7 @@
                                 </RadzenRow>
                                 <RadzenFormField Text="Address" Variant="Variant.Outlined" AllowFloatingLabel="false">
                                     <ChildContent>
-                                        <RadzenTextBox Name="MainAddress1" @bind-Value="@newAgency.MainAddress.Address1" />
+                                        <RadzenTextBox Name="MainAddress1" @bind-Value="@newAgency.MainAddress!.Address1" />
                                     </ChildContent>
                                     <Helper>
                                         <RadzenRequiredValidator Component="MainAddress1" Text="Address is required." />
@@ -61,13 +61,13 @@
                                 </RadzenFormField>
                                 <RadzenFormField Text="Address 2" Variant="Variant.Outlined" AllowFloatingLabel="false">
                                     <ChildContent>
-                                        <RadzenTextBox Name="MainAddress2" @bind-Value="@newAgency.MainAddress.Address2" />
+                                        <RadzenTextBox Name="MainAddress2" @bind-Value="@newAgency.MainAddress!.Address2" />
                                     </ChildContent>
                                 </RadzenFormField>
                                 <RadzenStack Orientation="Orientation.Horizontal">
                                     <RadzenFormField Text="City" Variant="Variant.Outlined" AllowFloatingLabel="false">
                                         <ChildContent>
-                                            <RadzenTextBox Name="MainAddressCity" @bind-Value="@newAgency.MainAddress.City" />
+                                            <RadzenTextBox Name="MainAddressCity" @bind-Value="@newAgency.MainAddress!.City" />
                                         </ChildContent>
                                         <Helper>
                                             <RadzenRequiredValidator Component="MainAddressCity" Text="City is required." />
@@ -75,7 +75,7 @@
                                     </RadzenFormField>
                                     <RadzenFormField Text="State" Variant="Variant.Outlined" AllowFloatingLabel="false">
                                         <ChildContent>
-                                        <RadzenDropDown Name="MainAddressState" @bind-Value="@newAgency.MainAddress.StateCode" />
+                                        <RadzenDropDown Name="MainAddressState" @bind-Value="@newAgency.MainAddress!.StateCode" />
                                         </ChildContent>
                                         <Helper>
                                             <RadzenRequiredValidator Component="MainAddressState" Text="State is required." />
@@ -83,7 +83,7 @@
                                     </RadzenFormField>
                                     <RadzenFormField Text="Postal Code" Variant="Variant.Outlined" AllowFloatingLabel="false">
                                         <ChildContent>
-                                            <RadzenTextBox Name="MainAddressPostalCode" @bind-Value="@newAgency.MainAddress.PostalCode" />
+                                            <RadzenTextBox Name="MainAddressPostalCode" @bind-Value="@newAgency.MainAddress!.PostalCode" />
                                         </ChildContent>
                                         <Helper>
                                             <RadzenRequiredValidator Component="MainAddressPostalCode" Text="Postal Code is required." />

@@ -99,8 +99,8 @@
 @code {
     [Parameter] public Guid AgencyId { get; set; }
     private List<Agent> agents { get; set; } = new List<Agent>();
-    private RadzenDataGrid<Agent> agentsGrid { get; set; }
-    private RadzenDropDown<Guid> dropSelectInsurer { get; set; }
+    private RadzenDataGrid<Agent> agentsGrid { get; set; } = null!;
+    private RadzenDropDown<Guid> dropSelectInsurer { get; set; } = null!;
     private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
     private bool isLoading = true;
 

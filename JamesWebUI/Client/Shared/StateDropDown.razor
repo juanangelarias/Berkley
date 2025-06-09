@@ -38,8 +38,8 @@
     
     private List<State> AllStates { get; set; } = new List<State>();
 
-    private string _value;
-    private List<State> _values;
+    private string _value = "";
+    private List<State>? _values;
 
     /// <summary>
     /// This property should only be used as a binding target when MultiSelect is set to false.
@@ -84,8 +84,7 @@
     {
         var result = await _dataAccess.GetAllStates();
 
-        AllStates = result.Data;
-
-
+        if (result.Data != null) 
+            AllStates = result.Data;
     }
 }

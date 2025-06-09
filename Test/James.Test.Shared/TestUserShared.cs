@@ -18,6 +18,7 @@ public class TestUserShared : IUserShared
     private readonly SiteUserInfo _fakeTestUser = new SiteUserInfo
     {
         EntraId = "entraId",
+        Username = "TestUser1234",
         FirstName = "first",
         FullName = "full",
         Email = "test@fake.com",

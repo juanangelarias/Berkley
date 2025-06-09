@@ -9,7 +9,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber);
         public Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber);
         public Task<IDataAccessResult<List<Account>>> SearchAccounts(string searchString);
-        public Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accoungNumber);
+        public Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accountNumber);
         public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId);
@@ -36,7 +36,6 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);
-        public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPOADocumentNames();
         //public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
         public Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString);
@@ -92,6 +91,12 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
         public Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes();
         public Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes();
+
+        #region UserSettings
+        public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
+        public Task<ISaveDataResult> SetUserSetting(string key, string? value);
+        public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
+        #endregion
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
 

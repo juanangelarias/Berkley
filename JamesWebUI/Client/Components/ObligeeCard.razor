@@ -19,7 +19,7 @@
 
 @code {
     [Parameter] public Guid ObligeeId { get; set; }
-    private Obligee ObligeeToDisplay { get; set; }
+    private Obligee ObligeeToDisplay { get; set; } = null!;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -37,7 +37,7 @@
         }
         else
         {
-            ObligeeToDisplay = result.Data;
+            ObligeeToDisplay = result.Data!;
         }
     }
 }

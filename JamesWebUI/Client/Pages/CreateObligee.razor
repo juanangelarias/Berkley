@@ -144,7 +144,7 @@
 
 @code {
     [Parameter] public bool IsDialog { get; set; } = false;
-    private List<State> AllStates { get; set; }
+    private List<State> AllStates { get; set; } = [];
     private List<ObligeeTypeDm> ObligeeTypes { get; set; } = new List<ObligeeTypeDm>();
 
     private Obligee NewObligee { get; set; } = new Obligee()
@@ -188,11 +188,11 @@
         var result = await DataAccess.GetAllStates();
         if (result.Errors.Any())
         {
-            LoggingService.LogError("Error loading states.", result.Errors.ToString());
+            LoggingService.LogError("Error loading states.", result.Errors.ToString() ?? "");
         }
         else
         {
-            AllStates = result.Data;
+            AllStates = result.Data!;
         }
     }
     private async Task LoadObligeeTypes()
@@ -200,11 +200,11 @@
         var result = await DataAccess.GetObligeeTypes();
         if (result.Errors.Any())
         {
-            LoggingService.LogError("Error loading Obligee Types.", result.Errors.ToString());
+            LoggingService.LogError("Error loading Obligee Types.", result.Errors.ToString() ?? "");
         }
         else
         {
-            ObligeeTypes = result.Data;
+            ObligeeTypes = result.Data!;
         }
     }
     private async Task CancelClicked()
@@ -216,13 +216,13 @@
     {
         newObligee.Id = Guid.NewGuid();
         var result = await DataAccess.CreateObligee(newObligee.Id, newObligee.IdNavigation.FullName, "Public", newObligee.PrintStatusLetter,
-        newObligee.Notes, NewAddress.Address1, NewAddress.Address2, NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
+        newObligee.Notes, NewAddress.Address1, NewAddress.Address2, NewAddress.City, NewAddress.StateCode ?? "", NewAddress.PostalCode ?? "",
         NewPhoneNumber.MainNumber.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", ""), null);
 
         //TODO: Handle errors better.
         if (result.Errors.Any())
         {
-            LoggingService.LogError("Error creating obligee", result.Errors.ToString());
+            LoggingService.LogError("Error creating obligee", result.Errors.ToString() ?? "");
             NotificationService.Notify(new NotificationMessage
                 {
                     Severity = NotificationSeverity.Error,
@@ -251,7 +251,7 @@
             }
             else
             {
-                NavigationManager.NavigateTo("/Obligee/" + result.Data.ObligeeNum);
+                NavigationManager.NavigateTo("/Obligee/" + result.Data!.ObligeeNum);
             }
         }
     }

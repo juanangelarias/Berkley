@@ -96,14 +96,19 @@
 </RadzenRow>
 
 @code {
-    [Parameter] public string AccountNumber { get; set; }
-    private List<AccountProgram> ProgramsToDisplay { get; set; } = new List<AccountProgram>();
-    private RadzenDataGrid<AccountProgram> programGrid { get; set; }
+    [Parameter] public string AccountNumber { get; set; } = "";
+    private List<AccountProgram> ProgramsToDisplay { get; set; } = [];
+    private RadzenDataGrid<AccountProgram> programGrid { get; set; } = null!;
 
-    private List<AccountProgram> programsToInsert = new List<AccountProgram>();
-    private List<AccountProgram> programsToUpdate = new List<AccountProgram>();
+    private List<AccountProgram> programsToInsert = [];
+    private List<AccountProgram> programsToUpdate;
 
     private bool isLoading = false;
+    
+    public AccountProgramDisplay()
+    {
+        programsToUpdate = new List<AccountProgram>();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -182,7 +187,7 @@
 
         if (result.Errors.Any())
         {
-            LoggingService.LogError("Error saving account program changes", result.Errors.ToString());
+            LoggingService.LogError("Error saving account program changes", result.Errors.ToString() ?? "");
             NotificationService.Notify(new NotificationMessage
                 {
                     Detail = "Error saving account program.",

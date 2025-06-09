@@ -326,6 +326,8 @@
             license.IsActive
         );
 
+        // ToDo JAA Fix This before push!!!!! _ => result handle errors
+        
         _licensesToInsert.Remove(license);
         //await LoadLicenses();
         //TODO: Check for errors and notify.
@@ -357,6 +359,8 @@
             license.State,
             license.IsActive
         );
+        
+        // ToDo JAA Same here!!!!
     }
 
     private async Task StateFilterChange()

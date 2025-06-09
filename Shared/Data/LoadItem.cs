@@ -104,7 +104,7 @@ public class CachedResult<T> : CachedResult
                     var msg = $"Exception deserializing cache from local storage.  Type: {typeof(T).Name}";
                     throw new Exception(msg, ex);
                 }
-            return (T)DataObject;
+            return (T)DataObject!;
         }
 
         set => DataObject = value;

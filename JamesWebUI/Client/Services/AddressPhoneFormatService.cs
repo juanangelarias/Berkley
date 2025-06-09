@@ -131,14 +131,14 @@ namespace JamesWebUI.Client.Services
         /// If the country has an unsupported format, it will be formatted as a US address with "|Address formatting not supported for this country" appended to the result</remarks>
         public async ValueTask<string> GetAddressFinalLineAsync(Address address)
         {
-            var countryCode = address?.StateCodeNavigation?.CountryCode ?? "US";
-            var country = address?.StateCodeNavigation?.CountryCodeNavigation ??
+            var countryCode = address.StateCodeNavigation?.CountryCode ?? "US";
+            var country = address.StateCodeNavigation?.CountryCodeNavigation ??
                           (await GetCountryFromCodeAsync(countryCode));
             //HACK: Hardcoding db values isn't typically good practice, but is good enough here
             switch (country.AddressFinalLineFormat)
             {
                 case "City, State PostalCode":
-                    return $"{address?.City ?? "xxx"}, {address?.StateCode??"xx"} {FormatPostalCodeForCountryAsync(address).Result}";
+                    return $"{address.City}, {address.StateCode??"xx"} {FormatPostalCodeForCountryAsync(address).Result}";
                 case "City, PostalCode":
                     return $"{address.City}, {(await FormatPostalCodeForCountryAsync(address))}";
                 case "City PostalCode":

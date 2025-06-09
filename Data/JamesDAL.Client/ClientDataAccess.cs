@@ -38,7 +38,7 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accountNumber)
         {
-            return await ExecuteGet<List<AdditionalRelatedParty>>(async () => await jamesClient.GetAdditionalRelatedParties.ExecuteAsync(accountNumber),
+            return await ExecuteGet<List<AdditionalRelatedParty>>(async () => await jamesClient.GetAdditionalRelatedParties.ExecuteAsync(accountNumber ?? ""),
                 "AdditionalRelatedParties");
         }
         public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
@@ -77,8 +77,8 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber)
         {
-            return await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
-                "AgencyByAgencyNumber");
+            return (await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
+                "AgencyByAgencyNumber"))!;
 
         }
 
@@ -86,7 +86,7 @@ namespace James.Data.Client
         {
             var result = await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyNameAndNumberById.ExecuteAsync(agencyId),
                 "AgencyByAgencyNumber");
-            return result;
+            return result!;
         }
 
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
@@ -268,10 +268,6 @@ namespace James.Data.Client
             return await ExecuteGet<List<PowerOfAttorney>>(async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId),
                 "AgencyPOAs");
         }
-        public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPOADocumentNames()
-        {
-            return await ExecuteGet<List<PowerOfAttorneyDocumentNameDm>>(async () => await jamesClient.GetPOADocumentNames.ExecuteAsync());
-        }
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
         {
             return await ExecuteGet<List<PowerOfAttorneyStatusDm>>(async () => await jamesClient.GetAllPoaStatuses.ExecuteAsync(),
@@ -449,6 +445,25 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes()
         {
             return await ExecuteGet<List<VImagingCategoryTabDivisionType>>(async () => await jamesClient.GetAllImagingCategoryTabDivisionTypes.ExecuteAsync(), "AllImagingCategoryTabDivisionType");
+        }
+
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
+        {
+            var settingList =
+                await ExecuteGet<List<KeyValuePair<string, string>>>(
+                    async () => await jamesClient.GetUserSettings.ExecuteAsync(), "UserSettings");
+            return new DataAccessResult<Dictionary<string, string>>
+                { Data = settingList.Data?.ToDictionary(), Errors = settingList.Errors };
+        }
+
+        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string value)
+        {
+            throw new NotImplementedException();
         }
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
@@ -699,7 +714,7 @@ namespace James.Data.Client
                 PhoneNumber = phoneNumber,
                 Email = email
             });
-            return new DataAccessResult<Obligee>() { Data = ThisToThat.ToEntityType<Obligee>(saveResult.Data.CreateObligee.Obligee) };
+            return new DataAccessResult<Obligee>() { Data = ThisToThat.ToEntityType<Obligee>(saveResult.Data?.CreateObligee.Obligee) };
         }
         public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId,
             bool appointingState,

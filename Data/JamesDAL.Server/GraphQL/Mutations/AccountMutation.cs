@@ -125,17 +125,17 @@ namespace James.Data.Server.GraphQL.Mutations
             //TODO: Add StatusChangeBy
             AccountProgramStatusHistory newHistory = new AccountProgramStatusHistory
             {
-                OldSingle = oldProgram.Single,
+                OldSingle = oldProgram?.Single,
                 NewSingle = single,
-                OldAggregate = oldProgram.Aggregate,
+                OldAggregate = oldProgram?.Aggregate,
                 NewAggregate = aggregate,
-                OldStatus = oldProgram.StatusId,
+                OldStatus = oldProgram?.StatusId,
                 NewStatus = statusId,
                 StatusDate = DateTime.Now,
                 AccountProgramId = programId
             };
 
-            oldProgram.Effective = effective;
+            oldProgram!.Effective = effective;
             oldProgram.Expiration = expritation;
             oldProgram.Single = single;
             oldProgram.Aggregate = aggregate;

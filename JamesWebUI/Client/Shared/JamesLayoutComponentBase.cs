@@ -157,56 +157,55 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         return loadItem;
     }
 
-    private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-        string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property;
+        private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+            string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property ?? "";
 
-    private static string SubstituteFilterPropertyIfNeeded(string originalFilter,
-        ExportColumnSubstitutions substitutions)
-    {
-        if (originalFilter == null!) return null!;
-        foreach (var substitution in substitutions)
+        private static string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
         {
-            originalFilter = Regex.Replace(originalFilter, $"(?<=[(\\s\\(^]){substitution.Original}(?=[\\s\\)])",
-                substitution.Property);
-        }
+            if (originalFilter == null!) return null!;
+            foreach (var substitution in substitutions)
+            {
+                originalFilter = Regex.Replace(originalFilter, $"(?<=[(\\s\\(^]){substitution.Original}(?=[\\s\\)])",
+                    substitution.Property ?? "");
+            }
 
         return originalFilter;
     }
 
-    private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-        string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title;
+        private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+                string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";
 
-    public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
-        ExportColumnSubstitutions? propertySubstitutions = null)
-    {
-        propertySubstitutions ??= new();
-        var selectColumns = dataGrid.ColumnsCollection
-            .Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property))
-            .Select(c => new
-            {
-                Property = SubstitutePropertyIfNeeded(c.Property, propertySubstitutions),
-                Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)
-            }).ToList();
-        selectColumns.AddRange(propertySubstitutions.Where(s => s.Value.Original == string.Empty)
-            .Select(s => new { s.Value.Property, s.Value.Title }));
-        var selectColumnString = string.Join(",",
-            selectColumns
-                .Select(cSub => cSub with
-                {
-                    Title = cSub.Title.Replace(".", "_")
-                })
-                .Select(pt =>
-                    pt.Property == pt.Title
-                        ? pt.Property
-                        : $"{pt.Property} as {pt.Title.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
-        var query = new Query()
+        public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
+            ExportColumnSubstitutions? propertySubstitutions = null)
         {
-            OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),
-            Filter = SubstituteFilterPropertyIfNeeded(dataGrid.Query.Filter, propertySubstitutions),
-            Select = selectColumnString
-        };
-        return query.ToUrl($"{url}/{(format == ExportFormat.CSV ? "CSV" : "Excel")}");
-    }
+            propertySubstitutions ??= new();
+            var selectColumns = dataGrid.ColumnsCollection
+                .Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property))
+                .Select(c => new
+                {
+                    Property = SubstitutePropertyIfNeeded(c.Property, propertySubstitutions),
+                    Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)
+                }).ToList();
+            selectColumns.AddRange(propertySubstitutions.Where(s => s.Value.Original == string.Empty)
+                .Select(s => new { s.Value.Property, s.Value.Title }));
+            var selectColumnString = string.Join(",",
+                selectColumns
+                    .Select(cSub => cSub with
+                    {
+                        Title = cSub.Title?.Replace(".", "_")
+                    })
+                    .Select(pt =>
+                        pt.Property == pt.Title
+                            ? pt.Property
+                            : $"{pt.Property} as {pt.Title?.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
+            var query = new Query()
+            {
+                OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),
+                Filter = SubstituteFilterPropertyIfNeeded(dataGrid.Query.Filter, propertySubstitutions),
+                Select = selectColumnString
+            };
+            return query.ToUrl($"{url}/{(format == ExportFormat.CSV ? "CSV" : "Excel")}");
+        }
 
     protected async Task HandleLoadError(string defaultError, string[] errors)
     {

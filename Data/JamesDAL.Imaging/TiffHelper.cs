@@ -33,7 +33,7 @@ public static class TiffHelper
         var enc = Encoder.SaveFlag;
         var ep = new EncoderParameters(1);
 
-        Bitmap pages = null;
+        Bitmap? pages = null;
         var frame = 0;
 
         foreach (var tiffImage in tiffImages)
@@ -66,7 +66,7 @@ public static class TiffHelper
                             //save the intermediate frames
                             ep.Param[0] = new EncoderParameter(enc,
                                 (long) EncoderValue.FrameDimensionPage);
-                            pages.SaveAdd((Bitmap) Image.FromStream(tempImg), ep);
+                            pages?.SaveAdd((Bitmap) Image.FromStream(tempImg), ep);
                         }
                     }
                     frame++;
@@ -79,7 +79,7 @@ public static class TiffHelper
         {
             //flush and close.
             ep.Param[0] = new EncoderParameter(enc, (long) EncoderValue.Flush);
-            pages.SaveAdd(ep);
+            pages?.SaveAdd(ep);
         }
         msMerge.Position = 0;
         return msMerge;

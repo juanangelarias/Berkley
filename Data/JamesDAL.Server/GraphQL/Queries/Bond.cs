@@ -27,7 +27,7 @@ public partial class Query
         var commercialBond = await ctx.BondRequestCommercials.FirstOrDefaultAsync(b => b.BondRequestNumber == bondRequestNumber);
         if (commercialBond == null)
             throw new GraphQLException("No bond with this bond request number exists");
-        return commercialBond.BondNumber.Trim();
+        return commercialBond.BondNumber?.Trim();
     }
 
     [Authorize]

@@ -68,7 +68,6 @@
     [Parameter] public required string AgencyNumber { get; set; }
 
     private List<Account> _agencyAccounts = new();
-    // ToDo (JAA) Will this field be used? 
     private RadzenDataGrid<Account> _agencyAccountGrid = null!;
     private bool _isLoading;
 
@@ -80,6 +79,7 @@
         await Task.Delay(100);
 
     }
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();

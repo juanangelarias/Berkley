@@ -88,7 +88,7 @@
         <RadzenDataGridColumn TItem="AgencyInventory" Title="City" Property="Address.City"
                               Width="150px">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address!.City" />
+                <RadzenText Text="@inventory.Address?.City" />
             </Template>
             <EditTemplate Context="inventory">
                 <RadzenTextBox @bind-Value="@inventory.Address!.City" />

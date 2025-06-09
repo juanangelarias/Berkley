@@ -10,12 +10,12 @@ namespace JamesWebUI.Client.Components
     /// </summary>
     public partial class PositionSavingTabs : RadzenTabs
     {
-        [Inject]
-        NavigationManager NavigationManager { get; set; }
+        [Inject] 
+        private NavigationManager NavigationManager { get; set; } = null!;
 
-        [Parameter]
-        public string TabControlName { get; set; }
-        public List<PositionSavingTabsItem> AllTabs { get; set; } = new List<PositionSavingTabsItem>();
+        [Parameter] 
+        public string TabControlName { get; set; } = null!;
+        public List<PositionSavingTabsItem> AllTabs { get; set; } = [];
 
         private bool shouldSwitch = true;
 

@@ -411,12 +411,12 @@
         try
         {
             //TODO: Handle Est. Annual Premium
-            var result = await DataAccess.SetAccountGeneralInfo(AccountToDisplay.Id, AccountToDisplay.YearOpened, AccountToDisplay.CurrentManagementYear, AccountToDisplay.BusinessTypeClass, AccountToDisplay.BusinessType,
-            AccountToDisplay.PriorSuretyCompany, null);
+            var result = await DataAccess.SetAccountGeneralInfo(AccountToDisplay?.Id ?? Guid.Empty, AccountToDisplay?.YearOpened, AccountToDisplay?.CurrentManagementYear, 
+                AccountToDisplay?.BusinessTypeClass, AccountToDisplay?.BusinessType, AccountToDisplay?.PriorSuretyCompany, null);
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString());
+                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString() ?? "");
                 NotificationService.Notify(new NotificationMessage
                     {
                         Detail = "Error saving changes.",
@@ -445,12 +445,12 @@
     {
         try
         {
-            var result = await DataAccess.SetAccountSystems(AccountToDisplay.Id, AccountToDisplay.EstimatingSystem, AccountToDisplay.EstimatingSignoff,
-            AccountToDisplay.AccountingSystem, AccountToDisplay.InterimWips, AccountToDisplay.Pocinterims);
+            var result = await DataAccess.SetAccountSystems(AccountToDisplay?.Id ?? Guid.Empty, AccountToDisplay?.EstimatingSystem, AccountToDisplay?.EstimatingSignoff,
+                AccountToDisplay?.AccountingSystem, AccountToDisplay?.InterimWips, AccountToDisplay?.Pocinterims);
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString());
+                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString() ?? "");
                 NotificationService.Notify(new NotificationMessage
                     {
                         Detail = "Error saving changes.",
@@ -558,10 +558,10 @@
             "Uploading a credit report to imaging returned an error",
             "Imaging",
             data: new Dictionary<string, string>
-                                {
+            {
                 { "Error Message", message },
-                { "AccountNum", AccountToDisplay.AccountNum}
-                                });
+                { "AccountNum", AccountToDisplay?.AccountNum ?? "" }
+            });
         NotifySaveError([message], "credit report");
     }
 }

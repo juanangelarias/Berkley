@@ -121,3 +121,10 @@ query GetAllCountries {
     postalCodeMask
   }
 }
+
+query GetUserSettings {
+  userSettings {
+    key
+    value
+  }
+}

@@ -99,7 +99,7 @@
         if (result.Success)
             RelatedParties = result.Data!;
         else
-            await HandleLoadError("Error loading Agency Related Parties", result.Errors);
+            await HandleError("Error loading Agency Related Parties", result.Errors);
     }
     
     protected async Task ShowLoading()

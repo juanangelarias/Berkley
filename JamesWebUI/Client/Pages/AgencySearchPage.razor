@@ -146,7 +146,7 @@
                 if (result.Success)
                     agencyResults = result.Data;
                 else
-                    await HandleLoadError("Error searching agencies in AgencySearch", result.Errors);
+                    await HandleError("Error searching agencies in AgencySearch", result.Errors);
             },
             CacheDuration = TimeSpan.FromSeconds(1)
         }, "Search Agencies");

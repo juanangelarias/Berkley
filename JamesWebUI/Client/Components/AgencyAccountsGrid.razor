@@ -75,7 +75,6 @@
     {
         await base.OnInitializedAsync();
 
-        // ToDo (JAA) will it be code here?
         await Task.Delay(100);
 
     }
@@ -113,7 +112,7 @@
         if (result.Success)
             _agencyAccounts = result.Data!;
         else
-            await HandleLoadError("Failed to load Agency Accounts. No Response", result.Errors);
+            await HandleError("Failed to load Agency Accounts. No Response", result.Errors);
     }
 
     protected async Task ShowLoading()

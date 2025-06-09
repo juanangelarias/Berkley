@@ -175,7 +175,7 @@
                 if (result.Success)
                     AgentToDisplay = result.Data!;
                 else
-                    await HandleLoadError("Error when loading agent.", result.Errors);
+                    await HandleError("Error when loading agent.", result.Errors);
             }
         }, $"Agent {AgentId}");
 
@@ -201,7 +201,7 @@
                     AllInsurers = result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
                 }
                 else
-                    await HandleLoadError("Error getting insurers in Agency Contract Grid", result.Errors);
+                    await HandleError("Error getting insurers in Agency Contract Grid", result.Errors);
             }
         }, "Insurers");
 

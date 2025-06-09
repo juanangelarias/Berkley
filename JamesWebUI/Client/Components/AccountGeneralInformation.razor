@@ -540,7 +540,7 @@
         if (result.Success)
             inforceLOAs = result.Data!;
         else
-            await HandleLoadError("Failed to load Inforce LOAs: No Response", result.Errors);
+            await HandleError("Failed to load Inforce LOAs: No Response", result.Errors);
     }
 
     private async Task CreditReportUploaded(Guid? documentId, string accountNum)

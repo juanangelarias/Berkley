@@ -207,7 +207,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
             return query.ToUrl($"{url}/{(format == ExportFormat.CSV ? "CSV" : "Excel")}");
         }
 
-    protected async Task HandleLoadError(string defaultError, string[] errors)
+    protected async Task HandleError(string defaultError, string[] errors)
     {
         var errorMessage = errors.Length == 0
             ? [defaultError]

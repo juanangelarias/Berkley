@@ -95,7 +95,7 @@
                 if (result.Success)
                     ObligeeBonds = result.Data!;
                 else
-                    await HandleLoadError("Error loading Obligee bonds", result.Errors);
+                    await HandleError("Error loading Obligee bonds", result.Errors);
             }
         }, $"ObligeeBonds {ObligeeId}");
 

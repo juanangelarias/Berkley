@@ -79,7 +79,7 @@
                     if (docResult.Success)
                         DocTypes = docResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
                     else
-                        await HandleLoadError("Could not load POA document types.", docResult.Errors);
+                        await HandleError("Could not load POA document types.", docResult.Errors);
                 }
             }, "POADocumentName");
 

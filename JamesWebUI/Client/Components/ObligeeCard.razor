@@ -35,7 +35,7 @@
                 if (obligeeResult.Success)
                     ObligeeToDisplay = obligeeResult.Data!;
                 else
-                    await HandleLoadError("Error loading Obligee", obligeeResult.Errors);
+                    await HandleError("Error loading Obligee", obligeeResult.Errors);
             }
         }, $"Obligee {ObligeeId}");
 

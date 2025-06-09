@@ -62,7 +62,7 @@
                 if (pnResult.Success)
                     AllPhoneNumbers = pnResult.Data!;
                 else
-                    await HandleLoadError("GetAllLegalEntityPhoneNumbers returned error(s)", pnResult.Errors);
+                    await HandleError("GetAllLegalEntityPhoneNumbers returned error(s)", pnResult.Errors);
             }
         }, $"PhoneNumbers {LegalEntityId}");
 

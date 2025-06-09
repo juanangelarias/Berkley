@@ -50,7 +50,7 @@
                 if (searchResult.Success)
                     SearchResults = searchResult.Data!;
                 else
-                    await HandleLoadError("Error loading search results.", searchResult.Errors);
+                    await HandleError("Error loading search results.", searchResult.Errors);
             }
         }, $"SearchResult {SelectedAgentId}");
 

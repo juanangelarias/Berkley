@@ -142,7 +142,7 @@
         if (result.Success)
             ProgramsToDisplay = result.Data!;
         else
-            await HandleLoadError("Failed to load Account Programs: No Response", result.Errors);
+            await HandleError("Failed to load Account Programs: No Response", result.Errors);
     }
 
     protected async Task ShowLoading()

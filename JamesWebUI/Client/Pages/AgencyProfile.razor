@@ -235,7 +235,7 @@
                         _agencyToDisplay = _agencyResult.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
                     }
                     else
-                        await HandleLoadError("Agency failed to load", _agencyResult.Errors);
+                        await HandleError("Agency failed to load", _agencyResult.Errors);
                 },
                 CacheDuration = TimeSpan.FromHours(8) //Subscription will update this if changed, so a long cache time is appropriate.
             }, $"Agency {agencyNumber}");
@@ -256,7 +256,7 @@
                     AllBranches = _branchesResult.Data.OrderBy(b => b.Name).ToList();
                 }
                 else
-                    await HandleLoadError("Branches failed to load", _branchesResult.Errors);
+                    await HandleError("Branches failed to load", _branchesResult.Errors);
             }
         }, "Branches");
 

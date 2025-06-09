@@ -212,7 +212,7 @@
         if (agentResult.Success)
             AgencyLicenses = agentResult.Data!.AgencyLicenses.ToList();
         else
-            await HandleLoadError("Error loading Agency Licenses", agentResult.Errors);
+            await HandleError("Error loading Agency Licenses", agentResult.Errors);
     }
     
     private async Task HandleInsurerLoadResult(IDataAccessResult<List<Insurer>> insurersResult)
@@ -220,7 +220,7 @@
         if (insurersResult.Success)
             AllInsurers = insurersResult.Data!;
         else
-            await HandleLoadError("Error loading Insurers list", insurersResult.Errors);
+            await HandleError("Error loading Insurers list", insurersResult.Errors);
     }
     
     private async Task HandleStateLoadResult(IDataAccessResult<List<State>> statesResult)
@@ -228,7 +228,7 @@
         if (statesResult.Success)
             AllStates = statesResult.Data!;
         else
-            await HandleLoadError("Error loading States list", statesResult.Errors);
+            await HandleError("Error loading States list", statesResult.Errors);
     }
 
     private void Reset()
@@ -289,7 +289,7 @@
     {
         //This is where we handle row inserts.
         //TODO: Get the Agency Id
-        _ = await DataAccess.CreateLicense(
+        var result = await DataAccess.CreateLicense(
             license.Id,
             AgentId,
             AgentId,
@@ -305,9 +305,13 @@
             license.IsActive
         );
 
-        _licensesToInsert.Remove(license);
-        //await LoadLicenses();
-        //TODO: Check for errors and notify.
+        if (result.Success)
+        {
+            _licensesToInsert.Remove(license);
+            //await LoadLicenses();
+        }
+        else
+            await HandleError("Error Creating License", result.Errors);
     }
 
     private async Task CancelLicenseEdit(AgencyLicense license)
@@ -322,7 +326,7 @@
     {
         Reset(license);
         //This is where we handle row Updates.
-        _ = await DataAccess.SetAgencyLicense(license.Id,
+        var result = await DataAccess.SetAgencyLicense(license.Id,
             license.AgencyId,
             license.AgentId,
             license.AppointingState,
@@ -336,6 +340,9 @@
             license.State,
             license.IsActive
         );
+
+        if (!result.Success)
+            await HandleError("Error setting Agency License", result.Errors);
     }
 
     private async Task StateFilterChange()

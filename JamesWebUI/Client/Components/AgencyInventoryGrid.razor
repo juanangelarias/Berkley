@@ -157,13 +157,6 @@
         await LoadData();
     }
 
-    // ToDo (JAA) This way will not work when trying to reload licenses
-    // after add, edit or delete an inventory because it will read from
-    // the cache and not from the database.
-    // We need to use subscriptions for the reloading of AgencyInventories
-    // or add a boolean parameter in the DataCache.ParallelGetCacheOrDataAsync and
-    // DataCache.GetCacheOrLoadDataAsync that when it is true force the load from 
-    // the database
     private async Task LoadData()
     {
         if (AgencyId == Guid.Empty)
@@ -217,7 +210,7 @@
         if (inventory.Success)
             AgencyInventories = inventory.Data!;
         else
-            await HandleLoadError("Error loading Agency Inventory", inventory.Errors);
+            await HandleError("Error loading Agency Inventory", inventory.Errors);
     }
 
     private async Task HandleDocumentTypeLoadResult(IDataAccessResult<List<InventoryDocumentDm>> docTypes)
@@ -225,7 +218,7 @@
         if (docTypes.Success)
             AllDocTypes = docTypes.Data!;
         else
-            await HandleLoadError("Error loading Document Types", docTypes.Errors);
+            await HandleError("Error loading Document Types", docTypes.Errors);
     }
 
     private async Task HandleStateLoadResult(IDataAccessResult<List<State>> states)
@@ -233,7 +226,7 @@
         if (states.Success)
             AllStates = states.Data!;
         else
-            await HandleLoadError("Error loading States", states.Errors);
+            await HandleError("Error loading States", states.Errors);
     }
 
     void Reset()
@@ -270,7 +263,7 @@
         if (inventory.Success)
             AgencyInventories = inventory.Data!;
         else
-            await HandleLoadError("Error loading Agency Inventory", inventory.Errors);
+            await HandleError("Error loading Agency Inventory", inventory.Errors);
     }
 
     private async Task EditInventoryRow(AgencyInventory inventory)

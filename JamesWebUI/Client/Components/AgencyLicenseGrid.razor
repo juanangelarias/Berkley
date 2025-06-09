@@ -185,13 +185,6 @@
         }, $"AgencyLicenses {AgencyId}");
 
 
-    // ToDo (JAA) This way will not work when trying to reload licenses
-    // after add, edit or delete a license because it will read from
-    // the cache and not from the database.
-    // We need to use subscriptions for the reloading of agencyLicenses
-    // or add a boolean parameter in the DataCache.ParallelGetCacheOrDataAsync and
-    // DataCache.GetCacheOrLoadDataAsync that when it is true force the load from 
-    // the database
     private async Task LoadData()
     {
         if(AgencyId == Guid.Empty)
@@ -235,7 +228,7 @@
         if (state.Success)
             AllStates = state.Data!;
         else
-            await HandleLoadError("Error loading States", state.Errors);
+            await HandleError("Error loading States", state.Errors);
     }
     
     private async Task HandleInsurerLoadResult(IDataAccessResult<List<Insurer>> insurers)
@@ -243,7 +236,7 @@
         if (insurers.Success)
             AllInsurers = insurers.Data!;
         else
-            await HandleLoadError("Error loading Insurers", insurers.Errors);
+            await HandleError("Error loading Insurers", insurers.Errors);
     }
     
     private async Task HandleAgencyLicensesLoadResult(IDataAccessResult<List<AgencyLicense>> licenses)
@@ -251,7 +244,7 @@
         if (licenses.Success)
             AgencyLicenses = licenses.Data!;
         else
-            await HandleLoadError("Error loading Agency Licenses", licenses.Errors);
+            await HandleError("Error loading Agency Licenses", licenses.Errors);
     }
 
     private void Reset()
@@ -293,8 +286,12 @@
     {
         await ShowLoading();
         Reset(license);
-        _ = await DataAccess.DeleteLicense(license.Id);
-        await LoadLicenses();
+        var result = await DataAccess.DeleteLicense(license.Id);
+
+        if (result.Success)
+            await LoadLicenses();
+        else
+            await HandleError("Error deleting License", result.Errors);
     }
 
     private async Task SaveLicenseRow(AgencyLicense license)
@@ -310,7 +307,7 @@
     {
         //This is where we handle row inserts.
 
-        _ = await DataAccess.CreateLicense(
+        var result = await DataAccess.CreateLicense(
             license.Id,
             AgencyId,
             null,
@@ -326,7 +323,9 @@
             license.IsActive
         );
 
-        // ToDo JAA Fix This before push!!!!! _ => result handle errors
+        if (!result.Success)
+            await HandleError("Error creating License", result.Errors);
+        
         
         _licensesToInsert.Remove(license);
         //await LoadLicenses();
@@ -345,7 +344,7 @@
     {
         Reset(license);
         //This is where we handle row Updates.
-        _ = await DataAccess.SetAgencyLicense(license.Id,
+        var result = await DataAccess.SetAgencyLicense(license.Id,
             license.AgencyId,
             license.AgentId,
             license.AppointingState,
@@ -359,8 +358,9 @@
             license.State,
             license.IsActive
         );
-        
-        // ToDo JAA Same here!!!!
+
+        if (!result.Success)
+            await HandleError("Error Setting Agency License", result.Errors);
     }
 
     private async Task StateFilterChange()

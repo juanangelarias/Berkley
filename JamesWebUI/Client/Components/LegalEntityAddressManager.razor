@@ -75,7 +75,7 @@
                 }
                 else
                 {
-                    await HandleLoadError("Error loading addresses.", _addressesLoadResult.Errors);
+                    await HandleError("Error loading addresses.", _addressesLoadResult.Errors);
                 }
             },
             AddSubscriptionTask = li =>
@@ -109,7 +109,7 @@
         }
         else
         {
-            await HandleLoadError("GetAllLegalEntityAddresses return error(s)", _addressesLoadResult.Errors);
+            await HandleError("GetAllLegalEntityAddresses return error(s)", _addressesLoadResult.Errors);
         }
     }
 }

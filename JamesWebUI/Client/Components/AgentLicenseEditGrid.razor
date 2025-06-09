@@ -49,8 +49,6 @@
 </RadzenDataGrid>
 
 @code {
-    // ToDo (JAA) Could not test it... this component is not called/used
-    
     [Parameter] public string AgentId { get; set; } = null!;
     private RadzenDataGrid<AgencyLicense> _licenseGrid = null!;
     private List<AgencyLicense> _licenses = [];
@@ -84,7 +82,7 @@
                     if (agent.Success)
                         _licenses = agent.Data?.AgencyLicenses.ToList() ?? [];
                     else
-                        await HandleLoadError("Error loading licenses in Agent License Edit Grid", agent.Errors);
+                        await HandleError("Error loading licenses in Agent License Edit Grid", agent.Errors);
                 }
             }, $"Agent {AgentId}"),
             AddEventNotify(new LoadItem
@@ -101,7 +99,7 @@
                     if (insurers.Success)
                         _insurers = insurers.Data?.ToList() ?? [];
                     else
-                        await HandleLoadError("Error loading insurers", insurers.Errors);
+                        await HandleError("Error loading insurers", insurers.Errors);
                 }
             }, "Insurers")
         ];

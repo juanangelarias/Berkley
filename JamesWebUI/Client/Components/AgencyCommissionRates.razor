@@ -87,7 +87,7 @@
 
         if (!result.Success)
         {
-            await HandleLoadError("Error loading Agency Commission Rates", result.Errors);
+            await HandleError("Error loading Agency Commission Rates", result.Errors);
             return;
         }
 

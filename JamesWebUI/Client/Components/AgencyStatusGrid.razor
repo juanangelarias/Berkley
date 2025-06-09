@@ -124,7 +124,7 @@
                     if (statuses.Success)
                         AllStatuses = statuses.Data!;
                     else
-                        await HandleLoadError("Error getting agency statuses for Agency Status Grid.", statuses.Errors);
+                        await HandleError("Error getting agency statuses for Agency Status Grid.", statuses.Errors);
                 }
             }, "AgencyStatuses"),
             AgencyStatusLogLoad
@@ -143,7 +143,7 @@
         if (statusLogs.Success)
             AgencyStatusLogs = statusLogs.Data!;
         else
-            await HandleLoadError("Error get AgencyStatusLog in AgencyStatusGrid.", statusLogs.Errors);
+            await HandleError("Error get AgencyStatusLog in AgencyStatusGrid.", statusLogs.Errors);
     }
 
     private void Reset()
@@ -186,7 +186,7 @@
         var userName = TxtUserName.Text;
         var userProfile = await DataAccess.GetUserProfileByUserName(userName);
 
-        _ = await DataAccess.CreateAgencyStatusLog(
+        var result = await DataAccess.CreateAgencyStatusLog(
             statusLog.Id,
             AgencyNumber,
             statusLog.Effective,
@@ -196,7 +196,8 @@
             statusLog.Comments
         );
 
-        //ToDo JAA handle errors
+        if (!result.Success)
+            await HandleError("Error getting profile by user name", result.Errors);
         
         StatusLogsToInsert.Remove(statusLog);
     }

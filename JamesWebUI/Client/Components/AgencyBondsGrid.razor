@@ -120,7 +120,7 @@
         if (result.Success)
             _agencyBonds = result.Data!;
         else
-            await HandleLoadError("Failed to load Agency Bonds: No Response.", result.Errors);
+            await HandleError("Failed to load Agency Bonds: No Response.", result.Errors);
     }
     
     protected async Task ShowLoading()

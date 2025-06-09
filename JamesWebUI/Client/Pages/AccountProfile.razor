@@ -213,7 +213,7 @@
                 if (result.Success)
                     AccountToDisplay = result.Data!;
                 else
-                    await HandleLoadError("Unable to retrieve account.", result.Errors);
+                    await HandleError("Unable to retrieve account.", result.Errors);
             }
         }, $"Account {AccountNumber}");
 
@@ -237,7 +237,7 @@
                 if (result.Success)
                     InForceLOAs = result.Data!;
                 else
-                    await HandleLoadError("Unable to retrieve Account Inforce LOAs.", result.Errors);
+                    await HandleError("Unable to retrieve Account Inforce LOAs.", result.Errors);
             }
         }, $"InforceAccountLOA {AccountNumber}");
 

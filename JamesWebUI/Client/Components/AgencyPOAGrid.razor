@@ -208,7 +208,7 @@
                 .ToList(); 
         }
         else
-            await HandleLoadError("Error loading POAs in the AgencyPOAGrid", poas.Errors);
+            await HandleError("Error loading POAs in the AgencyPOAGrid", poas.Errors);
     }
     
     private async Task HandleInsurersResult(IDataAccessResult<List<Insurer>> insurers)
@@ -216,7 +216,7 @@
         if (insurers.Success)
             AllInsurers = insurers.Data!;
         else
-            await HandleLoadError("Error getting insurers in the AgencyPOAGrid", insurers.Errors);
+            await HandleError("Error getting insurers in the AgencyPOAGrid", insurers.Errors);
     }
     
     private async Task HandleStatusesResult(IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses)
@@ -224,7 +224,7 @@
         if (statuses.Success)
             AllStatuses = statuses.Data!;
         else
-            await HandleLoadError("Error getting all statuses in the AgencyPOAGrid", statuses.Errors);
+            await HandleError("Error getting all statuses in the AgencyPOAGrid", statuses.Errors);
     }
 
     private Task Reset()
@@ -336,7 +336,7 @@
 
     private async Task OnPoaCreate(PowerOfAttorney powerOfAttorney)
     {
-        _ = await DataAccess.CreateAgencyPOA(powerOfAttorney.Id,
+        var result = await DataAccess.CreateAgencyPOA(powerOfAttorney.Id,
             powerOfAttorney.Insurer.Id,
             AgencyId,
             Convert.ToInt32(powerOfAttorney.Limit),
@@ -345,17 +345,24 @@
             powerOfAttorney.CurrentIssued,
             powerOfAttorney.Comments,
             powerOfAttorney.Status);
-        _poasToInsert.Remove(powerOfAttorney);
+
+        if (result.Success)
+            _poasToInsert.Remove(powerOfAttorney);
+        else
+            await HandleError("Error creating Agency POA", result.Errors);
     }
 
     private async Task DeletePoaRow(PowerOfAttorney powerOfAttorney)
     {
         await ShowLoading();
         await Reset(powerOfAttorney);
-        _ = await DataAccess.DeleteAgencyPOA(powerOfAttorney.Id);
-        await LoadPOAs();
+        var result = await DataAccess.DeleteAgencyPOA(powerOfAttorney.Id);
+        if (result.Success)
+            await LoadPOAs();
+        else
+            await HandleError("Error deleting Agency POA", result.Errors);
     }
-    
+
     private void ShowTooltip(ElementReference elementReference, string message, TooltipOptions? options = null) => TooltipService.Open(elementReference, message, options);
 
     private async Task PoaDocumentUploaded(Guid? documentId, Guid poaId)

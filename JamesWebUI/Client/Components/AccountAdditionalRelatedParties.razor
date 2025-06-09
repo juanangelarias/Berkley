@@ -66,6 +66,6 @@
         if (result.Success)
             RelatedParties = result.Data!;
         else
-            await HandleLoadError("Failed to load related parties: No Response", result.Errors);
+            await HandleError("Failed to load related parties: No Response", result.Errors);
     }
 }

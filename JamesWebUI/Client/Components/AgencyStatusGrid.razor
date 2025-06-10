@@ -94,7 +94,11 @@
                     Data = (List<AgencyStatusLog>)cache!
                 },
                 ResultVariable = () => _statusLogs,
-                AfterLoad = async void () => { await StatusLogsAfterLoad(_statusLogs); }
+                AfterLoad = () =>
+                {
+                    if (_statusLogs.Success)
+                        AgencyStatusLogs = _statusLogs.Data!;
+                }
             }, $"AgencyStatusLog {AgencyNumber}");
 
     protected override async Task OnParametersSetAsync()
@@ -119,12 +123,10 @@
                     Data = (List<AgencyStatusDm>)cache!
                 },
                 ResultVariable = () => statuses,
-                AfterLoad = async void () =>
+                AfterLoad = () =>
                 {
                     if (statuses.Success)
                         AllStatuses = statuses.Data!;
-                    else
-                        await HandleError("Error getting agency statuses for Agency Status Grid.", statuses.Errors);
                 }
             }, "AgencyStatuses"),
             AgencyStatusLogLoad
@@ -136,14 +138,6 @@
     private async Task LoadAgencyStatusLog()
     {
         await DataCache.GetCacheOrLoadDataAsync(AgencyStatusLogLoad);
-    }
-    
-    private async Task StatusLogsAfterLoad(IDataAccessResult<List<AgencyStatusLog>> statusLogs)
-    {
-        if (statusLogs.Success)
-            AgencyStatusLogs = statusLogs.Data!;
-        else
-            await HandleError("Error get AgencyStatusLog in AgencyStatusGrid.", statusLogs.Errors);
     }
 
     private void Reset()

@@ -74,12 +74,10 @@
                     Data = (List<PowerOfAttorneyDocumentNameDm>)cache!
                 },
                 ResultVariable = () => docResult,
-                AfterLoad = async void () =>
+                AfterLoad = () =>
                 {
                     if (docResult.Success)
                         DocTypes = docResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
-                    else
-                        await HandleError("Could not load POA document types.", docResult.Errors);
                 }
             }, "POADocumentName");
 

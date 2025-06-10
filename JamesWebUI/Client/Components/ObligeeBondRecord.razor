@@ -90,12 +90,10 @@
                 Data = (List<Bond>)cache!
             },
             ResultVariable = () => result,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
                 if (result.Success)
                     ObligeeBonds = result.Data!;
-                else
-                    await HandleError("Error loading Obligee bonds", result.Errors);
             }
         }, $"ObligeeBonds {ObligeeId}");
 

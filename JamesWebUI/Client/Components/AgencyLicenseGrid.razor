@@ -181,7 +181,11 @@
                 Data = (List<AgencyLicense>)cache!
             },
             ResultVariable = () => _licenses,
-            AfterLoad = async void () => { await HandleAgencyLicensesLoadResult(_licenses); }
+            AfterLoad = () =>
+            {
+                if (_licenses.Success)
+                    AgencyLicenses = _licenses.Data!;
+            }
         }, $"AgencyLicenses {AgencyId}");
 
 
@@ -204,7 +208,11 @@
                     Data = (List<State>)cache!
                 },
                 ResultVariable = () => states,
-                AfterLoad = async void () => { await HandleStateLoadResult(states); }
+                AfterLoad = () =>
+                {
+                    if (states.Success)
+                        AllStates = states.Data!;
+                }
             }, "States"),
             AddEventNotify(new LoadItem
             {
@@ -215,36 +223,16 @@
                     Data = (List<Insurer>)cache!
                 },
                 ResultVariable = () => insurers,
-                AfterLoad = async void () => { await HandleInsurerLoadResult(insurers); }
+                AfterLoad = () =>
+                {
+                    if (insurers.Success)
+                        AllInsurers = insurers.Data!;
+                }
             }, "Insurers"),
             AgencyLicensesLoad
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(loadItems);
-    }
-
-    private async Task HandleStateLoadResult(IDataAccessResult<List<State>> state)
-    {
-        if (state.Success)
-            AllStates = state.Data!;
-        else
-            await HandleError("Error loading States", state.Errors);
-    }
-    
-    private async Task HandleInsurerLoadResult(IDataAccessResult<List<Insurer>> insurers)
-    {
-        if (insurers.Success)
-            AllInsurers = insurers.Data!;
-        else
-            await HandleError("Error loading Insurers", insurers.Errors);
-    }
-    
-    private async Task HandleAgencyLicensesLoadResult(IDataAccessResult<List<AgencyLicense>> licenses)
-    {
-        if (licenses.Success)
-            AgencyLicenses = licenses.Data!;
-        else
-            await HandleError("Error loading Agency Licenses", licenses.Errors);
     }
 
     private void Reset()
@@ -325,7 +313,6 @@
 
         if (!result.Success)
             await HandleError("Error creating License", result.Errors);
-        
         
         _licensesToInsert.Remove(license);
         //await LoadLicenses();

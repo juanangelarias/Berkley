@@ -208,12 +208,10 @@
             AsyncLoadTask = async () => result = await DataAccess.GetAccountByNumber(AccountNumber),
             CacheLoadTask = cache => result = new DataAccessResult<Account> { Data = (Account)cache! },
             ResultVariable = () => result,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
                 if (result.Success)
                     AccountToDisplay = result.Data!;
-                else
-                    await HandleError("Unable to retrieve account.", result.Errors);
             }
         }, $"Account {AccountNumber}");
 
@@ -232,12 +230,10 @@
             AsyncLoadTask = async () => result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber),
             CacheLoadTask = cache => result = new DataAccessResult<InforceAccountLOA> { Data = (InforceAccountLOA)cache! },
             ResultVariable = () => result,
-            AfterLoad = async void () =>
+            AfterLoad =() =>
             {
                 if (result.Success)
                     InForceLOAs = result.Data!;
-                else
-                    await HandleError("Unable to retrieve Account Inforce LOAs.", result.Errors);
             }
         }, $"InforceAccountLOA {AccountNumber}");
 

@@ -30,12 +30,10 @@
             AsyncLoadTask = async () => obligeeResult = await DataAccess.GetObligeeById(ObligeeId),
             CacheLoadTask = cache => obligeeResult = new DataAccessResult<Obligee?> { Data = (Obligee)cache! },
             ResultVariable = () => obligeeResult,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
                 if (obligeeResult.Success)
                     ObligeeToDisplay = obligeeResult.Data!;
-                else
-                    await HandleError("Error loading Obligee", obligeeResult.Errors);
             }
         }, $"Obligee {ObligeeId}");
 

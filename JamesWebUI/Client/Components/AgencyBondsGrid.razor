@@ -112,15 +112,15 @@
             {
                 Data = (List<Bond>)cache!
             },
-            ResultVariable = () => result
+            ResultVariable = () => result,
+            AfterLoad = () =>
+            {
+                if (result.Success)
+                    _agencyBonds = result.Data!;
+            }
         }, $"AgencyBondGrid {AgencyId}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (result.Success)
-            _agencyBonds = result.Data!;
-        else
-            await HandleError("Failed to load Agency Bonds: No Response.", result.Errors);
     }
     
     protected async Task ShowLoading()

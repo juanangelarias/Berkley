@@ -120,8 +120,6 @@
                 {
                     if (result.Success)
                         ObligeeToDisplay = result.Data!;
-                    else
-                        await HandleError("Obligee failed to load.", result.Errors);
                 }
             }, $"Obligee {ObligeeNumber}");
         await DataCache.GetCacheOrLoadDataAsync(loadItem);

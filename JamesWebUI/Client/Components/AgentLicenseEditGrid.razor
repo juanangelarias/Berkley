@@ -81,8 +81,6 @@
                 {
                     if (agent.Success)
                         _licenses = agent.Data?.AgencyLicenses.ToList() ?? [];
-                    else
-                        await HandleError("Error loading licenses in Agent License Edit Grid", agent.Errors);
                 }
             }, $"Agent {AgentId}"),
             AddEventNotify(new LoadItem
@@ -98,8 +96,6 @@
                 {
                     if (insurers.Success)
                         _insurers = insurers.Data?.ToList() ?? [];
-                    else
-                        await HandleError("Error loading insurers", insurers.Errors);
                 }
             }, "Insurers")
         ];

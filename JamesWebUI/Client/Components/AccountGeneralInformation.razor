@@ -532,15 +532,15 @@
             {
                 Data = (InforceAccountLOA)cache!
             },
-            ResultVariable = () => result
+            ResultVariable = () => result,
+            AfterLoad = () =>
+            {
+                if (result.Success)
+                    inforceLOAs = result.Data!;
+            }
         }, $"GetInforceLOAs {AccountToDisplay?.AccountNum}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (result.Success)
-            inforceLOAs = result.Data!;
-        else
-            await HandleError("Failed to load Inforce LOAs: No Response", result.Errors);
     }
 
     private async Task CreditReportUploaded(Guid? documentId, string accountNum)

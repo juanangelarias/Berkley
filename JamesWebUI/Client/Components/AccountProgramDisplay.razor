@@ -134,15 +134,15 @@
             {
                 Data = (List<AccountProgram>)cache!
             },
-            ResultVariable = () => result
+            ResultVariable = () => result,
+            AfterLoad = () =>
+            {
+                if (result.Success)
+                    ProgramsToDisplay = result.Data!;
+            }
         }, $"AccountProgramDisplay {AccountNumber}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (result.Success)
-            ProgramsToDisplay = result.Data!;
-        else
-            await HandleError("Failed to load Account Programs: No Response", result.Errors);
     }
 
     protected async Task ShowLoading()

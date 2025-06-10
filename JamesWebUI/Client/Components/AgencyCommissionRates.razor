@@ -86,10 +86,7 @@
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
 
         if (!result.Success)
-        {
-            await HandleError("Error loading Agency Commission Rates", result.Errors);
             return;
-        }
 
         _commissionRates = result.Data!;
         _commercialRates = _commissionRates

@@ -134,8 +134,6 @@
                 {
                     if (agentsResult.Success)
                         Agents = agentsResult.Data!;
-                    else
-                        await HandleError("Error loading agents in Agency Contacts Grid", agentsResult.Errors);
                 }
             }, $"AgencyContacts {AgencyId}");
         
@@ -150,8 +148,6 @@
             {
                 if (insurersResult.Success)
                     AllInsurers = insurersResult.Data!;
-                else
-                    await HandleError("Error getting insurers in Agency Contract Grid", insurersResult.Errors);
             }
         }, "Insurers");
 

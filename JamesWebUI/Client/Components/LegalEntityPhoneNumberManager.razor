@@ -57,12 +57,10 @@
                 Data = (List<PhoneNumber>)cache!
             },
             ResultVariable = () => pnResult,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
                 if (pnResult.Success)
                     AllPhoneNumbers = pnResult.Data!;
-                else
-                    await HandleError("GetAllLegalEntityPhoneNumbers returned error(s)", pnResult.Errors);
             }
         }, $"PhoneNumbers {LegalEntityId}");
 

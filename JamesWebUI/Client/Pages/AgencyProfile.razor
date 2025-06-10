@@ -227,15 +227,13 @@
                 AsyncLoadTask = async () => _agencyResult = (await DataAccess.GetAgencyByAgencyNumber(agencyNumber))!,
                 CacheLoadTask = cache => _agencyResult = new DataAccessResult<Agency> { Data = (Agency)cache! },
                 ResultVariable = () => _agencyResult,
-                AfterLoad = async void () =>
+                AfterLoad = () =>
                 {
-                    if (_agencyResult.Success)
-                    {
-                        Debug.Assert(_agencyResult.Data != null, "AgencyResult.Data != null if result.Success == true");
-                        _agencyToDisplay = _agencyResult.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
-                    }
-                    else
-                        await HandleError("Agency failed to load", _agencyResult.Errors);
+                    if (!_agencyResult.Success) 
+                        return;
+                    
+                    Debug.Assert(_agencyResult.Data != null, "AgencyResult.Data != null if result.Success == true");
+                    _agencyToDisplay = _agencyResult.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
                 },
                 CacheDuration = TimeSpan.FromHours(8) //Subscription will update this if changed, so a long cache time is appropriate.
             }, $"Agency {agencyNumber}");
@@ -248,15 +246,13 @@
             AsyncLoadTask = async () => _branchesResult = await DataAccess.GetAllBranches(),
             CacheLoadTask = cache => _branchesResult = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache! },
             ResultVariable = () => _branchesResult,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
-                if (_branchesResult.Success)
-                {
-                    Debug.Assert(_branchesResult.Data != null);
-                    AllBranches = _branchesResult.Data.OrderBy(b => b.Name).ToList();
-                }
-                else
-                    await HandleError("Branches failed to load", _branchesResult.Errors);
+                if (!_branchesResult.Success) 
+                    return;
+                
+                Debug.Assert(_branchesResult.Data != null);
+                AllBranches = _branchesResult.Data.OrderBy(b => b.Name).ToList();
             }
         }, "Branches");
 

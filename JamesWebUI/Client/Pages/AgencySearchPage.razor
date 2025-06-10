@@ -141,12 +141,10 @@
             AsyncLoadTask = async () => result = await DataAccess.SearchAgencies(txtAgencyNameSearch.Value, _searchOptions.ActiveOnly),
             CacheLoadTask = cache => result = new DataAccessResult<List<Agency>> { Data = (List<Agency>)cache! },
             ResultVariable = () => result,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
                 if (result.Success)
-                    agencyResults = result.Data;
-                else
-                    await HandleError("Error searching agencies in AgencySearch", result.Errors);
+                    agencyResults = result.Data!;
             },
             CacheDuration = TimeSpan.FromSeconds(1)
         }, "Search Agencies");

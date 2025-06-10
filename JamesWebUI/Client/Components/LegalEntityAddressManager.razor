@@ -58,8 +58,8 @@
     }
 
     private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
-    private LoadItem AddressesLoadItem() =>
-        new()
+    private LoadItem AddressesLoadItem => AddEventNotify(
+        new LoadItem
         {
             Key = $"Adds{LegalEntityId}",
             AsyncLoadTask = async () => _addressesLoadResult = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId),
@@ -68,15 +68,11 @@
             AfterLoad = async void () =>
             {
                 Debug.Assert(_addressesLoadResult.Data != null);
-                if (_addressesLoadResult.Success)
-                {
-                    AllAddresses = _addressesLoadResult.Data;
-                    SelectedTab = 0;
-                }
-                else
-                {
-                    await HandleError("Error loading addresses.", _addressesLoadResult.Errors);
-                }
+                if (!_addressesLoadResult.Success) 
+                    return;
+                
+                AllAddresses = _addressesLoadResult.Data;
+                SelectedTab = 0;
             },
             AddSubscriptionTask = li =>
             {
@@ -87,11 +83,11 @@
                     await LoadAddresses();
                 });
             }
-        };
+        }, "addresses");
 
     private async Task LoadAddresses()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AddEventNotify(AddressesLoadItem(), "addresses"));
+        await DataCache.GetCacheOrLoadDataAsync(AddressesLoadItem);
     }
     
     private async Task AddressCreated(Guid addressToSelect)
@@ -106,10 +102,6 @@
             SelectedTab = null != selected
                 ? AllAddresses.IndexOf(selected)
                 : 0;
-        }
-        else
-        {
-            await HandleError("GetAllLegalEntityAddresses return error(s)", _addressesLoadResult.Errors);
         }
     }
 }

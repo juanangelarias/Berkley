@@ -176,7 +176,11 @@
                     Data = (List<State>)cache!
                 },
                 ResultVariable = () => states,
-                AfterLoad = async void () => { await HandleStateLoadResult(states);}
+                AfterLoad = () =>
+                {
+                    if (states.Success)
+                        AllStates = states.Data!;
+                }
             }, "States"),
             AddEventNotify(new LoadItem
             {
@@ -187,7 +191,11 @@
                     Data = (List<InventoryDocumentDm>)cache!
                 },
                 ResultVariable = () => docTypes,
-                AfterLoad = async void () => { await HandleDocumentTypeLoadResult(docTypes);}
+                AfterLoad = () =>
+                {
+                    if (docTypes.Success)
+                        AllDocTypes = docTypes.Data!;
+                }
             }, "Document Types"),
             AddEventNotify(new LoadItem
             {
@@ -198,35 +206,15 @@
                     Data = (List<AgencyInventory>)cache!
                 },
                 ResultVariable = () => inventory,
-                AfterLoad = async void () => { await HandleAgencyInventoriesLoadResult(inventory);}
+                AfterLoad = () =>
+                {
+                    if (inventory.Success)
+                        AgencyInventories = inventory.Data!;
+                }
             }, "Agency Inventory")
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(loadItems);
-    }
-
-    private async Task HandleAgencyInventoriesLoadResult(IDataAccessResult<List<AgencyInventory>> inventory)
-    {
-        if (inventory.Success)
-            AgencyInventories = inventory.Data!;
-        else
-            await HandleError("Error loading Agency Inventory", inventory.Errors);
-    }
-
-    private async Task HandleDocumentTypeLoadResult(IDataAccessResult<List<InventoryDocumentDm>> docTypes)
-    {
-        if (docTypes.Success)
-            AllDocTypes = docTypes.Data!;
-        else
-            await HandleError("Error loading Document Types", docTypes.Errors);
-    }
-
-    private async Task HandleStateLoadResult(IDataAccessResult<List<State>> states)
-    {
-        if (states.Success)
-            AllStates = states.Data!;
-        else
-            await HandleError("Error loading States", states.Errors);
     }
 
     void Reset()
@@ -255,15 +243,15 @@
             {
                 Data = (List<AgencyInventory>)cache!
             },
-            ResultVariable = () => inventory
+            ResultVariable = () => inventory,
+            AfterLoad = () =>
+            {
+                if (inventory.Success)
+                    AgencyInventories = inventory.Data!;
+            }
         }, "Agency Inventory");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-        
-        if (inventory.Success)
-            AgencyInventories = inventory.Data!;
-        else
-            await HandleError("Error loading Agency Inventory", inventory.Errors);
     }
 
     private async Task EditInventoryRow(AgencyInventory inventory)

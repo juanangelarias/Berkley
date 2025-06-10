@@ -45,13 +45,12 @@
                 Data = (List<Agent>)cache!
             },
             ResultVariable = () => searchResult,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
                 if (searchResult.Success)
                     SearchResults = searchResult.Data!;
-                else
-                    await HandleError("Error loading search results.", searchResult.Errors);
-            }
+            },
+            CacheDuration = TimeSpan.FromSeconds(1)
         }, $"SearchResult {SelectedAgentId}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);

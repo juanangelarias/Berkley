@@ -148,7 +148,25 @@
                 Data = (List<PowerOfAttorney>)cache!
             },
             ResultVariable = () => _poas,
-            AfterLoad = async void () => { await HandlePowerOfAttorneyResult(_poas); }
+            AfterLoad = () =>
+            {
+                if (!_poas.Success) 
+                    return;
+                
+                PowerOfAttorneys = _poas.Data!;
+            
+                _statusList = PowerOfAttorneys
+                    .OrderBy(p => p.Status)
+                    .GroupBy(p => p.Status)
+                    .Select(p => p.FirstOrDefault()?.Status ?? "")
+                    .ToList();
+            
+                _insurerList =PowerOfAttorneys
+                    .OrderBy(p => p.Insurer.IdNavigation.FullName)
+                    .GroupBy(p => p.Insurer.IdNavigation.FullName)
+                    .Select(p => p.FirstOrDefault()?.Insurer.IdNavigation.FullName ?? "")
+                    .ToList();
+            }
         }, $"Agency POAs {AgencyId}");
 
     private async Task LoadData()
@@ -171,7 +189,11 @@
                     Data = (List<Insurer>)cache!
                 },
                 ResultVariable = () => insurers,
-                AfterLoad = async void () => { await HandleInsurersResult(insurers); }
+                AfterLoad = () =>
+                {
+                    if (insurers.Success)
+                        AllInsurers = insurers.Data!;
+                }
             }, "Insurers"),
             AddEventNotify(new LoadItem
             {
@@ -182,49 +204,15 @@
                     Data = (List<PowerOfAttorneyStatusDm>)cache!
                 },
                 ResultVariable = () => statuses,
-                AfterLoad = async void () => { await HandleStatusesResult(statuses); }
+                AfterLoad = async void () =>
+                {
+                    if (statuses.Success)
+                        AllStatuses = statuses.Data!;
+                }
             }, "Statuses")
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
-    }
-
-    private async Task HandlePowerOfAttorneyResult(IDataAccessResult<List<PowerOfAttorney>> poas)
-    {
-        if (poas.Success)
-        {
-            PowerOfAttorneys = poas.Data!;
-            
-            _statusList = PowerOfAttorneys
-                .OrderBy(p => p.Status)
-                .GroupBy(p => p.Status)
-                .Select(p => p.FirstOrDefault()?.Status ?? "")
-                .ToList();
-            
-            _insurerList =PowerOfAttorneys
-                .OrderBy(p => p.Insurer.IdNavigation.FullName)
-                .GroupBy(p => p.Insurer.IdNavigation.FullName)
-                .Select(p => p.FirstOrDefault()?.Insurer.IdNavigation.FullName ?? "")
-                .ToList(); 
-        }
-        else
-            await HandleError("Error loading POAs in the AgencyPOAGrid", poas.Errors);
-    }
-    
-    private async Task HandleInsurersResult(IDataAccessResult<List<Insurer>> insurers)
-    {
-        if (insurers.Success)
-            AllInsurers = insurers.Data!;
-        else
-            await HandleError("Error getting insurers in the AgencyPOAGrid", insurers.Errors);
-    }
-    
-    private async Task HandleStatusesResult(IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses)
-    {
-        if (statuses.Success)
-            AllStatuses = statuses.Data!;
-        else
-            await HandleError("Error getting all statuses in the AgencyPOAGrid", statuses.Errors);
     }
 
     private Task Reset()

@@ -157,7 +157,11 @@
                 Data = (Agent)cache!
             },
             ResultVariable = () => _agentResult,
-            AfterLoad = async void () => { await HandleAgentLoadResult(_agentResult); }
+            AfterLoad = () =>
+            {
+                if (_agentResult.Success)
+                    AgencyLicenses = _agentResult.Data!.AgencyLicenses.ToList();
+            }
         }, $"Licenses {AgentId}");
 
     protected override async Task OnParametersSetAsync()
@@ -188,7 +192,11 @@
                     Data = (List<State>)cache!
                 },
                 ResultVariable = () => statesResult,
-                AfterLoad = async void () => { await HandleStateLoadResult(statesResult); }
+                AfterLoad = () =>
+                {
+                    if (statesResult.Success)
+                        AllStates = statesResult.Data!;
+                }
             }, "States"),
             AddEventNotify(new LoadItem
             {
@@ -199,36 +207,16 @@
                     Data = (List<Insurer>)cache!
                 },
                 ResultVariable = () => insurersResult,
-                AfterLoad = async void () => { await HandleInsurerLoadResult(insurersResult); }
+                AfterLoad = () =>
+                {
+                    if (insurersResult.Success)
+                        AllInsurers = insurersResult.Data!;
+                }
             }, "Insurers"),
             LicencesLoad
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(items);
-    }
-
-    private async Task HandleAgentLoadResult(IDataAccessResult<Agent> agentResult)
-    {
-        if (agentResult.Success)
-            AgencyLicenses = agentResult.Data!.AgencyLicenses.ToList();
-        else
-            await HandleError("Error loading Agency Licenses", agentResult.Errors);
-    }
-    
-    private async Task HandleInsurerLoadResult(IDataAccessResult<List<Insurer>> insurersResult)
-    {
-        if (insurersResult.Success)
-            AllInsurers = insurersResult.Data!;
-        else
-            await HandleError("Error loading Insurers list", insurersResult.Errors);
-    }
-    
-    private async Task HandleStateLoadResult(IDataAccessResult<List<State>> statesResult)
-    {
-        if (statesResult.Success)
-            AllStates = statesResult.Data!;
-        else
-            await HandleError("Error loading States list", statesResult.Errors);
     }
 
     private void Reset()

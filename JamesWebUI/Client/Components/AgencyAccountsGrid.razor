@@ -104,15 +104,15 @@
             {
                 Data = (List<Account>)cache!
             },
-            ResultVariable = () => result
+            ResultVariable = () => result,
+            AfterLoad = () =>
+            {
+                if (result.Success)
+                    _agencyAccounts = result.Data!;
+            }
         }, $"Accounts {AgencyNumber}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (result.Success)
-            _agencyAccounts = result.Data!;
-        else
-            await HandleError("Failed to load Agency Accounts. No Response", result.Errors);
     }
 
     protected async Task ShowLoading()

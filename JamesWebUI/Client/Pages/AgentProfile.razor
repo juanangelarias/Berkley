@@ -170,12 +170,10 @@
             AsyncLoadTask = async () => result = await DataAccess.GetAgent(AgentId),
             CacheLoadTask = cache => result = new DataAccessResult<Agent> { Data = (Agent)cache! },
             ResultVariable = () => result,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
                 if (result.Success)
                     AgentToDisplay = result.Data!;
-                else
-                    await HandleError("Error when loading agent.", result.Errors);
             }
         }, $"Agent {AgentId}");
 
@@ -193,15 +191,13 @@
             AsyncLoadTask = async () => result = await DataAccess.GetAllInsurers(),
             CacheLoadTask = cache => result = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
             ResultVariable = () => result,
-            AfterLoad = async void () =>
+            AfterLoad = () =>
             {
-                if (result.Success)
-                {
-                    Debug.Assert(result.Data != null, "result.Data != null");
-                    AllInsurers = result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
-                }
-                else
-                    await HandleError("Error getting insurers in Agency Contract Grid", result.Errors);
+                if (!result.Success) 
+                    return;
+                
+                Debug.Assert(result.Data != null, "result.Data != null");
+                AllInsurers = result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
             }
         }, "Insurers");
 

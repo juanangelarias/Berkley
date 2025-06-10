@@ -91,15 +91,15 @@
             {
                 Data = (List<Agency>)cache!
             },
-            ResultVariable = () => result
+            ResultVariable = () => result,
+            AfterLoad = () =>
+            {
+                if (result.Success)
+                    RelatedParties = result.Data!;
+            }
         }, $"RelatedParties {AgencyId}");
 
         await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (result.Success)
-            RelatedParties = result.Data!;
-        else
-            await HandleError("Error loading Agency Related Parties", result.Errors);
     }
     
     protected async Task ShowLoading()

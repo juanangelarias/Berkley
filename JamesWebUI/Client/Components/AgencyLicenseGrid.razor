@@ -146,7 +146,7 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public required Agency Agency { get; set; }
 
     private RadzenDataGrid<AgencyLicense> LicenseGrid { get; set; } = null!;
 
@@ -174,8 +174,8 @@
 
     private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem
         {
-            Key = $"AgencyLicenses{AgencyId}",
-            AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(AgencyId),
+            Key = $"AgencyLicenses{Agency.Id}",
+            AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(Agency.Id),
             CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
             {
                 Data = (List<AgencyLicense>)cache!
@@ -186,12 +186,12 @@
                 if (_licenses.Success)
                     AgencyLicenses = _licenses.Data!;
             }
-        }, $"AgencyLicenses {AgencyId}");
+        }, $"AgencyLicenses {Agency.Id}");
 
 
     private async Task LoadData()
     {
-        if(AgencyId == Guid.Empty)
+        if(Agency.Id == Guid.Empty)
             return;
         
         IDataAccessResult<List<State>> states = null!;
@@ -257,7 +257,7 @@
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
         await ShowLoading();
-        var newLicense = new AgencyLicense() { Id = Guid.NewGuid() };
+        var newLicense = new AgencyLicense() { Id = Guid.NewGuid(), AgencyId = Agency.Id, Agency = Agency};
         _licensesToInsert.Add(newLicense);
         await LicenseGrid.InsertRow(newLicense);
     }
@@ -277,7 +277,15 @@
         var result = await DataAccess.DeleteLicense(license.Id);
 
         if (result.Success)
+        {
+            var toDelete = AgencyLicenses.FirstOrDefault(f => f.Id == license.Id);
+            if (toDelete != null)
+                AgencyLicenses.Remove(toDelete);
+
+            await LicenseGrid.Reload();
+            
             await LoadLicenses();
+        }
         else
             await HandleError("Error deleting License", result.Errors);
     }
@@ -297,7 +305,7 @@
 
         var result = await DataAccess.CreateLicense(
             license.Id,
-            AgencyId,
+            Agency.Id,
             null,
             license.AppointingState,
             license.Comments,
@@ -401,7 +409,7 @@
         substitutions.AddSubstitution("IsResident", title: "Is Resident");
         substitutions.AddSubstitution("AppointingState", title: "Appointing State");
         NavigationManager.NavigateTo(ExportDataGridUrl(LicenseGrid,
-                $"/export/AgencyLicenses/{AgencyId}", format, substitutions),
+                $"/export/AgencyLicenses/{Agency.Id}", format, substitutions),
             true);
     }
 }

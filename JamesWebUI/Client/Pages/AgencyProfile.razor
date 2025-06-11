@@ -174,7 +174,7 @@
         <PositionSavingTabs @ref="@TabsAgencyProfile" @bind-SelectedIndex="@TabsAgencyProfile.NewSelectedIndex" TabControlName="tabsAgencyProfile">
             <Tabs>
                 <PositionSavingTabsItem Text="General Info" TabName="tabGenInfo">
-                    <AgencyGeneralInfoGrids AgencyId="@_agencyToDisplay.Id" />
+                    <AgencyGeneralInfoGrids Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Contacts" TabName="tabContacts">
                     <AgencyContactsGrid AgencyId="@_agencyToDisplay.Id" />

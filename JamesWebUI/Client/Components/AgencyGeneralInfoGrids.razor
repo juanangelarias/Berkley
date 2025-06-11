@@ -10,22 +10,22 @@
     <Tabs>
         <RadzenTabsItem Text="Licenses">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyLicenseGrid AgencyId="AgencyId" />
+                <AgencyLicenseGrid Agency="Agency" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="POAs">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyPOAGrid AgencyId="AgencyId" />
+                <AgencyPOAGrid AgencyId="Agency.Id" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Related Parties">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyRelatedPartiesGrid AgencyId="AgencyId"/>
+                <AgencyRelatedPartiesGrid AgencyId="Agency.Id"/>
             </Animate>
         </RadzenTabsItem>
     </Tabs>
 </RadzenTabs>
 
 @code {
-    [Parameter, EditorRequired] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public Agency Agency { get; set; }
 }

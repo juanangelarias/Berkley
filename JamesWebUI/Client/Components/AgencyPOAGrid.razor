@@ -106,7 +106,7 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter, EditorRequired] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] required public Agency Agency { get; set; }
 
     private RadzenDataGrid<PowerOfAttorney> POAGrid { get; set; } = null!;
 
@@ -141,8 +141,8 @@
 
     private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem
         {
-            Key = $"AgencyPOAs{AgencyId}",
-            AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(AgencyId),
+            Key = $"AgencyPOAs{Agency.Id}",
+            AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id),
             CacheLoadTask = cache => _poas = new DataAccessResult<List<PowerOfAttorney>>
             {
                 Data = (List<PowerOfAttorney>)cache!
@@ -167,11 +167,11 @@
                     .Select(p => p.FirstOrDefault()?.Insurer.IdNavigation.FullName ?? "")
                     .ToList();
             }
-        }, $"Agency POAs {AgencyId}");
+        }, $"Agency POAs {Agency.Id}");
 
     private async Task LoadData()
     {
-        if (AgencyId == Guid.Empty)
+        if (Agency.Id == Guid.Empty)
             return;
 
         IDataAccessResult<List<Insurer>> insurers = null!;
@@ -204,7 +204,7 @@
                     Data = (List<PowerOfAttorneyStatusDm>)cache!
                 },
                 ResultVariable = () => statuses,
-                AfterLoad = async void () =>
+                AfterLoad = void () =>
                 {
                     if (statuses.Success)
                         AllStatuses = statuses.Data!;
@@ -278,7 +278,19 @@
     private async Task InsertPOARow()
     {
         await ShowLoading();
-        var newPoa = new PowerOfAttorney() { Id = Guid.NewGuid() };
+        var newPoa = new PowerOfAttorney
+        {
+            Id = Guid.NewGuid(), 
+            AgencyId = Agency.Id, 
+            Agency = Agency,
+            Insurer = new Insurer
+            {
+                IdNavigation = new LegalEntity
+                {
+                    FullName = ""
+                }
+            }
+        };
         _poasToInsert.Add(newPoa);
         await POAGrid.InsertRow(newPoa);
     }
@@ -326,7 +338,7 @@
     {
         var result = await DataAccess.CreateAgencyPOA(powerOfAttorney.Id,
             powerOfAttorney.Insurer.Id,
-            AgencyId,
+            Agency.Id,
             Convert.ToInt32(powerOfAttorney.Limit),
             powerOfAttorney.ReferenceNumber,
             powerOfAttorney.FirstIssued,
@@ -383,7 +395,7 @@
         substitutions.AddSubstitution("FirstIssued", title: "First Issued");
         substitutions.AddSubstitution("CurrentIssued", title: "Current Issued");
         NavigationManager.NavigateTo(ExportDataGridUrl(POAGrid,
-                $"/export/AgencyPOAs/{AgencyId}", format, substitutions),
+                $"/export/AgencyPOAs/{Agency.Id}", format, substitutions),
             true);
     }
 }

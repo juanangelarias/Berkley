@@ -15,7 +15,7 @@
         </RadzenTabsItem>
         <RadzenTabsItem Text="POAs">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyPOAGrid AgencyId="Agency.Id" />
+                <AgencyPOAGrid Agency="Agency" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Related Parties">
@@ -27,5 +27,5 @@
 </RadzenTabs>
 
 @code {
-    [Parameter, EditorRequired] public Agency Agency { get; set; }
+    [Parameter, EditorRequired] public required Agency Agency { get; set; }
 }

@@ -36,6 +36,20 @@
 
     private List<PhoneNumber> AllPhoneNumbers {get;set;} = [];
     private int SelectedTab { get; set; }
+    
+    private IDataAccessResult<List<PhoneNumber>> _phoneNumbersResult = null!;
+
+    private LoadItem PhoneNumbersLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"PhoneNumbers{LegalEntityId}",
+            AsyncLoadTask = async () => _phoneNumbersResult = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId),
+            CacheLoadTask = cache => _phoneNumbersResult = new DataAccessResult<List<PhoneNumber>>
+            {
+                Data = (List<PhoneNumber>)cache!
+            },
+            ResultVariable = () => _phoneNumbersResult,
+            AfterLoad = () => { AllPhoneNumbers = _phoneNumbersResult.Data!; }
+        }, $"Phone Numbers of {LegalEntityId}");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -46,25 +60,7 @@
 
     private async Task LoadPhoneNumbers()
     {
-        IDataAccessResult<List<PhoneNumber>> pnResult = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"PhoneNumbers{LegalEntityId}",
-            AsyncLoadTask = async () => pnResult = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId),
-            CacheLoadTask = cache => pnResult = new DataAccessResult<List<PhoneNumber>>
-            {
-                Data = (List<PhoneNumber>)cache!
-            },
-            ResultVariable = () => pnResult,
-            AfterLoad = () =>
-            {
-                if (pnResult.Success)
-                    AllPhoneNumbers = pnResult.Data!;
-            }
-        }, $"PhoneNumbers {LegalEntityId}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(PhoneNumbersLoad);
     }
 
     private async Task PhoneNumberCreated(Guid phoneToSelect)

@@ -58,6 +58,19 @@
     private List<ITieredValue<double>> _contractRates = null!;
     private TieredValueEditor<double> _contractEditor = null!;
     private TieredValueEditor<double> _commercialEditor = null!;
+    
+    private IDataAccessResult<List<AgencyCommission>> _ratesResult = null!;
+
+    private LoadItem RatesLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"AgencyCommissionRates{AgencyId}",
+            AsyncLoadTask = async () => _ratesResult = await DataAccess.GetAgencyCommissionRates(AgencyId),
+            CacheLoadTask = cache => _ratesResult = new DataAccessResult<List<AgencyCommission>>
+            {
+                Data = (List<AgencyCommission>)cache!
+            },
+            ResultVariable = () => _ratesResult
+        }, $"Commission Rates for Agency {AgencyId}");   
 
     protected override async Task OnParametersSetAsync()
     {
@@ -70,25 +83,12 @@
         if(AgencyId == Guid.Empty)
             return;
 
-        IDataAccessResult<List<AgencyCommission>> result = null!;
+        await DataCache.GetCacheOrLoadDataAsync(RatesLoad);
 
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"AgencyCommissionRates{AgencyId}",
-            AsyncLoadTask = async () => result = await DataAccess.GetAgencyCommissionRates(AgencyId),
-            CacheLoadTask = cache => result = new DataAccessResult<List<AgencyCommission>>
-            {
-                Data = (List<AgencyCommission>)cache!
-            },
-            ResultVariable = () => result
-        }, $"AgencyCommissionRates {AgencyId}");        
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
-
-        if (!result.Success)
+        if (!_ratesResult.Success)
             return;
 
-        _commissionRates = result.Data!;
+        _commissionRates = _ratesResult.Data!;
         _commercialRates = _commissionRates
             .Where(r => r.BondType == "Commercial")
             .Cast<ITieredValue<double>>().ToList();

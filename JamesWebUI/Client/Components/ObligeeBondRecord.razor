@@ -66,6 +66,22 @@
 
     private List<string>? _statusFilter;
     private List<string>? _bondTypeFilter;
+    
+    private IDataAccessResult<List<Bond>> _bondResult = null!;
+
+    private LoadItem BondLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"ObligeeBonds{ObligeeId}",
+            AsyncLoadTask = BondTypesToDisplay == ObligeeBondTypes.Primary
+                ? async () => _bondResult = await DataAccess.GetObligeePrimaryBonds(ObligeeId)
+                : async () => _bondResult = await DataAccess.GetObligeeSecondaryBonds(ObligeeId),
+            CacheLoadTask = cache => _bondResult = new DataAccessResult<List<Bond>>
+            {
+                Data = (List<Bond>)cache!
+            },
+            ResultVariable = () => _bondResult,
+            AfterLoad = () => { ObligeeBonds = _bondResult.Data!; }
+        }, $"Bonds of Obligee {ObligeeId}");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -77,27 +93,7 @@
 
     private async Task LoadObligeeBonds()
     {
-        IDataAccessResult<List<Bond>> result = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"ObligeeBonds{ObligeeId}",
-            AsyncLoadTask = BondTypesToDisplay == ObligeeBondTypes.Primary
-                ? async () => result = await DataAccess.GetObligeePrimaryBonds(ObligeeId)
-                : async () => result = await DataAccess.GetObligeeSecondaryBonds(ObligeeId),
-            CacheLoadTask = cache => result = new DataAccessResult<List<Bond>>
-            {
-                Data = (List<Bond>)cache!
-            },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (result.Success)
-                    ObligeeBonds = result.Data!;
-            }
-        }, $"ObligeeBonds {ObligeeId}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(BondLoad);
     }
 
     protected async Task ShowLoading()

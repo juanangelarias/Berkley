@@ -37,7 +37,24 @@
 
 @code {
     [Parameter, EditorRequired] public Account AccountToDisplay { get; set; } = null!;
+    
     private List<AdditionalRelatedParty> RelatedParties { get; set; } = [];
+    IDataAccessResult<List<AdditionalRelatedParty>> _relatedPartiesResult = null!;
+
+    private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"GetAccountAdditionalRelatedParties{AccountToDisplay.AccountNum}",
+            AsyncLoadTask = async () => { _relatedPartiesResult = await DataAccess.GetAdditionalRelatedParties(AccountToDisplay.AccountNum); },
+            CacheLoadTask = cache => _relatedPartiesResult = new DataAccessResult<List<AdditionalRelatedParty>>
+            {
+                Data = (List<AdditionalRelatedParty>)cache!
+            },
+            ResultVariable = () => _relatedPartiesResult,
+            AfterLoad = () =>
+            {
+                RelatedParties = _relatedPartiesResult.Data!;
+            }
+        }, $"Get Additional Related Parties for Account {AccountToDisplay.AccountNum}");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -48,24 +65,6 @@
 
     private async Task LoadRelatedParties()
     {
-        IDataAccessResult<List<AdditionalRelatedParty>> result = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-            {
-                Key = $"GetAccountAdditionalRelatedParties{AccountToDisplay.AccountNum}",
-                AsyncLoadTask = async () => { result = await DataAccess.GetAdditionalRelatedParties(AccountToDisplay.AccountNum); },
-                CacheLoadTask = cache => result = new DataAccessResult<List<AdditionalRelatedParty>>
-                {
-                    Data = (List<AdditionalRelatedParty>)cache!
-                },
-                ResultVariable = () => result,
-                AfterLoad = () =>
-                {
-                    if (result.Success)
-                        RelatedParties = result.Data!;
-                }
-            }, $"GetAccountAdditionalRelatedParties {AccountToDisplay.AccountNum}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
     }
 }

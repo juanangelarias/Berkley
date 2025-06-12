@@ -31,29 +31,24 @@
     private List<Agent> SearchResults { get; set; } = [];
     private RadzenAutoComplete AutoComplete { get; set; } = null!;
     private string _selectedAgent = "";
+    private IDataAccessResult<List<Agent>> _searchResult = null!;
 
-    private async Task SearchAgent(LoadDataArgs args)
-    {
-        IDataAccessResult<List<Agent>> searchResult = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
+    private LoadItem AgentsLoad(string filter) => AddEventNotify(new LoadItem
         {
             Key = $"SearchResult{SelectedAgentId}",
-            AsyncLoadTask = async () => searchResult = await DataAccess.SearchAgents(args.Filter),
-            CacheLoadTask = cache => searchResult = new DataAccessResult<List<Agent>>
+            AsyncLoadTask = async () => _searchResult = await DataAccess.SearchAgents(filter),
+            CacheLoadTask = cache => _searchResult = new DataAccessResult<List<Agent>>
             {
                 Data = (List<Agent>)cache!
             },
-            ResultVariable = () => searchResult,
-            AfterLoad = () =>
-            {
-                if (searchResult.Success)
-                    SearchResults = searchResult.Data!;
-            },
+            ResultVariable = () => _searchResult,
+            AfterLoad = () => { SearchResults = _searchResult.Data!; },
             CacheDuration = TimeSpan.FromSeconds(1)
         }, $"SearchResult {SelectedAgentId}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+    
+    private async Task SearchAgent(LoadDataArgs args)
+    {
+        await DataCache.GetCacheOrLoadDataAsync(AgentsLoad(args.Filter));
     }
     
     private async Task ResultSelected(dynamic args)

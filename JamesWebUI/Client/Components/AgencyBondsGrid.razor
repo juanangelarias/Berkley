@@ -87,6 +87,20 @@
     private RadzenDropDown<List<string>> StatusFilterDropDown { get; set; } = null!;
     private RadzenDropDown<List<string>> ClassFilterDropDown { get; set; } = null!;
     private RadzenDropDown<List<string>> BondTypeFilterDropDown { get; set; } = null!;
+    
+    private IDataAccessResult<List<Bond>> _agencyBondsResult = null!;
+
+    private LoadItem AgencyBondsLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"AgencyBondGrid{AgencyId}",
+            AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId),
+            CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<Bond>>
+            {
+                Data = (List<Bond>)cache!
+            },
+            ResultVariable = () => _agencyBondsResult,
+            AfterLoad = () => { _agencyBonds = _agencyBondsResult.Data!; }
+        }, $"Bond Grid for Agency {AgencyId}");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -102,25 +116,7 @@
         if (AgencyId == Guid.Empty)
             return;
 
-        IDataAccessResult<List<Bond>> result = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"AgencyBondGrid{AgencyId}",
-            AsyncLoadTask = async () => result = await DataAccess.GetAgencyBonds(AgencyId),
-            CacheLoadTask = cache => result = new DataAccessResult<List<Bond>>
-            {
-                Data = (List<Bond>)cache!
-            },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (result.Success)
-                    _agencyBonds = result.Data!;
-            }
-        }, $"AgencyBondGrid {AgencyId}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(AgencyBondsLoad);
     }
     
     protected async Task ShowLoading()

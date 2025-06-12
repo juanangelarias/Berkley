@@ -100,6 +100,39 @@
     private RadzenDataGrid<Agent> AgentsGrid { get; set; } = null!;
     private List<Insurer> AllInsurers { get; set; } = [];
     private bool _isLoading = true;
+    
+    private IDataAccessResult<List<Agent>> _agentsResult = null!;
+    private IDataAccessResult<List<Insurer>> _insurersResult = null!;
+
+    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem
+    {
+        Key = $"AgencyContacts{AgencyId}",
+        AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(AgencyId),
+        CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<Agent>>
+        {
+            Data = (List<Agent>)cache!
+        },
+        ResultVariable = () => _agentsResult,
+        AfterLoad = async void () =>
+        {
+            if (_agentsResult.Success)
+                Agents = _agentsResult.Data!;
+        }
+    }, $"Agency Contacts for {AgencyId}");
+
+
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    {
+        Key = "Insurers",
+        AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurersResult = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
+        ResultVariable = () => _insurersResult,
+        AfterLoad = async void () =>
+        {
+            if (_insurersResult.Success)
+                AllInsurers = _insurersResult.Data!;
+        }
+    }, "Insurers");
 
     protected override async Task OnInitializedAsync()
     {
@@ -120,38 +153,7 @@
         if(AgencyId == Guid.Empty)
             return;
 
-        IDataAccessResult<List<Agent>> agentsResult = null!;
-        var contactsLoad = AddEventNotify(new LoadItem
-            {
-                Key = $"AgencyContacts{AgencyId}",
-                AsyncLoadTask = async () => agentsResult = await DataAccess.GetAgencyAgents(AgencyId),
-                CacheLoadTask = cache => agentsResult = new DataAccessResult<List<Agent>>
-                {
-                    Data = (List<Agent>)cache!
-                },
-                ResultVariable = () => agentsResult,
-                AfterLoad = async void () =>
-                {
-                    if (agentsResult.Success)
-                        Agents = agentsResult.Data!;
-                }
-            }, $"AgencyContacts {AgencyId}");
-        
-        IDataAccessResult<List<Insurer>> insurersResult = null!;
-        var insurersLoad = AddEventNotify(new LoadItem
-        {
-            Key = "Insurers",
-            AsyncLoadTask = async () => insurersResult = await DataAccess.GetAllInsurers(),
-            CacheLoadTask = cache => insurersResult = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
-            ResultVariable = () => insurersResult,
-            AfterLoad = async void () =>
-            {
-                if (insurersResult.Success)
-                    AllInsurers = insurersResult.Data!;
-            }
-        }, "Insurers");
-
-        await DataCache.ParallelGetCacheOrDataAsync([contactsLoad, insurersLoad]);
+        await DataCache.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
     }
 
     private void ExportLicenseGrid(ExportFormat format)

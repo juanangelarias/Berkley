@@ -90,6 +90,19 @@
 @code {
     [Parameter] public string ObligeeNumber { get; set; } = "";
     private bool PossibleDuplicates { get; set; } = false;
+    
+    private IDataAccessResult<Obligee?> _obligeeResult = null!;
+    private LoadItem ObligeeLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"Obligee{ObligeeNumber}",
+            AsyncLoadTask = async () =>_obligeeResult = await DataAccess.GetObligeeByObligeeNumber(ObligeeNumber),
+            CacheLoadTask = cache => _obligeeResult = new DataAccessResult<Obligee>{Data = (Obligee?)cache}!,
+            ResultVariable = () => _obligeeResult,
+            AfterLoad = async void () =>
+            {
+                ObligeeToDisplay = _obligeeResult.Data!;
+            }
+        }, $"Obligee {ObligeeNumber}");
 
     public Obligee ObligeeToDisplay { get; set; } = new()
     {
@@ -109,20 +122,7 @@
         if (string.IsNullOrWhiteSpace(ObligeeNumber))
             return;
 
-        IDataAccessResult<Obligee?> result = null!;
-        var loadItem = AddEventNotify(new LoadItem
-            {
-                Key = $"Obligee{ObligeeNumber}",
-                AsyncLoadTask = async () =>result = await DataAccess.GetObligeeByObligeeNumber(ObligeeNumber),
-                CacheLoadTask = cache => result = new DataAccessResult<Obligee>{Data = (Obligee?)cache}!,
-                ResultVariable = () => result,
-                AfterLoad = async void () =>
-                {
-                    if (result.Success)
-                        ObligeeToDisplay = result.Data!;
-                }
-            }, $"Obligee {ObligeeNumber}");
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(ObligeeLoad);
     }
     
     private async Task LoadPossibleDuplicates()

@@ -150,9 +150,6 @@
             ResultVariable = () => _poas,
             AfterLoad = () =>
             {
-                if (!_poas.Success) 
-                    return;
-                
                 PowerOfAttorneys = _poas.Data!;
             
                 _statusList = PowerOfAttorneys

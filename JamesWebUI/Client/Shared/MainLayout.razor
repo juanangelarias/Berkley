@@ -178,25 +178,4 @@
     {
         await DialogService.OpenAsync<SuperSearch>("Super Search", options: _superSearchDialogOptions);
     }
-
-
-    //Code to load our javascript functions
-    //TODO:Code review to decide if there is a better place
-    //IJSObjectReference? _module;
-    //protected override async Task OnAfterRenderAsync(bool firstRender)
-    //{
-    //    await base.OnAfterRenderAsync(firstRender);
-    //    if (firstRender)
-    //        _module = await JS.InvokeAsync<IJSObjectReference>(
-    //            "import", "./Shared/MainLayout.razor.js");
-    //}
-
-    //public async ValueTask DisposeAsync()
-    //{
-    //    if (_module != null)
-    //    {
-    //        await _module.DisposeAsync();
-    //    }
-    //}
-    //End javascript load code
 }

@@ -35,7 +35,6 @@
     <ProjectReference Include="..\..\Data\JamesDAL.Client\James.Data.Client.csproj" />
     <ProjectReference Include="..\..\Data\JamesDAL.Imaging\James.Data.Imaging.csproj" />
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
-    <ProjectReference Include="..\Shared\JamesWebUI.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

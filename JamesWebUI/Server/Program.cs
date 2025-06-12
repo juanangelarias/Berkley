@@ -37,8 +37,8 @@ try
     // Add services to the container.
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Services.AddCascadingAuthenticationState();
-    builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
+    //builder.Services.AddCascadingAuthenticationState();
+    //builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
     ConfirmAppSettingsEntry("Auth0:Authority");
     ConfirmAppSettingsEntry("Auth0:ClientId");
@@ -102,9 +102,9 @@ try
         options.ReturnUrlParameter = "redirectUri";
     });
     builder.Services.AddRadzenComponents();
-    builder.Services.AddBlazoredLocalStorage(config =>
+    builder.Services.AddBlazoredLocalStorage(localStorageConfig =>
     {
-        config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        localStorageConfig.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
     builder.Services.AddSignalR(e =>
@@ -136,7 +136,8 @@ try
     builder.Services.AddScoped<GeneralMutation>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
-         .AddInteractiveWebAssemblyComponents();
+         .AddInteractiveWebAssemblyComponents()
+         .AddAuthenticationStateSerialization();
     builder.Services.AddScoped<LocalStorageKeyListingService>();
     builder.Services.AddScoped<AddressPhoneFormatService>();
     builder.Services.Configure<ForwardedHeadersOptions>(options =>

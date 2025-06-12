@@ -4,12 +4,15 @@ using Blazored.LocalStorage;
 using James.Data.Client.GraphQL;
 using James.Shared;
 using James.Shared.Data;
+using James.Shared.Server;
 using JamesWebUI.Client.AuthenticationStateSyncer;
 using JamesWebUI.Client.Services;
+using JamesWebUI.Shared.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
 using StrawberryShake;
+using ThemeService = JamesWebUI.Shared.Services.ThemeService;
 
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
@@ -33,13 +36,14 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
 builder.Services.AddRadzenComponents();
 builder.Services.AddBlazoredLocalStorage(config =>
 {
-    config.JsonSerializerOptions.ReferenceHandler =ReferenceHandler.IgnoreCycles;
+    config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 builder.Services.AddScoped<LocalStorageKeyListingService>();
 builder.Services.AddScoped<AddressPhoneFormatService>();
-builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
+builder.Services.AddScoped<ThemeService>();
+builder.Services.AddScoped<IUserShared, UserShared>();
 builder.Services.AddSingleton<ILoggingService, LoggingService>();
-builder.Services.AddScoped<IDataAccess,ClientDataAccess>();
+builder.Services.AddScoped<IDataAccess, ClientDataAccess>();
 
 builder.Services.AddOidcAuthentication(options =>
 {

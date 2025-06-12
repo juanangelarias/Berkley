@@ -14,7 +14,7 @@ using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using James.Test.Shared;
 using JamesWebUI.Client.Services;
-using JamesWebUI.Server.SharedServices;
+using JamesWebUI.Shared.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

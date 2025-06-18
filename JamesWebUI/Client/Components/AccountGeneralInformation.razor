@@ -479,13 +479,7 @@
         }
         catch (Exception ex)
         {
-            LoggingService.LogError("Error saving Account Systems changes.", ex.ToString());
-            NotificationService.Notify(new NotificationMessage
-                {
-                    Detail = "Error saving changes.",
-                    Duration = 4000,
-                    Severity = NotificationSeverity.Error
-                });
+            NotifySaveError(["Error saving Account Systems changes.", ex.ToString()]);
         }
     }
     

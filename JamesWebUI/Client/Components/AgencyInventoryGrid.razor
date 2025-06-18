@@ -164,7 +164,7 @@
         },
         ResultVariable = () => _inventoryResult,
         AfterLoad = () => { AgencyInventories = _inventoryResult.Data!; }
-    }, "Agency Inventory");
+    }, "Agency inventory");
 
     private LoadItem StatesLoad => AddEventNotify(new LoadItem
     {
@@ -196,7 +196,7 @@
             if (_docTypes.Success)
                 AllDocTypes = _docTypes.Data!;
         }
-    }, "Document Types");
+    }, "Document types");
 
     protected override async Task OnParametersSetAsync()
     {

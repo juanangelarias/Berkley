@@ -69,7 +69,7 @@
             if (_PoADocumentsResult.Success)
                 DocTypes = _PoADocumentsResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
         }
-    }, "POA Documents");
+    }, "POA documents");
 
     protected override async Task OnParametersSetAsync()
     {

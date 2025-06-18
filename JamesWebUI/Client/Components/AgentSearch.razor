@@ -44,7 +44,7 @@
             ResultVariable = () => _searchResult,
             AfterLoad = () => { SearchResults = _searchResult.Data!; },
             CacheDuration = TimeSpan.FromSeconds(1)
-        }, "SearchResult");
+        }, "Search result");
     
     private async Task SearchAgent(LoadDataArgs args)
     {

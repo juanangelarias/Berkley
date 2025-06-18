@@ -52,6 +52,24 @@
     
     private List<PowerOfAttorneyDocumentNameDm>? DocTypes { get; set; }
     private bool EditMode { get; set; }
+    
+    private IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>> _PoADocumentsResult = null!;
+
+    private LoadItem PoADocumentsLoad => AddEventNotify(new LoadItem
+    {
+        Key = "POADocumentName",
+        AsyncLoadTask = async () => _PoADocumentsResult = await DataAccess.GetPoaDocumentNames(),
+        CacheLoadTask = cache => _PoADocumentsResult = new DataAccessResult<List<PowerOfAttorneyDocumentNameDm>>
+        {
+            Data = (List<PowerOfAttorneyDocumentNameDm>)cache!
+        },
+        ResultVariable = () => _PoADocumentsResult,
+        AfterLoad = () =>
+        {
+            if (_PoADocumentsResult.Success)
+                DocTypes = _PoADocumentsResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
+        }
+    }, "POA documents");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -64,24 +82,7 @@
     {
         if (null == DocTypes || DocTypes.Count==0)
         {
-            IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>> docResult = null!;
-            var loadItem = AddEventNotify(new LoadItem
-            {
-                Key = "POADocumentName",
-                AsyncLoadTask = async () => docResult = await DataAccess.GetPoaDocumentNames(),
-                CacheLoadTask = cache => docResult = new DataAccessResult<List<PowerOfAttorneyDocumentNameDm>>
-                {
-                    Data = (List<PowerOfAttorneyDocumentNameDm>)cache!
-                },
-                ResultVariable = () => docResult,
-                AfterLoad = () =>
-                {
-                    if (docResult.Success)
-                        DocTypes = docResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
-                }
-            }, "POADocumentName");
-
-            await DataCache.GetCacheOrLoadDataAsync(loadItem);
+            await DataCache.GetCacheOrLoadDataAsync(PoADocumentsLoad);
         }
     }
     

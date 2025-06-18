@@ -105,6 +105,20 @@
 
     private bool isLoading = false;
     
+    private IDataAccessResult<List<AccountProgram>> _accountProgramResult = null!;
+
+    private LoadItem AccountProgramLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"AccountProgramDisplay{AccountNumber}",
+            AsyncLoadTask = async () => _accountProgramResult = await DataAccess.GetAccountProgramHistory(AccountNumber),
+            CacheLoadTask = cache => _accountProgramResult = new DataAccessResult<List<AccountProgram>>
+            {
+                Data = (List<AccountProgram>)cache!
+            },
+            ResultVariable = () => _accountProgramResult,
+            AfterLoad = () => { ProgramsToDisplay = _accountProgramResult.Data!; }
+        }, "account program");
+    
     public AccountProgramDisplay()
     {
         programsToUpdate = new List<AccountProgram>();
@@ -124,25 +138,7 @@
         if (string.IsNullOrWhiteSpace(AccountNumber))
             return;
 
-        IDataAccessResult<List<AccountProgram>> result = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"AccountProgramDisplay{AccountNumber}",
-            AsyncLoadTask = async () => result = await DataAccess.GetAccountProgramHistory(AccountNumber),
-            CacheLoadTask = cache => result = new DataAccessResult<List<AccountProgram>>
-            {
-                Data = (List<AccountProgram>)cache!
-            },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (result.Success)
-                    ProgramsToDisplay = result.Data!;
-            }
-        }, $"AccountProgramDisplay {AccountNumber}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(AccountProgramLoad);
     }
 
     protected async Task ShowLoading()

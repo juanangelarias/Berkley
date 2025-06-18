@@ -70,6 +70,19 @@
     private List<Account> _agencyAccounts = new();
     private RadzenDataGrid<Account> _agencyAccountGrid = null!;
     private bool _isLoading;
+    private IDataAccessResult<List<Account>> _accountResult = null!;
+
+    private LoadItem AccountLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"Accounts{AgencyNumber}",
+            AsyncLoadTask = async () => _accountResult = await DataAccess.GetAgencyAccounts(AgencyNumber),
+            CacheLoadTask = cache => _accountResult = new DataAccessResult<List<Account>>
+            {
+                Data = (List<Account>)cache!
+            },
+            ResultVariable = () => _accountResult,
+            AfterLoad = () => { _agencyAccounts = _accountResult.Data!; }
+        }, "accounts");
 
     protected override async Task OnInitializedAsync()
     {
@@ -94,25 +107,7 @@
         if (string.IsNullOrEmpty(AgencyNumber))
             return;
 
-        IDataAccessResult<List<Account>> result = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"Accounts{AgencyNumber}",
-            AsyncLoadTask = async () => result = await DataAccess.GetAgencyAccounts(AgencyNumber),
-            CacheLoadTask = cache => result = new DataAccessResult<List<Account>>
-            {
-                Data = (List<Account>)cache!
-            },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (result.Success)
-                    _agencyAccounts = result.Data!;
-            }
-        }, $"Accounts {AgencyNumber}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(AccountLoad);
     }
 
     protected async Task ShowLoading()

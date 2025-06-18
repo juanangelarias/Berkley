@@ -187,6 +187,30 @@
     private bool ShowTaxId { get; set; }
     private PositionSavingTabs ContactTabs { get; set; } = new();
     
+    private IDataAccessResult<Account> _accountResult = null!;
+    private IDataAccessResult<InforceAccountLOA> _inforceAccountLOAResult = null!;
+
+    private LoadItem AccountLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"Account{AccountNumber}",
+            AsyncLoadTask = async () => _accountResult = await DataAccess.GetAccountByNumber(AccountNumber),
+            CacheLoadTask = cache => _accountResult = new DataAccessResult<Account> { Data = (Account)cache! },
+            ResultVariable = () => _accountResult,
+            AfterLoad = () => { AccountToDisplay = _accountResult.Data!; }
+        }, "account");
+    
+    private LoadItem InforceAccountLOALoad => AddEventNotify(new LoadItem
+        {
+            Key = $"InforceAccountLOA{AccountNumber}",
+            AsyncLoadTask = async () => _inforceAccountLOAResult = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber!),
+            CacheLoadTask = cache => _inforceAccountLOAResult = new DataAccessResult<InforceAccountLOA> { Data = (InforceAccountLOA)cache! },
+            ResultVariable = () => _inforceAccountLOAResult,
+            AfterLoad =() =>
+            {
+                InForceLOAs = _inforceAccountLOAResult.Data!;
+            }
+        }, "inforce account LOA");
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -201,21 +225,7 @@
         if(string.IsNullOrWhiteSpace(AccountNumber))
             return;
 
-        IDataAccessResult<Account> result = null!;
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"Account{AccountNumber}",
-            AsyncLoadTask = async () => result = await DataAccess.GetAccountByNumber(AccountNumber),
-            CacheLoadTask = cache => result = new DataAccessResult<Account> { Data = (Account)cache! },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (result.Success)
-                    AccountToDisplay = result.Data!;
-            }
-        }, $"Account {AccountNumber}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(AccountLoad);
     }
     
     private async Task LoadInforceLOAs()
@@ -223,21 +233,7 @@
         if(string.IsNullOrWhiteSpace(AccountNumber))
             return;
 
-        IDataAccessResult<InforceAccountLOA> result = null!;
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"InforceAccountLOA{AccountNumber}",
-            AsyncLoadTask = async () => result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber),
-            CacheLoadTask = cache => result = new DataAccessResult<InforceAccountLOA> { Data = (InforceAccountLOA)cache! },
-            ResultVariable = () => result,
-            AfterLoad =() =>
-            {
-                if (result.Success)
-                    InForceLOAs = result.Data!;
-            }
-        }, $"InforceAccountLOA {AccountNumber}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(InforceAccountLOALoad);
     }
     
     private void BusyDialog()

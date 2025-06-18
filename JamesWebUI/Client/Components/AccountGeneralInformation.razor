@@ -393,6 +393,20 @@
     private bool SystemsEditMode { get; set; }
     private bool JobMixEditMode {get;set;}
     private bool Disabled => AccountToDisplay == null;
+    
+    private IDataAccessResult<InforceAccountLOA> _inforceLOAResult = null!;
+
+    private LoadItem InforceLOALoad => AddEventNotify(new LoadItem
+        {
+            Key = $"GetInforceLOAs{AccountToDisplay?.AccountNum}",
+            AsyncLoadTask = async () => { _inforceLOAResult = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountToDisplay?.AccountNum ?? ""); },
+            CacheLoadTask = cache => _inforceLOAResult = new DataAccessResult<InforceAccountLOA>
+            {
+                Data = (InforceAccountLOA)cache!
+            },
+            ResultVariable = () => _inforceLOAResult,
+            AfterLoad = () => { inforceLOAs = _inforceLOAResult.Data!; }
+        }, $"inforce LOAs");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -406,7 +420,7 @@
         }
     }
 
-    async Task SaveGenInfoChanges()
+    private async Task SaveGenInfoChanges()
     {
         try
         {
@@ -441,7 +455,7 @@
         }
     }
 
-    async Task SaveSystemsChanges()
+    private async Task SaveSystemsChanges()
     {
         try
         {
@@ -465,16 +479,11 @@
         }
         catch (Exception ex)
         {
-            LoggingService.LogError("Error saving Account Systems changes.", ex.ToString());
-            NotificationService.Notify(new NotificationMessage
-                {
-                    Detail = "Error saving changes.",
-                    Duration = 4000,
-                    Severity = NotificationSeverity.Error
-                });
+            NotifySaveError(["Error saving Account Systems changes.", ex.ToString()]);
         }
     }
-    async Task SaveAdditionalInformationChanges()
+    
+    private async Task SaveAdditionalInformationChanges()
     {
         try
         {
@@ -486,13 +495,7 @@
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account Additional Information changes.", result.Errors.ToString() ?? "");
-                NotificationService.Notify(new NotificationMessage
-                    {
-                        Detail = "Error saving changes.",
-                        Duration = 4000,
-                        Severity = NotificationSeverity.Error
-                    });
+                NotifySaveError(["Error saving Account Additional Information changes.", result.Errors.ToString() ?? ""]);
             }
             else
             {
@@ -510,7 +513,8 @@
                 });
         }
     }
-    async Task SaveJobMixChanges()
+    
+    private async Task SaveJobMixChanges()
     {
         // ToDo: To be defined!
         
@@ -522,25 +526,7 @@
         if (string.IsNullOrWhiteSpace(AccountToDisplay?.AccountNum))
             return;
 
-        IDataAccessResult<InforceAccountLOA> result = null!;
-        
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"GetInforceLOAs{AccountToDisplay?.AccountNum}",
-            AsyncLoadTask = async () => { result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountToDisplay?.AccountNum ?? ""); },
-            CacheLoadTask = cache => result = new DataAccessResult<InforceAccountLOA>
-            {
-                Data = (InforceAccountLOA)cache!
-            },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (result.Success)
-                    inforceLOAs = result.Data!;
-            }
-        }, $"GetInforceLOAs {AccountToDisplay?.AccountNum}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(InforceLOALoad);
     }
 
     private async Task CreditReportUploaded(Guid? documentId, string accountNum)

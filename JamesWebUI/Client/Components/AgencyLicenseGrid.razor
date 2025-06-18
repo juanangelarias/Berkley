@@ -181,12 +181,8 @@
                 Data = (List<AgencyLicense>)cache!
             },
             ResultVariable = () => _licenses,
-            AfterLoad = () =>
-            {
-                if (_licenses.Success)
-                    AgencyLicenses = _licenses.Data!;
-            }
-        }, $"AgencyLicenses {Agency.Id}");
+            AfterLoad = () => { AgencyLicenses = _licenses.Data!; }
+        }, "agency licenses");
 
 
     private async Task LoadData()

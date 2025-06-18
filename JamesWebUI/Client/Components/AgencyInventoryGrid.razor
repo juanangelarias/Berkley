@@ -149,6 +149,54 @@
     private List<State> AllStates { get; set; } = [];
     private List<InventoryDocumentDm> AllDocTypes { get; set; } = [];
     private RadzenDropDown<string> StateDropDown { get; set; } = null!;
+    
+    private IDataAccessResult<List<AgencyInventory>> _inventoryResult = null!;
+    private IDataAccessResult<List<State>> _states = null!;
+    private IDataAccessResult<List<InventoryDocumentDm>> _docTypes = null!;
+
+    private LoadItem InventoryLoad => AddEventNotify(new LoadItem
+    {
+        Key = $"Inventory{AgencyId}",
+        AsyncLoadTask = async () => _inventoryResult = await DataAccess.GetAgencyInventory(AgencyId),
+        CacheLoadTask = cache => _inventoryResult = new DataAccessResult<List<AgencyInventory>>
+        {
+            Data = (List<AgencyInventory>)cache!
+        },
+        ResultVariable = () => _inventoryResult,
+        AfterLoad = () => { AgencyInventories = _inventoryResult.Data!; }
+    }, "agency inventory");
+
+    private LoadItem StatesLoad => AddEventNotify(new LoadItem
+    {
+        Key = "States",
+        AsyncLoadTask = async () => _states = await DataAccess.GetAllStates(),
+        CacheLoadTask = cache => _states = new DataAccessResult<List<State>>
+        {
+            Data = (List<State>)cache!
+        },
+        ResultVariable = () => _states,
+        AfterLoad = () =>
+        {
+            if (_states.Success)
+                AllStates = _states.Data!;
+        }
+    }, "states");
+
+    private LoadItem DocumentsLoad => AddEventNotify(new LoadItem
+    {
+        Key = "DocumentTypes",
+        AsyncLoadTask = async () => _docTypes = await DataAccess.GetAllInventoryDocTypes(),
+        CacheLoadTask = cache => _docTypes = new DataAccessResult<List<InventoryDocumentDm>>
+        {
+            Data = (List<InventoryDocumentDm>)cache!
+        },
+        ResultVariable = () => _docTypes,
+        AfterLoad = () =>
+        {
+            if (_docTypes.Success)
+                AllDocTypes = _docTypes.Data!;
+        }
+    }, "document types");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -161,60 +209,8 @@
     {
         if (AgencyId == Guid.Empty)
             return;
-        IDataAccessResult<List<State>> states = null!;
-        IDataAccessResult<List<InventoryDocumentDm>> docTypes = null!;
-        IDataAccessResult<List<AgencyInventory>> inventory = null!;
 
-        LoadItem[] loadItems =
-        [
-            AddEventNotify(new LoadItem
-            {
-                Key = "States",
-                AsyncLoadTask = async () => states = await DataAccess.GetAllStates(),
-                CacheLoadTask = cache => states = new DataAccessResult<List<State>>
-                {
-                    Data = (List<State>)cache!
-                },
-                ResultVariable = () => states,
-                AfterLoad = () =>
-                {
-                    if (states.Success)
-                        AllStates = states.Data!;
-                }
-            }, "States"),
-            AddEventNotify(new LoadItem
-            {
-                Key = "DocumentTypes",
-                AsyncLoadTask = async () => docTypes = await DataAccess.GetAllInventoryDocTypes(),
-                CacheLoadTask = cache => docTypes = new DataAccessResult<List<InventoryDocumentDm>>
-                {
-                    Data = (List<InventoryDocumentDm>)cache!
-                },
-                ResultVariable = () => docTypes,
-                AfterLoad = () =>
-                {
-                    if (docTypes.Success)
-                        AllDocTypes = docTypes.Data!;
-                }
-            }, "Document Types"),
-            AddEventNotify(new LoadItem
-            {
-                Key = $"AgencyInventory{AgencyId}",
-                AsyncLoadTask = async () => inventory = await DataAccess.GetAgencyInventory(AgencyId),
-                CacheLoadTask = cache => inventory = new DataAccessResult<List<AgencyInventory>>
-                {
-                    Data = (List<AgencyInventory>)cache!
-                },
-                ResultVariable = () => inventory,
-                AfterLoad = () =>
-                {
-                    if (inventory.Success)
-                        AgencyInventories = inventory.Data!;
-                }
-            }, "Agency Inventory")
-        ];
-
-        await DataCache.ParallelGetCacheOrDataAsync(loadItems);
+        await DataCache.ParallelGetCacheOrDataAsync(StatesLoad, DocumentsLoad, InventoryLoad);
     }
 
     void Reset()
@@ -233,25 +229,7 @@
     {
         await ShowLoading();
 
-        IDataAccessResult<List<AgencyInventory>> inventory = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"Inventory{AgencyId}",
-            AsyncLoadTask = async () => inventory = await DataAccess.GetAgencyInventory(AgencyId),
-            CacheLoadTask = cache => inventory = new DataAccessResult<List<AgencyInventory>>
-            {
-                Data = (List<AgencyInventory>)cache!
-            },
-            ResultVariable = () => inventory,
-            AfterLoad = () =>
-            {
-                if (inventory.Success)
-                    AgencyInventories = inventory.Data!;
-            }
-        }, "Agency Inventory");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(InventoryLoad);
     }
 
     private async Task EditInventoryRow(AgencyInventory inventory)

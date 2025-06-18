@@ -66,6 +66,20 @@
     private List<Agency> RelatedParties { get; set; } = [];
     private RadzenDataGrid<Agency> RelatedPartiesGrid { get; set; } = null!;
     private bool _isLoading;
+    
+    private IDataAccessResult<List<Agency>> _relatedPartiesResult = null!;
+
+    private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"RelatedParties{AgencyId}",
+            AsyncLoadTask = async () => _relatedPartiesResult = await DataAccess.GetAgencyRelatedParties(AgencyId),
+            CacheLoadTask = cache => _relatedPartiesResult = new DataAccessResult<List<Agency>>
+            {
+                Data = (List<Agency>)cache!
+            },
+            ResultVariable = () => _relatedPartiesResult,
+            AfterLoad = () => { RelatedParties = _relatedPartiesResult.Data!; }
+        }, "agency related parties");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -81,25 +95,7 @@
         
         await ShowLoading();
 
-        IDataAccessResult<List<Agency>> result = null!;
-
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"RelatedParties{AgencyId}",
-            AsyncLoadTask = async () => result = await DataAccess.GetAgencyRelatedParties(AgencyId),
-            CacheLoadTask = cache => result = new DataAccessResult<List<Agency>>
-            {
-                Data = (List<Agency>)cache!
-            },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (result.Success)
-                    RelatedParties = result.Data!;
-            }
-        }, $"RelatedParties {AgencyId}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
     }
     
     protected async Task ShowLoading()

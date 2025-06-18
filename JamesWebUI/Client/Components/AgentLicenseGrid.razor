@@ -157,12 +157,8 @@
                 Data = (Agent)cache!
             },
             ResultVariable = () => _agentResult,
-            AfterLoad = () =>
-            {
-                if (_agentResult.Success)
-                    AgencyLicenses = _agentResult.Data!.AgencyLicenses.ToList();
-            }
-        }, $"Licenses {AgentId}");
+            AfterLoad = () => { AgencyLicenses = _agentResult.Data!.AgencyLicenses.ToList(); }
+        }, "licenses");
 
     protected override async Task OnParametersSetAsync()
     {

@@ -143,9 +143,33 @@
         IdNavigation = new LegalEntity()
     };
 
-
     private RadzenDropDown<Guid> DropSelectInsurer { get; set; } = null!;
     private List<Insurer> AllInsurers { get; set; } = [];
+
+    private IDataAccessResult<Agent> _agentResult = null!;
+    private IDataAccessResult<List<Insurer>> _insurerResult = null!;
+
+    private LoadItem AgentLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"Agent{AgentId}",
+            AsyncLoadTask = async () => _agentResult = await DataAccess.GetAgent(AgentId),
+            CacheLoadTask = cache => _agentResult = new DataAccessResult<Agent> { Data = (Agent)cache! },
+            ResultVariable = () => _agentResult,
+            AfterLoad = () => { AgentToDisplay = _agentResult.Data!; }
+        }, "agent");
+
+    private LoadItem InsurerLoad => AddEventNotify(new LoadItem
+    {
+        Key = "Insurers",
+        AsyncLoadTask = async () => _insurerResult = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurerResult = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
+        ResultVariable = () => _insurerResult,
+        AfterLoad = () =>
+        {
+            Debug.Assert(_insurerResult.Data != null, "result.Data != null");
+            AllInsurers = _insurerResult.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
+        }
+    }, "insurers");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -156,6 +180,7 @@
         await LoadSelectInsurerDropDown();
         DialogService.Close();
     }
+    
     private async Task LoadAgent()
     {
         if(AgentId == Guid.Empty)
@@ -163,45 +188,14 @@
         
         BusyDialog();
 
-        IDataAccessResult<Agent> result = null!;
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = $"Agent{AgentId}",
-            AsyncLoadTask = async () => result = await DataAccess.GetAgent(AgentId),
-            CacheLoadTask = cache => result = new DataAccessResult<Agent> { Data = (Agent)cache! },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (result.Success)
-                    AgentToDisplay = result.Data!;
-            }
-        }, $"Agent {AgentId}");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(AgentLoad);
 
         DialogService.Close();
     }
     
     private async Task LoadSelectInsurerDropDown()
     {
-        IDataAccessResult<List<Insurer>> result = null!;
-        var loadItem = AddEventNotify(new LoadItem
-        {
-            Key = "Insurers",
-            AsyncLoadTask = async () => result = await DataAccess.GetAllInsurers(),
-            CacheLoadTask = cache => result = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
-            ResultVariable = () => result,
-            AfterLoad = () =>
-            {
-                if (!result.Success) 
-                    return;
-                
-                Debug.Assert(result.Data != null, "result.Data != null");
-                AllInsurers = result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
-            }
-        }, "Insurers");
-
-        await DataCache.GetCacheOrLoadDataAsync(loadItem);
+        await DataCache.GetCacheOrLoadDataAsync(InsurerLoad);
     }
 
     private void BusyDialog()

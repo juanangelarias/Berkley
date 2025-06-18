@@ -134,7 +134,7 @@
         ResultVariable = () => _agenciesResult,
         AfterLoad = () => { _agencyResults = _agenciesResult.Data!; },
         CacheDuration = TimeSpan.FromSeconds(1)
-    }, "search agencies");
+    }, "search results");
 
     protected override async Task OnInitializedAsync()
     {

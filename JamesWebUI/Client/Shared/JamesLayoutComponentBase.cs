@@ -77,6 +77,8 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     /// <param name="itemSaved">The item being saved, default is "Changes".  Should be title cased.</param>
     protected void NotifySuccessfulSave(string itemSaved = "Changes")
     {
+        itemSaved = itemSaved[..1].ToUpper() + itemSaved[1..];
+        
         NotificationService.Notify(new NotificationMessage
         {
             Severity = NotificationSeverity.Info,

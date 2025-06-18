@@ -81,7 +81,7 @@
             },
             ResultVariable = () => _bondResult,
             AfterLoad = () => { ObligeeBonds = _bondResult.Data!; }
-        }, $"Bonds of Obligee {ObligeeId}");
+        }, "Obligee Bonds");
 
     protected override async Task OnParametersSetAsync()
     {

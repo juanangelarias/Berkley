@@ -164,7 +164,7 @@
                     .Select(p => p.FirstOrDefault()?.Insurer.IdNavigation.FullName ?? "")
                     .ToList();
             }
-        }, $"Agency POAs {AgencyId}");
+        }, "Agency POAs");
 
     private async Task LoadData()
     {

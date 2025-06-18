@@ -100,7 +100,7 @@
             },
             ResultVariable = () => _agencyBondsResult,
             AfterLoad = () => { _agencyBonds = _agencyBondsResult.Data!; }
-        }, $"Bond Grid for Agency {AgencyId}");
+        }, "Agency Bond Grid");
 
     protected override async Task OnParametersSetAsync()
     {

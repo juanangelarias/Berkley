@@ -79,7 +79,7 @@
             },
             ResultVariable = () => _relatedPartiesResult,
             AfterLoad = () => { RelatedParties = _relatedPartiesResult.Data!; }
-        }, $"Related Parties of Agency {AgencyId}");
+        }, "Agency Related Parties");
 
     protected override async Task OnParametersSetAsync()
     {

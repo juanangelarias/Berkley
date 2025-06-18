@@ -182,7 +182,7 @@
             },
             ResultVariable = () => _licenses,
             AfterLoad = () => { AgencyLicenses = _licenses.Data!; }
-        }, $"AgencyLicenses {Agency.Id}");
+        }, "Agency Licenses");
 
 
     private async Task LoadData()

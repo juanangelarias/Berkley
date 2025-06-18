@@ -82,7 +82,7 @@
             },
             ResultVariable = () => _accountResult,
             AfterLoad = () => { _agencyAccounts = _accountResult.Data!; }
-        }, $"Accounts for agency {AgencyNumber}");
+        }, "Accounts");
 
     protected override async Task OnInitializedAsync()
     {

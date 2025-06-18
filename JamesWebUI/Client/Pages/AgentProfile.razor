@@ -156,7 +156,7 @@
             CacheLoadTask = cache => _agentResult = new DataAccessResult<Agent> { Data = (Agent)cache! },
             ResultVariable = () => _agentResult,
             AfterLoad = () => { AgentToDisplay = _agentResult.Data!; }
-        }, $"Agent {AgentId}");
+        }, "Agent");
 
     private LoadItem InsurerLoad => AddEventNotify(new LoadItem
     {

@@ -495,13 +495,7 @@
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account Additional Information changes.", result.Errors.ToString() ?? "");
-                NotificationService.Notify(new NotificationMessage
-                    {
-                        Detail = "Error saving changes.",
-                        Duration = 4000,
-                        Severity = NotificationSeverity.Error
-                    });
+                NotifySaveError(["Error saving Account Additional Information changes.", result.Errors.ToString() ?? ""]);
             }
             else
             {

@@ -197,7 +197,7 @@
             CacheLoadTask = cache => _accountResult = new DataAccessResult<Account> { Data = (Account)cache! },
             ResultVariable = () => _accountResult,
             AfterLoad = () => { AccountToDisplay = _accountResult.Data!; }
-        }, "Account");
+        }, "account");
     
     private LoadItem InforceAccountLOALoad => AddEventNotify(new LoadItem
         {
@@ -209,7 +209,7 @@
             {
                 InForceLOAs = _inforceAccountLOAResult.Data!;
             }
-        }, "Inforce account LOA");
+        }, "inforce account LOA");
     
     protected override async Task OnParametersSetAsync()
     {

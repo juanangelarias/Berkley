@@ -118,7 +118,7 @@
             if (_agentsResult.Success)
                 Agents = _agentsResult.Data!;
         }
-    }, "Agency contacts");
+    }, "agency contacts");
 
 
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem
@@ -132,7 +132,7 @@
             if (_insurersResult.Success)
                 AllInsurers = _insurersResult.Data!;
         }
-    }, "Insurers");
+    }, "insurers");
 
     protected override async Task OnInitializedAsync()
     {

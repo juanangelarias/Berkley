@@ -156,7 +156,7 @@
             CacheLoadTask = cache => _agentResult = new DataAccessResult<Agent> { Data = (Agent)cache! },
             ResultVariable = () => _agentResult,
             AfterLoad = () => { AgentToDisplay = _agentResult.Data!; }
-        }, "Agent");
+        }, "agent");
 
     private LoadItem InsurerLoad => AddEventNotify(new LoadItem
     {
@@ -169,7 +169,7 @@
             Debug.Assert(_insurerResult.Data != null, "result.Data != null");
             AllInsurers = _insurerResult.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
         }
-    }, "Insurers");
+    }, "insurers");
 
     protected override async Task OnParametersSetAsync()
     {

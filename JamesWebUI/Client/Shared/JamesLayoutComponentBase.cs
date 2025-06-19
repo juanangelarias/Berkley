@@ -74,7 +74,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     /// <summary>
     /// Generates standard notification that changes were saved successfully.
     /// </summary>
-    /// <param name="itemSaved">The item being saved, default is "Changes".  Should be title cased.</param>
+    /// <param name="itemSaved">The item being saved, default is "Changes".</param>
     protected void NotifySuccessfulSave(string itemSaved = "Changes")
     {
         itemSaved = itemSaved[..1].ToUpper() + itemSaved[1..];

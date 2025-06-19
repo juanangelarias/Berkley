@@ -348,7 +348,10 @@
         await Reset(powerOfAttorney);
         var result = await DataAccess.DeleteAgencyPOA(powerOfAttorney.Id);
         if (result.Success)
+        {
+            NotifySuccessfulSave("agency POA deleted");
             await LoadPOAs();
+        }
         else
             NotifySaveError(result.Errors, "agency POA deletion");
     }

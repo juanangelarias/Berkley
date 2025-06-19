@@ -175,7 +175,7 @@
             if (_statesResult.Success)
                 AllStates = _statesResult.Data!;
         }
-    }, "States");
+    }, "states");
     
     private IDataAccessResult<List<Insurer>> _insurersResult = null!;
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem
@@ -192,7 +192,7 @@
             if (_insurersResult.Success)
                 AllInsurers = _insurersResult.Data!;
         }
-    }, "Insurers");
+    }, "insurers");
 
     protected override async Task OnParametersSetAsync()
     {

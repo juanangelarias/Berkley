@@ -69,7 +69,7 @@
                 if (_agent.Success)
                     _licenses = _agent.Data?.AgencyLicenses.ToList() ?? [];
             }
-        }, $"Agent");
+        }, $"agent");
 
     private IDataAccessResult<List<Insurer>> _insurersResult = null!;
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem
@@ -86,7 +86,7 @@
             if (_insurersResult.Success)
                 _insurers = _insurersResult.Data?.ToList() ?? [];
         }
-    }, "Insurers");
+    }, "insurers");
     
     protected override async Task OnInitializedAsync()
     {

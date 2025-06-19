@@ -99,7 +99,7 @@
                     if (_statusLogs.Success)
                         AgencyStatusLogs = _statusLogs.Data!;
                 }
-            }, $"AgencyStatusLog {AgencyNumber}");
+            }, "agency status lo");
     
     private IDataAccessResult<List<AgencyStatusDm>> _statuses = null!;
 
@@ -193,7 +193,7 @@
         );
 
         if (!result.Success)
-            await HandleError("Error getting profile by user name", result.Errors);
+            NotifySaveError(result.Errors, "agency status log");
         
         StatusLogsToInsert.Remove(statusLog);
     }

@@ -206,7 +206,6 @@
     private bool ShowTaxId { get; set; }
 
     private PositionSavingTabs TabsAgencyProfile { get; set; } = new();
-    //TODO: Remove after implementing caching
     private List<Branch> AllBranches { get; set; } = [];
 
     protected override async Task OnInitializedAsync()
@@ -251,7 +250,7 @@
                 Debug.Assert(_branchesResult.Data != null);
                 AllBranches = _branchesResult.Data.OrderBy(b => b.Name).ToList();
             }
-        }, "Branches");
+        }, "branches");
 
     protected override async Task OnParametersSetAsync()
     {

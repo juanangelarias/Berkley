@@ -177,8 +177,7 @@
         ResultVariable = () => _states,
         AfterLoad = () =>
         {
-            if (_states.Success)
-                AllStates = _states.Data!;
+            AllStates = _states.Data!;
         }
     }, "states");
 
@@ -193,8 +192,7 @@
         ResultVariable = () => _docTypes,
         AfterLoad = () =>
         {
-            if (_docTypes.Success)
-                AllDocTypes = _docTypes.Data!;
+            AllDocTypes = _docTypes.Data!;
         }
     }, "document types");
 

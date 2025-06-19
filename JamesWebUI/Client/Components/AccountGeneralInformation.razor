@@ -440,7 +440,8 @@
         }
         catch (Exception ex)
         {
-            NotifySaveError(["Error saving Account General Info changes."]);
+            LoggingService.LogException(ex, "general information");
+            NotifySaveError(["Error saving Account General Info changes."], "general information", false);
         }
     }
 
@@ -463,7 +464,8 @@
         }
         catch (Exception ex)
         {
-            NotifySaveError(["Error saving Account Systems changes."]);
+            LoggingService.LogException(ex, "system changes");
+            NotifySaveError(["Error saving Account Systems changes."],"system changes", false);
         }
     }
 
@@ -479,7 +481,7 @@
 
             if (result.Errors.Any())
             {
-                NotifySaveError(["Error saving Account Additional Information changes.", result.Errors.ToString() ?? ""]);
+                NotifySaveError(result.Errors, "additional information changes");
             }
             else
             {
@@ -489,7 +491,8 @@
         }
         catch (Exception ex)
         {
-            NotifySaveError(["Error saving Account Additional Information changes."]);
+            LoggingService.LogException(ex,"additional information changes");
+            NotifySaveError(["Error saving Account Additional Information changes."], "additional information changes", false);
         }
     }
     

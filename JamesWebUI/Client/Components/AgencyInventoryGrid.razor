@@ -246,12 +246,12 @@
 
         if (result.Success)
         {
-            NotifySuccessfulSave("Agency Inventory Deleted");
+            NotifySuccessfulSave("agency inventory deleted");
             await LoadInventory();
         }
         else
         {
-            NotifySaveError(result.Errors, "Agency Inventory deletion");
+            NotifySaveError(result.Errors, "agency inventory deletion");
         }
     }
 

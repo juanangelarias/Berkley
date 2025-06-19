@@ -182,7 +182,7 @@
             if (insurers.Success)
                 AllInsurers = insurers.Data!;
         }
-    }, "Insurers");
+    }, "insurers");
     
     private IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses = null!;
 
@@ -200,7 +200,7 @@
             if (statuses.Success)
                 AllStatuses = statuses.Data!;
         }
-    }, "Statuses");
+    }, "statuses");
     
     private async Task LoadData()
     {

@@ -350,7 +350,7 @@
         if (result.Success)
             await LoadPOAs();
         else
-            await HandleError("Error deleting Agency POA", result.Errors);
+            NotifySaveError(result.Errors, "agency POA deletion");
     }
 
     private void ShowTooltip(ElementReference elementReference, string message, TooltipOptions? options = null) => TooltipService.Open(elementReference, message, options);

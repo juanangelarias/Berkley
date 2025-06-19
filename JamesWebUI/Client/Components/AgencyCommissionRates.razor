@@ -113,26 +113,11 @@
                 _contractEditor.Values!.Cast<AgencyCommission>());
             ratesToSave.AddRange(_commercialEditor.Values?.Cast<AgencyCommission>() ?? []);
             var saveResult = await DataAccess.SetAgencyCommissionRates(AgencyId, ratesToSave.ToArray());
+
             if (saveResult.Success)
-                NotificationService.Notify(new NotificationMessage
-                {
-                    Severity = NotificationSeverity.Success,
-                    Summary = "Save Successful",
-                    Duration = 2000,
-                    CloseOnClick = true
-                });
+                NotifySuccessfulSave("commission rates");
             else
-                foreach (var saveResultError in saveResult.Errors)
-                {
-                    Logging.LogError("Error saving commission rates", details: saveResultError, "DataAccess");
-                    NotificationService.Notify(new NotificationMessage
-                    {
-                        Severity = NotificationSeverity.Error,
-                        Summary = saveResultError,
-                        Duration = 2 * 60 * 60 * 1000, //Leave on screen for 2 hours to allow screenshots, etc.
-                        CloseOnClick = true
-                    });
-                }
+                NotifySaveError(saveResult.Errors, "commission rates");
 
             _editMode = false;
             await LoadRates();

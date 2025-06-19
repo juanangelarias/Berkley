@@ -184,47 +184,51 @@
             AfterLoad = () => { AgencyLicenses = _licenses.Data!; }
         }, "agency licenses");
 
+    private IDataAccessResult<List<State>> _states = null!;
 
+    private LoadItem StatesLoad => AddEventNotify(new LoadItem
+    {
+        Key = "States",
+        AsyncLoadTask = async () => _states = await DataAccess.GetAllStates(),
+        CacheLoadTask = cache => _states = new DataAccessResult<List<State>>
+        {
+            Data = (List<State>)cache!
+        },
+        ResultVariable = () => _states,
+        AfterLoad = () =>
+        {
+            if (_states.Success)
+                AllStates = _states.Data!;
+        }
+    }, "States");
+
+    private IDataAccessResult<List<Insurer>> _insurers = null!;
+
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    {
+        Key = "Insurers",
+        AsyncLoadTask = async () => _insurers = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurers = new DataAccessResult<List<Insurer>>
+        {
+            Data = (List<Insurer>)cache!
+        },
+        ResultVariable = () => _insurers,
+        AfterLoad = () =>
+        {
+            if (_insurers.Success)
+                AllInsurers = _insurers.Data!;
+        }
+    }, "Insurers");
+    
     private async Task LoadData()
     {
         if(Agency.Id == Guid.Empty)
             return;
-        
-        IDataAccessResult<List<State>> states = null!;
-        IDataAccessResult<List<Insurer>> insurers = null!;
 
         LoadItem[] loadItems =
         [
-            AddEventNotify(new LoadItem
-            {
-                Key = "States",
-                AsyncLoadTask = async () => states = await DataAccess.GetAllStates(),
-                CacheLoadTask = cache => states = new DataAccessResult<List<State>>
-                {
-                    Data = (List<State>)cache!
-                },
-                ResultVariable = () => states,
-                AfterLoad = () =>
-                {
-                    if (states.Success)
-                        AllStates = states.Data!;
-                }
-            }, "States"),
-            AddEventNotify(new LoadItem
-            {
-                Key = "Insurers",
-                AsyncLoadTask = async () => insurers = await DataAccess.GetAllInsurers(),
-                CacheLoadTask = cache => insurers = new DataAccessResult<List<Insurer>>
-                {
-                    Data = (List<Insurer>)cache!
-                },
-                ResultVariable = () => insurers,
-                AfterLoad = () =>
-                {
-                    if (insurers.Success)
-                        AllInsurers = insurers.Data!;
-                }
-            }, "Insurers"),
+            StatesLoad,
+            InsurersLoad,
             AgencyLicensesLoad
         ];
 

@@ -430,28 +430,17 @@
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString() ?? "");
-                NotificationService.Notify(new NotificationMessage
-                    {
-                        Detail = "Error saving changes.",
-                        Duration = 4000,
-                        Severity = NotificationSeverity.Error
-                    });
+                NotifySaveError(["Error saving Account General Info changes."]);
             }
             else
             {
+                NotifySuccessfulSave("general information");
                 GenInfoEditMode = !GenInfoEditMode;
             }
         }
         catch (Exception ex)
         {
-            LoggingService.LogError("Error saving Account General Info changes.", ex.ToString());
-            NotificationService.Notify(new NotificationMessage
-                {
-                    Detail = "Error saving changes.",
-                    Duration = 4000,
-                    Severity = NotificationSeverity.Error
-                });
+            NotifySaveError(["Error saving Account General Info changes."]);
         }
     }
 
@@ -464,25 +453,20 @@
 
             if (result.Errors.Any())
             {
-                LoggingService.LogError("Error saving Account General Info changes.", result.Errors.ToString() ?? "");
-                NotificationService.Notify(new NotificationMessage
-                    {
-                        Detail = "Error saving changes.",
-                        Duration = 4000,
-                        Severity = NotificationSeverity.Error
-                    });
+                NotifySaveError(["Error saving Account General Info changes."]);
             }
             else
             {
+                NotifySuccessfulSave("system changes");
                 SystemsEditMode = !SystemsEditMode;
             }
         }
         catch (Exception ex)
         {
-            NotifySaveError(["Error saving Account Systems changes.", ex.ToString()]);
+            NotifySaveError(["Error saving Account Systems changes."]);
         }
     }
-    
+
     private async Task SaveAdditionalInformationChanges()
     {
         try
@@ -499,18 +483,13 @@
             }
             else
             {
+                NotifySuccessfulSave("additional information changes");
                 AddlInfoEditMode = !AddlInfoEditMode;
             }
         }
         catch (Exception ex)
         {
-            LoggingService.LogError("Error saving Account Additional Information changes.", ex.ToString());
-            NotificationService.Notify(new NotificationMessage
-                {
-                    Detail = "Error saving changes.",
-                    Duration = 4000,
-                    Severity = NotificationSeverity.Error
-                });
+            NotifySaveError(["Error saving Account Additional Information changes."]);
         }
     }
     
@@ -540,6 +519,8 @@
 
     private void LogUploadError(string message)
     {
+        NotifySaveError([message], "credit report");
+        
         LoggingService.LogError("Upload failed",
             "Uploading a credit report to imaging returned an error",
             "Imaging",
@@ -548,6 +529,5 @@
                 { "Error Message", message },
                 { "AccountNum", AccountToDisplay?.AccountNum ?? "" }
             });
-        NotifySaveError([message], "credit report");
     }
 }

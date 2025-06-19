@@ -100,6 +100,24 @@
                         AgencyStatusLogs = _statusLogs.Data!;
                 }
             }, $"AgencyStatusLog {AgencyNumber}");
+    
+    private IDataAccessResult<List<AgencyStatusDm>> _statuses = null!;
+
+    private LoadItem StatusesLoad => AddEventNotify(new LoadItem
+    {
+        Key = "AgencyStatuses",
+        AsyncLoadTask = async () => _statuses = await DataAccess.GetAgencyStatuses(),
+        CacheLoadTask = cache => _statuses = new DataAccessResult<List<AgencyStatusDm>>
+        {
+            Data = (List<AgencyStatusDm>)cache!
+        },
+        ResultVariable = () => _statuses,
+        AfterLoad = () =>
+        {
+            if (_statuses.Success)
+                AllStatuses = _statuses.Data!;
+        }
+    }, "AgencyStatuses");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -110,25 +128,9 @@
 
     private async Task LoadData()
     {
-        IDataAccessResult<List<AgencyStatusDm>> statuses = null!;
-
         LoadItem[] loadItems =
         [
-            AddEventNotify(new LoadItem
-            {
-                Key = "AgencyStatuses",
-                AsyncLoadTask = async () => statuses = await DataAccess.GetAgencyStatuses(),
-                CacheLoadTask = cache => statuses = new DataAccessResult<List<AgencyStatusDm>>
-                {
-                    Data = (List<AgencyStatusDm>)cache!
-                },
-                ResultVariable = () => statuses,
-                AfterLoad = () =>
-                {
-                    if (statuses.Success)
-                        AllStatuses = statuses.Data!;
-                }
-            }, "AgencyStatuses"),
+            StatusesLoad,
             AgencyStatusLogLoad
         ];
 

@@ -105,7 +105,8 @@
     </LoadingTemplate>
 </RadzenDataGrid>
 
-@code {
+@code 
+{
     [Parameter, EditorRequired] required public Agency Agency { get; set; }
 
     private RadzenDataGrid<PowerOfAttorney> POAGrid { get; set; } = null!;
@@ -140,38 +141,33 @@
 
 
     private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem
-        {
-            Key = $"AgencyPOAs{Agency.Id}",
-            AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id),
-            CacheLoadTask = cache => _poas = new DataAccessResult<List<PowerOfAttorney>>
-            {
-                Data = (List<PowerOfAttorney>)cache!
-            },
-            ResultVariable = () => _poas,
-            AfterLoad = () =>
-            {
-                PowerOfAttorneys = _poas.Data!;
-            
-                _statusList = PowerOfAttorneys
-                    .OrderBy(p => p.Status)
-                    .GroupBy(p => p.Status)
-                    .Select(p => p.FirstOrDefault()?.Status ?? "")
-                    .ToList();
-            
-                _insurerList =PowerOfAttorneys
-                    .OrderBy(p => p.Insurer.IdNavigation.FullName)
-                    .GroupBy(p => p.Insurer.IdNavigation.FullName)
-                    .Select(p => p.FirstOrDefault()?.Insurer.IdNavigation.FullName ?? "")
-                    .ToList();
-            }
-        }, "agency POAs");
-
-    private async Task LoadData()
     {
-        if (Agency.Id == Guid.Empty)
-            return;
-    private IDataAccessResult<List<Insurer>> insurers = null!;
+        Key = $"AgencyPOAs{Agency.Id}",
+        AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id),
+        CacheLoadTask = cache => _poas = new DataAccessResult<List<PowerOfAttorney>>
+        {
+            Data = (List<PowerOfAttorney>)cache!
+        },
+        ResultVariable = () => _poas,
+        AfterLoad = () =>
+        {
+            PowerOfAttorneys = _poas.Data!;
 
+            _statusList = PowerOfAttorneys
+                .OrderBy(p => p.Status)
+                .GroupBy(p => p.Status)
+                .Select(p => p.FirstOrDefault()?.Status ?? "")
+                .ToList();
+
+            _insurerList = PowerOfAttorneys
+                .OrderBy(p => p.Insurer.IdNavigation.FullName)
+                .GroupBy(p => p.Insurer.IdNavigation.FullName)
+                .Select(p => p.FirstOrDefault()?.Insurer.IdNavigation.FullName ?? "")
+                .ToList();
+        }
+    }, "agency POAs");
+    
+    private IDataAccessResult<List<Insurer>> insurers = null!;
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem
     {
         Key = "Insurers",
@@ -189,7 +185,6 @@
     }, "insurers");
     
     private IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses = null!;
-
     private LoadItem StatusesLoad => AddEventNotify(new LoadItem
     {
         Key = "Statuses",
@@ -208,17 +203,10 @@
     
     private async Task LoadData()
     {
-        if (AgencyId == Guid.Empty)
+        if (Agency.Id == Guid.Empty)
             return;
 
-        LoadItem[] loadItems =
-        [
-            AgencyPoasLoad,
-            InsurersLoad,
-            StatusesLoad
-        ];
-
-        await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
+        await DataCache.ParallelGetCacheOrDataAsync(AgencyPoasLoad, InsurersLoad, StatusesLoad);
     }
 
     private Task Reset()

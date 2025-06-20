@@ -235,7 +235,7 @@
                     _agencyToDisplay = _agencyResult.Data; //ThisToThat.ToEntityType<Agency>(result.Data.AgencyByAgencyNumber);
                 },
                 CacheDuration = TimeSpan.FromHours(8) //Subscription will update this if changed, so a long cache time is appropriate.
-            }, $"Agency {agencyNumber}");
+            }, $"agency");
 
     private IDataAccessResult<List<Branch>> _branchesResult = null!;
     private LoadItem BranchesLoadItem() =>

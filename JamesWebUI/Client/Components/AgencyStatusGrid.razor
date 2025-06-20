@@ -99,7 +99,7 @@
                     if (_statusLogs.Success)
                         AgencyStatusLogs = _statusLogs.Data!;
                 }
-            }, "agency status lo");
+            }, "agency status log");
     
     private IDataAccessResult<List<AgencyStatusDm>> _statuses = null!;
 
@@ -117,7 +117,7 @@
             if (_statuses.Success)
                 AllStatuses = _statuses.Data!;
         }
-    }, "AgencyStatuses");
+    }, "agency statuses");
 
     protected override async Task OnParametersSetAsync()
     {

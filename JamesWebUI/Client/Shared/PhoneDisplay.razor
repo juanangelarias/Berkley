@@ -52,7 +52,7 @@
             PhoneNumberToDisplay = _phoneResult.Data ?? new PhoneNumber();
         },
         CacheDuration = TimeSpan.FromSeconds(1)
-    });
+    }, "phone number");
 
     protected override async Task OnParametersSetAsync()
     {

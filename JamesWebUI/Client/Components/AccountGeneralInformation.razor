@@ -428,7 +428,7 @@
 
             if (result.Errors.Any())
             {
-                NotifySaveError(["Error saving Account General Info changes."],"general information");
+                NotifySaveError(result.Errors,"general information");
             }
             else
             {
@@ -452,7 +452,7 @@
 
             if (result.Errors.Any())
             {
-                NotifySaveError(["Error saving Account General Info changes."],"system changes");
+                NotifySaveError(result.Errors,"system changes");
             }
             else
             {

@@ -2,32 +2,30 @@
 
 @inherits SlidingComponent
 
-
-
 <Theme />
+
 <RenderModeBackground/>
+
 <RadzenTabs Change="@HandleChangeDirection" TabPosition="TabPosition.Left" >
     <Tabs>
         <RadzenTabsItem Text="Licenses">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyLicenseGrid AgencyId="agencyId" />
+                <AgencyLicenseGrid Agency="Agency" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="POAs">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyPOAGrid AgencyId="agencyId" />
+                <AgencyPOAGrid AgencyId="Agency.Id" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Related Parties">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyRelatedPartiesGrid AgencyId="agencyId"/>
+                <AgencyRelatedPartiesGrid AgencyId="Agency.Id"/>
             </Animate>
         </RadzenTabsItem>
     </Tabs>
 </RadzenTabs>
 
 @code {
-    [Parameter] public Guid agencyId { get; set; }
-    List<string> blankList = new List<string>();
-
+    [Parameter, EditorRequired] public Agency Agency { get; set; }
 }

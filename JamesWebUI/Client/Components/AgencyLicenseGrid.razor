@@ -1,35 +1,28 @@
-﻿@using James.Shared
-@using James.Shared.Imaging
+﻿@using James.Shared.Imaging
 
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
 @inject IDataAccess DataAccess
-@inject ILoggingService Logging
 
 <Theme />
 <RenderModeBackground />
-<style>
-    .rz-grid-row {
-        row-gap: 2px;
-    }
-</style>
 
-<RadzenDataGrid TItem="AgencyLicense" @ref="@licenseGrid" Data="@agencyLicenses"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@AgencyLicenses"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Simple"
                 AllowColumnPicking="true" AllowGrouping="true"
                 RowUpdate="UpdateLicenseRow" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
-                IsLoading="@isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+                IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow" />
             <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(args => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading" />
             <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(args => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading" />
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -51,20 +44,20 @@
                 <RadzenCheckBox @bind-Value="@license.IsActive" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Type="typeof(IEnumerable<String>)"
-                              Filterable="true" FilterValue="@StateFilter" FilterProperty="State" FilterOperator="FilterOperator.Contains"
+        <RadzenDataGridColumn TItem="AgencyLicense" Type="typeof(IEnumerable<string>)"
+                              Filterable="true" FilterValue="@_stateFilter" FilterProperty="State" FilterOperator="FilterOperator.Contains"
                               Title="State" Property="State" Width="100px" SortOrder="SortOrder.Ascending">
             <Template Context="license">
                 <RadzenText Text="@license.State" />
             </Template>
             <EditTemplate Context="license">
-                <RadzenDropDown TValue="string" @ref="stateDropDown" Data="AllStates" @bind-Value="license.State"
+                <RadzenDropDown TValue="string" Data="AllStates" @bind-Value="license.State"
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%" />
             </EditTemplate>
             <FilterTemplate>
-                <RadzenDropDown @bind-Value="@StateFilter" Change="StateFilterChange"
-                                Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<String>"
-                                Data="@agencyLicenses?.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a?.FirstOrDefault()?.State).ToList()" />
+                <RadzenDropDown @bind-Value="@_stateFilter" Change="StateFilterChange"
+                                Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<string>"
+                                Data="@AgencyLicenses.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a.FirstOrDefault()?.State).ToList()" />
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense"
@@ -99,7 +92,7 @@
                 <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
             </Template>
             <EditTemplate Context="license">
-                <RadzenDropDown TValue="Insurer" @ref="dropSelectInsurer" Data="AllInsurers" Style="width:95%"
+                <RadzenDropDown TValue="Insurer" Data="AllInsurers" Style="width:95%"
                                 TextProperty="IdNavigation.FullName" @bind-Value="@license.Insurer" />
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -126,23 +119,23 @@
                                        DocumentId="@lic.ImagingId"
                                        DocumentType="AGALIC"
                                        ImagingId="@lic.Agency.AgencyNumber"
-                                       UploadAction=@(guid=> CertificateUploaded(guid, lic.Id))
+                                       UploadAction=@(async void (guid) => await CertificateUploaded(guid, lic.Id))
                                        UploadErrorAction=@(msg=>LogUploadError(msg, lic)) />
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="license">
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(args => EditLicenseRow(license))" @onclick:stopPropagation="true">
+                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(_ => EditLicenseRow(license))" @onclick:stopPropagation="true">
                 </RadzenButton>
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(args => DeleteLicenseRow(license))" @onclick:stopPropagation="true">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => DeleteLicenseRow(license))" @onclick:stopPropagation="true">
                 </RadzenButton>
             </Template>
             <EditTemplate Context="license">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@((args) => SaveLicenseRow(license))">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(_ => SaveLicenseRow(license))">
                 </RadzenButton>
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" class="my-1 ms-1" Click="@((args) => CancelLicenseEdit(license))">
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelLicenseEdit(license))">
                 </RadzenButton>
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(args => DeleteLicenseRow(license))">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => DeleteLicenseRow(license))">
                 </RadzenButton>
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -153,185 +146,235 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public required Agency Agency { get; set; }
 
-    private RadzenDataGrid<AgencyLicense> licenseGrid { get; set; } = null!;
+    private RadzenDataGrid<AgencyLicense> LicenseGrid { get; set; } = null!;
 
-    private List<AgencyLicense> agencyLicenses { get; set; } = new List<AgencyLicense>();
+    private List<AgencyLicense> AgencyLicenses { get; set; } = [];
 
-    private List<AgencyLicense> licensesToInsert = new List<AgencyLicense>();
-    private List<AgencyLicense> licensesToUpdate = new List<AgencyLicense>();
-
-    private RadzenDropDown<Insurer> dropSelectInsurer { get; set; } = null!;
-    private RadzenDropDown<Guid> filterInsurerDropDown { get; set; } = null!;
-    private RadzenDropDown<string> stateDropDown { get; set; } = null!;
-    private RadzenDropDown<string> stateFilterDropDown { get; set; } = null!;
-
+    private readonly List<AgencyLicense> _licensesToInsert = [];
+    private readonly List<AgencyLicense> _licensesToUpdate = [];
 
     //TODO: Remove this stuff once we figure out caching
-    private static List<Insurer> AllInsurers { get; set; } = new();
-    private static List<State> AllStates { get; set; } = new();
+    private static List<Insurer> AllInsurers { get; set; } = [];
+    private static List<State> AllStates { get; set; } = [];
 
-    private List<String>? StateFilter = null;
+    private List<string>? _stateFilter;
 
-    private bool isLoading = false;
-
+    private bool _isLoading;
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        if (AllStates.Count == 0)
-            await LoadStates();
-        if (AllInsurers.Count == 0)
-            await LoadInsurers();
+        await LoadData();
+    }
 
-        if (AgencyId != Guid.Empty)
+    private IDataAccessResult<List<AgencyLicense>> _licenses = null!;
+
+    private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem
         {
-            await LoadLicenses();
+            Key = $"AgencyLicenses{Agency.Id}",
+            AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(Agency.Id),
+            CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
+            {
+                Data = (List<AgencyLicense>)cache!
+            },
+            ResultVariable = () => _licenses,
+            AfterLoad = () => { AgencyLicenses = _licenses.Data!; }
+        }, "agency licenses");
+
+    private IDataAccessResult<List<State>> _states = null!;
+
+    private LoadItem StatesLoad => AddEventNotify(new LoadItem
+    {
+        Key = "States",
+        AsyncLoadTask = async () => _states = await DataAccess.GetAllStates(),
+        CacheLoadTask = cache => _states = new DataAccessResult<List<State>>
+        {
+            Data = (List<State>)cache!
+        },
+        ResultVariable = () => _states,
+        AfterLoad = () =>
+        {
+            if (_states.Success)
+                AllStates = _states.Data!;
         }
-    }
-    void Reset()
+    }, "states");
+
+    private IDataAccessResult<List<Insurer>> _insurers = null!;
+
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
     {
-        licensesToInsert.Clear();
-        licensesToUpdate.Clear();
-    }
-    void Reset(AgencyLicense license)
+        Key = "Insurers",
+        AsyncLoadTask = async () => _insurers = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurers = new DataAccessResult<List<Insurer>>
+        {
+            Data = (List<Insurer>)cache!
+        },
+        ResultVariable = () => _insurers,
+        AfterLoad = () =>
+        {
+            if (_insurers.Success)
+                AllInsurers = _insurers.Data!;
+        }
+    }, "insurers");
+    
+    private async Task LoadData()
     {
-        licensesToInsert.Remove(license);
-        licensesToUpdate.Remove(license);
+        if(Agency.Id == Guid.Empty)
+            return;
+
+        LoadItem[] loadItems =
+        [
+            StatesLoad,
+            InsurersLoad,
+            AgencyLicensesLoad
+        ];
+
+        await DataCache.ParallelGetCacheOrDataAsync(loadItems);
+    }
+
+    private void Reset()
+    {
+        _licensesToInsert.Clear();
+        _licensesToUpdate.Clear();
+    }
+
+    private void Reset(AgencyLicense license)
+    {
+        _licensesToInsert.Remove(license);
+        _licensesToUpdate.Remove(license);
     }
 
     private async Task LoadLicenses()
     {
-        await ShowLoading();
-        var result = await DataAccess.GetAgencyLicenses(AgencyId);
-        if (result.Success)
-        {
-            if (result.Data != null)
-            {
-                agencyLicenses = result.Data;
-            }
-        }
-        else
-            //UNDONE: Add actual errors as data
-            Logging.LogError("Error getting Agency Licenses in Agency License Grid");
-
-        await licenseGrid.Reload();
-    }
-    private async Task LoadStates()
-    {
-        var result = await DataAccess.GetAllStates();
-        if (result.Success == false)
-            //UNDONE: Add actual errors as data
-            Logging.LogError("Error getting all States in Agency License Grid");
-        AllStates = result.Data!;
-    }
-    private async Task LoadInsurers()
-    {
-        var result = await DataAccess.GetAllInsurers();
-        if (result.Success == false)
-            //UNDONE: Add actual errors as data
-            Logging.LogError("Error getting all Insurers in Agency License Grid");
-        else
-            AllInsurers = result.Data!;
+        await DataCache.GetCacheOrLoadDataAsync(AgencyLicensesLoad);
     }
 
-    async Task InsertLicenseRow()
+    private async Task InsertLicenseRow()
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
         await ShowLoading();
-        var newLicense = new AgencyLicense() { Id = Guid.NewGuid() };
-        licensesToInsert.Add(newLicense);
-        await licenseGrid.InsertRow(newLicense);
+        var newLicense = new AgencyLicense() { Id = Guid.NewGuid(), AgencyId = Agency.Id, Agency = Agency};
+        _licensesToInsert.Add(newLicense);
+        await LicenseGrid.InsertRow(newLicense);
     }
-    async Task EditLicenseRow(AgencyLicense license)
+
+    private async Task EditLicenseRow(AgencyLicense license)
     {
         await ShowLoading();
         Reset();
-        licensesToUpdate.Add(license);
-        await licenseGrid.EditRow(license);
+        _licensesToUpdate.Add(license);
+        await LicenseGrid.EditRow(license);
     }
-    async Task DeleteLicenseRow(AgencyLicense license)
+
+    private async Task DeleteLicenseRow(AgencyLicense license)
     {
         await ShowLoading();
         Reset(license);
         var result = await DataAccess.DeleteLicense(license.Id);
-        await LoadLicenses();
+
+        if (result.Success)
+        {
+            var toDelete = AgencyLicenses.FirstOrDefault(f => f.Id == license.Id);
+            if (toDelete != null)
+                AgencyLicenses.Remove(toDelete);
+
+            await LicenseGrid.Reload();
+            
+            await LoadLicenses();
+        }
+        else
+            await HandleError("Error deleting License", result.Errors);
     }
-    async Task SaveLicenseRow(AgencyLicense license)
+
+    private async Task SaveLicenseRow(AgencyLicense license)
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Update/Insert is done in those methods.
         await ShowLoading();
-        await licenseGrid.UpdateRow(license);
+        await LicenseGrid.UpdateRow(license);
         await LoadLicenses();
     }
-    async Task OnLicenseCreate(AgencyLicense license)
+
+    private async Task OnLicenseCreate(AgencyLicense license)
     {
         //This is where we handle row inserts.
 
         var result = await DataAccess.CreateLicense(
-        license.Id,
-        AgencyId,
-        null,
-        license.AppointingState,
-        license.Comments,
-        license.Appointment,
-        license.Expiration,
-        license.Termination,
-        license.Insurer.Id,
-        license.IsResident,
-        license.LicenseNumber,
-        license.State,
-        license.IsActive
-    );
+            license.Id,
+            Agency.Id,
+            null,
+            license.AppointingState,
+            license.Comments,
+            license.Appointment,
+            license.Expiration,
+            license.Termination,
+            license.Insurer.Id,
+            license.IsResident,
+            license.LicenseNumber,
+            license.State,
+            license.IsActive
+        );
 
-        licensesToInsert.Remove(license);
+        if (!result.Success)
+            await HandleError("Error creating License", result.Errors);
+        
+        _licensesToInsert.Remove(license);
         //await LoadLicenses();
         //TODO: Check for errors and notify.
     }
-    async void CancelLicenseEdit(AgencyLicense license)
+
+    private async void CancelLicenseEdit(AgencyLicense license)
     {
         await ShowLoading();
         Reset(license);
-        licenseGrid.CancelEditRow(license);
+        LicenseGrid.CancelEditRow(license);
         await LoadLicenses();
     }
-    async Task UpdateLicenseRow(AgencyLicense license)
+
+    private async Task UpdateLicenseRow(AgencyLicense license)
     {
         Reset(license);
         //This is where we handle row Updates.
         var result = await DataAccess.SetAgencyLicense(license.Id,
-                license.AgencyId,
-                license.AgentId,
-                license.AppointingState,
-                license.Comments,
-                license.Appointment,
-                license.Expiration,
-                license.Termination,
-                license.InsurerId,
-                license.IsResident,
-                license.LicenseNumber,
-                license.State,
-                license.IsActive
-            );
+            license.AgencyId,
+            license.AgentId,
+            license.AppointingState,
+            license.Comments,
+            license.Appointment,
+            license.Expiration,
+            license.Termination,
+            license.InsurerId,
+            license.IsResident,
+            license.LicenseNumber,
+            license.State,
+            license.IsActive
+        );
+
+        if (!result.Success)
+            await HandleError("Error Setting Agency License", result.Errors);
     }
-    async Task StateFilterChange()
+
+    private async Task StateFilterChange()
     {
-        if (StateFilter != null && !StateFilter.Any())
+        if (_stateFilter != null && !_stateFilter.Any())
         {
-            StateFilter = null;
+            _stateFilter = null;
         }
-        await licenseGrid.Reload();
+
+        await LicenseGrid.Reload();
     }
+
     protected async Task ShowLoading()
     {
-        isLoading = true;
+        _isLoading = true;
 
         await Task.Yield();
 
-        isLoading = false;
+        _isLoading = false;
     }
 
     private async Task CertificateUploaded(Guid? certificateId, Guid licenseId)
@@ -350,23 +393,23 @@
             "Uploading a file to imaging returned an error",
             "Imaging",
             data: new Dictionary<string, string>
-                {
+            {
                 { "Error Message", message },
-                { "AgencyNumber", license.Agency.AgencyNumber},
-                { "License Id", license.Id.ToString()}
-                    });
+                { "AgencyNumber", license.Agency.AgencyNumber },
+                { "License Id", license.Id.ToString() }
+            });
         NotifySaveError([message], "license certificate");
     }
 
     private void ExportLicenseGrid(ExportFormat format)
     {
         var substitutions = new ExportColumnSubstitutions();
-        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName" );
+        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName");
         substitutions.AddSubstitution("IsActive", title: "Is Active");
         substitutions.AddSubstitution("IsResident", title: "Is Resident");
         substitutions.AddSubstitution("AppointingState", title: "Appointing State");
-        NavigationManager.NavigateTo(ExportDataGridUrl(licenseGrid,
-    $"/export/AgencyLicenses/{AgencyId}", format, substitutions),
-    true);
+        NavigationManager.NavigateTo(ExportDataGridUrl(LicenseGrid,
+                $"/export/AgencyLicenses/{Agency.Id}", format, substitutions),
+            true);
     }
 }

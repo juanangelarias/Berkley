@@ -1,24 +1,21 @@
-﻿@using System.Diagnostics
-@using James.Shared;
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-
 @inject IDataAccess DataAccess
 
 <Theme />
 <RenderModeBackground />
 
-<RadzenDataGrid TItem="Agent" Data="@agents" @ref="@agentsGrid" Density="Density.Compact"
+<RadzenDataGrid TItem="Agent" Data="@Agents" @ref="@AgentsGrid" Density="Density.Compact"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
                 AllowPaging="true" PageSize="10" AllowSorting="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(args => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading" />
             <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(args => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading" />
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
@@ -64,7 +61,7 @@
                         <RadzenText Text="@license.Insurer.IdNavigation.FullName" />
                     </Template>
                     <EditTemplate Context="license">
-                        <RadzenDropDown TValue="Guid" @ref="dropSelectInsurer" Data="AllInsurers" Style="width:95%"
+                        <RadzenDropDown TValue="Guid" Data="AllInsurers" Style="width:95%"
                                         TextProperty="IdNavigation.FullName" ValueProperty="Id" @bind-Value="@license.InsurerId" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
@@ -97,56 +94,66 @@
 
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
-    private List<Agent> agents { get; set; } = new List<Agent>();
-    private RadzenDataGrid<Agent> agentsGrid { get; set; } = null!;
-    private RadzenDropDown<Guid> dropSelectInsurer { get; set; } = null!;
-    private List<Insurer> AllInsurers { get; set; } = new List<Insurer>();
-    private bool isLoading = true;
+    [Parameter, EditorRequired] public Guid AgencyId { get; set; }
+    
+    private List<Agent> Agents { get; set; } = [];
+    private RadzenDataGrid<Agent> AgentsGrid { get; set; } = null!;
+    private List<Insurer> AllInsurers { get; set; } = [];
+    private bool _isLoading = true;
+    
+    private IDataAccessResult<List<Agent>> _agentsResult = null!;
+    private IDataAccessResult<List<Insurer>> _insurersResult = null!;
+
+    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem
+    {
+        Key = $"AgencyContacts{AgencyId}",
+        AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(AgencyId),
+        CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<Agent>>
+        {
+            Data = (List<Agent>)cache!
+        },
+        ResultVariable = () => _agentsResult,
+        AfterLoad = async void () =>
+        {
+            if (_agentsResult.Success)
+                Agents = _agentsResult.Data!;
+        }
+    }, "agency contacts");
+
+
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    {
+        Key = "Insurers",
+        AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurersResult = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
+        ResultVariable = () => _insurersResult,
+        AfterLoad = async void () =>
+        {
+            if (_insurersResult.Success)
+                AllInsurers = _insurersResult.Data!;
+        }
+    }, "insurers");
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        await LoadAgents();
-        isLoading = false;
+        _isLoading = false;
     }
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        await LoadAgents();
+        await LoadData();
     }
-    private async Task LoadAgents()
+    
+    private async Task LoadData()
     {
-        var result = await DataAccess.GetAgencyAgents(AgencyId);
+        if(AgencyId == Guid.Empty)
+            return;
 
-        if (result.Success)
-        {
-            agents = result.Data!;
-            await agentsGrid.Reload();
-        }
-        else
-        {
-            NotifyLoadError(result.Errors, "agents");
-            LogGraphQlLoadError(result.Errors,"Error loading agents in AgencyContactsGrid", "agents");
-        }
-    }
-    private async Task LoadSelectInsurerDropDown()
-    {
-        AllInsurers = await GetInsurers();
-    }
-    private async Task<List<Insurer>> GetInsurers()
-    {
-        var result = await DataAccess.GetAllInsurers();
-        if (result.Success == false)
-        {
-            NotifyLoadError(result.Errors, "insurers");
-            LogGraphQlLoadError(result.Errors, "Error getting insurers in Agency Contract Grid");
-        }
-
-        Debug.Assert(result.Data != null, "result.Data != null");
-        return result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
+        await DataCache.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
     }
 
     private void ExportLicenseGrid(ExportFormat format)
@@ -161,8 +168,8 @@
         substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
         substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
         substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
-        NavigationManager.NavigateTo(ExportDataGridUrl(agentsGrid,
-$"/export/AgencyContacts/{AgencyId}", format, substitutions),
-true);
+        NavigationManager.NavigateTo(ExportDataGridUrl(AgentsGrid,
+                $"/export/AgencyContacts/{AgencyId}", format, substitutions),
+            true);
     }
 }

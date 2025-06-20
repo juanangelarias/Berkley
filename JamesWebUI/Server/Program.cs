@@ -27,6 +27,8 @@ using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
 using JamesWebUI.Client.Services;
 using System.Text.Json.Serialization;
+using JamesWebUI.Server.Helpers;
+
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
@@ -148,13 +150,20 @@ try
 
     builder.Services.AddHttpContextAccessor();
     //builder.Services.AddScoped<TokenHandler>();
+    
+    var corsSettings = config.GetSection("Cors").Get<CorsSettings>();
+    //var corsSettings = new CorsSettings { Origins = "*" };
+    
     builder.Services.AddCors(options =>
     {
         //TODO:  Make settings appropriate for production
         options.AddDefaultPolicy(policy =>
         {
-            //HACK:  Not appropriate for production.
-            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            policy
+                .WithOrigins(corsSettings?.Origins ?? "*")
+                .AllowCredentials()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         });
     });
 

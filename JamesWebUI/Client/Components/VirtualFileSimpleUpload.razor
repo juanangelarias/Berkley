@@ -286,7 +286,7 @@
                 {
                     LoggingService.LogException(ex, "UploadAction after upload failed.",
                         category: StandardLoggingCategories.Imaging);
-                    NotifySaveError([ex.Message], "document association");
+                    NotifySaveError(["Upload action failed"], "document association", false);  // Don't log the error
                 }
             }
         }

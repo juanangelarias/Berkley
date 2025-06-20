@@ -125,6 +125,7 @@
 
 @code {
     private Guid _agentId;
+    
     [Parameter]
     public Guid AgentId
     {
@@ -133,18 +134,42 @@
         {
             if (_agentId == value) return;
             _agentId = value;
-            LoadAgent();
+            _ = LoadAgent();
         }
     }
-    private Agent AgentToDisplay { get; set; } = new Agent()
+
+    private Agent AgentToDisplay { get; set; } = new()
+    {
+        IdNavigation = new LegalEntity()
+    };
+
+    private RadzenDropDown<Guid> DropSelectInsurer { get; set; } = null!;
+    private List<Insurer> AllInsurers { get; set; } = [];
+
+    private IDataAccessResult<Agent> _agentResult = null!;
+    private IDataAccessResult<List<Insurer>> _insurerResult = null!;
+
+    private LoadItem AgentLoad => AddEventNotify(new LoadItem
         {
-            IdNavigation = new LegalEntity()
-        };
+            Key = $"Agent{AgentId}",
+            AsyncLoadTask = async () => _agentResult = await DataAccess.GetAgent(AgentId),
+            CacheLoadTask = cache => _agentResult = new DataAccessResult<Agent> { Data = (Agent)cache! },
+            ResultVariable = () => _agentResult,
+            AfterLoad = () => { AgentToDisplay = _agentResult.Data!; }
+        }, "agent");
 
-
-    private RadzenDropDown<Guid> dropSelectInsurer { get; set; } = null!;
-    private List<Insurer> allInsurers { get; set; } = new List<Insurer>();
-
+    private LoadItem InsurerLoad => AddEventNotify(new LoadItem
+    {
+        Key = "Insurers",
+        AsyncLoadTask = async () => _insurerResult = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurerResult = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
+        ResultVariable = () => _insurerResult,
+        AfterLoad = () =>
+        {
+            Debug.Assert(_insurerResult.Data != null, "result.Data != null");
+            AllInsurers = _insurerResult.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
+        }
+    }, "insurers");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -155,50 +180,25 @@
         await LoadSelectInsurerDropDown();
         DialogService.Close();
     }
+    
     private async Task LoadAgent()
     {
+        if(AgentId == Guid.Empty)
+            return;
+        
         BusyDialog();
-        if (Guid.Empty != AgentId)
-        {
-            var result = await DataAccess.GetAgent((Guid)AgentId);
 
-            if (result.Errors.Any() && null != result.Data)
-            {
-                LoggingService.LogError("Error when loading agent.", result.Errors.ToString() ?? "");
-                NotificationService.Notify(new NotificationMessage
-                    {
-                        Detail = "Error loading agent.",
-                        Duration = 4000,
-                        Severity = NotificationSeverity.Error
-                    });
-            }
-            else
-            {
-                AgentToDisplay = result.Data!;
-                StateHasChanged();
-            }
-        }
+        await DataCache.GetCacheOrLoadDataAsync(AgentLoad);
 
         DialogService.Close();
-
     }
+    
     private async Task LoadSelectInsurerDropDown()
     {
-        allInsurers = await GetInsurers();
-    }
-    private async Task<List<Insurer>> GetInsurers()
-    {
-        var result = await DataAccess.GetAllInsurers();
-        if (result.Success == false)
-        {
-            LoggingService.LogError("Error getting insurers in Agency Contract Grid", result.Errors.ToString() ?? "");
-        }
-
-        Debug.Assert(result.Data != null, "result.Data != null");
-        return result.Data.OrderBy(i => i.IdNavigation.FullName).ToList();
+        await DataCache.GetCacheOrLoadDataAsync(InsurerLoad);
     }
 
-    void BusyDialog()
+    private void BusyDialog()
     {
         DialogService.Open("", ds =>
         @<RadzenStack AlignItems="AlignItems.Center" Gap="2rem" class="rz-p-12">

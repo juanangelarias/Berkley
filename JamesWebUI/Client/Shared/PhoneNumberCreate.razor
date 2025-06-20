@@ -84,15 +84,7 @@
 
         if (result.Errors.Any())
         {
-            LoggingService.LogError($"Error loading phone types.", result.Errors.ToString() ?? "");
-            NotificationService.Notify(new NotificationMessage
-                {
-                    Severity = NotificationSeverity.Error,
-                    Summary = "Error loading phone types.",
-                    Duration = 5000,
-                    CloseOnClick = true,
-                    Payload = DateTime.Now
-                });
+            NotifySaveError(result.Errors, "phone types");
         }
         else
         {

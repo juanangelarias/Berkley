@@ -1,11 +1,4 @@
-﻿@using System.Globalization
-@using James.Shared;
-@using ClientBusinessLogic
-
-
-@inherits JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
@@ -19,25 +12,28 @@
 
 @code {
     [Parameter] public Guid ObligeeId { get; set; }
+    
     private Obligee ObligeeToDisplay { get; set; } = null!;
-
+    private IDataAccessResult<Obligee?> _obligeeResult = null!;
+    
+    private LoadItem ObligeeLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"Obligee{ObligeeId}",
+            AsyncLoadTask = async () => _obligeeResult = await DataAccess.GetObligeeById(ObligeeId),
+            CacheLoadTask = cache => _obligeeResult = new DataAccessResult<Obligee?> { Data = (Obligee)cache! },
+            ResultVariable = () => _obligeeResult,
+            AfterLoad = () => { ObligeeToDisplay = _obligeeResult.Data!; }
+        }, "obligee");
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
         await LoadObligee();
-    }    
+    }
+    
     private async Task LoadObligee()
     {
-        var result = await DataAccess.GetObligeeById(ObligeeId);
-
-        if (result.Errors.Any())
-        {
-            //TODO: Handle errors
-        }
-        else
-        {
-            ObligeeToDisplay = result.Data!;
-        }
+        await DataCache.GetCacheOrLoadDataAsync(ObligeeLoad);
     }
 }

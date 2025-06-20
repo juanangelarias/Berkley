@@ -1,21 +1,16 @@
-﻿
-@using System.Diagnostics
-@using James.Shared
-
-@inherits JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
-@inject ILoggingService _logging
+
 @attribute [Authorize]
 
 <Theme />
 
 <RenderModeBackground></RenderModeBackground>
 
-<RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width:100%"
+<RadzenAutoComplete @ref="@AutoComplete" MinLength="3" Style="width:100%"
                     ValueChanged="ResultSelected"
+                    Value="@_selectedAgent"
                     Placeholder="Search..." Data="@SearchResults" LoadData="SearchAgent"
                     FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
     <Template Context="agent">
@@ -27,52 +22,42 @@
 </RadzenAutoComplete>
 
 @code {
-    private Guid _selectedAgentId;
-
-    [Parameter] public Guid SelectedAgentId 
-    { 
-        get => _selectedAgentId;
-        set 
-        {
-            if (_selectedAgentId == value) return;
-            _selectedAgentId = value;
-            SelectedAgentIdChanged.InvokeAsync(value);
-        }
-    }
-    private List<Agent> SearchResults { get; set; } = new List<Agent>();
-    private Agent SelectedAgent { get; set; } = new Agent();
-    private RadzenAutoComplete autoComplete { get; set; } = null!;
-
-
-
-    private async Task SearchAgent(LoadDataArgs args)
-    {
-        var result = await DataAccess.SearchAgents(args.Filter);
-
-        if (result.Errors.Any())
-        {
-            LoggingService.LogError("Error searching for agents", result.Errors.ToString() ?? "");
-            NotificationService.Notify(new NotificationMessage()
-                {
-                    Detail = "Error searching for agents",
-                    Duration = 4000,
-                    Severity = NotificationSeverity.Error
-                });
-        }
-        else
-        {
-            SearchResults = result.Data!;
-        }
-    }
-    private async Task ResultSelected(dynamic args)
-    {
-
-        if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Agent))
-        {
-            SelectedAgentId = ((Agent)autoComplete.Value).Id;
-            autoComplete.Value = ((Agent)autoComplete.Value).IdNavigation.FullName;
-        }
-    }
+    [Parameter, EditorRequired] 
+    public Guid SelectedAgentId { get; set; }
+    
     [Parameter]
     public EventCallback<Guid> SelectedAgentIdChanged { get; set; }
+    
+    private List<Agent> SearchResults { get; set; } = [];
+    private RadzenAutoComplete AutoComplete { get; set; } = null!;
+    private string _selectedAgent = "";
+    private IDataAccessResult<List<Agent>> _searchResult = null!;
+
+    private LoadItem AgentsLoad(string filter) => AddEventNotify(new LoadItem
+        {
+            Key = $"SearchResult{SelectedAgentId}",
+            AsyncLoadTask = async () => _searchResult = await DataAccess.SearchAgents(filter),
+            CacheLoadTask = cache => _searchResult = new DataAccessResult<List<Agent>>
+            {
+                Data = (List<Agent>)cache!
+            },
+            ResultVariable = () => _searchResult,
+            AfterLoad = () => { SearchResults = _searchResult.Data!; },
+            CacheDuration = TimeSpan.FromSeconds(1)
+        }, "search result");
+    
+    private async Task SearchAgent(LoadDataArgs args)
+    {
+        await DataCache.GetCacheOrLoadDataAsync(AgentsLoad(args.Filter));
+    }
+    
+    private async Task ResultSelected(dynamic args)
+    {
+        if (null == AutoComplete.Value || (AutoComplete.Value.GetType()) != typeof(Agent)) 
+            return;
+        
+        SelectedAgentId = ((Agent)AutoComplete.Value).Id;
+        _selectedAgent = ((Agent)AutoComplete.Value).IdNavigation.FullName;
+        await SelectedAgentIdChanged.InvokeAsync(SelectedAgentId);
+    }
 }

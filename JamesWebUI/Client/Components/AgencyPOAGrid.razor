@@ -170,43 +170,52 @@
     {
         if (Agency.Id == Guid.Empty)
             return;
+    private IDataAccessResult<List<Insurer>> insurers = null!;
 
-        IDataAccessResult<List<Insurer>> insurers = null!;
-        IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses = null!;
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    {
+        Key = "Insurers",
+        AsyncLoadTask = async () => insurers = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => insurers = new DataAccessResult<List<Insurer>>
+        {
+            Data = (List<Insurer>)cache!
+        },
+        ResultVariable = () => insurers,
+        AfterLoad = () =>
+        {
+            if (insurers.Success)
+                AllInsurers = insurers.Data!;
+        }
+    }, "Insurers");
+    
+    private IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses = null!;
+
+    private LoadItem StatusesLoad => AddEventNotify(new LoadItem
+    {
+        Key = "Statuses",
+        AsyncLoadTask = async () => statuses = await DataAccess.GetAllPoaStatuses(),
+        CacheLoadTask = cache => statuses = new DataAccessResult<List<PowerOfAttorneyStatusDm>>
+        {
+            Data = (List<PowerOfAttorneyStatusDm>)cache!
+        },
+        ResultVariable = () => statuses,
+        AfterLoad = async void () =>
+        {
+            if (statuses.Success)
+                AllStatuses = statuses.Data!;
+        }
+    }, "Statuses");
+    
+    private async Task LoadData()
+    {
+        if (AgencyId == Guid.Empty)
+            return;
 
         LoadItem[] loadItems =
         [
             AgencyPoasLoad,
-            AddEventNotify(new LoadItem
-            {
-                Key = "Insurers",
-                AsyncLoadTask = async () => insurers = await DataAccess.GetAllInsurers(),
-                CacheLoadTask = cache => insurers = new DataAccessResult<List<Insurer>>
-                {
-                    Data = (List<Insurer>)cache!
-                },
-                ResultVariable = () => insurers,
-                AfterLoad = () =>
-                {
-                    if (insurers.Success)
-                        AllInsurers = insurers.Data!;
-                }
-            }, "Insurers"),
-            AddEventNotify(new LoadItem
-            {
-                Key = "Statuses",
-                AsyncLoadTask = async () => statuses = await DataAccess.GetAllPoaStatuses(),
-                CacheLoadTask = cache => statuses = new DataAccessResult<List<PowerOfAttorneyStatusDm>>
-                {
-                    Data = (List<PowerOfAttorneyStatusDm>)cache!
-                },
-                ResultVariable = () => statuses,
-                AfterLoad = void () =>
-                {
-                    if (statuses.Success)
-                        AllStatuses = statuses.Data!;
-                }
-            }, "Statuses")
+            InsurersLoad,
+            StatusesLoad
         ];
 
         await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
@@ -355,9 +364,12 @@
         await Reset(powerOfAttorney);
         var result = await DataAccess.DeleteAgencyPOA(powerOfAttorney.Id);
         if (result.Success)
+        {
+            NotifySuccessfulSave("agency POA deleted");
             await LoadPOAs();
+        }
         else
-            await HandleError("Error deleting Agency POA", result.Errors);
+            NotifySaveError(result.Errors, "agency POA deletion");
     }
 
     private void ShowTooltip(ElementReference elementReference, string message, TooltipOptions? options = null) => TooltipService.Open(elementReference, message, options);
@@ -368,7 +380,7 @@
         if (saveResult.Success)
             NotifySuccessfulSave("POA document");
         else
-            NotifySaveError(saveResult.Errors, "poa document");
+            NotifySaveError(saveResult.Errors, "POA document");
     }
 
     private void LogUploadError(string message, PowerOfAttorney poa)

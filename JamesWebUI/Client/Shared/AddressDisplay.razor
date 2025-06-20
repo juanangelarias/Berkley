@@ -131,6 +131,20 @@
     public bool DetailedMode { get; private set; }
     public bool EditMode { get; private set; }
 
+    private IDataAccessResult<Address> _addressResult = null!;
+
+    private LoadItem AddressLoad => AddEventNotify(new LoadItem
+    {
+        Key = $"Address{AddressId}",
+        AsyncLoadTask = async () => _addressResult = await DataAccess.GetAddress(AddressId),
+        CacheLoadTask = cache => _addressResult = new DataAccessResult<Address>
+        {
+            Data = (Address)cache!
+        },
+        ResultVariable = () => _addressResult,
+        AfterLoad = () => { AddressToDisplay = _loadedAddress ?? new Address(); }
+    }, "address");
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -142,14 +156,10 @@
 
     private async Task LoadAddress()
     {
-        if (Guid.Empty != AddressId)
-        {
-            var result = await DataAccess.GetAddress(AddressId);
-            if (null != result.Data)
-                AddressToDisplay = result.Data;
-            //TODO:Handle errors
-        }
-        else AddressToDisplay = _loadedAddress = new Address();
+        if (Guid.Empty == AddressId)
+            return;
+
+        await DataCache.GetCacheOrLoadDataAsync(AddressLoad);
     }
 
     /// <summary>
@@ -171,6 +181,7 @@
             AddressToDisplay = _loadedAddress = newAddress;
             return true;
         }
+
         if (null == _loadedAddress)
             //HACK: Subscriptions fired before initial load are assumed to be
             //      what will load during the initial load.  Not worrying about
@@ -182,56 +193,60 @@
         var compareLoadedWithCurrent = SameOrDifferent.Compare(_loadedAddress, AddressToDisplay);
         var autoChange = compareWithCurrent.DifferentProperties.Intersect(compareLoadedWithCurrent.SameProperties).ToList();
         var askAboutChange = compareWithCurrent.DifferentProperties
-        .Intersect(compareLoadedWithCurrent.DifferentProperties)
-        .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
+            .Intersect(compareLoadedWithCurrent.DifferentProperties)
+            .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
         if (autoChange.Any())
         {
             SameOrDifferent.CopyTheseProperties(newAddress, AddressToDisplay, autoChange);
             StateHasChanged();
         }
+
         if (askAboutChange.Any())
         {
             //Open side dialog to ask user which version to take
             if (true == await DialogService.OpenSideAsync<ConflictResolverDialog>(
-                "Conflicting edits", new Dictionary<string, object>()
-                            {
-                        {"DataFriendlyName", "Address"}, {"Conflicts", askAboutChange},
-                        {"OurData", AddressToDisplay}, {"TheirData", newAddress}
-                            }, new SideDialogOptions
-                            {
-                                ShowClose = false,
-                                CloseDialogOnOverlayClick = false,
-                                Position = DialogPosition.Right,
-                                ShowMask = true
-                            }))
+                    "Conflicting edits", new Dictionary<string, object>()
+                    {
+                        { "DataFriendlyName", "Address" }, { "Conflicts", askAboutChange },
+                        { "OurData", AddressToDisplay }, { "TheirData", newAddress }
+                    }, new SideDialogOptions
+                    {
+                        ShowClose = false,
+                        CloseDialogOnOverlayClick = false,
+                        Position = DialogPosition.Right,
+                        ShowMask = true
+                    }))
             {
-                StateHasChanged();//Check value of AddressToDisplay
+                StateHasChanged(); //Check value of AddressToDisplay
                 return false;
             }
         }
+
         return true;
     }
 
-    async Task SubmitAddressChange(Address newAddress)
+    private async Task SubmitAddressChange(Address newAddress)
     {
         await DataAccess.SetAddress(newAddress, EditorIdentifier);
         EditMode = false;
     }
+
     private void ToggleEditMode()
     {
         EditMode = !EditMode;
     }
+
     private async Task DeleteAddress()
     {
         var result = await DialogService.OpenAsync("Confirm Address Deletion", ds =>
-        @<RadzenStack Orientation="Orientation.Vertical">
-            <p>Are you sure you want to delete this address?</p>
-            <RadzenStack Orientation="Orientation.Horizontal">
-                <RadzenButton Text="Yes" Click="() => ds.Close(true)" Style="width:80px;"/>
-                <RadzenButton Text="No" Click="() => ds.Close(false)" Style="width:80px;" />
+            @<RadzenStack Orientation="Orientation.Vertical">
+                <p>Are you sure you want to delete this address?</p>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton Text="Yes" Click="() => ds.Close(true)" Style="width:80px;"/>
+                    <RadzenButton Text="No" Click="() => ds.Close(false)" Style="width:80px;"/>
+                </RadzenStack>
             </RadzenStack>
-        </RadzenStack>
-    );
+        );
         if (result)
         {
             var deleteResult = await DataAccess.DeleteAddress(AddressId, EditorIdentifier);
@@ -240,11 +255,11 @@
             {
                 LoggingService.LogError("DeleteAddress return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
                 ShowNotification(new NotificationMessage
-                    {
-                        Severity = NotificationSeverity.Error,
-                        Detail = "Error when deleting this address.",
-                        Duration = 4000
-                    });
+                {
+                    Severity = NotificationSeverity.Error,
+                    Detail = "Error when deleting this address.",
+                    Duration = 4000
+                });
             }
             else
             {
@@ -252,13 +267,14 @@
             }
         }
     }
+
     private async Task Cancel()
-    { 
-        EditMode = false; 
-        await LoadAddress(); 
+    {
+        EditMode = false;
+        await LoadAddress();
     }
-    
-    void ShowNotification(NotificationMessage message)
+
+    private void ShowNotification(NotificationMessage message)
     {
         NotificationService.Notify(message);
     }
@@ -268,4 +284,3 @@
         _subscription?.Dispose();
     }
 }
-

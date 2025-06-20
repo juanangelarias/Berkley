@@ -177,8 +177,7 @@
         ResultVariable = () => _states,
         AfterLoad = () =>
         {
-            if (_states.Success)
-                AllStates = _states.Data!;
+            AllStates = _states.Data!;
         }
     }, "states");
 
@@ -193,8 +192,7 @@
         ResultVariable = () => _docTypes,
         AfterLoad = () =>
         {
-            if (_docTypes.Success)
-                AllDocTypes = _docTypes.Data!;
+            AllDocTypes = _docTypes.Data!;
         }
     }, "document types");
 
@@ -248,12 +246,12 @@
 
         if (result.Success)
         {
-            NotifySuccessfulSave("Agency Inventory Deleted");
+            NotifySuccessfulSave("agency inventory deleted");
             await LoadInventory();
         }
         else
         {
-            NotifySaveError(result.Errors, "Agency Inventory deletion");
+            NotifySaveError(result.Errors, "agency inventory deletion");
         }
     }
 
@@ -305,11 +303,11 @@
 
         if (result.Success)
         {
-            NotifySuccessfulSave("Update Agency Inventory");
+            NotifySuccessfulSave("agency inventory");
         }
         else
         {
-            NotifySaveError(result.Errors, "Update Agency Inventory");
+            NotifySaveError(result.Errors, "agency inventory");
         }
     }
 
@@ -325,11 +323,11 @@
         if (result.Success)
         {
             InventoriesToInsert.Remove(inventory);
-            NotifySuccessfulSave("Agency Inventory");
+            NotifySuccessfulSave("agency inventory");
         }
         else
         {
-            NotifySaveError(result.Errors, "Create Agency Inventory");
+            NotifySaveError(result.Errors, "agency inventory");
         }
     }
 

@@ -74,9 +74,11 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     /// <summary>
     /// Generates standard notification that changes were saved successfully.
     /// </summary>
-    /// <param name="itemSaved">The item being saved, default is "Changes".  Should be title cased.</param>
+    /// <param name="itemSaved">The item being saved, default is "Changes".</param>
     protected void NotifySuccessfulSave(string itemSaved = "Changes")
     {
+        itemSaved = itemSaved[..1].ToUpper() + itemSaved[1..];
+        
         NotificationService.Notify(new NotificationMessage
         {
             Severity = NotificationSeverity.Info,
@@ -90,14 +92,20 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     /// </summary>
     /// <param name="errors">Errors that were returned.</param>
     /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
-    protected void NotifySaveError(string[] errors, string itemSaved = "changes")
+    /// <param name="logError">If true will log the error using the LoggingService</param>
+    protected void NotifySaveError(string[] errors, string itemSaved = "changes", bool logError = true)
     {
+        var summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} " +
+                      $"saving {itemSaved}.  {string.Join("  ", errors)}";
+        
+        if(logError)
+            LoggingService.LogError(summary, errors);
+        
         NotificationService.Notify(new NotificationMessage
         {
             Severity = NotificationSeverity.Error,
-            Summary =
-                $"There {(errors.Length == 1 ? "was an error" : "were errors")} saving {itemSaved}.  {string.Join("  ", errors)}",
-            Duration = 15000
+            Summary = summary,
+            Duration = 300000   // Treat as fatal 5 minutes
         });
     }
 
@@ -113,11 +121,13 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
             ? $"There {(errors.Length == 1 ? "was a fatal error" : "were fatal error(s)"
                 )} retrieving {itemSaved}.  {string.Join("  ", errors)}"
             : $"There was an error retrieving {itemSaved}.  Retrying...";
+        
+        LoggingService.LogError(msg, errors);
         NotificationService.Notify(new NotificationMessage
         {
             Severity = fatal ? NotificationSeverity.Error : NotificationSeverity.Warning,
             Summary = msg,
-            Duration = 15000
+            Duration = fatal ? 300000 :15000    // Fatal: 5 minutes Else: 15 seconds
         });
     }
 

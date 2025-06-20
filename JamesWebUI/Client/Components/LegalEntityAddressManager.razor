@@ -68,9 +68,6 @@
             AfterLoad = async void () =>
             {
                 Debug.Assert(_addressesLoadResult.Data != null);
-                if (!_addressesLoadResult.Success) 
-                    return;
-                
                 AllAddresses = _addressesLoadResult.Data;
                 SelectedTab = 0;
             },
@@ -96,8 +93,6 @@
 
         if (_addressesLoadResult.Success)
         {
-            AllAddresses = _addressesLoadResult.Data!;
-
             var selected = AllAddresses.FirstOrDefault(a => a.Id == addressToSelect);
             SelectedTab = null != selected
                 ? AllAddresses.IndexOf(selected)

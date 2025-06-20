@@ -134,10 +134,11 @@
 
     private bool _isLoading;
     private bool _poaEditMode;
-    
+
     #region Loaders
 
     private IDataAccessResult<List<PowerOfAttorney>> _poas = null!;
+
     private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem
     {
         Key = $"AgencyPOAs{Agency.Id}",
@@ -164,8 +165,9 @@
                 .ToList();
         }
     }, "agency POAs");
-    
+
     private IDataAccessResult<List<Insurer>> insurers = null!;
+
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem
     {
         Key = "Insurers",
@@ -180,9 +182,10 @@
             if (insurers.Success)
                 AllInsurers = insurers.Data!;
         }
-    }, "Insurers");
+    }, "insurers");
 
     private IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses = null!;
+
     private LoadItem StatusesLoad => AddEventNotify(new LoadItem
     {
         Key = "Statuses",
@@ -197,7 +200,7 @@
             if (statuses.Success)
                 AllStatuses = statuses.Data!;
         }
-    }, "Statuses");
+    }, "statuses");
 
     #endregion
 
@@ -404,5 +407,5 @@
                 $"/export/AgencyPOAs/{Agency.Id}", format, substitutions),
             true);
     }
-    }
+}
 

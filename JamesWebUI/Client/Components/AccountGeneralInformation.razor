@@ -428,7 +428,7 @@
 
             if (result.Errors.Any())
             {
-                NotifySaveError(["Error saving Account General Info changes."]);
+                NotifySaveError(["Error saving Account General Info changes."],"general information");
             }
             else
             {
@@ -452,7 +452,7 @@
 
             if (result.Errors.Any())
             {
-                NotifySaveError(["Error saving Account General Info changes."]);
+                NotifySaveError(["Error saving Account General Info changes."],"system changes");
             }
             else
             {
@@ -520,7 +520,7 @@
 
     private void LogUploadError(string message)
     {
-        NotifySaveError([message], "credit report");
+        NotifySaveError([message], "credit report", false);
         
         LoggingService.LogError("Upload failed",
             "Uploading a credit report to imaging returned an error",

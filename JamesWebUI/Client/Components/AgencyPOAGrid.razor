@@ -91,19 +91,40 @@
         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
                               Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
             <Template Context="poa">
-                <RadzenButton Variant="Variant.Text" 
+                <RadzenButton Variant="Variant.Flat" 
                               Icon="edit" 
-                              Size="ButtonSize.ExtraSmall" 
+                              ButtonStyle="ButtonStyle.Light"
+                              Size="ButtonSize.Small" 
                               Click="@(args => EditPoaRow(poa))" 
                               @onclick:stopPropagation="true" />
-                <RadzenButton Variant="Variant.Text" 
-                              Icon="post_add" 
-                              Size="ButtonSize.ExtraSmall" 
-                              MouseEnter="@(args => ShowTooltip(args, "Add New POA Document."))"/>
-                <RadzenButton Variant="Variant.Text" Icon="delete" Size="ButtonSize.ExtraSmall" Click="@(args => DeletePoaRow(poa))" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" 
+                              Icon="delete"
+                              Variant="Variant.Flat"
+                              Shade="Shade.Lighter"
+                              Size="ButtonSize.Small"
+                              class="my-1 ms-1"
+                              Click="@(_ => DeletePoaRow(poa))" 
+                              @onclick:stopPropagation="true"/>
             </Template>
             <EditTemplate Context="poa">
-                <RadzenButton Variant="Variant.Text" Icon="save" Size="ButtonSize.ExtraSmall" Click="@(args => SavePoaRow(poa))" />
+                <RadzenButton Icon="check"
+                              ButtonStyle="ButtonStyle.Success"
+                              Variant="Variant.Flat"
+                              Size="ButtonSize.Small"
+                              Click="@(_=> SavePoaRow(poa))"/>
+                <RadzenButton Icon="close"
+                              ButtonStyle="ButtonStyle.Light"
+                              Variant="Variant.Flat"
+                              ButtonSize="ButtonSize.Small"
+                              class="my-1 ms-1"
+                              Click="@(_=> CancelPoaEdit(poa))" />
+                <RadzenButton Icon="delete"
+                              ButtonStyle="ButtonStyle.Danger"
+                              Variant="Variant.Flat"
+                              Shade="Shade.Lighter"
+                              Size="ButtonSize.Small"
+                              class="my-1 ms-1"
+                              Click="@(_=> DeletePoaRow(poa))"/>
             </EditTemplate>
         </RadzenDataGridColumn> 
     </Columns>
@@ -115,6 +136,8 @@
 @code 
 {
     [Parameter, EditorRequired] required public Agency Agency { get; set; }
+
+    private string AgencyPOAKey => $"AgencyPOAs{Agency.Id}";
 
     private RadzenDataGrid<PowerOfAttorney> POAGrid { get; set; } = null!;
 
@@ -141,7 +164,7 @@
 
     private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem
     {
-        Key = $"AgencyPOAs{Agency.Id}",
+        Key = AgencyPOAKey,
         AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id),
         CacheLoadTask = cache => _poas = new DataAccessResult<List<PowerOfAttorney>>
         {
@@ -370,6 +393,16 @@
         }
         else
             NotifySaveError(result.Errors, "agency POA deletion");
+    }
+
+    private async Task CancelPoaEdit(PowerOfAttorney poa)
+    {
+        await ShowLoading();
+        
+        POAGrid.CancelEditRow(poa);
+
+        DataCache.Clear(AgencyPOAKey);
+        await LoadPOAs();
     }
 
     private void ShowTooltip(ElementReference elementReference, string message, TooltipOptions? options = null) => TooltipService.Open(elementReference, message, options);

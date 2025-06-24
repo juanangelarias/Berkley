@@ -175,40 +175,29 @@
 
     private List<AgencyLicense> AgencyLicenses { get; set; } = [];
 
-    private readonly List<AgencyLicense> _licensesToInsert = [];
-    private readonly List<AgencyLicense> _licensesToUpdate = [];
-
-    //TODO: Remove this stuff once we figure out caching
     private static List<Insurer> AllInsurers { get; set; } = [];
     private static List<State> AllStates { get; set; } = [];
 
     private List<string>? _stateFilter;
 
     private bool _isLoading;
-    
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
 
-        await LoadData();
-    }
+    #region Loaders
 
     private IDataAccessResult<List<AgencyLicense>> _licenses = null!;
-
     private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem
+    {
+        Key = $"AgencyLicenses{Agency.Id}",
+        AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(Agency.Id),
+        CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
         {
-            Key = $"AgencyLicenses{Agency.Id}",
-            AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(Agency.Id),
-            CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
-            {
-                Data = (List<AgencyLicense>)cache!
-            },
-            ResultVariable = () => _licenses,
-            AfterLoad = () => { AgencyLicenses = _licenses.Data!; }
-        }, "agency licenses");
+            Data = (List<AgencyLicense>)cache!
+        },
+        ResultVariable = () => _licenses,
+        AfterLoad = () => { AgencyLicenses = _licenses.Data!; }
+    }, "agency licenses");
 
     private IDataAccessResult<List<State>> _states = null!;
-
     private LoadItem StatesLoad => AddEventNotify(new LoadItem
     {
         Key = "States",
@@ -226,7 +215,6 @@
     }, "states");
 
     private IDataAccessResult<List<Insurer>> _insurers = null!;
-
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem
     {
         Key = "Insurers",
@@ -242,6 +230,15 @@
                 AllInsurers = _insurers.Data!;
         }
     }, "insurers");
+
+    #endregion
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadData();
+    }
     
     private async Task LoadData()
     {
@@ -258,18 +255,6 @@
         await DataCache.ParallelGetCacheOrDataAsync(loadItems);
     }
 
-    private void Reset()
-    {
-        _licensesToInsert.Clear();
-        _licensesToUpdate.Clear();
-    }
-
-    private void Reset(AgencyLicense license)
-    {
-        _licensesToInsert.Remove(license);
-        _licensesToUpdate.Remove(license);
-    }
-
     private async Task LoadLicenses()
     {
         await DataCache.GetCacheOrLoadDataAsync(AgencyLicensesLoad);
@@ -281,29 +266,29 @@
         //The actual Insert is done in OnLicenseCreate()
         await ShowLoading();
         var newLicense = new AgencyLicense() { Id = Guid.NewGuid(), AgencyId = Agency.Id, Agency = Agency};
-        _licensesToInsert.Add(newLicense);
+        
         await LicenseGrid.InsertRow(newLicense);
     }
 
     private async Task EditLicenseRow(AgencyLicense license)
     {
         await ShowLoading();
-        Reset();
-        _licensesToUpdate.Add(license);
         await LicenseGrid.EditRow(license);
     }
 
     private async Task DeleteLicenseRow(AgencyLicense license)
     {
         await ShowLoading();
-        Reset(license);
         var result = await DataAccess.DeleteLicense(license.Id);
 
         if (result.Success)
         {
             var toDelete = AgencyLicenses.FirstOrDefault(f => f.Id == license.Id);
             if (toDelete != null)
+            {
                 AgencyLicenses.Remove(toDelete);
+                DataCache.UpdateCache($"AgencyLicenses{Agency.Id}", AgencyLicenses);
+            }
 
             await LicenseGrid.Reload();
             
@@ -319,7 +304,6 @@
         //The actual Update/Insert is done in those methods.
         await ShowLoading();
         await LicenseGrid.UpdateRow(license);
-        await LoadLicenses();
     }
 
     private async Task OnLicenseCreate(AgencyLicense license)
@@ -344,26 +328,22 @@
 
         if (!result.Success)
             await HandleError("Error creating License", result.Errors);
-        
-        _licensesToInsert.Remove(license);
-        //await LoadLicenses();
-        //TODO: Check for errors and notify.
+        else
+            DataCache.UpdateCache($"AgencyLicenses{Agency.Id}", AgencyLicenses);
     }
 
-    private async void CancelLicenseEdit(AgencyLicense license)
+    private async Task CancelLicenseEdit(AgencyLicense license)
     {
         await ShowLoading();
-        Reset(license);
         LicenseGrid.CancelEditRow(license);
         await LoadLicenses();
     }
 
     private async Task UpdateLicenseRow(AgencyLicense license)
     {
-        Reset(license);
         //This is where we handle row Updates.
         var result = await DataAccess.SetAgencyLicense(license.Id,
-            license.AgencyId,
+            Agency.Id,
             license.AgentId,
             license.AppointingState,
             license.Comments,
@@ -376,9 +356,11 @@
             license.State,
             license.IsActive
         );
-
+        
         if (!result.Success)
             await HandleError("Error Setting Agency License", result.Errors);
+        else
+            DataCache.UpdateCache($"AgencyLicenses{Agency.Id}", AgencyLicenses);
     }
 
     private async Task StateFilterChange()
@@ -428,9 +410,9 @@
     {
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName");
-        substitutions.AddSubstitution("IsActive", title: "Is Active");
-        substitutions.AddSubstitution("IsResident", title: "Is Resident");
-        substitutions.AddSubstitution("AppointingState", title: "Appointing State");
+        substitutions.AddSubstitution("IsActive", "IsActive", title: "Is Active");
+        substitutions.AddSubstitution("IsResident", "IsResident", title: "Is Resident");
+        substitutions.AddSubstitution("AppointingState", "AppointingState", title: "Appointing State");
         NavigationManager.NavigateTo(ExportDataGridUrl(LicenseGrid,
                 $"/export/AgencyLicenses/{Agency.Id}", format, substitutions),
             true);

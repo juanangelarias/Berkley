@@ -395,9 +395,17 @@ namespace James.Data.Server
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
             string? licenseNumber, string state, bool isActive)
         {
-            return await ExecuteGet(async () => await agencyMutation.SetAgencyLicense(licenseId, agencyId, agentId, appointingState,
+            try
+            {
+                return await ExecuteGet(async () => await agencyMutation.SetAgencyLicense(licenseId, agencyId, agentId, appointingState,
                     comments, appointment, expiration, termination,
                     insurerId, isResident, licenseNumber, state, isActive, eventSender, contextFactory));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
 
             //try
             //{

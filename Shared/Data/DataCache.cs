@@ -114,6 +114,35 @@ public static class DataCache
     }
 
     /// <summary>
+    /// Updates or adds an item to the cache with an optional cache duration.
+    /// </summary>
+    /// <param name="key">The unique identifier for the cached item.</param>
+    /// <param name="data">The data object to be cached.</param>
+    /// <param name="cacheDuration">
+    /// Optional duration for which the item should remain in the cache. 
+    /// Defaults to 1 hour if not specified.
+    /// </param>
+    /// <remarks>
+    /// If the key already exists in the cache, the existing entry is updated.
+    /// If the key does not exist, a new cache entry is created.
+    /// </remarks>
+
+    public static void UpdateCache(string key, object data, TimeSpan? cacheDuration = null)
+    {
+        cacheDuration ??= TimeSpan.FromHours(1);
+        var newData = new CachedResult
+        {
+            DataObject = data,
+            CacheUntil = DateTime.Now + cacheDuration.Value
+        };
+        
+        if (_cachedResults.TryGetValue(key, out var actual))
+            _cachedResults.TryRemove(key, out _);
+        
+        _cachedResults.TryAdd(key, newData);
+    }
+
+    /// <summary>
     /// Load multiple items in parallel
     /// </summary>
     /// <param name="loadItems">The LoadItem to load</param>

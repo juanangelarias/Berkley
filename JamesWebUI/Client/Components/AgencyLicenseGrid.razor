@@ -265,7 +265,20 @@
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
         await ShowLoading();
-        var newLicense = new AgencyLicense() { Id = Guid.NewGuid(), AgencyId = Agency.Id, Agency = Agency};
+        var newLicense = new AgencyLicense()
+        {
+            Id = Guid.NewGuid(), 
+            AgencyId = Agency.Id, 
+            Agency = Agency, 
+            Insurer = new Insurer
+            {
+                Id = Guid.Empty, 
+                IdNavigation = new LegalEntity
+                {
+                    FullName = ""
+                }
+            }
+        };
         
         await LicenseGrid.InsertRow(newLicense);
     }
@@ -302,8 +315,9 @@
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Update/Insert is done in those methods.
-        await ShowLoading();
-        await LicenseGrid.UpdateRow(license);
+        
+        var task =  LicenseGrid.UpdateRow(license);
+        await ShowLoading(task);
     }
 
     private async Task OnLicenseCreate(AgencyLicense license)
@@ -329,7 +343,12 @@
         if (!result.Success)
             await HandleError("Error creating License", result.Errors);
         else
+        {
+            license.InsurerId = license.Insurer.Id;
+            AgencyLicenses.Add(license);
+            
             DataCache.UpdateCache($"AgencyLicenses{Agency.Id}", AgencyLicenses);
+        }
     }
 
     private async Task CancelLicenseEdit(AgencyLicense license)
@@ -371,6 +390,15 @@
         }
 
         await LicenseGrid.Reload();
+    }
+    
+    protected async Task ShowLoading(Task toExecute)
+    {
+        _isLoading = true;
+
+        await toExecute;
+
+        _isLoading = false;
     }
 
     protected async Task ShowLoading()

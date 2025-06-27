@@ -7,6 +7,7 @@
 @inject IDataAccess DataAccess
 
 <Theme />
+
 <RenderModeBackground />
 
 <RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@AgencyLicenses"
@@ -14,7 +15,7 @@
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Simple"
                 AllowColumnPicking="true" AllowGrouping="true"
-                RowUpdate="UpdateLicenseRow" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
+                RowUpdate="UpdateLicenseRow" EditMode="@_editMode" RowCreate="@OnLicenseCreate"
                 IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
@@ -23,6 +24,21 @@
                           Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading" />
             <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
                           Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading" />
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Style="margin-left: 10rem">
+                <RadzenButton Visible="_visible" Text="Bulk Edit" Icon="edit"
+                              Size="ButtonSize.ExtraSmall" Disabled="_isLoading"
+                              Click="@(_ => SetBulkEdit())" />
+                <RadzenButton Visible="!_visible" Text="Save" Icon="check"
+                              ButtonStyle="ButtonStyle.Light" 
+                              Variant="Variant.Flat" 
+                              Size="ButtonSize.ExtraSmall" Disabled="_isLoading"
+                              Click="@(_ => SaveBulkChanges())" />
+                <RadzenButton Visible="!_visible" Text="Cancel" Icon="close"
+                              ButtonStyle="ButtonStyle.Danger" 
+                              Variant="Variant.Flat"
+                              Size="ButtonSize.ExtraSmall" Disabled="_isLoading"
+                              Click="@(_ => CancelBulkEdit())" />
+            </RadzenStack>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -48,16 +64,16 @@
                               Filterable="true" FilterValue="@_stateFilter" FilterProperty="State" FilterOperator="FilterOperator.Contains"
                               Title="State" Property="State" Width="100px" SortOrder="SortOrder.Ascending">
             <Template Context="license">
-                <RadzenText Text="@license.State" />
+                <RadzenText Text="@license.State"/>
             </Template>
             <EditTemplate Context="license">
                 <RadzenDropDown TValue="string" Data="AllStates" @bind-Value="license.State"
-                                TextProperty="Name" ValueProperty="Code" Style="width:95%" />
+                                TextProperty="Name" ValueProperty="Code" Style="width:95%"/>
             </EditTemplate>
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@_stateFilter" Change="StateFilterChange"
                                 Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<string>"
-                                Data="@AgencyLicenses.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a.FirstOrDefault()?.State).ToList()" />
+                                Data="@AgencyLicenses.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a.FirstOrDefault()?.State).ToList()"/>
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense"
@@ -142,24 +158,27 @@
                 </RadzenButton>
             </Template>
             <EditTemplate Context="license">
-                <RadzenButton Icon="check" 
-                              ButtonStyle="ButtonStyle.Success" 
-                              Variant="Variant.Flat" 
-                              Size="ButtonSize.Small" 
-                              Click="@(_ => SaveLicenseRow(license))"/>
-                <RadzenButton Icon="close" 
-                              ButtonStyle="ButtonStyle.Light" 
-                              Variant="Variant.Flat" 
-                              Size="ButtonSize.Small" 
-                              class="my-1 ms-1" 
-                              Click="@(_ => CancelLicenseEdit(license))"/>
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" 
-                              Icon="delete" 
-                              Variant="Variant.Flat" 
-                              Shade="Shade.Lighter" 
-                              Size="ButtonSize.Small" 
-                              class="my-1 ms-1"
-                              Click="@(_ => DeleteLicenseRow(license))"/>
+                @if (_visible)
+                {
+                    <RadzenButton Icon="check"
+                                  ButtonStyle="ButtonStyle.Success"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  Click="@(_ => SaveLicenseRow(license))"/>
+                    <RadzenButton Icon="close"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => CancelLicenseEdit(license))"/>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                  Icon="delete"
+                                  Variant="Variant.Flat"
+                                  Shade="Shade.Lighter"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => DeleteLicenseRow(license))"/>
+                }
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
@@ -179,6 +198,9 @@
     private static List<State> AllStates { get; set; } = [];
 
     private List<string>? _stateFilter;
+
+    private DataGridEditMode _editMode = DataGridEditMode.Multiple;
+    private bool _visible = true;
 
     private bool _isLoading;
 
@@ -265,14 +287,14 @@
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Insert is done in OnLicenseCreate()
         await ShowLoading();
-        var newLicense = new AgencyLicense()
+        var newLicense = new AgencyLicense
         {
-            Id = Guid.NewGuid(), 
-            AgencyId = Agency.Id, 
-            Agency = Agency, 
+            Id = Guid.NewGuid(),
+            AgencyId = Agency.Id,
+            Agency = Agency,
             Insurer = new Insurer
             {
-                Id = Guid.Empty, 
+                Id = Guid.Empty,
                 IdNavigation = new LegalEntity
                 {
                     FullName = ""
@@ -445,4 +467,35 @@
                 $"/export/AgencyLicenses/{Agency.Id}", format, substitutions),
             true);
     }
-}
+
+    private async Task SetBulkEdit()
+    {
+        await ShowLoading();
+        
+        _isLoading = true;
+        await LicenseGrid.EditRows(AgencyLicenses);
+        _visible = false;
+        _isLoading = false;
+    }
+
+    private async Task CancelBulkEdit()
+    {
+        await ShowLoading();
+        
+        _isLoading = true;
+        LicenseGrid.CancelEditRows(AgencyLicenses);
+        await LicenseGrid.Reload();
+        _visible = true;
+        _isLoading = false;
+    }
+    
+    private async Task SaveBulkChanges()
+    {
+        await ShowLoading();
+        
+        _isLoading = true;
+        LicenseGrid.CancelEditRows(AgencyLicenses);
+        _visible = true;
+        _isLoading = false;
+    }
+ }

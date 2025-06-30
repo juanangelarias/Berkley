@@ -201,9 +201,11 @@ namespace James.Data.Server.GraphQL.Mutations
 
         }
         [Authorize]
-        public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? ReferenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status,
+        public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status,
             [Service]ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
+            Console.WriteLine($"Creating POA - Reference Number: {referenceNumber}");
+            
             var ctx = await contextFactory.CreateDbContextAsync();
             try
             {
@@ -213,7 +215,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     InsurerId = insurerId,
                     AgencyId = agencyId,
                     Limit = limit,
-                    ReferenceNumber = ReferenceNumber,
+                    ReferenceNumber = referenceNumber,
                     FirstIssued = firstIssued,
                     CurrentIssued = currentIssued,
                     Status = status,
@@ -223,8 +225,9 @@ namespace James.Data.Server.GraphQL.Mutations
                 await ctx.SaveChangesAsync();
                 return true;
             }
-            catch
+            catch(Exception e)
             {
+                Console.WriteLine($"Error creating POA: {e.Message}");
                 return false;
             }
         }

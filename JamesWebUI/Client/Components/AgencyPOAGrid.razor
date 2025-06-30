@@ -359,7 +359,7 @@
             {
                 LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
             }
-
+            DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
         }
     }
 
@@ -378,7 +378,9 @@
         if (result.Success)
             _poasToInsert.Remove(powerOfAttorney);
         else
-            await HandleError("Error creating Agency POA", result.Errors);
+            NotifySaveError(result.Errors, "Agency POA");
+        
+        DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
     }
 
     private async Task DeletePoaRow(PowerOfAttorney powerOfAttorney)
@@ -389,7 +391,7 @@
         if (result.Success)
         {
             NotifySuccessfulSave("agency POA deleted");
-            await LoadPOAs();
+            DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
         }
         else
             NotifySaveError(result.Errors, "agency POA deletion");
@@ -402,7 +404,7 @@
         POAGrid.CancelEditRow(poa);
 
         DataCache.Clear(AgencyPOAKey);
-        await LoadPOAs();
+        //await LoadPOAs();
     }
 
     private void ShowTooltip(ElementReference elementReference, string message, TooltipOptions? options = null) => TooltipService.Open(elementReference, message, options);

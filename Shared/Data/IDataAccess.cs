@@ -77,6 +77,9 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, string status);
         public Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId);
+        Task<ISaveDataResult> AgencyLicenseBulkDelete(List<Guid> licenseIds);
+        Task<ISaveDataResult> AgencyLicenseBulkInsert(List<AgencyLicenseBulk> licenses);
+        Task<ISaveDataResult> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses);
         public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);

@@ -695,6 +695,75 @@ namespace James.Data.Client
             var saveResult = await jamesClient.DeleteAgencyPOA.ExecuteAsync(new DeleteAgencyPOAInput { PoaId = poaId });
             return GraphQLSaveResult(saveResult);
         }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkDelete(List<Guid> licenseIds)
+        {
+            var result = await jamesClient.AgencyLicenseBulkDelete.ExecuteAsync(new AgencyLicenseBulkDeleteInput
+                { LicenseIds = licenseIds });
+
+            return new SaveDataResult
+            {
+                Errors = result.Errors.Select(s => s.Message).ToArray()
+            };
+        }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkInsert(List<AgencyLicenseBulk> licenses)
+        {
+            var result = await jamesClient.AgencyLicenseBulkInsert.ExecuteAsync(new AgencyLicenseBulkInsertInput
+            {
+                Licenses = licenses
+                    .Select(s => new AgencyLicenseBulkInput
+                    {
+                        Id = s.Id,
+                        AgencyId = s.AgencyId,
+                        InsurerId = s.InsurerId,
+                        Appointment = s.Appointment,
+                        AppointingState = s.AppointingState,
+                        Comments = s.Comments,
+                        Expiration = s.Expiration,
+                        IsActive = s.IsActive,
+                        IsResident = s.IsResident,
+                        LicenseNumber = s.LicenseNumber,
+                        State = s.State,
+                        Termination = s.Termination
+                    })
+                    .ToList()
+            });
+
+            return new SaveDataResult
+            {
+                Errors = result.Errors.Select(s => s.Message).ToArray()
+            };
+        }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses)
+        {
+            var result = await jamesClient.AgencyLicenseBulkUpdate.ExecuteAsync(new AgencyLicenseBulkUpdateInput
+            {
+                Licenses = licenses
+                    .Select(s => new AgencyLicenseBulkInput
+                    {
+                        Id = s.Id,
+                        AgencyId = s.AgencyId,
+                        InsurerId = s.InsurerId,
+                        Appointment = s.Appointment,
+                        AppointingState = s.AppointingState,
+                        Comments = s.Comments,
+                        Expiration = s.Expiration,
+                        IsActive = s.IsActive,
+                        IsResident = s.IsResident,
+                        LicenseNumber = s.LicenseNumber,
+                        State = s.State,
+                        Termination = s.Termination
+                    })
+                    .ToList()
+            });
+
+            return new SaveDataResult
+            {
+                Errors = result.Errors.Select(s => s.Message).ToArray()
+            };
+        }
 
         public async Task<IDataAccessResult<Obligee>> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
             string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email)

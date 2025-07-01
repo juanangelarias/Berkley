@@ -537,7 +537,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> AgencyLicenseBulkUpdate(List<AgencyLicenseBulkUpdateInput> licenses,
+        public async Task<bool> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try
@@ -566,7 +566,6 @@ namespace James.Data.Server.GraphQL.Mutations
                     license.Modified = DateTime.Now;
                 }
                 
-                //ctx.UpdateRange(toUpdate);
                 await ctx.SaveChangesAsync();
                 return true;
             }
@@ -577,7 +576,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> AgencyLicenseBulkInsert(List<AgencyLicenseBulkCreateInput> licenses,
+        public async Task<bool> AgencyLicenseBulkInsert(List<AgencyLicenseBulk> licenses,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try
@@ -587,7 +586,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 var toInsert = licenses
                     .Select(s => new AgencyLicense
                     {
-                        Id = Guid.NewGuid(),
+                        Id = s.Id,
                         AgencyId = s.AgencyId,
                         State = s.State,
                         LicenseNumber = s.LicenseNumber,

@@ -37,10 +37,10 @@ public interface IDataCache
 
 public class DataCache : IDataCache
 {
-    private DataCache()
+    /*private DataCache()
     {
         //If memory management is needed, start a background task to watch memory usage here.  YAGNI
-    }
+    }*/
 
     private readonly ConcurrentDictionary<string, CachedResult> _cachedResults = new();
 
@@ -54,6 +54,10 @@ public class DataCache : IDataCache
     private Hashtable _executingLoadItems = new();
     private Random _rnd = new();
     private ILoggingService? _logger;
+
+    public DataCache()
+    {
+    }
 
     public async Task GetCacheOrLoadDataAsync(LoadItem loadItem, ILoggingService logger)
     {

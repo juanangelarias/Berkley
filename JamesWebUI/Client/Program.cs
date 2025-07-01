@@ -34,12 +34,15 @@ builder.Services.AddBlazoredLocalStorage(config =>
 {
     config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
-builder.Services.AddScoped<LocalStorageKeyListingService>();
-builder.Services.AddScoped<AddressPhoneFormatService>();
-builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
-builder.Services.AddSingleton<ILoggingService, LoggingService>();
-builder.Services.AddScoped<IDataAccess, ClientDataAccess>();
-builder.Services.AddScoped<UserSettingService>();
+
+builder.Services
+    .AddScoped<LocalStorageKeyListingService>()
+    .AddScoped<AddressPhoneFormatService>()
+    .AddScoped<JamesWebUI.Client.Services.ThemeService>()
+    .AddSingleton<ILoggingService, LoggingService>()
+    .AddScoped<IDataAccess, ClientDataAccess>()
+    .AddScoped<UserSettingService>()
+    .AddScoped<IDataCache, DataCache>();
 
 builder.Services.AddOidcAuthentication(options =>
 {

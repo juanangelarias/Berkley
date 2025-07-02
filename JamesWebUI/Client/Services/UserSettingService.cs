@@ -14,6 +14,7 @@ namespace JamesWebUI.Client.Services
     }
 
     public class UserSettingService(IDataAccess dataAccess,
+        IDataCache dataCache,
         ILocalStorageService localStorageService) : IUserSettingService
     {
         #region Constants for used keys
@@ -48,7 +49,7 @@ namespace JamesWebUI.Client.Services
                 await _semaphore.WaitAsync();
             try
             {
-                await (_userSettingsLoadTask ??= DataCache.GetCacheOrLoadDataAsync(UserSettingLoadItem()));
+                await (_userSettingsLoadTask ??= dataCache.GetCacheOrLoadDataAsync(UserSettingLoadItem()));
             }
             finally
             {
@@ -65,7 +66,7 @@ namespace JamesWebUI.Client.Services
             {
                 _settings = null;
                 await localStorageService.RemoveItemAsync(CacheKey);
-                DataCache.Clear(CacheKey);
+                dataCache.Clear(CacheKey);
                 await _semaphore.WaitAsync();
                 try
                 {

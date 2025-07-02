@@ -145,7 +145,6 @@ namespace James.Data.Server.GraphQL.Mutations
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
             [Service] ILoggingService loggingService)
         {
-
             var ctx = await contextFactory.CreateDbContextAsync();
             try
             {
@@ -211,7 +210,7 @@ namespace James.Data.Server.GraphQL.Mutations
 
         [Authorize]
         public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit,
-            string? ReferenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status,
+            string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -223,7 +222,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     InsurerId = insurerId,
                     AgencyId = agencyId,
                     Limit = limit,
-                    ReferenceNumber = ReferenceNumber,
+                    ReferenceNumber = referenceNumber,
                     FirstIssued = firstIssued,
                     CurrentIssued = currentIssued,
                     Status = status,

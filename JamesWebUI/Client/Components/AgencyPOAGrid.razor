@@ -88,17 +88,45 @@
                                        UploadErrorAction=@(msg=>LogUploadError(msg, poa)) />
             </Template>
         </RadzenDataGridColumn>
-        @*         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
-            Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
+        <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
+                              Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
             <Template Context="poa">
-            <RadzenButton Variant="Variant.Text" Icon="edit" Size="ButtonSize.ExtraSmall" Click="@(args => EditPoaRow(poa))" @onclick:stopPropagation="true" />
-            <RadzenButton Variant="Variant.Text" Icon="post_add" Size="ButtonSize.ExtraSmall" MouseEnter="@(args => ShowTooltip(args, "Add New POA Document."))"/>
-            <RadzenButton Variant="Variant.Text" Icon="delete" Size="ButtonSize.ExtraSmall" Click="@(args => DeletePoaRow(poa))" />
+                <RadzenButton Variant="Variant.Flat" 
+                              Icon="edit" 
+                              ButtonStyle="ButtonStyle.Light"
+                              Size="ButtonSize.Small" 
+                              Click="@(args => EditPoaRow(poa))" 
+                              @onclick:stopPropagation="true" />
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" 
+                              Icon="delete"
+                              Variant="Variant.Flat"
+                              Shade="Shade.Lighter"
+                              Size="ButtonSize.Small"
+                              class="my-1 ms-1"
+                              Click="@(_ => DeletePoaRow(poa))" 
+                              @onclick:stopPropagation="true"/>
             </Template>
             <EditTemplate Context="poa">
-            <RadzenButton Variant="Variant.Text" Icon="save" Size="ButtonSize.ExtraSmall" Click="@(args => SavePoaRow(poa))" />
+                <RadzenButton Icon="check"
+                              ButtonStyle="ButtonStyle.Success"
+                              Variant="Variant.Flat"
+                              Size="ButtonSize.Small"
+                              Click="@(_=> SavePoaRow(poa))"/>
+                <RadzenButton Icon="close"
+                              ButtonStyle="ButtonStyle.Light"
+                              Variant="Variant.Flat"
+                              ButtonSize="ButtonSize.Small"
+                              class="my-1 ms-1"
+                              Click="@(_=> CancelPoaEdit(poa))" />
+                <RadzenButton Icon="delete"
+                              ButtonStyle="ButtonStyle.Danger"
+                              Variant="Variant.Flat"
+                              Shade="Shade.Lighter"
+                              Size="ButtonSize.Small"
+                              class="my-1 ms-1"
+                              Click="@(_=> DeletePoaRow(poa))"/>
             </EditTemplate>
-            </RadzenDataGridColumn> *@
+        </RadzenDataGridColumn> 
     </Columns>
     <LoadingTemplate>
         <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
@@ -108,6 +136,8 @@
 @code 
 {
     [Parameter, EditorRequired] required public Agency Agency { get; set; }
+
+    private string AgencyPOAKey => $"AgencyPOAs{Agency.Id}";
 
     private RadzenDataGrid<PowerOfAttorney> POAGrid { get; set; } = null!;
 
@@ -127,22 +157,14 @@
 
     private bool _isLoading;
     private bool _poaEditMode;
-    
+
+    #region Loaders
+
     private IDataAccessResult<List<PowerOfAttorney>> _poas = null!;
-    
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-
-        await ShowLoading();
-
-        await LoadData();
-    }
-
 
     private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem
     {
-        Key = $"AgencyPOAs{Agency.Id}",
+        Key = AgencyPOAKey,
         AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id),
         CacheLoadTask = cache => _poas = new DataAccessResult<List<PowerOfAttorney>>
         {
@@ -166,8 +188,9 @@
                 .ToList();
         }
     }, "agency POAs");
-    
+
     private IDataAccessResult<List<Insurer>> insurers = null!;
+
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem
     {
         Key = "Insurers",
@@ -183,8 +206,9 @@
                 AllInsurers = insurers.Data!;
         }
     }, "insurers");
-    
+
     private IDataAccessResult<List<PowerOfAttorneyStatusDm>> statuses = null!;
+
     private LoadItem StatusesLoad => AddEventNotify(new LoadItem
     {
         Key = "Statuses",
@@ -200,7 +224,18 @@
                 AllStatuses = statuses.Data!;
         }
     }, "statuses");
-    
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+
+        await LoadData();
+    }
+
     private async Task LoadData()
     {
         if (Agency.Id == Guid.Empty)
@@ -216,27 +251,27 @@
 
         return Task.CompletedTask;
     }
-    
+
     private Task Reset(PowerOfAttorney powerOfAttorney)
     {
         _poasToInsert.Remove(powerOfAttorney);
         _poasToUpdate.Remove(powerOfAttorney);
-        
+
         return Task.CompletedTask;
     }
-    
+
     private async Task LoadPOAs()
     {
         await DataCache.GetCacheOrLoadDataAsync(AgencyPoasLoad);
     }
-    
+
     private async Task SavePoaRow(PowerOfAttorney powerOfAttorney)
     {
         await ShowLoading();
         await POAGrid.UpdateRow(powerOfAttorney);
         await LoadPOAs();
     }
-    
+
     // private async Task InsurerFilterChange()
     // {
     //     if (_insurerFilter != null && !_insurerFilter.Any())
@@ -254,7 +289,7 @@
     //     }
     //     //await POAGrid.Reload();
     // }
-    
+
     protected async Task ShowLoading()
     {
         _isLoading = true;
@@ -263,19 +298,19 @@
 
         _isLoading = false;
     }
-    
+
     private void TogglePoaEditMode()
     {
         _poaEditMode = !_poaEditMode;
     }
-    
+
     private async Task InsertPOARow()
     {
         await ShowLoading();
         var newPoa = new PowerOfAttorney
         {
-            Id = Guid.NewGuid(), 
-            AgencyId = Agency.Id, 
+            Id = Guid.NewGuid(),
+            AgencyId = Agency.Id,
             Agency = Agency,
             Insurer = new Insurer
             {
@@ -288,7 +323,7 @@
         _poasToInsert.Add(newPoa);
         await POAGrid.InsertRow(newPoa);
     }
-    
+
     //Enable row edit mode for a POA record.
     private async Task EditPoaRow(PowerOfAttorney poaToEdit)
     {
@@ -298,7 +333,7 @@
         await POAGrid.EditRow(poaToEdit);
 
     }
-    
+
     //Save changes to a POA row, disable edit mode for that row.
     private async Task UpdatePoaRow(PowerOfAttorney? poaToUpdate)
     {
@@ -324,7 +359,7 @@
             {
                 LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
             }
-
+            DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
         }
     }
 
@@ -343,7 +378,9 @@
         if (result.Success)
             _poasToInsert.Remove(powerOfAttorney);
         else
-            await HandleError("Error creating Agency POA", result.Errors);
+            NotifySaveError(result.Errors, "Agency POA");
+        
+        DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
     }
 
     private async Task DeletePoaRow(PowerOfAttorney powerOfAttorney)
@@ -354,10 +391,20 @@
         if (result.Success)
         {
             NotifySuccessfulSave("agency POA deleted");
-            await LoadPOAs();
+            DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
         }
         else
             NotifySaveError(result.Errors, "agency POA deletion");
+    }
+
+    private async Task CancelPoaEdit(PowerOfAttorney poa)
+    {
+        await ShowLoading();
+        
+        POAGrid.CancelEditRow(poa);
+
+        DataCache.Clear(AgencyPOAKey);
+        //await LoadPOAs();
     }
 
     private void ShowTooltip(ElementReference elementReference, string message, TooltipOptions? options = null) => TooltipService.Open(elementReference, message, options);
@@ -377,11 +424,11 @@
             "Uploading a file to imaging returned an error",
             "Imaging",
             data: new Dictionary<string, string>
-                {
+            {
                 { "Error Message", message },
-                { "AgencyNumber", poa.Agency.AgencyNumber},
-                { "Poa Id", poa.Id.ToString()}
-                        });
+                { "AgencyNumber", poa.Agency.AgencyNumber },
+                { "Poa Id", poa.Id.ToString() }
+            });
     }
 
     private void ExportLicenseGrid(ExportFormat format)
@@ -396,3 +443,4 @@
             true);
     }
 }
+

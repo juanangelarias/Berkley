@@ -1,19 +1,17 @@
 ﻿@using System.Diagnostics
 @using System.Text.Json.Nodes
 @using System.Text.RegularExpressions
-@using James.Shared
 @using James.Shared.Imaging
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
-@* @inject TooltipService TooltipService *@
 
-@* Submit="@(args=>StartUpload(args))"> *@
+
 <RadzenPanel Variant="Variant.Outlined">
     <h3>@Title</h3>
     <RadzenPanel Visible=@(!linkingToExisting)>
         <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
             <RadzenColumn Size="9">
-                <RadzenUpload id="ddUpload" @ref="@uploadDD"
+                <RadzenUpload id="ddUpload" @ref="@_uploadDD"
                               ChooseText="Drag and drop here or click to choose document"
                               Auto="false" Multiple="false" Url=@($"ImagingRepository/UploadDocument/{DocumentType}/{(int)DocumentCategory}/{ImagingId}?description={currentDescription}")
                               InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})"
@@ -32,15 +30,15 @@
             <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
                 <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:100%">
                     <ChildContent>
-                        <RadzenTextBox Name="tbDescription" @ref="tbDescription" @bind-Value=@currentDescription Style="width:100%" />
+                        <RadzenTextBox Name="tbDescription" @bind-Value=@currentDescription Style="width:100%" />
                     </ChildContent>
                     <Helper>
-                        <RadzenRequiredValidator Component="tbFileName" Text="Name is required." />
-                        <RadzenRegexValidator Component="tbFileName" Text="Must be a filename without path"
+                        <RadzenRequiredValidator Component="tbDescription" Text="Name is required." />
+                        <RadzenRegexValidator Component="tbDescription" Text="Must be a filename without path"
                                               Pattern="^[^\\/]+$" />
-                        <RadzenCustomValidator Component="tbFileName" Text="Must be a valid filename"
+                        <RadzenCustomValidator Component="tbDescription" Text="Must be a valid filename"
                                                Validator="@(()=>ClientBusinessLogic.Validators.ValidateFileName(currentDescription))" />
-                        <RadzenCustomValidator Component="tbFileName" Text="File extension is not allowed by BTS"
+                        <RadzenCustomValidator Component="tbDescription" Text="File extension is not allowed by BTS"
                                                Validator="@(()=>!ClientBusinessLogic.Validators.ValidateFileName(currentDescription)||
                                                                 SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(currentDescription))" />
                     </Helper>
@@ -49,7 +47,7 @@
             <RadzenRow Visible="@(progress>0)">
                 <RadzenColumn Size="12">
                     <RadzenProgressBar Value=@progress />
-                    <RadzenText ref="@uploadedBytes" />
+                    <RadzenText ref="@_uploadedBytes" Text="@_uploadedBytesText"/>
                     <RadzenButton Variant="Variant.Filled" ButtonStyle="ButtonStyle.Secondary"
                                   Text="Cancel" />
                 </RadzenColumn>
@@ -93,7 +91,7 @@
     </RadzenRow>
     <RadzenRow>
         <RadzenColumn>
-            <RadzenDataList @ref=@existingList Data=@existingDocuments
+            <RadzenDataList Data=@existingDocuments
                             TItem="ImagingDocument"
                             LoadData=@(args=>LoadExistingDocumentOptions(args))
                             IsLoading="@existingLoading">
@@ -149,13 +147,10 @@
         </RadzenColumn>
     </RadzenRow>
 </RadzenPanel>
-@* ReSharper disable CSharpWarnings::CS8618 *@
-@* ReSharper disable InconsistentNaming *@
+
 @code {
-    RadzenUpload uploadDD = null!;
-    RadzenTextBox tbDescription;
-    RadzenText uploadedBytes = null!;
-    RadzenDataList<ImagingDocument> existingList = null!;
+    RadzenUpload _uploadDD = null!;
+    RadzenText _uploadedBytes = null!;
     ImagingDocument[] existingDocuments = [];
 
     [Parameter] public string Title { get; set; } = "Upload File To Imaging";
@@ -175,6 +170,8 @@
     bool waitingForFileSelection = true;
     bool linkingToExisting;
     int progress;
+
+    private string _uploadedBytesText = "";
     //void ShowTooltip(ElementReference elementReference, TooltipOptions options = null!) => TooltipService.Open(elementReference, "Name as it will be saved in Virtual File", options);
 
     void OnProgress(UploadProgressArgs args, string name)
@@ -182,8 +179,8 @@
         progress = args.Progress;
         if (0 < progress && 100 > progress)
         {
-            if (null! != uploadedBytes)
-                uploadedBytes.Text = $"({args.Loaded.ToScreenBytes()}/{args.Total.ToScreenBytes()})";
+            if (null! != _uploadedBytes)
+                _uploadedBytesText = $"({args.Loaded.ToScreenBytes()}/{args.Total.ToScreenBytes()})";
             else
                 LoggingService.LogWarning("uploadedBytes control not instantiated",
                     "uploadedBytes == null", StandardLoggingCategories.UserInterface);
@@ -228,7 +225,7 @@
             return;
         }
 
-        Debug.Assert(uploadDD.HasValue, "upload control shows .HasValue==false");
+        Debug.Assert(_uploadDD.HasValue, "upload control shows .HasValue==false");
 
         waitingForFileSelection = false;
 
@@ -247,7 +244,7 @@
     // private async Task StartUpload(MouseEventArgs args)
     {
         //if (null == currentFile) return;
-        if (!uploadDD.HasValue)
+        if (!_uploadDD.HasValue)
         {
             NotifySaveError(["upload control has no value"], "imaging file");
             return;
@@ -255,7 +252,7 @@
         uploadError = "";//Clear and previous errors
 
         //TODO:Exit if values aren't valid
-        await uploadDD.Upload();
+        await _uploadDD.Upload();
         //TODO:Handle imaging upload failure
     }
 
@@ -266,40 +263,42 @@
             NotifySaveError([uploadError], "uploaded file");
             return;
         }
-        //Read from args.rawresponse
-        if (!args.Cancelled && !string.IsNullOrWhiteSpace(args.RawResponse))
+        
+        if (args.Cancelled || string.IsNullOrWhiteSpace(args.RawResponse)) 
+            return;
+        
+        //Read from args.RawResponse
+        // args.RawResponse must have the surrounding quotes removed and Unicode character
+        // escape sequences decoded into the characters they represent.
+        var responseNode = JsonNode.Parse(Regex.Unescape(args.RawResponse.Trim('\"')));
+        if (responseNode?["DocumentID"] == null || !Guid.TryParse(responseNode["DocumentID"]!.ToString(), out var guid)) 
+            return;
+        
+        DocumentId = guid;
+        
+        try
         {
-            // args.RawResponse must have the surrounding quotes removed and  unicode character
-            // escape sequences decoded into the characters they represent.
-            var responseNode = JsonNode.Parse(Regex.Unescape(args.RawResponse.Trim('\"')));
-            if (null != responseNode && null != responseNode["DocumentID"] &&
-                Guid.TryParse(responseNode["DocumentID"]!.ToString(), out var guid))
-            {
-                DocumentId = guid;
-                try
-                {
-                    UploadAction?.Invoke(DocumentId);
-                    //Autoclose
-                    DialogService.Close(guid);
-                }
-                catch (Exception ex)
-                {
-                    LoggingService.LogException(ex, "UploadAction after upload failed.",
-                        category: StandardLoggingCategories.Imaging);
-                    NotifySaveError(["Upload action failed"], "document association", false);  // Don't log the error
-                }
-            }
+            UploadAction?.Invoke(DocumentId);
+            //Autoclose
+            DialogService.Close(guid);
+        }
+        catch (Exception ex)
+        {
+            LoggingService.LogException(ex, "UploadAction after upload failed.",
+                category: StandardLoggingCategories.Imaging);
+            NotifySaveError(["Upload action failed"], "document association", false);  // Don't log the error
         }
     }
 
     private void UploadErrorHandler(UploadErrorEventArgs args)
     {
         uploadError = "There was an error uploading the file.";
-        if (!string.IsNullOrWhiteSpace(args.Message))
-        {
-            uploadError += "   " + args.Message;
-            NotifySaveError([args.Message], "uploaded file");
-        }
+        
+        if (string.IsNullOrWhiteSpace(args.Message)) 
+            return;
+        
+        uploadError += "   " + args.Message;
+        NotifySaveError([args.Message], "uploaded file");
     }
 
     private async Task ToggleWorkflow()
@@ -313,7 +312,7 @@
     private async Task<ImagingDocument[]> LoadExistingDocumentOptions(LoadDataArgs obj)
     {
         existingLoading = true;
-        searchError = "";//Clear any previous errors
+        searchError = "";   //Clear any previous errors
         try
         {
             var documentTypes = new List<string>();
@@ -351,5 +350,3 @@
     }
 
 }
-@* ReSharper restore InconsistentNaming *@
-@* ReSharper restore CSharpWarnings::CS8618 *@

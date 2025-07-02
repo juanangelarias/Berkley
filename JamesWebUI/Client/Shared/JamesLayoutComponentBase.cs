@@ -17,6 +17,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     [Inject] public required ILoggingService LoggingService { get; set; }
     [Inject] public required DialogService DialogService { get; set; }
     [Inject] public required NotificationService NotificationService { get; set; }
+    [Inject] public required IDataCache DataCache { get; set; }
 
     #region Authentication Code
 

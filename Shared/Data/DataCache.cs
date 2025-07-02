@@ -33,31 +33,30 @@ public interface IDataCache
     /// </summary>
     /// <param name="key">Cache key to clear</param>
     void Clear(string key);
+
+    /// <summary>
+    /// Updates the cache with the specified key and data.
+    /// </summary>
+    /// <param name="key">The cache key to update.</param>
+    /// <param name="data">The data to store in the cache.</param>
+    /// <param name="cacheDuration">Optional cache duration. If not specified, a default duration may be applied.</param>
+    void UpdateCache(string key, object data, TimeSpan? cacheDuration = null);
 }
 
 public class DataCache : IDataCache
 {
-    /*private DataCache()
-    {
-        //If memory management is needed, start a background task to watch memory usage here.  YAGNI
-    }*/
-
     private readonly ConcurrentDictionary<string, CachedResult> _cachedResults = new();
 
     /// <summary>
     /// The number of cache usages before a scan to remove expired items is called.
     /// </summary>
-    /// <remarks>Balance the need for memory management vs the performance impact of scanning the cache.</remarks>
+    /// <remarks>Balance the need for memory management vs. the performance impact of scanning the cache.</remarks>
     private const int CacheUsesUntilGarbageCollection = 200;
 
     private int _cacheUses;
-    private Hashtable _executingLoadItems = new();
-    private Random _rnd = new();
+    private readonly Hashtable _executingLoadItems = new();
+    private readonly Random _rnd = new();
     private ILoggingService? _logger;
-
-    public DataCache()
-    {
-    }
 
     public async Task GetCacheOrLoadDataAsync(LoadItem loadItem, ILoggingService logger)
     {
@@ -99,7 +98,7 @@ public class DataCache : IDataCache
                     {
                         _cachedResults[loadItem.Key] = new CachedResult
                             { DataObject = fromLocalCache, CacheUntil = DateTime.Now + loadItem.CacheDuration };
-                        //Once cache has been set, continue like it was a cache hit so that the load result is properly set
+                        //Once the cache has been set, continue like it was a cache hit so that the load result is properly set
                         loadItem.CacheLoadTask(_cachedResults[loadItem.Key].DataObject);
                         //Run AfterLoad as though data was just loaded
                         loadItem.AfterLoad?.Invoke();
@@ -181,7 +180,7 @@ public class DataCache : IDataCache
     /// </summary>
     private void ReleaseExpired()
     {
-        //This will run async and return immediately back to the calling function/
+        //This will run async and return immediately to the calling function/
         Task.Factory.StartNew(() =>
         {
             if (_isReleasingExpired)
@@ -225,5 +224,34 @@ public class DataCache : IDataCache
             disposeIt.Dispose();
 
         _cachedResults.Remove(key, out _);
+    }
+    
+    /// <summary>
+    /// Updates or adds an item to the cache with an optional cache duration.
+    /// </summary>
+    /// <param name="key">The unique identifier for the cached item.</param>
+    /// <param name="data">The data object to be cached.</param>
+    /// <param name="cacheDuration">
+    /// Optional duration for which the item should remain in the cache. 
+    /// Defaults to 1 hour if not specified.
+    /// </param>
+    /// <remarks>
+    /// If the key already exists in the cache, the existing entry is updated.
+    /// If the key does not exist, a new cache entry is created.
+    /// </remarks>
+
+    public void UpdateCache(string key, object data, TimeSpan? cacheDuration = null)
+    {
+        cacheDuration ??= TimeSpan.FromHours(1);
+        var newData = new CachedResult
+        {
+            DataObject = data,
+            CacheUntil = DateTime.Now + cacheDuration.Value
+        };
+        
+        if (_cachedResults.TryGetValue(key, out _))
+            _cachedResults.TryRemove(key, out _);
+        
+        _cachedResults.TryAdd(key, newData);
     }
 }

@@ -45,16 +45,29 @@
                 <RadzenText Text="@poa.Status" />
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Insurer" Property="Insurer.IdNavigation.FullName" Width="300px" Type="typeof(string)"
-                              FilterValue="@_insurerFilter" FilterProperty="Insurer.IdNavigation.FullName" FilterOperator="FilterOperator.Contains">
-            <FilterTemplate>
-                <RadzenDropDown @bind-Value="@_insurerFilter" AllowClear="true" Style="width:95%"
-                                Multiple="true" TValue="List<string>" Data="@_insurerList" />
-            </FilterTemplate>
-            <EditTemplate Context="poa">
-                <RadzenDropDown @bind-Value="poa.Insurer.IdNavigation.FullName" Data="@_insurerList" Style="width: 95%"/>
+        <RadzenDataGridColumn TItem="PowerOfAttorney" Filterable="false"
+                              Title="Insurer" Property="Insurer" Width="200px">
+            <Template Context="poa">
+                <RadzenText Text="@poa.Insurer.IdNavigation.FullName" />
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenDropDown TValue="Insurer" Data="AllInsurers" Style="width:95%" Name="CmbInsurer"
+                                TextProperty="IdNavigation.FullName" @bind-Value="@license.Insurer" />
+                <RadzenRequiredValidator Text="Insurer is required" Component="CmbInsurer" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
+        
+        @*<RadzenDataGridColumn TItem="PowerOfAttorney" Title="Insurer" Property="Insurer" Width="300px"
+                              FilterValue="@_insurerFilter" FilterProperty="Insurer.IdNavigation.FullName" FilterOperator="FilterOperator.Contains">
+            $1$<FilterTemplate>
+                <RadzenDropDown @bind-Value="@_insurerFilter" AllowClear="true" Style="width:95%"
+                                Multiple="true" TValue="List<string>" Data="@_insurerList" />
+            </FilterTemplate>#1#
+            <EditTemplate Context="poa">
+                <RadzenDropDown TValue="Insurer" Data="@_insurerList" Style="width: 95%" Name="CmbInsurer"
+                                TextProperty="IdNavigation.FullName" @bind-Value="@poa.Insurer" />
+            </EditTemplate>
+        </RadzenDataGridColumn>*@
         <RadzenDataGridColumn Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px">
             <EditTemplate Context="poa">
                 <RadzenNumeric @bind-Value="poa.Limit" Format="c0" Style="width: 95%" ShowUpDown="false" />
@@ -189,21 +202,21 @@
         }
     }, "agency POAs");
 
-    private IDataAccessResult<List<Insurer>> insurers = null!;
+    private IDataAccessResult<List<Insurer>> _insurers = null!;
 
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem
     {
         Key = "Insurers",
-        AsyncLoadTask = async () => insurers = await DataAccess.GetAllInsurers(),
-        CacheLoadTask = cache => insurers = new DataAccessResult<List<Insurer>>
+        AsyncLoadTask = async () => _insurers = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurers = new DataAccessResult<List<Insurer>>
         {
             Data = (List<Insurer>)cache!
         },
-        ResultVariable = () => insurers,
+        ResultVariable = () => _insurers,
         AfterLoad = () =>
         {
-            if (insurers.Success)
-                AllInsurers = insurers.Data!;
+            if (_insurers.Success)
+                AllInsurers = _insurers.Data!;
         }
     }, "insurers");
 
@@ -267,28 +280,13 @@
 
     private async Task SavePoaRow(PowerOfAttorney powerOfAttorney)
     {
+        if (!ValidatePoaFields(powerOfAttorney))
+            return;
+        
         await ShowLoading();
         await POAGrid.UpdateRow(powerOfAttorney);
         await LoadPOAs();
     }
-
-    // private async Task InsurerFilterChange()
-    // {
-    //     if (_insurerFilter != null && !_insurerFilter.Any())
-    //     {
-    //         _insurerFilter = null;
-    //     }
-    //     //await POAGrid.Reload();
-    // }
-    //
-    // private async Task StatusFilterChange()
-    // {
-    //     if (_statusFilter != null && !_statusFilter.Any())
-    //     {
-    //         _statusFilter = null;
-    //     }
-    //     //await POAGrid.Reload();
-    // }
 
     protected async Task ShowLoading()
     {
@@ -297,11 +295,6 @@
         await Task.Yield();
 
         _isLoading = false;
-    }
-
-    private void TogglePoaEditMode()
-    {
-        _poaEditMode = !_poaEditMode;
     }
 
     private async Task InsertPOARow()
@@ -320,7 +313,7 @@
                 }
             }
         };
-        _poasToInsert.Add(newPoa);
+        
         await POAGrid.InsertRow(newPoa);
     }
 
@@ -328,8 +321,6 @@
     private async Task EditPoaRow(PowerOfAttorney poaToEdit)
     {
         await ShowLoading();
-        await Reset();
-        _poasToUpdate.Add(poaToEdit);
         await POAGrid.EditRow(poaToEdit);
 
     }
@@ -337,34 +328,39 @@
     //Save changes to a POA row, disable edit mode for that row.
     private async Task UpdatePoaRow(PowerOfAttorney? poaToUpdate)
     {
-        await ShowLoading();
-        if (poaToUpdate != null)
-        {
-            var result = await DataAccess.SetPowerOfAttorney(poaToUpdate.Id,
-                poaToUpdate.Insurer.Id,
-                poaToUpdate.Limit,
-                poaToUpdate.ReferenceNumber,
-                poaToUpdate.FirstIssued,
-                poaToUpdate.CurrentIssued,
-                poaToUpdate.Comments,
-                poaToUpdate.Status);
-            if (result.Success)
-            {
-                NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
+        if (poaToUpdate == null || !ValidatePoaFields(poaToUpdate))
+            return;
 
-                await Reset(poaToUpdate);
-                await POAGrid.Reload();
-            }
-            else
-            {
-                LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
-            }
-            DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+        await ShowLoading();
+
+        var result = await DataAccess.SetPowerOfAttorney(poaToUpdate.Id,
+            poaToUpdate.Insurer.Id,
+            poaToUpdate.Limit,
+            poaToUpdate.ReferenceNumber,
+            poaToUpdate.FirstIssued,
+            poaToUpdate.CurrentIssued,
+            poaToUpdate.Comments,
+            poaToUpdate.Status);
+        if (result.Success)
+        {
+            NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
+
+            await Reset(poaToUpdate);
+            await POAGrid.Reload();
         }
+        else
+        {
+            LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
+        }
+
+        DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
     }
 
     private async Task OnPoaCreate(PowerOfAttorney powerOfAttorney)
     {
+        if (!ValidatePoaFields(powerOfAttorney))
+            return;
+        
         var result = await DataAccess.CreateAgencyPOA(powerOfAttorney.Id,
             powerOfAttorney.Insurer.Id,
             Agency.Id,
@@ -376,22 +372,76 @@
             powerOfAttorney.Status);
 
         if (result.Success)
-            _poasToInsert.Remove(powerOfAttorney);
+        {
+            powerOfAttorney.InsurerId = powerOfAttorney.Insurer.Id;
+            PowerOfAttorneys.Add(powerOfAttorney);
+            DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+        }
         else
             NotifySaveError(result.Errors, "Agency POA");
-        
-        DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+    }
+
+    private bool ValidatePoaFields(PowerOfAttorney poa)
+    {
+        var flag = true;
+        if (poa.AgencyId == Guid.Empty)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Agency has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+            flag = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(poa.Status))
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Status has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+            flag = false;
+        }
+
+        if (poa.Insurer.Id == Guid.Empty)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Insurer has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+            flag = false;
+        }
+
+        return flag;
     }
 
     private async Task DeletePoaRow(PowerOfAttorney powerOfAttorney)
     {
+        var deleteConfirmed = await DialogService.Confirm("Are you sure?",
+            "Agency POA Deletion",
+            new ConfirmOptions { OkButtonText = "Yes", CancelButtonText = "No" });
+        
+        if(deleteConfirmed == false)
+            return;
+        
         await ShowLoading();
         await Reset(powerOfAttorney);
         var result = await DataAccess.DeleteAgencyPOA(powerOfAttorney.Id);
         if (result.Success)
         {
+            var toDelete = PowerOfAttorneys.FirstOrDefault(f => f.Id == powerOfAttorney.Id);
+            if (toDelete != null)
+            {
+                PowerOfAttorneys.Remove(toDelete);
+                DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+            }
             NotifySuccessfulSave("agency POA deleted");
-            DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+            await POAGrid.Reload();
         }
         else
             NotifySaveError(result.Errors, "agency POA deletion");
@@ -402,9 +452,6 @@
         await ShowLoading();
         
         POAGrid.CancelEditRow(poa);
-
-        DataCache.Clear(AgencyPOAKey);
-        //await LoadPOAs();
     }
 
     private void ShowTooltip(ElementReference elementReference, string message, TooltipOptions? options = null) => TooltipService.Open(elementReference, message, options);

@@ -366,6 +366,7 @@
 
     private bool ValidateLicenseFields(AgencyLicense license)
     {
+        var flag = true;
         if (string.IsNullOrWhiteSpace(license.State))
         {
             NotificationService.Notify(new NotificationMessage
@@ -374,7 +375,7 @@
                 Summary = "State has not been defined. Please correct and try again.",
                 Duration = 2000
             });
-            return false;
+            flag = false;
         }
 
         if (license.Insurer.Id == Guid.Empty)
@@ -385,10 +386,10 @@
                 Summary = "Insurer has not been defined. Please correct and try again.",
                 Duration = 2000
             });
-            return false;
+            flag = false;
         }
 
-        return true;
+        return flag;
     }
 
     private async Task OnLicenseCreate(AgencyLicense license)

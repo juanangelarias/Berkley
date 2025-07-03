@@ -9,13 +9,13 @@ using James.Shared.Data;
 using James.Shared.Model;
 using James.Shared.Server;
 using James.Test.Shared;
-using JamesWebUI.Shared.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Runtime.CompilerServices;
+using JamesWebUI.Server.SharedServices;
 using Xunit.Abstractions;
 
 namespace James.Data.Server.Test

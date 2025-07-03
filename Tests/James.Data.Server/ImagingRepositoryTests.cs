@@ -20,7 +20,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Runtime.Versioning;
 using James.Test.Shared;
-using JamesWebUI.Shared.Services;
+using JamesWebUI.Server.SharedServices;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using ImagingExtensions = James.Data.Imaging.ImagingExtensions;

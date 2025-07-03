@@ -1,12 +1,6 @@
-﻿@using System.Diagnostics
-@using System.Globalization
-@using James.Shared;
-@using ClientBusinessLogic
+﻿@inherits JamesLayoutComponentBase
 
-@inherits JamesWebUI.Shared.JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
-@inject IDataAccess DataAccess
+<RenderModeBackground />
 
 <RadzenSteps>
     <Steps>
@@ -44,7 +38,7 @@
                 <RadzenColumn Size="4">
                     <RadzenFormField Text="Obligee" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
                         <ChildContent>
-                            <RadzenTextBox @bind-Value="selectedObligee" />
+                            <RadzenTextBox @bind-Value="SelectedObligee" />
                         </ChildContent>
                         <End>
                             <RadzenButton Icon="search" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text"/>
@@ -76,7 +70,7 @@
 </RadzenSteps>
 
 @code {
-    private string selectedObligee { get; set; } = "";
+    private string SelectedObligee { get; set; } = "";
 
     public async Task CreateObligeeClick()
     {
@@ -92,8 +86,7 @@
 
         if (null != result)
         {
-            //TODO: Set the new obligee as selected
-            selectedObligee = result.IdNavigation.FullName;
+            SelectedObligee = result.IdNavigation.FullName;
         }
     }
 }

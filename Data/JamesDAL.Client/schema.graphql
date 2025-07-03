@@ -231,6 +231,11 @@ type BondRequestNumberType {
   type: String!
 }
 
+input AddPrincipalToSecurityRoleInput {
+  principalId: UUID!
+  role: String!
+}
+
 type Notebook {
   id: UUID!
   created: DateTime!
@@ -626,6 +631,10 @@ type Query {
   obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!
   obligeeSecondaryBonds(obligeeId: UUID!): [Bond!]!
   search(searchTerm: String! options: SearchOptionsInput!): String!
+  allSecurityRoles: [SecurityRole!]!
+  securityRolesByUser(principalId: UUID!): [SecurityRole!]!
+  securityRoleMembers(role: String!): [SecurityRoleMember!]!
+  allEmployees: [Employee!]!
   allStates: [State!]!
 }
 
@@ -1017,6 +1026,7 @@ type Mutation {
   deletePhoneNumber(input: DeletePhoneNumberInput!): DeletePhoneNumberPayload!
   setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
   setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
+  addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1467,6 +1477,15 @@ input SetPowerOfAttorneyInput {
   status: String!
 }
 
+type SecurityRole {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  role: String!
+  ord: Int!
+  description: String!
+}
+
 input SetAccountGeneralInfoInput {
   accountId: UUID!
   yearStarted: String
@@ -1859,6 +1878,12 @@ type SetAccountGeneralInfoPayload {
   boolean: Boolean
 }
 
+type SecurityRoleMember {
+  id: UUID!
+  name: String!
+  isRole: Boolean!
+}
+
 type VImagingCategoryTabDivisionType {
   tabName: String!
   tabDescription: String!
@@ -2091,6 +2116,10 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
+type AddPrincipalToSecurityRolePayload {
+  boolean: Boolean
+}
+
 "The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
 scalar Long
 
@@ -2316,7 +2345,7 @@ input SetAccountSystemsInput {
 
 input SetDefaultUserSettingInput {
   key: String!
-  value: String!
+  value: String
 }
 
 input DeleteAgencyInventoryInput {

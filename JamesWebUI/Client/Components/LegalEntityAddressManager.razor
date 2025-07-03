@@ -1,36 +1,31 @@
 ﻿@using System.Diagnostics
-@using System.Globalization
-@using James.Shared;
-@using ClientBusinessLogic
 
-
-@inherits JamesWebUI.Shared.JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
+@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
-<RadzenTabs @ref="@addressTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab">
+<RadzenTabs TabPosition="TabPosition.Left" @bind-SelectedIndex="@SelectedTab">
     <Tabs>
         @{
             if (AllAddresses.Any())
             {
                 foreach (var a in AllAddresses)
                 {
-                    <RadzenTabsItem Text="@(a.LegalEntityAddress!.Type)" >
-                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress.Type]" AddressId="a.Id" 
+                    <RadzenTabsItem Text="@(a.LegalEntityAddress!.Type)">
+                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" AddressId="a.Id"
                                         StateChanged="@(() => LoadAddresses())"
-                                        AddSubscription="@(()=>DataAccess.AddressModified(a.Id, async sra =>
+                                        AddSubscription="@(() => DataAccess.AddressModified(a.Id, async void (sra) =>
                                                          {
-                                                             if (_addressDisplays[a.LegalEntityAddress.Type].EditorIdentifier==sra.Identifier) return;
+                                                             if (_addressDisplays[a.LegalEntityAddress.Type].EditorIdentifier == sra.Identifier) return;
                                                              await _addressDisplays[a.LegalEntityAddress.Type].SubscriptionUpdate(sra.Result);
-                                                         }))" />
+                                                         }))"/>
                     </RadzenTabsItem>
                     //NOTE: The redundant specification of the AddressCreate below is needed to prevent the AddressCreate from being selected initially
                     if (a == AllAddresses.Last())
                     {
-                        <RadzenTabsItem Icon="add" Text="Add Address" >
-                            <AddressCreate LegalEntityId="@LegalEntityId" AddressCreated="@AddressCreated"></AddressCreate>
+                        <RadzenTabsItem Icon="add" Text="Add Address">
+                            <AddressCreate LegalEntityId="@LegalEntityId"
+                                           AddressCreated="@AddressCreated"></AddressCreate>
                         </RadzenTabsItem>
                     }
                 }
@@ -50,11 +45,10 @@
 
     [Parameter]
     public Guid LegalEntityId { get; set; }
-    private Guid _legalEntityId = Guid.Empty;
-    private RadzenTabs addressTabs { get; set; } = null!;
-    private List<Address> AllAddresses { get; set; } = new List<Address>();
-    private Dictionary<string, AddressDisplay> _addressDisplays = [];
-    private int selectedTab { get; set; } = 0;
+
+    private List<Address> AllAddresses { get; set; } = [];
+    private readonly Dictionary<string, AddressDisplay> _addressDisplays = [];
+    private int SelectedTab { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -64,62 +58,45 @@
     }
 
     private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
-    private LoadItem AddressesLoadItem(Guid id) =>
-        new()
+    private LoadItem AddressesLoadItem => AddEventNotify(
+        new LoadItem
         {
             Key = $"Adds{LegalEntityId}",
             AsyncLoadTask = async () => _addressesLoadResult = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId),
             CacheLoadTask = cache => _addressesLoadResult = new DataAccessResult<List<Address>> { Data = (List<Address>)cache! },
             ResultVariable = () => _addressesLoadResult,
-            AfterLoad = () =>
+            AfterLoad = async void () =>
             {
-                Debug.Assert(_addressesLoadResult.Data != null, "_addressesLoadResult.Data != null");
-                //Add after load code here
+                Debug.Assert(_addressesLoadResult.Data != null);
                 AllAddresses = _addressesLoadResult.Data;
-                selectedTab = 0;
+                SelectedTab = 0;
             },
-            AddSubscriptionTask = async li =>
+            AddSubscriptionTask = li =>
             {
                 //NOTE: Subscriptions for the address editors are added via the AddressDisplay AddSubscription function
-                li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async _ =>
+                li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async void (_) =>
                 {
                     DataCache.Clear("addresses");
                     await LoadAddresses();
                 });
             }
-        };
+        }, "addresses");
 
     private async Task LoadAddresses()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AddEventNotify(AddressesLoadItem(LegalEntityId), "addresses"));
+        await DataCache.GetCacheOrLoadDataAsync(AddressesLoadItem);
     }
+    
     private async Task AddressCreated(Guid addressToSelect)
     {
-        var result = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId);
+        await LoadAddresses();
 
-        if (result.Errors.Any())
+        if (_addressesLoadResult.Success)
         {
-            LoggingService.LogError("GetAllLegalEntityAddresses return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
-            NotificationService.Notify(new NotificationMessage()
-            {
-                Severity = NotificationSeverity.Error,
-                Detail = "Error creating new address.",
-                Duration = 4000
-            });
-        }
-        else
-        {
-            AllAddresses = result.Data!;
-
             var selected = AllAddresses.FirstOrDefault(a => a.Id == addressToSelect);
-            if (null != selected)
-            {
-                selectedTab = AllAddresses.IndexOf(selected);
-            }
-            else
-            {
-                selectedTab = 0;
-            }
+            SelectedTab = null != selected
+                ? AllAddresses.IndexOf(selected)
+                : 0;
         }
     }
 }

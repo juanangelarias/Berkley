@@ -141,6 +141,11 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(ImagingDocumentCategory docCategory,
             Guid documentId);
 
+        public Task<IDataAccessResult<List<SecurityRole>>> GetAllSecurityRoles();
+        public Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId);
+        public Task<IDataAccessResult<List<SecurityRoleMember>>> GetSecurityRoleMembers(string role);
+        public Task<IDataAccessResult<List<Employee>>> GetAllEmployees();
+
         public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames();
 
         public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,

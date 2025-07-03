@@ -21,11 +21,14 @@ using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
-using JamesWebUI.Shared.Services;
+using JamesWebUI.Server.SharedServices;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
-using ThemeService = JamesWebUI.Shared.Services.ThemeService;
+using JamesWebUI.Client.Services;
+using System.Text.Json.Serialization;
+using JamesWebUI.Server.Helpers;
+using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -43,21 +46,21 @@ try
     ConfirmAppSettingsEntry("Auth0:Authority");
     ConfirmAppSettingsEntry("Auth0:ClientId");
     ConfirmAppSettingsEntry("Auth0:ClientSecret");
-    //var auth0Authority = config["Auth0:Authority"]!;
+    var auth0Authority = config["Auth0:Authority"]!;
 
 
-    //var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
-    //builder.Services
-    //    .AddAuth0WebAppAuthentication(options =>
-    //    {
-    //        options.Domain = domain;
-    //        options.ClientId = builder.Configuration["Auth0:ClientId"]!;
-    //        options.ClientSecret = builder.Configuration["Auth0:ClientSecret"]!;
-    //    })
-    //    .WithAccessToken(options =>
-    //    {
-    //        options.Audience = builder.Configuration["Auth0:Audience"];
-    //    });
+    var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
+    builder.Services
+        .AddAuth0WebAppAuthentication(options =>
+        {
+            options.Domain = domain;
+            options.ClientId = builder.Configuration["Auth0:ClientId"]!;
+            options.ClientSecret = builder.Configuration["Auth0:ClientSecret"]!;
+        })
+        .WithAccessToken(options =>
+        {
+            options.Audience = builder.Configuration["Auth0:Audience"];
+        });
 
     //ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
     var kong0TokenUrl = new Uri(config["Kong0:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
@@ -148,13 +151,20 @@ try
 
     builder.Services.AddHttpContextAccessor();
     //builder.Services.AddScoped<TokenHandler>();
+    
+    var corsSettings = config.GetSection("Cors").Get<CorsSettings>();
+    //var corsSettings = new CorsSettings { Origins = "*" };
+    
     builder.Services.AddCors(options =>
     {
         //TODO:  Make settings appropriate for production
         options.AddDefaultPolicy(policy =>
         {
-            //HACK:  Not appropriate for production.
-            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            policy
+                .WithOrigins(corsSettings?.Origins ?? "*")
+                .AllowCredentials()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
         });
     });
 

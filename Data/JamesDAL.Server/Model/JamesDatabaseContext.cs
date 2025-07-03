@@ -280,6 +280,10 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<ScalingDm> ScalingDms { get; set; }
 
+    public virtual DbSet<Security> Securities { get; set; }
+
+    public virtual DbSet<SecurityRole> SecurityRoles { get; set; }
+
     public virtual DbSet<Sfaa> Sfaas { get; set; }
 
     public virtual DbSet<SfaabondTypeDm> SfaabondTypeDms { get; set; }
@@ -359,6 +363,9 @@ public partial class JamesDatabaseContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        //Class to return data from dbo.GetSecurityRoleMembers
+        modelBuilder.Entity<SecurityRoleMember>().HasNoKey();
+
         modelBuilder.Entity<Account>(entity =>
         {
             entity.HasKey(e => e.AccountNum);
@@ -4471,6 +4478,23 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<SecurityRole>(entity =>
+        {
+            entity.HasKey(e => e.Role).IsClustered(false);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.ToTable("SecurityRole", tb => tb.HasTrigger("trgSecurityRoleModified"));
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Role).HasMaxLength(510);
+            entity.Property(e => e.Description);
+            entity.Property(e => e.Ord);
+
         });
 
         modelBuilder.Entity<Sfaa>(entity =>

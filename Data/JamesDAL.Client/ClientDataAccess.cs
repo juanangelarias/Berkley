@@ -535,6 +535,34 @@ namespace James.Data.Client
             throw new NotImplementedException("Imaging details can only be accessed serverside.");
         }
 
+        public async Task<IDataAccessResult<List<SecurityRole>>> GetAllSecurityRoles()
+        {
+            var result = await ExecuteGet<List<SecurityRole>>(
+                async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId)
+        {
+            var result = await ExecuteGet<List<SecurityRole>>(
+            async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRoleMember>>> GetSecurityRoleMembers(string role)
+        {
+            var result = await ExecuteGet<List<SecurityRoleMember>>(
+                async () => await jamesClient.GetSecurityRoleMembers.ExecuteAsync(role), "securityRoleMembers");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
+        {
+            var result = await ExecuteGet<List<Employee>>(
+                async () => await jamesClient.GetAllEmployees.ExecuteAsync());
+            return result;
+        }
+
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
         {
             return await ExecuteGet<List<PowerOfAttorneyDocumentNameDm>>(async () => await jamesClient.GetPOADocumentNames.ExecuteAsync(), "PoaDocumentNames");

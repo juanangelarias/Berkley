@@ -37,20 +37,6 @@ public static class DataCache
         try
         {
             _executingLoadItems.Add(loadItem.Key, 1);
-            if (_cachedResults.TryGetValue(loadItem.Key, out var cachedValue))
-            {
-                if (DateTime.Now <= cachedValue.CacheUntil)
-                {
-                    //Cache hit
-                    loadItem.CacheLoadTask(_cachedResults[loadItem.Key].DataObject);
-                    //Run AfterLoad as though data was just loaded
-                    loadItem.AfterLoad?.Invoke();
-                    goto ExpireCacheIfNeeded;//<Evil grin>A goto statement!</Evil grin>
-                }
-
-                //Cache is expired
-                _cachedResults.TryRemove(loadItem.Key, out _);
-            }
             if (null != loadItem.LocalStorageCacheLoadTask)
                 try
                 {
@@ -72,6 +58,20 @@ public static class DataCache
                     _logger?.LogException(ex, "Exception trying to load from LocalStorage", category: StandardLoggingCategories.BrowserFeatures, data: new Dictionary<string, string> { { "Key", loadItem.Key } });
                     throw;
                 }
+            if (_cachedResults.TryGetValue(loadItem.Key, out var cachedValue))
+            {
+                if (DateTime.Now <= cachedValue.CacheUntil)
+                {
+                    //Cache hit
+                    loadItem.CacheLoadTask(_cachedResults[loadItem.Key].DataObject);
+                    //Run AfterLoad as though data was just loaded
+                    loadItem.AfterLoad?.Invoke();
+                    goto ExpireCacheIfNeeded;//<Evil grin>A goto statement!</Evil grin>
+                }
+
+                //Cache is expired
+                _cachedResults.TryRemove(loadItem.Key, out _);
+            }
 
             var retries = JamesConstants.Default_Max_Retries;
             await loadItem.AsyncLoadTask();

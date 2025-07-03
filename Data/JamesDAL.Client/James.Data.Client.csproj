@@ -34,6 +34,7 @@
     <None Remove="GraphQL\Mutations\ObligeeMutations.graphql" />
     <None Remove="GraphQL\Queries\AgentQueries.graphql" />
     <None Remove="GraphQL\Queries\Obligee.graphql" />
+    <None Remove="GraphQL\Queries\Security.graphql" />
   </ItemGroup>
 
   <ItemGroup>

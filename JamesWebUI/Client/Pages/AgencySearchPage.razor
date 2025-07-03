@@ -1,13 +1,12 @@
 ﻿@page "/AgencySearch"
 
-@using System.Globalization
 @using James.Data.Client.GraphQL;
 @using James.Data.Client.GraphQL.Components;
 @using James.Shared
 @using StrawberryShake;
 @using SearchOptions = James.Shared.Model.SearchOptions
 
-@inherits JamesWebUI.Shared.JamesLayoutComponentBase
+@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
@@ -34,7 +33,7 @@
                 <RadzenTextBox Placeholder="Agency/Producer No." Name="txtSearch" Style="width: 100%" />
             </RadzenColumn>
             <RadzenColumn Size="4">
-                <RadzenTextBox Placeholder="Name" Style="width: 100%" @ref="@txtAgencyNameSearch" Change="@OnAgencySearchChange" />
+                <RadzenTextBox Placeholder="Name" Style="width: 100%" @ref="@_txtAgencyNameSearch" Change="@OnAgencySearchChange" />
                 @* <RadzenAutoComplete @ref="@txtAgencyNameSearch" Placeholder="Name" Style="width: 100%;" ValueChanged="@OnAgencySearchChange" FilterDelay="200" /> *@
             </RadzenColumn>
             <RadzenColumn Style="vertical-align: middle">
@@ -46,10 +45,10 @@
         </RadzenRow>
         <RadzenRow RowGap="2" JustifyContent="JustifyContent.Center">
             @{
-                if (!String.IsNullOrWhiteSpace(txtAgencyNameSearch?.Value))
+                if (!String.IsNullOrWhiteSpace(_txtAgencyNameSearch?.Value))
                 {
                     <RadzenColumn Size="10">
-                        <UseSearchAgencies SearchString="@AgencySearchString" Context="agencyResults" Strategy="ExecutionStrategy.CacheFirst">
+                        <UseSearchAgencies SearchString="@_agencySearchString" Context="agencyResults" Strategy="ExecutionStrategy.CacheFirst">
                             <ChildContent>
                                 <RadzenDataGrid style="border-radius: 20px;" AllowSorting="true" Density="Density.Compact" @ref="AgencyResultsGrid"
                                                 AllowVirtualization="false" AllowPaging="true" PageSize="10" PagerPosition="PagerPosition.Bottom"
@@ -113,17 +112,29 @@
 
 
 @code {
-    string[] dropDownValues = { "Test1", "Test2", "Test3" };
+    string[] _dropDownValues = { "Test1", "Test2", "Test3" };
 
     //DropDown Data
-    private IReadOnlyList<Agency> agencyResults = null!;
-    private RadzenTextBox txtAgencyNameSearch = null!;
-    private string AgencySearchString = "";
-    private SearchOptions _searchOptions = new SearchOptions{Agency=true};
-    public ISearchAgencies_SearchAgencies selectedAgency = null!;
-    public List<string>? BranchFilter = null;
-    public List<string>? StatusFilter = null;
+    private IReadOnlyList<Agency> _agencyResults = null!;
+    private RadzenTextBox _txtAgencyNameSearch = null!;
+    private string _agencySearchString = null!;
+    private readonly SearchOptions _searchOptions = new() {Agency=true};
+    public ISearchAgencies_SearchAgencies SelectedAgency = null!;
+    public List<string>? BranchFilter;
+    public List<string>? StatusFilter;
     public RadzenDataGrid<ISearchAgencies_SearchAgencies> AgencyResultsGrid = null!;
+    
+    private IDataAccessResult<List<Agency>> _agenciesResult = null!;
+
+    private LoadItem AgenciesLoad => AddEventNotify(new LoadItem
+    {
+        Key = "SearchAgencies",
+        AsyncLoadTask = async () => _agenciesResult = await DataAccess.SearchAgencies(_txtAgencyNameSearch.Value, _searchOptions.ActiveOnly),
+        CacheLoadTask = cache => _agenciesResult = new DataAccessResult<List<Agency>> { Data = (List<Agency>)cache! },
+        ResultVariable = () => _agenciesResult,
+        AfterLoad = () => { _agencyResults = _agenciesResult.Data!; },
+        CacheDuration = TimeSpan.FromSeconds(1)
+    }, "search results");
 
     protected override async Task OnInitializedAsync()
     {
@@ -131,17 +142,12 @@
         _logging.LogDebug("Initializing Agency Search Page", "AgencySearch.razor");//, data: new Dictionary<string, string>({ { "user", .User.Identity.Name } }));
         JamesThemeService.Initialize(NavigationManager);
     }
-    async Task SearchAgencies()
+    
+    private async Task SearchAgencies()
     {
-        var results = await DataAccess.SearchAgencies(txtAgencyNameSearch.Value, _searchOptions.ActiveOnly);
-        if (results.Success)
-            agencyResults = results.Data!;
-        else
-        {
-            //TODO:Add error details
-            _logging.LogError("Error searching agencies in AgencySearch");
-        }
+        await DataCache.GetCacheOrLoadDataAsync(AgenciesLoad);
     }
+    
     // async Task SearchAgencies(string searchString)
     // {
     //     var results = await DataAccess.SearchAgencies(searchString);
@@ -153,20 +159,24 @@
     //         _logging.LogError("Error searching agencies in AgencySearch");
     //     }
     // }
-    async Task OpenAgency(DataGridRowMouseEventArgs<ISearchAgencies_SearchAgencies> args)
+    
+    private async Task OpenAgency(DataGridRowMouseEventArgs<ISearchAgencies_SearchAgencies> args)
     {
         NavigationManager.NavigateTo("Agency/" + args.Data.AgencyNumber, true);
     }
-    async Task OnAgencySearchChange(dynamic args)
+    
+    private async Task OnAgencySearchChange(dynamic args)
     {
-        AgencySearchString = args;
+        _agencySearchString = args;
         // await SearchAgencies(AgencySearchString);
     }
-    async Task BranchFilterChange()
+    
+    private async Task BranchFilterChange()
     {
         await AgencyResultsGrid.Reload();
     }
-    async Task StatusFilterChange()
+    
+    private async Task StatusFilterChange()
     {
         await AgencyResultsGrid.Reload();
     }

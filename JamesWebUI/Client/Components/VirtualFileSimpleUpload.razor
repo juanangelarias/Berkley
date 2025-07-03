@@ -3,7 +3,7 @@
 @using System.Text.RegularExpressions
 @using James.Shared
 @using James.Shared.Imaging
-@inherits JamesWebUI.Shared.JamesLayoutComponentBase
+@inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
 @* @inject TooltipService TooltipService *@
 
@@ -286,7 +286,7 @@
                 {
                     LoggingService.LogException(ex, "UploadAction after upload failed.",
                         category: StandardLoggingCategories.Imaging);
-                    NotifySaveError([ex.Message], "document association");
+                    NotifySaveError(["Upload action failed"], "document association", false);  // Don't log the error
                 }
             }
         }

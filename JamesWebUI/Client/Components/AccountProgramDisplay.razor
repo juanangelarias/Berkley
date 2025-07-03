@@ -1,5 +1,5 @@
 ﻿@using James.Shared
-@inherits JamesWebUI.Shared.JamesLayoutComponentBase
+@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
@@ -97,13 +97,32 @@
 
 @code {
     [Parameter] public string AccountNumber { get; set; } = "";
-    private List<AccountProgram> ProgramsToDisplay { get; set; } = new List<AccountProgram>();
+    private List<AccountProgram> ProgramsToDisplay { get; set; } = [];
     private RadzenDataGrid<AccountProgram> programGrid { get; set; } = null!;
 
-    private List<AccountProgram> programsToInsert = new List<AccountProgram>();
-    private List<AccountProgram> programsToUpdate = new List<AccountProgram>();
+    private List<AccountProgram> programsToInsert = [];
+    private List<AccountProgram> programsToUpdate;
 
     private bool isLoading = false;
+    
+    private IDataAccessResult<List<AccountProgram>> _accountProgramResult = null!;
+
+    private LoadItem AccountProgramLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"AccountProgramDisplay{AccountNumber}",
+            AsyncLoadTask = async () => _accountProgramResult = await DataAccess.GetAccountProgramHistory(AccountNumber),
+            CacheLoadTask = cache => _accountProgramResult = new DataAccessResult<List<AccountProgram>>
+            {
+                Data = (List<AccountProgram>)cache!
+            },
+            ResultVariable = () => _accountProgramResult,
+            AfterLoad = () => { ProgramsToDisplay = _accountProgramResult.Data!; }
+        }, "account program");
+    
+    public AccountProgramDisplay()
+    {
+        programsToUpdate = new List<AccountProgram>();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -116,20 +135,12 @@
 
     private async Task LoadPrograms()
     {
-        if (!string.IsNullOrWhiteSpace(AccountNumber))
-        {
-            var result = await DataAccess.GetAccountProgramHistory(AccountNumber);
+        if (string.IsNullOrWhiteSpace(AccountNumber))
+            return;
 
-            if (result.Errors.Any())
-            {
-                //TODO: Handle Errors
-            }
-            else
-            {
-                ProgramsToDisplay = result.Data!;
-            }
-        }
+        await DataCache.GetCacheOrLoadDataAsync(AccountProgramLoad);
     }
+
     protected async Task ShowLoading()
     {
         isLoading = true;
@@ -138,31 +149,35 @@
 
         isLoading = false;
     }
-    void Reset()
+    
+    private void Reset()
     {
         programsToInsert.Clear();
         programsToUpdate.Clear();
     }
 
-    void Reset(AccountProgram program)
+    private void Reset(AccountProgram program)
     {
         programsToInsert.Remove(program);
         programsToUpdate.Remove(program);
     }
-    async Task EditProgramRow(AccountProgram program)
+    
+    private async Task EditProgramRow(AccountProgram program)
     {
         await ShowLoading();
         Reset();
         programsToUpdate.Add(program);
         await programGrid.EditRow(program);
     }
-    async Task SaveProgramRow(AccountProgram program)
+    
+    private async Task SaveProgramRow(AccountProgram program)
     {
         await ShowLoading();
         await programGrid.UpdateRow(program);
         await LoadPrograms();
     }
-    async Task UpdateProgramRow(AccountProgram program)
+    
+    private async Task UpdateProgramRow(AccountProgram program)
     {
         await ShowLoading();
         Reset(program);
@@ -172,32 +187,23 @@
 
         if (result.Errors.Any())
         {
-            LoggingService.LogError("Error saving account program changes", result.Errors.ToString() ?? "");
-            NotificationService.Notify(new NotificationMessage
-                {
-                    Detail = "Error saving account program.",
-                    Duration = 4000,
-                    Severity = NotificationSeverity.Error
-                });
+            NotifySaveError(result.Errors, "account program");
         }
         else
         {
-            NotificationService.Notify(new NotificationMessage
-                {
-                    Detail = "Changes saved successfully.",
-                    Duration = 4000,
-                    Severity = NotificationSeverity.Success
-                });
+            NotifySuccessfulSave("account program");
         }
     }
-    async Task CancelProgramEdit(AccountProgram program)
+    
+    private async Task CancelProgramEdit(AccountProgram program)
     {
         await ShowLoading();
         Reset(program);
         programGrid.CancelEditRow(program);
         await LoadPrograms();
     }
-    async Task SaveLicenseRow(AccountProgram program)
+    
+    private async Task SaveLicenseRow(AccountProgram program)
     {
         //This is where we handle the status change of the grid (edit mode or not).
         //The actual Update/Insert is done in those methods.

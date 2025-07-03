@@ -1,8 +1,8 @@
 ﻿@page "/Account/{AccountNumber?}"
-@using James.Shared.Imaging
-@using Microsoft.AspNetCore.WebUtilities;
 
-@inherits JamesWebUI.Shared.JamesLayoutComponentBase
+@using James.Shared.Imaging
+
+@inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
 
 @attribute [Authorize]
@@ -17,7 +17,7 @@
         <ChildContent>
             <RadzenRow JustifyContent="JustifyContent.End">
                 <RadzenColumn Size="4">
-                    <RadzenText TextStyle="TextStyle.DisplayH5" Text="@AccountToDisplay?.IdNavigation?.FullName" />
+                    <RadzenText TextStyle="TextStyle.DisplayH5" Text="@AccountToDisplay.IdNavigation.FullName" />
                 </RadzenColumn>
                 <RadzenColumn Size="4">
                     <AccountSearch />
@@ -38,24 +38,24 @@
                                     <RadzenRow>
                                         <RadzenColumn Size="3">
                                             <RadzenFormField Text="Agency No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox Value="@AccountToDisplay?.AccountNum" Disabled="true" Style="color: black;" />
+                                                <RadzenTextBox Value="@AccountToDisplay.AccountNum" Disabled="true" Style="color: black;" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                         <RadzenColumn>
                                             <RadzenFormField Text="Name" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox Value="@AccountToDisplay?.IdNavigation?.FullName" Disabled="true" Style="color: black;" />
+                                                <RadzenTextBox Value="@AccountToDisplay.IdNavigation.FullName" Disabled="true" Style="color: black;" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow>
                                         <RadzenColumn Size="3">
                                             <RadzenFormField Text="Parent No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox Value="@AccountToDisplay?.IdNavigation?.ParentNavigation?.AccountIdNavigation?.AccountNum" Disabled="true" Style="color: black;" />
+                                                <RadzenTextBox Value="@AccountToDisplay.IdNavigation.ParentNavigation?.AccountIdNavigation?.AccountNum" Disabled="true" Style="color: black;" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                         <RadzenColumn>
                                             <RadzenFormField Text="Parent" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox Value="@AccountToDisplay?.IdNavigation?.ParentNavigation?.FullName" Disabled="true" Style="color: black;" />
+                                                <RadzenTextBox Value="@AccountToDisplay.IdNavigation.ParentNavigation?.FullName" Disabled="true" Style="color: black;" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
@@ -77,19 +77,19 @@
                                     <RadzenRow>
                                         <RadzenColumn Size="6">
                                             <RadzenFormField Text="UW" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox Value="@AccountToDisplay?.Underwriter?.IdNavigation?.FullName" />
+                                                <RadzenTextBox Value="@AccountToDisplay.Underwriter?.IdNavigation.FullName" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                         <RadzenColumn Size="6">
                                             <RadzenFormField Text="Branch" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
-                                                <RadzenTextBox Value="@AccountToDisplay?.Branch" />
+                                                <RadzenTextBox Value="@AccountToDisplay.Branch" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow>
                                         <RadzenColumn Size="6">
                                             <RadzenFormField Text="Division" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%;">
-                                                <RadzenTextBox Value="@AccountToDisplay?.Division" />
+                                                <RadzenTextBox Value="@AccountToDisplay.Division" />
                                             </RadzenFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
@@ -100,7 +100,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <RadzenFieldset Text="Contact Info">
-                        <PositionSavingTabs @ref="@contactTabs" @bind-SelectedIndex="@contactTabs.NewSelectedIndex" TabControlName="ContactTabs">
+                        <PositionSavingTabs @ref="@ContactTabs" @bind-SelectedIndex="@ContactTabs.NewSelectedIndex" TabControlName="ContactTabs">
                             <Tabs>
                                 <PositionSavingTabsItem Text="Addresses" TabName="accountAddresses">
                                     <LegalEntityAddressManager LegalEntityId="@AccountToDisplay.Id" />
@@ -126,7 +126,7 @@
                                     <AccountGeneralInformation AccountToDisplay="@AccountToDisplay" />
                                 </RadzenTabsItem>
                                 <RadzenTabsItem Text="Account Program">
-                                    <AccountProgramDisplay AccountNumber="@AccountToDisplay?.AccountNum" />
+                                    <AccountProgramDisplay AccountNumber="@AccountToDisplay.AccountNum" />
                                 </RadzenTabsItem>
                                 <RadzenTabsItem Text="Account References">
 
@@ -170,7 +170,7 @@
 
                     </RadzenTabsItem>
                     <RadzenTabsItem Text="Virtual File">
-                        <ImagingFull ImagingId="@AccountToDisplay?.AccountNum" DivisionCode="@(AccountToDisplay?.Division)" DocumentCategory="ImagingDocumentCategory.Account" />
+                        <ImagingFull ImagingId="@AccountToDisplay.AccountNum" DivisionCode="@(AccountToDisplay.Division)" DocumentCategory="ImagingDocumentCategory.Account" />
                     </RadzenTabsItem>
                 </Tabs>
             </RadzenTabs>
@@ -182,13 +182,35 @@
 @code {
     [Parameter] public string? AccountNumber { get; set; }
 
-    private Account AccountToDisplay { get; set; } = new Account()
-            {
-                IdNavigation = new LegalEntity()
-            };
-    private InforceAccountLOA inForceLOAs { get; set; } = new InforceAccountLOA();
+    private Account AccountToDisplay { get; set; } = new() { IdNavigation = new LegalEntity() };
+    private InforceAccountLOA InForceLOAs { get; set; } = new();
     private bool ShowTaxId { get; set; }
-    private PositionSavingTabs contactTabs { get; set; } = new PositionSavingTabs();
+    private PositionSavingTabs ContactTabs { get; set; } = new();
+    
+    private IDataAccessResult<Account> _accountResult = null!;
+    private IDataAccessResult<InforceAccountLOA> _inforceAccountLOAResult = null!;
+
+    private LoadItem AccountLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"Account{AccountNumber}",
+            AsyncLoadTask = async () => _accountResult = await DataAccess.GetAccountByNumber(AccountNumber),
+            CacheLoadTask = cache => _accountResult = new DataAccessResult<Account> { Data = (Account)cache! },
+            ResultVariable = () => _accountResult,
+            AfterLoad = () => { AccountToDisplay = _accountResult.Data!; }
+        }, "account");
+    
+    private LoadItem InforceAccountLOALoad => AddEventNotify(new LoadItem
+        {
+            Key = $"InforceAccountLOA{AccountNumber}",
+            AsyncLoadTask = async () => _inforceAccountLOAResult = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber!),
+            CacheLoadTask = cache => _inforceAccountLOAResult = new DataAccessResult<InforceAccountLOA> { Data = (InforceAccountLOA)cache! },
+            ResultVariable = () => _inforceAccountLOAResult,
+            AfterLoad =() =>
+            {
+                InForceLOAs = _inforceAccountLOAResult.Data!;
+            }
+        }, "inforce account LOA");
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -200,41 +222,25 @@
 
     private async Task LoadAccount()
     {
-        if (!string.IsNullOrWhiteSpace(AccountNumber))
-        {
-            var result = await DataAccess.GetAccountByNumber(AccountNumber);
-            if (result.Errors.Any() || result.Data == null)
-            {
-                LoggingService.LogError("Unable to retrieve account.", string.Join(", ", result.Errors));
-                NotifyLoadError(result.Errors, "account");
-            }
-            else
-            {
-                AccountToDisplay = result.Data;
-                //StateHasChanged();
-            }
-        }
+        if(string.IsNullOrWhiteSpace(AccountNumber))
+            return;
+
+        await DataCache.GetCacheOrLoadDataAsync(AccountLoad);
     }
+    
     private async Task LoadInforceLOAs()
     {
-        if (!string.IsNullOrWhiteSpace(AccountNumber))
-        {
-            var result = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber);
-            if (result.Errors.Any())
-            {
-                LoggingService.LogError("Unable to retrieve Account Inforce LOAs.", result.Errors.ToString() ?? "");
-            }
-            else
-            {
-                inForceLOAs = result.Data!;
-            }
-        }
+        if(string.IsNullOrWhiteSpace(AccountNumber))
+            return;
+
+        await DataCache.GetCacheOrLoadDataAsync(InforceAccountLOALoad);
     }
-    void BusyDialog()
+    
+    private void BusyDialog()
     {
-        DialogService.Open("", ds =>
-    @<RadzenStack AlignItems="AlignItems.Center" Gap="2rem" class="rz-p-12">
-        <RadzenText TextStyle="TextStyle.H6">Loading, please wait...</RadzenText>
-    </RadzenStack>, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto", CloseDialogOnEsc = false });
+        DialogService.Open("", _ =>
+            @<RadzenStack AlignItems="AlignItems.Center" Gap="2rem" class="rz-p-12">
+                <RadzenText TextStyle="TextStyle.H6">Loading, please wait...</RadzenText>
+            </RadzenStack>, new DialogOptions() { ShowTitle = false, Style = "min-height:auto;min-width:auto;width:auto", CloseDialogOnEsc = false });
     }
 }

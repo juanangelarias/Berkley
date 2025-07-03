@@ -1,0 +1,119 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject ILocalStorageService LocalStorageService
+@inject TooltipService TooltipService
+@attribute [Authorize]
+
+<Theme />
+<PageTitle>Admin - Add Role Members</PageTitle>
+<RenderModeBackground></RenderModeBackground>
+
+<RadzenText TextStyle="TextStyle.DisplayH3">Add Role Member</RadzenText>
+<RadzenPanel Style="border-radius: 20px;" class="rz-shadow-7">
+    <RadzenTabs>
+        <Tabs>
+            <RadzenTabsItem Text="Employees">
+                <RadzenDataGrid SelectionMode="DataGridSelectionMode.Multiple" 
+                                Data="@_employees" AllowRowSelectOnRowClick="true"
+                                AllowAlternatingRows="true">
+                    <Columns>
+                        <RadzenDataGridColumn Title="Employee" Property="@nameof(Employee.FullName)" />
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Roles">
+                <RadzenDataGrid SelectionMode="DataGridSelectionMode.Multiple" 
+                                Data="@_securityRoles" AllowRowSelectOnRowClick="true"
+                                AllowAlternatingRows="true">
+                    <Columns>
+                        <RadzenDataGridColumn Title="Role" Property="@nameof(SecurityRole.Role)" />
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+</RadzenPanel>
+<RadzenRow>
+    <RadzenColumn Size="5"><RadzenButton Text="OK" MouseEnter="@(er => ShowOkToolTip(er))" /></RadzenColumn>
+    <RadzenColumn Size="4"><RadzenButton Text="Add" /></RadzenColumn>
+    <RadzenColumn Size="5"><RadzenButton Text="Cancel" /></RadzenColumn>
+</RadzenRow>
+@code {
+    [Parameter, EditorRequired] public required string Role { get; set; }
+    private List<Employee> _employees = new();
+    private IDataAccessResult<List<Employee>> _loadEmployeesResult = null!;
+    private LoadItem EmployeesLoadItem => AddEventNotify(
+        new()
+        {
+            Key = "Emp",
+            //TODO: Add actual data called when created
+            AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetAllEmployees(),
+            CacheLoadTask = cache => _loadEmployeesResult = new DataAccessResult<List<Employee>> { Data = (List<Employee>)cache! },
+            ResultVariable = () => _loadEmployeesResult,
+            AfterLoad = () =>
+            {
+                _employees = _loadEmployeesResult.Data!;
+                //Save to local storage asynchronously and don't wait for the save to finish
+                Task.Factory.StartNew(data =>
+                    LocalStorageService.SetItemAsyncWithExpiry("Employees", TimeSpan.FromHours(1), data), _loadEmployeesResult.Data);
+            },
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<Employee>>("Emp")
+        }, "security roles");
+
+
+    List<SecurityRole> _securityRoles = null!;
+    private IDataAccessResult<List<SecurityRole>> _loadSecurityRolesResult = null!;
+    private LoadItem RolesLoadItem => AddEventNotify(
+        new()
+        {
+            Key = "SecRoles",
+            AsyncLoadTask = async () => _loadSecurityRolesResult = await DataAccess.GetAllSecurityRoles(),
+            CacheLoadTask = cache => _loadSecurityRolesResult = new DataAccessResult<List<SecurityRole>> { Data = (List<SecurityRole>)cache! },
+            ResultVariable = () => _loadSecurityRolesResult,
+            AfterLoad = () =>
+            {
+                _securityRoles = _loadSecurityRolesResult.Data!;
+                //Save to local storage asynchronously and don't wait for the save to finish
+                Task.Factory.StartNew(data =>
+                    LocalStorageService.SetItemAsyncWithExpiry("SecRoles", TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
+            },
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRole>>("SecRoles")
+        }, "security roles");
+
+    List<SecurityRoleMember> _securityRoleMembers = null!;
+    private IDataAccessResult<List<SecurityRoleMember>> _loadMembersResult = null!;
+    private LoadItem MembersLoadItem(string role) => AddEventNotify(
+        new()
+        {
+            Key = $"RlMbr{role}",
+            //TODO:Add actual data called when created
+            AsyncLoadTask = async () => _loadMembersResult = await DataAccess.GetSecurityRoleMembers(role),
+            //await Task.FromResult<IDataAccessResult<List<SecurityRoleMember>>>(new DataAccessResult<List<SecurityRoleMember>>()),//DataAccess.GetMyData(),
+            CacheLoadTask = cache => _loadMembersResult = new DataAccessResult<List<SecurityRoleMember>> { Data = (List<SecurityRoleMember>)cache! },
+            CacheDuration = TimeSpan.FromMinutes(2),
+            ResultVariable = () => _loadMembersResult,
+            AfterLoad = () =>
+            {
+                _securityRoleMembers = _loadMembersResult.Data!;
+                //Save to local storage asynchronously and don't wait for the save to finish
+                Task.Factory.StartNew(data =>
+                    LocalStorageService.SetItemAsyncWithExpiry($"RlMbr{role}", TimeSpan.FromMinutes(2), data), _loadMembersResult.Data);
+            },
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRoleMember>>($"RlMbr{role}")
+        }, "role members");
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await DataCache.ParallelGetCacheOrDataAsync([MembersLoadItem(Role), EmployeesLoadItem, RolesLoadItem]);
+    }
+
+    private TooltipOptions _tooltipOptions = new TooltipOptions
+    {
+        Position = TooltipPosition.Top,
+        Style = "max-width: 300px; min-width: 200px;",
+    };
+    private void ShowOkToolTip(ElementReference eRef) => TooltipService.Open(eRef, "Add users and close", _tooltipOptions);
+
+}

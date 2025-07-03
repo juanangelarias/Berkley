@@ -66,8 +66,6 @@ namespace James.Data.Server.GraphQL.Mutations
             //TODO: Insert the new agency
             return new Agency();
         }
-
-        [Authorize]
         public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee, 
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)

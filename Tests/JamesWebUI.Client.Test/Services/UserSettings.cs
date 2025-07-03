@@ -13,7 +13,7 @@ using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using James.Test.Shared;
 using JamesWebUI.Client.Services;
-using JamesWebUI.Shared.Services;
+using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;

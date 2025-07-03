@@ -1,0 +1,24 @@
+﻿query GetAllSecurityRoles {
+  allSecurityRoles {
+    id
+    role
+    description
+    ord
+  }
+}
+
+query GetSecurityRoleMembers($role: String!) {
+  securityRoleMembers(role: $role) {
+    id
+    name
+    isRole
+  }
+}
+
+query GetAllEmployees {
+  allEmployees {
+    fullName
+    title
+    id
+  }
+}

@@ -1,13 +1,10 @@
 ﻿@page "/Obligee/{ObligeeNumber?}"
 
-@using System.Diagnostics
-@using James.Shared
-
-@inherits JamesWebUI.Shared.JamesLayoutComponentBase
+@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
+@inject IDataAccess DataAccess
 
-@inject IDataAccess _dataAccess
 @attribute [Authorize]
 
 <RenderModeBackground></RenderModeBackground>
@@ -90,17 +87,27 @@
     </RadzenPanel>
 </RadzenStack>
 
-
-
-
 @code {
     [Parameter] public string ObligeeNumber { get; set; } = "";
     private bool PossibleDuplicates { get; set; } = false;
-
-    public James.Shared.Model.Obligee ObligeeToDisplay { get; set; } = new Obligee()
+    
+    private IDataAccessResult<Obligee?> _obligeeResult = null!;
+    private LoadItem ObligeeLoad => AddEventNotify(new LoadItem
         {
-            IdNavigation = new LegalEntity()
-        };
+            Key = $"Obligee{ObligeeNumber}",
+            AsyncLoadTask = async () =>_obligeeResult = await DataAccess.GetObligeeByObligeeNumber(ObligeeNumber),
+            CacheLoadTask = cache => _obligeeResult = new DataAccessResult<Obligee>{Data = (Obligee?)cache}!,
+            ResultVariable = () => _obligeeResult,
+            AfterLoad = async void () =>
+            {
+                ObligeeToDisplay = _obligeeResult.Data!;
+            }
+        }, "obligee");
+
+    public Obligee ObligeeToDisplay { get; set; } = new()
+    {
+        IdNavigation = new LegalEntity()
+    };
 
 
     protected override async Task OnParametersSetAsync()
@@ -112,20 +119,12 @@
 
     private async Task LoadObligee()
     {
-        if (!String.IsNullOrWhiteSpace(ObligeeNumber))
-        {
-            var result = await _dataAccess.GetObligeeByObligeeNumber(ObligeeNumber);
+        if (string.IsNullOrWhiteSpace(ObligeeNumber))
+            return;
 
-            if (result.Errors.Any() && result.Data != null)
-            {
-                //TODO: Log errors
-            }
-            else
-            {
-                ObligeeToDisplay = result.Data!;
-            }
-        }
+        await DataCache.GetCacheOrLoadDataAsync(ObligeeLoad);
     }
+    
     private async Task LoadPossibleDuplicates()
     {
 

@@ -1,22 +1,15 @@
-﻿@using System.Globalization
-@using James.Shared;
-@using ClientBusinessLogic
-
-
-@inherits JamesWebUI.Shared.JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
-<RadzenTabs @ref="@phoneTabs" TabPosition="TabPosition.Left" @bind-SelectedIndex="@selectedTab" >
+<RadzenTabs TabPosition="TabPosition.Left" @bind-SelectedIndex="@SelectedTab" >
     <Tabs>
         @{
             if (AllPhoneNumbers.Any())
             {
                 foreach (var a in AllPhoneNumbers)
                 {
-                    <RadzenTabsItem Text="@(a.LegalEntityPhone?.Type)">
+                    <RadzenTabsItem Text="@(a.LegalEntityPhone!.Type)">
                         <PhoneDisplay PhoneId="a.Id" StateChanged="@(() => LoadPhoneNumbers())" />
                     </RadzenTabsItem>
                     if (a == AllPhoneNumbers.Last())
@@ -40,11 +33,23 @@
 
 @code {
     [Parameter] public Guid LegalEntityId { get; set; }
-    private List<PhoneNumber> AllPhoneNumbers {get;set;} = new List<PhoneNumber>();
 
-    private RadzenTabs phoneTabs { get; set; } = null!;
-    private int selectedTab { get; set; } = 0;
+    private List<PhoneNumber> AllPhoneNumbers {get;set;} = [];
+    private int SelectedTab { get; set; }
+    
+    private IDataAccessResult<List<PhoneNumber>> _phoneNumbersResult = null!;
 
+    private LoadItem PhoneNumbersLoad => AddEventNotify(new LoadItem
+        {
+            Key = $"PhoneNumbers{LegalEntityId}",
+            AsyncLoadTask = async () => _phoneNumbersResult = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId),
+            CacheLoadTask = cache => _phoneNumbersResult = new DataAccessResult<List<PhoneNumber>>
+            {
+                Data = (List<PhoneNumber>)cache!
+            },
+            ResultVariable = () => _phoneNumbersResult,
+            AfterLoad = () => { AllPhoneNumbers = _phoneNumbersResult.Data!; }
+        }, "phone numbers");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -55,51 +60,16 @@
 
     private async Task LoadPhoneNumbers()
     {
-        var result = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId);
-
-        if (result.Errors.Any())
-        {
-            LoggingService.LogError("GetAllLegalEntityPhoneNumbers returned error(s)", string.Join("\r\n", result.Errors), "GraphQL");
-            NotificationService.Notify(new NotificationMessage()
-                    {
-                        Severity = NotificationSeverity.Error,
-                        Detail = "Error loading Phone Numbers.",
-                        Duration = 4000
-                    });
-        }
-        else
-        {
-            AllPhoneNumbers = result.Data!;
-        }
+        await DataCache.GetCacheOrLoadDataAsync(PhoneNumbersLoad);
     }
 
     private async Task PhoneNumberCreated(Guid phoneToSelect)
     {
-        var result = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId);
-
-        if (result.Errors.Any())
-        {
-            LoggingService.LogError("GetAllLegalEntityPhoneNumbers return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
-            NotificationService.Notify(new NotificationMessage()
-                {
-                    Severity = NotificationSeverity.Error,
-                    Detail = "Error creating new phone number.",
-                    Duration = 4000
-                });
-        }
-        else
-        {
-            AllPhoneNumbers = result.Data!;
-
-            var selected = AllPhoneNumbers.FirstOrDefault(a => a.Id == phoneToSelect);
-            if (null != selected)
-            {
-                selectedTab = AllPhoneNumbers.IndexOf(selected);
-            }
-            else
-            {
-                selectedTab = 0;
-            }
-        }
+        await LoadPhoneNumbers();
+        
+        var selected = AllPhoneNumbers.FirstOrDefault(a => a.Id == phoneToSelect);
+        SelectedTab = null != selected 
+            ? AllPhoneNumbers.IndexOf(selected) 
+            : 0;
     }
 }

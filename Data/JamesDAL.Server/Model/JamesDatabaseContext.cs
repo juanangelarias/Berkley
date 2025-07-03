@@ -1083,7 +1083,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("AgencyLicense");
+            entity.ToTable("AgencyLicense", tb => tb.HasTrigger("trgAgencyLicenseModified"));
 
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Created)

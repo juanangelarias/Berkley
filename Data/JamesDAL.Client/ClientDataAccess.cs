@@ -828,7 +828,7 @@ namespace James.Data.Client
                     LicenseNumber = licenseNumber,
                     State = state,
                     IsActive = isActive
-                }), "SetAgencyLicense.AgencyLicense");
+                }), "SetAgencyLicense");
         }
 
         private static string ErrorToString(IClientError error)

@@ -10,7 +10,8 @@ namespace JamesWebUI.Client.Services
 {
     public partial class AddressPhoneFormatService(
         IDataAccess dataAccess,
-        ILocalStorageService localStorageService)
+        ILocalStorageService localStorageService,
+        IDataCache dataCache)
     {
 
         private IDataAccess DataAccess { get; init; } = dataAccess;
@@ -24,7 +25,7 @@ namespace JamesWebUI.Client.Services
         {
             {
                 if (_countries == null!)
-                    await (_countryLoadTask ??= DataCache.GetCacheOrLoadDataAsync(CountriesLoadItem()));
+                    await (_countryLoadTask ??= dataCache.GetCacheOrLoadDataAsync(CountriesLoadItem()));
                 return _countries!;
             }
         }

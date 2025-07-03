@@ -12,6 +12,8 @@ using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using JamesWebUI.Client.Components;
 using JamesWebUI.Client.Services;
+using JamesWebUI.Server.Helpers;
+using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -21,13 +23,9 @@ using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
-using JamesWebUI.Server.SharedServices;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
-using JamesWebUI.Client.Services;
-using System.Text.Json.Serialization;
-using JamesWebUI.Server.Helpers;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
 var config = new ConfigurationBuilder()
@@ -39,9 +37,6 @@ try
 {
     // Add services to the container.
     var builder = WebApplication.CreateBuilder(args);
-
-    //builder.Services.AddCascadingAuthenticationState();
-    //builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
     ConfirmAppSettingsEntry("Auth0:Authority");
     ConfirmAppSettingsEntry("Auth0:ClientId");
@@ -62,7 +57,6 @@ try
             options.Audience = builder.Configuration["Auth0:Audience"];
         });
 
-    //ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
     var kong0TokenUrl = new Uri(config["Kong0:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
     var tokenClientBuilder = builder.Services.AddHttpClient("P8FileNetTokens").ConfigureHttpClient(
         client =>
@@ -121,6 +115,7 @@ try
     builder.Services.AddScoped<ImagingKong0Helper>();
     builder.Services.AddScoped<ServerImagingAccess>();
     builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
+    builder.Services.AddScoped<IDataCache, DataCache>();
     builder.Services.AddScoped<UserSettingService>();
     if (OperatingSystem.IsWindows())
     {
@@ -218,7 +213,6 @@ try
 
     app.UseWebSockets();
 
-    //var serverSideLogger = (ILoggingService)app.Services.GetService(typeof(ILoggingService))!;
     app.MapGet(JamesConstants.LOG_IN_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
         //Note: Our Auth0 uses the ReturnUrl query value, even though the standard
@@ -264,7 +258,6 @@ try
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode()
         .AddInteractiveWebAssemblyRenderMode();
-    //.AddAdditionalAssemblies(typeof(App).Assembly)
 
     app.MapGraphQL();
 

@@ -324,7 +324,10 @@ namespace James.Data.Server
         {
             try
             {
-                return new SaveDataResult();
+                var result = await ExecuteSave(async () =>
+                    await agencyMutation.DeleteAgencyPOA(poaId, eventSender, contextFactory));
+                
+                return result;
             }
             catch (AggregateException ae)
             {

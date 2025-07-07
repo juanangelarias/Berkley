@@ -465,8 +465,14 @@
             true);
     }
 
-    private void InsurerFilterChanged(object args)
+    private void InsurerFilterChanged(object? args)
     {
+        if (args == null)
+        {
+            _insurerFilter = null;
+            return;
+        }
+
         var list = (EnumerableQuery<Insurer>)args;
         
         _insurerFilter = list.Select(s=>s).ToList();

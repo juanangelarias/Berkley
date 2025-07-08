@@ -4480,6 +4480,21 @@ public partial class JamesDatabaseContext : DbContext
                 .HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<Security>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.ToTable("Security", tb => tb.HasTrigger("trgSecurityModified"));
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.PrincipalId);
+            entity.Property(e => e.Role).HasMaxLength(200);
+        });
+
         modelBuilder.Entity<SecurityRole>(entity =>
         {
             entity.HasKey(e => e.Role).IsClustered(false);
@@ -4491,7 +4506,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Role).HasMaxLength(510);
+            entity.Property(e => e.Role).HasMaxLength(200);
             entity.Property(e => e.Description);
             entity.Property(e => e.Ord);
 

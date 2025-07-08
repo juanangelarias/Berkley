@@ -15,13 +15,14 @@
 <RadzenPanel Style="border-radius: 20px;" class="rz-shadow-7">
     <RadzenText TextStyle="TextStyle.DisplayH3">Security Roles</RadzenText>
     <RadzenRow>
-        <RadzenColumn><RadzenButton Text="Add role" Icon="add" /></RadzenColumn>
+        <RadzenColumn><RadzenButton Text="Add role" Icon="add" Click="AddSecurityRole" /></RadzenColumn>
     </RadzenRow>
     <RadzenRow>
-        <RadzenColumn Size="6">
+        <RadzenColumn Size="8">
             <RadzenDataGrid Data="@_securityRoles" TItem="SecurityRole" AllowRowSelectOnRowClick="true"
                             AllowAlternatingRows="true" AllowColumnResize="true"
                             SelectionMode="DataGridSelectionMode.Single"
+                            Density="Density.Compact"
                             ValueChanged="@SelectedRoleChanged">
                 <Columns>
                     <RadzenDataGridColumn Property="@nameof(SecurityRole.Role)"
@@ -31,10 +32,10 @@
                     <RadzenDataGridColumn Property="@nameof(SecurityRole.Ord)"
                                           Title="Order" Width="80px">
                         <Template Context="data">
-                            <RadzenStack Orientation="Orientation.Horizontal">
-                                <RadzenButton Icon="arrow_drop_up" Size="ButtonSize.Small" 
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="2px">
+                                <RadzenButton Icon="arrow_drop_up" Size="ButtonSize.ExtraSmall"
                                               Click="@(() => MoveUp(data))" />
-                                <RadzenButton Icon="arrow_drop_down" Size="ButtonSize.Small" 
+                                <RadzenButton Icon="arrow_drop_down" Size="ButtonSize.ExtraSmall"
                                               Click="@(() => MoveDown(data))" />
                             </RadzenStack>
                         </Template>
@@ -42,27 +43,42 @@
                 </Columns>
             </RadzenDataGrid>
         </RadzenColumn>
-        <RadzenColumn Size="6">
+        <RadzenColumn Size="4">
             <RadzenRow><RadzenText Text="Role Members" /></RadzenRow>
-            <RadzenRow><RadzenButton Icon="add" Text="Add Member" Disabled="@(_currentSecurityRole==null)" Click="AddMembersToRole" /></RadzenRow>
+            <RadzenRow><RadzenButton Icon="add" Text="Add Member" Disabled="@(_currentSecurityRole == null)" Click="AddMembersToRole" /></RadzenRow>
             <RadzenRow>
-                <RadzenDataGrid Data="@_securityRoleMembers">
+                <RadzenDataGrid Data="@_securityRoleMembers"
+                                Density="Density.Compact">
                     <Columns>
                         <RadzenDataGridColumn Width="50px">
                             <Template Context="principal">
                                 @* TODO: Get final icons from Stephanie *@
-                                @if (principal.IsRole)
+                                @*                 @if (principal.IsRole)
                                 {
                                     <RadzenIcon Icon="diversity_3" />
                                 }
                                 else
                                 {
                                     <RadzenIcon Icon="person_apron" />
-                                }
+                                } *@
+                                <RadzenIcon Icon="@RoleMemberIcon(principal)" />
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Title="Name" Property="@nameof(SecurityRoleMember.Name)" />
-
+                        <RadzenDataGridColumn>
+                            <Template Context="principal">
+                                @* TODO: Get final icons from Stephanie *@
+                                @*    @if (principal.IsRole)
+                                {
+                                    <RadzenButton Icon="group_remove" Click="@(() => RemovePrincipal(principal))" Size="ButtonSize.Small" /> 
+                                }
+                                else
+                                {
+                                    <RadzenButton Icon="person_remove" Click="@(() => RemovePrincipal(principal))" Size="ButtonSize.Small" />
+                                } *@
+                                <RadzenButton Icon="@RoleMemberRemoveIcon(principal)" Click="@(() => RemovePrincipal(principal))" Size="ButtonSize.Small" />
+                            </Template>
+                        </RadzenDataGridColumn>
                     </Columns>
                 </RadzenDataGrid>
             </RadzenRow>
@@ -72,10 +88,11 @@
 @code {
     List<SecurityRole> _securityRoles = null!;
     private IDataAccessResult<List<SecurityRole>> _loadSecurityRolesResult;
+    private string RolesLoadKey => "SecRoles";
     private LoadItem RolesLoadItem => AddEventNotify(
         new()
         {
-            Key = "SecRoles",
+            Key = RolesLoadKey,
             AsyncLoadTask = async () => _loadSecurityRolesResult = await DataAccess.GetAllSecurityRoles(),
             CacheLoadTask = cache => _loadSecurityRolesResult = new DataAccessResult<List<SecurityRole>> { Data = (List<SecurityRole>)cache! },
             ResultVariable = () => _loadSecurityRolesResult,
@@ -86,19 +103,20 @@
                 _securityRoles = _loadSecurityRolesResult.Data;
                 //Save to local storage asynchronously and don't wait for the save to finish
                 Task.Factory.StartNew(data =>
-                    LocalStorageService.SetItemAsyncWithExpiry("SecRoles", TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
+                    LocalStorageService.SetItemAsyncWithExpiry(RolesLoadKey, TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
             },
-            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRole>>("SecRoles")
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRole>>(RolesLoadKey)
         }, "security roles");
 
     List<SecurityRoleMember> _securityRoleMembers = null!;
     SecurityRole? _currentSecurityRole = null;
 
     private IDataAccessResult<List<SecurityRoleMember>> _loadMembersResult = null!;
+    private string MembersLoadKey(string role) => $"RlMbr{role}";
     private LoadItem MembersLoadItem(string role) => AddEventNotify(
         new()
         {
-            Key = $"RlMbr{role}",
+            Key = MembersLoadKey(role),
             //TODO:Add actual data called when created
             AsyncLoadTask = async () => _loadMembersResult = await DataAccess.GetSecurityRoleMembers(role),
             //await Task.FromResult<IDataAccessResult<List<SecurityRoleMember>>>(new DataAccessResult<List<SecurityRoleMember>>()),//DataAccess.GetMyData(),
@@ -113,7 +131,7 @@
                 Task.Factory.StartNew(data =>
                     LocalStorageService.SetItemAsyncWithExpiry($"RlMbr{role}", TimeSpan.FromMinutes(2), data), _loadMembersResult.Data);
             },
-            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRoleMember>>($"RlMbr{role}")
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRoleMember>>(MembersLoadKey(role))
         }, "role members");
 
     protected override async Task OnInitializedAsync()
@@ -131,24 +149,59 @@
         if (null == _currentSecurityRole)
             return;
         await DataCache.GetCacheOrLoadDataAsync(MembersLoadItem(_currentSecurityRole.Role));
-
     }
-    
+
     private async Task AddMembersToRole()
     {
         if (null == _currentSecurityRole) return;
-        var result = await DialogService.OpenAsync<AddSecurityRoleMember>("Add members", new Dictionary<string, object>(){{"Role", _currentSecurityRole.Role}});
-        // if(result = )
+        var result = await DialogService.OpenAsync<AddSecurityRoleMember>("Add members", new Dictionary<string, object>() { { "Role", _currentSecurityRole.Role } });
+        if (true == result)
+            await ReloadRoleMembers();
     }
+
+    private async Task AddSecurityRole()
+    {
+        var result = await DialogService.OpenAsync<AddSecurityRole>("Add security role");
+        if (true == result)
+        {
+            DataCache.Clear(RolesLoadKey);
+            await LocalStorageService.RemoveItemAsync(RolesLoadKey);
+            await DataCache.GetCacheOrLoadDataAsync(RolesLoadItem);
+        }
+    }
+
+    private async Task ReloadRoleMembers()
+    {
+        if (null == _currentSecurityRole) return;
+        DataCache.Clear(MembersLoadKey(_currentSecurityRole.Role));
+        await LocalStorageService.RemoveItemAsync(MembersLoadKey(_currentSecurityRole.Role));
+        await DataCache.GetCacheOrLoadDataAsync(MembersLoadItem(_currentSecurityRole.Role));
+    }
+
+    private async Task RemovePrincipal(SecurityRoleMember principal)
+    {
+        if (null == _currentSecurityRole) return;
+        var result = await DataAccess.RemovePrincipalFromSecurityRole(principal.Id, _currentSecurityRole.Role);
+        if (result.Success)
+        {
+            NotifySuccessfulSave("Member removal");
+            await ReloadRoleMembers();
+        }
+        else
+            NotifySaveError(result.Errors, "member removal");
+    }
+    
+    string RoleMemberRemoveIcon(SecurityRoleMember srm) => srm.IsRole ? "group_remove" : "person_remove";
+    string RoleMemberIcon(SecurityRoleMember srm) => srm.IsRole ? "diversity_3" : "person_apron";
 
     private async Task MoveUp(SecurityRole data)
     {
-        throw new NotImplementedException();
+        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Just a demo.  Pretend the order changed.", Duration = 1000 });
     }
 
     private async Task MoveDown(SecurityRole data)
     {
-        throw new NotImplementedException();
+        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Just a demo.  Pretend the order changed.", Duration = 1000 });
     }
 
 }

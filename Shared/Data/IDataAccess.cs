@@ -144,6 +144,9 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<SecurityRole>>> GetAllSecurityRoles();
         public Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId);
         public Task<IDataAccessResult<List<SecurityRoleMember>>> GetSecurityRoleMembers(string role);
+        public Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role);
+        public Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role);
+        public Task<ISaveDataResult> AddSecurityRole(SecurityRole role);
         public Task<IDataAccessResult<List<Employee>>> GetAllEmployees();
 
         public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames();

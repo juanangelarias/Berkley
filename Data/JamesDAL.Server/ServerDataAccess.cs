@@ -492,6 +492,23 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetSecurityRoleMembers(role, contextFactory));
         }
 
+        public async Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role)
+        {
+            return await ExecuteGet(async () =>
+                await generalMutation.AddPrincipalToSecurityRole(principalId, role, contextFactory, loggingService));
+        }
+
+        public async Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role)
+        {
+            return await ExecuteGet(async () =>
+                await generalMutation.RemovePrincipalFromSecurityRole(principalId, role, contextFactory, loggingService));
+        }
+
+        public async Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
+        {
+            return await ExecuteSave(async()=> await generalMutation.AddSecurityRole(role, contextFactory, loggingService));
+        }
+
         public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
         {
             return await ExecuteGet(async()=> await query.GetAllEmployees(contextFactory));

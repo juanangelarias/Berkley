@@ -22,3 +22,21 @@ query GetAllEmployees {
     id
   }
 }
+
+mutation AddPrincipalToSecurityRole($input: AddPrincipalToSecurityRoleInput!) {
+  addPrincipalToSecurityRole(input: $input) {
+    boolean
+  }
+}
+
+mutation RemovePrincipalFromSecurityRole($input:RemovePrincipalFromSecurityRoleInput!){
+  removePrincipalFromSecurityRole(input:$input){
+    boolean
+  }
+}
+
+mutation AddSecurityRole($input: AddSecurityRoleInput!) {
+  addSecurityRole(input: $input) {
+    boolean
+  }
+} 

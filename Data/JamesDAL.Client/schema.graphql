@@ -642,6 +642,11 @@ type SaveCommissionRatesPayload {
   boolean: Boolean
 }
 
+input RemovePrincipalFromSecurityRoleInput {
+  principalId: UUID!
+  role: String!
+}
+
 type CreateAgencyPayload {
   agency: Agency
 }
@@ -1027,6 +1032,8 @@ type Mutation {
   setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
   setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
   addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
+  removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
+  addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1269,6 +1276,10 @@ input CreateAgencyStatusLogInput {
   comments: String
 }
 
+type AddSecurityRolePayload {
+  boolean: Boolean
+}
+
 type SetAddressPayload {
   address: Address
 }
@@ -1431,6 +1442,10 @@ type DivisionDm {
   imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
   profitCenters: [ProfitCenter!]!
+}
+
+input AddSecurityRoleInput {
+  role: SecurityRoleInput!
 }
 
 type Address {
@@ -2051,6 +2066,15 @@ type AgencyStatusDm {
   agencies: [Agency!]!
 }
 
+input SecurityRoleInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  role: String!
+  ord: Int!
+  description: String!
+}
+
 type LogExceptionPayload {
   boolean: Boolean
 }
@@ -2328,6 +2352,10 @@ type State {
   countryCodeNavigation: CountryDm
   insurerStates: [InsurerState!]!
   surcharges: [Surcharge!]!
+}
+
+type RemovePrincipalFromSecurityRolePayload {
+  boolean: Boolean
 }
 
 type CreateLicensePayload {

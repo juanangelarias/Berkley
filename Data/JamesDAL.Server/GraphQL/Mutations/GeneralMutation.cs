@@ -269,7 +269,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 var ctx = await contextFactory.CreateDbContextAsync();
                 var existing =
                     await ctx.Securities.FirstOrDefaultAsync(s => s.Role == role && s.PrincipalId == principalId);
-                if (null == existing) return false;
+                if (null == existing) return true;
                 ctx.Securities.Remove(existing);
                 await ctx.SaveChangesAsync();
                 return true;
@@ -277,6 +277,45 @@ namespace James.Data.Server.GraphQL.Mutations
             catch (Exception ex)
             {
                 loggingService.LogException(ex, "Exception removing principal from security role", category: StandardLoggingCategories.DataAccess);
+                return false;
+            }
+        }
+
+        //TODO: Restrict to people in the change permissions role
+        [Authorize]
+        public async Task<bool> AddSecurityRole(SecurityRole role,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        {
+            //TODO:Update to fire a subscription event if the client caches the full list
+            try
+            {
+                if (string.IsNullOrWhiteSpace(role.Role))
+                    throw new ArgumentException("role.Role cannot be null or whitespace.");
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var existing =
+                    await ctx.SecurityRoles.FirstOrDefaultAsync(s => s.Role == role.Role);
+                if (null != existing)
+                    return false;
+                if (role.Ord < 1)
+                {
+                    //Set the order to one higher than the previous max.
+                    //HACK: Not worrying about a transaction to prevent simultaneously creating roles that might have the same order
+                    var maxOrd = await ctx.SecurityRoles.MaxAsync(sr => sr.Ord);
+                    role.Ord = 1 + maxOrd;
+                }
+                if (role.Id == Guid.Empty)
+                    role.Id = Guid.NewGuid();
+                if (role.Created.Ticks == 0)
+                    role.Created = DateTime.Now;
+                if (role.Modified.Ticks == 0)
+                    role.Modified = DateTime.Now;
+                await ctx.SecurityRoles.AddAsync(role);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                loggingService.LogException(ex, "Exception adding security role", category: StandardLoggingCategories.DataAccess);
                 return false;
             }
         }

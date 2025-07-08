@@ -12,7 +12,6 @@ using Severity = James.Shared.Model.Severity;
 
 namespace James.Data.Client
 {
-
     public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging) : IDataAccess
     {
         public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
@@ -22,7 +21,7 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
-            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber)!,
+            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber),
                 "AccountByNumber");
 
         }
@@ -552,14 +551,41 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<SecurityRoleMember>>> GetSecurityRoleMembers(string role)
         {
             var result = await ExecuteGet<List<SecurityRoleMember>>(
-                async () => await jamesClient.GetSecurityRoleMembers.ExecuteAsync(role), "securityRoleMembers");
+                async () => await jamesClient.GetSecurityRoleMembers.ExecuteAsync(role), "SecurityRoleMembers");
             return result;
+        }
+
+        public async Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role)
+        {
+            var result = await ExecuteSave(
+                async () => await jamesClient.AddPrincipalToSecurityRole.ExecuteAsync(new AddPrincipalToSecurityRoleInput
+                {
+                    PrincipalId = principalId,
+                    Role = role
+                } ), "AddPrincipalToSecurityRole");
+            return result;
+        }
+
+        public async Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role)
+        {
+            var result = await ExecuteSave(
+                async () => await jamesClient.RemovePrincipalFromSecurityRole.ExecuteAsync(new RemovePrincipalFromSecurityRoleInput()
+                {
+                    PrincipalId = principalId,
+                    Role = role
+                }), "RemovePrincipalFromSecurityRole");
+            return result;
+        }
+
+        public Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
         {
             var result = await ExecuteGet<List<Employee>>(
-                async () => await jamesClient.GetAllEmployees.ExecuteAsync());
+                async () => await jamesClient.GetAllEmployees.ExecuteAsync(), "AllEmployees");
             return result;
         }
 

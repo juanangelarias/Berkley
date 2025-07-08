@@ -98,14 +98,34 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     {
         var summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} " +
                       $"saving {itemSaved}.  {string.Join("  ", errors)}";
-        
-        if(logError)
+
+        if (logError)
             LoggingService.LogError(summary, errors);
-        
+
         NotificationService.Notify(new NotificationMessage
         {
             Severity = NotificationSeverity.Error,
             Summary = summary,
+            Duration = 300000   // Treat as fatal 5 minutes
+        });
+    }
+
+    /// <summary>
+    /// Generates non-standard notification that a save event failed.
+    /// </summary>
+    /// <param name="errors">Errors that were returned.</param>
+    /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
+    /// <param name="logError">If true will log the error using the LoggingService</param>
+    /// <remarks>Use only when the standard message is not sufficient.  Text should be brief and details should be logged in the errors.</remarks>
+    protected void NotifySaveIssue(string[] errors, string notficationText, bool logError = true)
+    {
+        if (logError)
+            LoggingService.LogError(notficationText, errors);
+
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Error,
+            Summary = notficationText,
             Duration = 300000   // Treat as fatal 5 minutes
         });
     }

@@ -4,10 +4,12 @@ using James.Data.Client.GraphQL;
 using James.Shared;
 using James.Shared.Data;
 using JamesWebUI.Client.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
 using StrawberryShake;
 using System.Text.Json.Serialization;
+using JamesWebUI.Client.Security;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
 
@@ -42,7 +44,9 @@ builder.Services
     .AddSingleton<ILoggingService, LoggingService>()
     .AddScoped<IDataAccess, ClientDataAccess>()
     .AddScoped<UserSettingService>()
-    .AddScoped<IDataCache, DataCache>();
+    .AddSingleton<IDataCache, DataCache>()
+    .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
+    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
 
 builder.Services.AddOidcAuthentication(options =>
 {

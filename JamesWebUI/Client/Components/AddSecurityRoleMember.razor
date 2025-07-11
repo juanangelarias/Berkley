@@ -55,11 +55,12 @@
     private bool HasAdded { get; set; }
 
     private List<Employee> _employees = new();
+    private const string LoadEmployeesKey = "Emp";
     private IDataAccessResult<List<Employee>> _loadEmployeesResult = null!;
     private LoadItem EmployeesLoadItem => AddEventNotify(
         new()
         {
-            Key = "Emp",
+            Key = LoadEmployeesKey,
             //TODO: Add actual data called when created
             AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetAllEmployees(),
             CacheLoadTask = cache => _loadEmployeesResult = new DataAccessResult<List<Employee>> { Data = (List<Employee>)cache! },
@@ -69,9 +70,9 @@
                 _employees = _loadEmployeesResult.Data!;
                 //Save to local storage asynchronously and don't wait for the save to finish
                 Task.Factory.StartNew(data =>
-                    LocalStorageService.SetItemAsyncWithExpiry("Employees", TimeSpan.FromHours(1), data), _loadEmployeesResult.Data);
+                    LocalStorageService.SetItemAsyncWithExpiry(LoadEmployeesKey, TimeSpan.FromHours(1), data), _loadEmployeesResult.Data);
             },
-            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<Employee>>("Emp")
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<Employee>>(LoadEmployeesKey)
         }, "security roles");
 
 

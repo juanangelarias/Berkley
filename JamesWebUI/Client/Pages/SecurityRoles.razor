@@ -6,7 +6,7 @@
 
 @inject IDataAccess DataAccess
 @inject ILocalStorageService LocalStorageService
-@attribute [Authorize]
+@attribute [Authorize(Policy="InRoleChangePermissions")]
 
 <Theme />
 <PageTitle>Admin - Security Roles</PageTitle>

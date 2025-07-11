@@ -23,6 +23,8 @@ using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using JamesWebUI.Client.Security;
+using Microsoft.AspNetCore.Authorization;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
@@ -108,15 +110,18 @@ try
         e.EnableDetailedErrors = true;
         e.MaximumReceiveMessageSize = 1024*1024*4;//4MB since some cached values are over 3MB
     });
-    builder.Services.AddScoped<ThemeService>();
-    builder.Services.AddScoped<IUserShared, UserShared>();
-    builder.Services.AddScoped<ILoggingShared, LoggingShared>();
-    builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
-    builder.Services.AddScoped<ImagingKong0Helper>();
-    builder.Services.AddScoped<ServerImagingAccess>();
-    builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
-    builder.Services.AddScoped<IDataCache, DataCache>();
-    builder.Services.AddScoped<UserSettingService>();
+    builder.Services.AddScoped<ThemeService>()
+                    .AddScoped<IUserShared, UserShared>()
+                    .AddScoped<ILoggingShared, LoggingShared>()
+                    .AddScoped<ILoggingService, ServerLoggingService>()
+                    .AddScoped<ImagingKong0Helper>()
+                    .AddScoped<ServerImagingAccess>()
+                    .AddScoped<IDataAccess, ServerDataAccess>()
+                    .AddSingleton<IDataCache, DataCache>()
+                    .AddScoped<UserSettingService>()
+                    .AddScoped<IAuthorizationHandler, RoleRequirementHandler>()
+                    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
+
     if (OperatingSystem.IsWindows())
     {
         //Imaging Kong0 setup
@@ -255,6 +260,8 @@ try
 
     app.MapRazorPages();
     app.MapControllers();
+    // Ensure static assets are mapped before interactive WebAssembly render mode
+    app.MapStaticAssets();
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode()
         .AddInteractiveWebAssemblyRenderMode();

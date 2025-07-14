@@ -12,10 +12,18 @@
                 AllowPaging="true" PageSize="10" AllowSorting="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading" />
+            <RadzenSplitButton Text="Export" Click="@(args => ExportLicenseGrid(args))" 
+                               Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary"
+                               Icon="download">
+                <ChildContent>
+                    <RadzenSplitButtonItem Text="Excel" Icon="border_all" Value="excel"/>
+                    <RadzenSplitButtonItem Text="CSV" Icon="article" Value="csv"/>
+                </ChildContent>
+            </RadzenSplitButton>
+            @*<RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading"/>
             <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading" />
+                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading"/>*@
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
@@ -156,13 +164,15 @@
         await DataCache.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
     }
 
-    private void ExportLicenseGrid(ExportFormat format)
+    private void ExportLicenseGrid(RadzenSplitButtonItem option)
     {
+        var format = option.Value == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+
         var substitutions = new ExportColumnSubstitutions();
         //TODO: Determine substitutions
-        substitutions.AddSubstitution("IdNavigation.GivenName", title: "Given Name");
-        substitutions.AddSubstitution("IdNavigation.MiddleInitial", title: "Middle Initial");
-        substitutions.AddSubstitution("IdNavigation.FamilyName", title: "Family Initial");
+        substitutions.AddSubstitution("IdNavigation.GivenName", "IdNavigation.GivenName", "Given Name");
+        substitutions.AddSubstitution("IdNavigation.MiddleInitial", "IdNavigation.MiddleInitial", "Middle Initial");
+        substitutions.AddSubstitution("IdNavigation.FamilyName", "IdNavigation.FamilyName", "Family Initial");
         substitutions.AddSubstitution("", "License.LicenseNumber", "License Number");
         substitutions.AddSubstitution("", "License.State");
         substitutions.AddSubstitution("", "License.IsResident", "Is Resident");

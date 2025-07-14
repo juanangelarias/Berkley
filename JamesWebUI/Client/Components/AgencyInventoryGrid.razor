@@ -18,10 +18,13 @@
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow" />
-            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@IsLoading" />
-            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@IsLoading" />
+            <RadzenSplitButton Text="Export" Icon="download" Click="@(args => ExportLicenseGrid(args))"
+                               Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Disabled="@IsLoading">
+                <ChildContent>
+                    <RadzenSplitButtonItem Text="Excel" Value="excel" Icon="border_all"/>
+                    <RadzenSplitButtonItem Text="CSV" Value="csv" Icon="article"/>
+                </ChildContent>
+            </RadzenSplitButton>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -340,8 +343,10 @@
         IsLoading = false;
     }
 
-    private void ExportLicenseGrid(ExportFormat format)
+    private void ExportLicenseGrid(RadzenSplitButtonItem args)
     {
+        var format = args.Value == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+        
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Sent", title: "Date Sent");
         substitutions.AddSubstitution("DocumentType", title: "Doc Type");

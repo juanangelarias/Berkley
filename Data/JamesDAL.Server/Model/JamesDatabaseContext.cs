@@ -1035,7 +1035,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("AgencyInventory");
+            entity.ToTable("AgencyInventory", tb => tb.HasTrigger("trgAgencyInventoryModified"));
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Addressee).HasMaxLength(60);

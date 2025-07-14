@@ -373,7 +373,6 @@ namespace James.Data.Client
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
         {
-            //throw new NotImplementedException();
             return await ExecuteGet<AgencyInventory>(async () =>
             await jamesClient.SetAgencyInventory.ExecuteAsync(new SetAgencyInventoryInput
             {

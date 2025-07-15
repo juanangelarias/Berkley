@@ -9,7 +9,9 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
 using StrawberryShake;
 using System.Text.Json.Serialization;
+using JamesWebUI.Client.AuthenticationStateSyncer;
 using JamesWebUI.Client.Security;
+using Microsoft.AspNetCore.Components.Authorization;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
 
@@ -17,7 +19,7 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthenticationStateDeserialization();
-//builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
+builder.Services.AddSingleton<AuthenticationStateProvider, PersistentAuthenticationStateProvider>();
 
 builder.Services.AddHttpClient("JamesAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
 builder.Services.AddHttpClient(JamesClient.ClientName, client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));

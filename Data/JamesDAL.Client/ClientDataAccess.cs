@@ -17,7 +17,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
         {
             //TODO: Fix
-            return new DataAccessResult<List<Agent>>();
+            return await Task.FromResult( new DataAccessResult<List<Agent>>());
         }
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
@@ -78,7 +78,6 @@ namespace James.Data.Client
         {
             return (await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber"))!;
-
         }
 
         public async Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId)
@@ -577,9 +576,16 @@ namespace James.Data.Client
             return result;
         }
 
-        public Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
+        public async Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
         {
-            throw new NotImplementedException();
+            var result = await ExecuteSave(
+                async () => await jamesClient.AddSecurityRole.ExecuteAsync(new AddSecurityRoleInput()
+                {
+                    Role = role.Role,
+                    Description = role.Description,
+                    Ord = role.Ord
+                }));
+            return result;
         }
 
         public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()

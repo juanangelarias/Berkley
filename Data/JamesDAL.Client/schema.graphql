@@ -1445,7 +1445,9 @@ type DivisionDm {
 }
 
 input AddSecurityRoleInput {
-  role: SecurityRoleInput!
+  role: String!
+  description: String!
+  ord: Int!
 }
 
 type Address {
@@ -2064,15 +2066,6 @@ type AgencyStatusDm {
   modified: DateTime!
   status: String!
   agencies: [Agency!]!
-}
-
-input SecurityRoleInput {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  role: String!
-  ord: Int!
-  description: String!
 }
 
 type LogExceptionPayload {

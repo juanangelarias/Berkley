@@ -95,6 +95,7 @@
             Key = RolesLoadKey,
             AsyncLoadTask = async () => _loadSecurityRolesResult = await DataAccess.GetAllSecurityRoles(),
             CacheLoadTask = cache => _loadSecurityRolesResult = new DataAccessResult<List<SecurityRole>> { Data = (List<SecurityRole>)cache! },
+            CacheDuration = TimeSpan.FromMinutes(5),
             ResultVariable = () => _loadSecurityRolesResult,
             AfterLoad = () =>
             {
@@ -103,7 +104,7 @@
                 _securityRoles = _loadSecurityRolesResult.Data;
                 //Save to local storage asynchronously and don't wait for the save to finish
                 Task.Factory.StartNew(data =>
-                    LocalStorageService.SetItemAsyncWithExpiry(RolesLoadKey, TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
+                    LocalStorageService.SetItemAsyncWithExpiry(RolesLoadKey, TimeSpan.FromMinutes(5), data), _loadSecurityRolesResult.Data);
             },
             LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRole>>(RolesLoadKey)
         }, "security roles");

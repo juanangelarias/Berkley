@@ -17,9 +17,10 @@ query GetSecurityRoleMembers($role: String!) {
 
 query GetAllEmployees {
   allEmployees {
+    id
+    activeDirectoryAccount
     fullName
     title
-    id
   }
 }
 

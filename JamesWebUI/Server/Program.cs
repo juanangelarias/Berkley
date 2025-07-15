@@ -24,7 +24,9 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using JamesWebUI.Client.Security;
+using JamesWebUI.Server.AuthenticationStateSyncer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
@@ -39,6 +41,9 @@ try
 {
     // Add services to the container.
     var builder = WebApplication.CreateBuilder(args);
+
+    builder.Services.AddCascadingAuthenticationState();
+    builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
     ConfirmAppSettingsEntry("Auth0:Authority");
     ConfirmAppSettingsEntry("Auth0:ClientId");

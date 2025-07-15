@@ -506,7 +506,7 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
         {
-            return await ExecuteSave(async()=> await generalMutation.AddSecurityRole(role, contextFactory, loggingService));
+            return await ExecuteSave(async()=> await generalMutation.AddSecurityRole(role.Role, role.Description, role.Ord, contextFactory, loggingService));
         }
 
         public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()

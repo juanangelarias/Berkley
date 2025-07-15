@@ -283,33 +283,31 @@ namespace James.Data.Server.GraphQL.Mutations
 
         //TODO: Restrict to people in the change permissions role
         [Authorize]
-        public async Task<bool> AddSecurityRole(SecurityRole role,
+        public async Task<bool> AddSecurityRole(string role, string description, int ord,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             //TODO:Update to fire a subscription event if the client caches the full list
             try
             {
-                if (string.IsNullOrWhiteSpace(role.Role))
+                if (string.IsNullOrWhiteSpace(role))
                     throw new ArgumentException("role.Role cannot be null or whitespace.");
+                var newRole = new SecurityRole
+                {
+                    Id = Guid.NewGuid(), Role = role, Description = description, Ord = ord
+                };
                 var ctx = await contextFactory.CreateDbContextAsync();
                 var existing =
-                    await ctx.SecurityRoles.FirstOrDefaultAsync(s => s.Role == role.Role);
+                    await ctx.SecurityRoles.FirstOrDefaultAsync(s => s.Role == newRole.Role);
                 if (null != existing)
                     return false;
-                if (role.Ord < 1)
+                if (newRole.Ord < 1)
                 {
                     //Set the order to one higher than the previous max.
                     //HACK: Not worrying about a transaction to prevent simultaneously creating roles that might have the same order
                     var maxOrd = await ctx.SecurityRoles.MaxAsync(sr => sr.Ord);
-                    role.Ord = 1 + maxOrd;
+                    newRole.Ord = 1 + maxOrd;
                 }
-                if (role.Id == Guid.Empty)
-                    role.Id = Guid.NewGuid();
-                if (role.Created.Ticks == 0)
-                    role.Created = DateTime.Now;
-                if (role.Modified.Ticks == 0)
-                    role.Modified = DateTime.Now;
-                await ctx.SecurityRoles.AddAsync(role);
+                await ctx.SecurityRoles.AddAsync(newRole);
                 await ctx.SaveChangesAsync();
                 return true;
             }

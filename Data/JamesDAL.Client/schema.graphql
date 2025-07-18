@@ -231,6 +231,11 @@ type BondRequestNumberType {
   type: String!
 }
 
+input AddPrincipalToSecurityRoleInput {
+  principalId: UUID!
+  role: String!
+}
+
 type Notebook {
   id: UUID!
   created: DateTime!
@@ -626,11 +631,20 @@ type Query {
   obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!
   obligeeSecondaryBonds(obligeeId: UUID!): [Bond!]!
   search(searchTerm: String! options: SearchOptionsInput!): String!
+  allSecurityRoles: [SecurityRole!]!
+  securityRolesByUser(principalId: UUID!): [SecurityRole!]!
+  securityRoleMembers(role: String!): [SecurityRoleMember!]!
+  allEmployees: [Employee!]!
   allStates: [State!]!
 }
 
 type SaveCommissionRatesPayload {
   boolean: Boolean
+}
+
+input RemovePrincipalFromSecurityRoleInput {
+  principalId: UUID!
+  role: String!
 }
 
 type CreateAgencyPayload {
@@ -1017,6 +1031,9 @@ type Mutation {
   deletePhoneNumber(input: DeletePhoneNumberInput!): DeletePhoneNumberPayload!
   setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
   setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
+  addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
+  removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
+  addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1259,6 +1276,10 @@ input CreateAgencyStatusLogInput {
   comments: String
 }
 
+type AddSecurityRolePayload {
+  boolean: Boolean
+}
+
 type SetAddressPayload {
   address: Address
 }
@@ -1423,6 +1444,12 @@ type DivisionDm {
   profitCenters: [ProfitCenter!]!
 }
 
+input AddSecurityRoleInput {
+  role: String!
+  description: String!
+  ord: Int!
+}
+
 type Address {
   cityZipLine: String! @deprecated(reason: "UseAddressPhoneFormatService instead.")
   id: UUID!
@@ -1465,6 +1492,15 @@ input SetPowerOfAttorneyInput {
   currentIssued: LocalDate
   comments: String
   status: String!
+}
+
+type SecurityRole {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  role: String!
+  ord: Int!
+  description: String!
 }
 
 input SetAccountGeneralInfoInput {
@@ -1859,6 +1895,12 @@ type SetAccountGeneralInfoPayload {
   boolean: Boolean
 }
 
+type SecurityRoleMember {
+  id: UUID!
+  name: String!
+  isRole: Boolean!
+}
+
 type VImagingCategoryTabDivisionType {
   tabName: String!
   tabDescription: String!
@@ -2091,6 +2133,10 @@ type AdditionalObligee {
   bondNumberNavigation: Bond!
 }
 
+type AddPrincipalToSecurityRolePayload {
+  boolean: Boolean
+}
+
 "The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
 scalar Long
 
@@ -2301,6 +2347,10 @@ type State {
   surcharges: [Surcharge!]!
 }
 
+type RemovePrincipalFromSecurityRolePayload {
+  boolean: Boolean
+}
+
 type CreateLicensePayload {
   boolean: Boolean
 }
@@ -2316,7 +2366,7 @@ input SetAccountSystemsInput {
 
 input SetDefaultUserSettingInput {
   key: String!
-  value: String!
+  value: String
 }
 
 input DeleteAgencyInventoryInput {

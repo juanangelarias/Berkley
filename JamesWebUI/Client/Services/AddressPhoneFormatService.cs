@@ -124,6 +124,7 @@ namespace JamesWebUI.Client.Services
                 //Garbage in, garbage out
                 address.PostalCode;
         }
+
         /// <summary>
         /// Get a string of the standard final line of an address based on the country
         /// </summary>

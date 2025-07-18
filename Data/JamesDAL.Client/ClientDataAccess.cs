@@ -12,17 +12,16 @@ using Severity = James.Shared.Model.Severity;
 
 namespace James.Data.Client
 {
-
     public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging) : IDataAccess
     {
         public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
         {
             //TODO: Fix
-            return new DataAccessResult<List<Agent>>();
+            return await Task.FromResult( new DataAccessResult<List<Agent>>());
         }
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
-            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber)!,
+            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber),
                 "AccountByNumber");
 
         }
@@ -79,7 +78,6 @@ namespace James.Data.Client
         {
             return (await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber"))!;
-
         }
 
         public async Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId)
@@ -533,6 +531,68 @@ namespace James.Data.Client
         {
             //This should only be called by the server, because the client cannot access the imaging system.
             throw new NotImplementedException("Imaging details can only be accessed serverside.");
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRole>>> GetAllSecurityRoles()
+        {
+            var result = await ExecuteGet<List<SecurityRole>>(
+                async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId)
+        {
+            var result = await ExecuteGet<List<SecurityRole>>(
+            async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRoleMember>>> GetSecurityRoleMembers(string role)
+        {
+            var result = await ExecuteGet<List<SecurityRoleMember>>(
+                async () => await jamesClient.GetSecurityRoleMembers.ExecuteAsync(role), "SecurityRoleMembers");
+            return result;
+        }
+
+        public async Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role)
+        {
+            var result = await ExecuteSave(
+                async () => await jamesClient.AddPrincipalToSecurityRole.ExecuteAsync(new AddPrincipalToSecurityRoleInput
+                {
+                    PrincipalId = principalId,
+                    Role = role
+                } ), "AddPrincipalToSecurityRole");
+            return result;
+        }
+
+        public async Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role)
+        {
+            var result = await ExecuteSave(
+                async () => await jamesClient.RemovePrincipalFromSecurityRole.ExecuteAsync(new RemovePrincipalFromSecurityRoleInput()
+                {
+                    PrincipalId = principalId,
+                    Role = role
+                }), "RemovePrincipalFromSecurityRole");
+            return result;
+        }
+
+        public async Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
+        {
+            var result = await ExecuteSave(
+                async () => await jamesClient.AddSecurityRole.ExecuteAsync(new AddSecurityRoleInput()
+                {
+                    Role = role.Role,
+                    Description = role.Description,
+                    Ord = role.Ord
+                }));
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
+        {
+            var result = await ExecuteGet<List<Employee>>(
+                async () => await jamesClient.GetAllEmployees.ExecuteAsync(), "AllEmployees");
+            return result;
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()

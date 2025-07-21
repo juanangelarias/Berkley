@@ -269,6 +269,26 @@ namespace James.Data.Server
                 return new SaveDataResult { Errors = [ex.Message] };
             }
         }
+
+        public async Task<ISaveDataResult> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing,
+            int? profitSharingMinimumPremium)
+        {
+            try
+            {
+                _ = await agencyMutation.SetAgencyProfitSharingInfo(agencyId, profitSharing,
+                    profitSharingMinimumPremium, contextFactory);
+                return new SaveDataResult();
+            }
+            catch (AggregateException ae)
+            {
+                return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResult { Errors = [ex.Message] };
+            }
+        }
+        
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
         {
@@ -425,9 +445,15 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await agencyMutation.DeleteAgencyInventory(inventoryId, eventSender, contextFactory));
         }
-        public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
+        public async Task<ISaveDataResult> SetAgencyCommissionRate(AgencyCommission rate)
         {
-            return await ExecuteSave(async () => await agencyMutation.SaveCommissionRates(agencyId, rates, eventSender, contextFactory));
+            return await ExecuteSave(async () => await agencyMutation.SaveCommissionRates(rate, eventSender, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteAgencyCommissionRate(Guid commRateId)
+        {
+            return await ExecuteSave(async () =>
+                await agencyMutation.DeleteAgencyCommissionRate(commRateId, eventSender, contextFactory));
         }
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)

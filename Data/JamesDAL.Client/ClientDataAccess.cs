@@ -79,7 +79,6 @@ namespace James.Data.Client
         {
             return (await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber"))!;
-
         }
 
         public async Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId)
@@ -373,7 +372,6 @@ namespace James.Data.Client
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
         {
-            //throw new NotImplementedException();
             return await ExecuteGet<AgencyInventory>(async () =>
             await jamesClient.SetAgencyInventory.ExecuteAsync(new SetAgencyInventoryInput
             {
@@ -402,25 +400,34 @@ namespace James.Data.Client
             var result = await jamesClient.DeleteAgencyInventory.ExecuteAsync(new DeleteAgencyInventoryInput { InventoryId = inventoryId });
             return GraphQLSaveResult(result);
         }
-        public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
+        public async Task<ISaveDataResult> SetAgencyCommissionRate(AgencyCommission rate)
         {
             var saveResult = await jamesClient.SaveAgencyCommissionRates.ExecuteAsync(new SaveCommissionRatesInput
             {
-                AgencyId = agencyId,
-                Rates = rates.Select(r => new AgencyCommissionInput
+                Rate = new AgencyCommissionInput
                 {
-                    Id = r.Id,
-                    AgencyId = agencyId,
-                    Created = DateTimeOffset.Now,//Created is a required field but not used by the save
-                    Modified = DateTimeOffset.Now,//Modified is a required field but not used by the save
-                    BondType = r.BondType,
-                    Minimum = r.Minimum,
-                    Maximum = r.Maximum,
-                    Rate = r.Rate
-                }).ToList()
-
+                    Id = rate.Id,
+                    AgencyId = rate.AgencyId,
+                    Created = DateTimeOffset.Now, //Created is a required field but not used by the save
+                    Modified = DateTimeOffset.Now, //Modified is a required field but not used by the save
+                    BondType = rate.BondType,
+                    Minimum = rate.Minimum,
+                    Maximum = rate.Maximum,
+                    Effective = rate.Effective,
+                    Expires = rate.Expires,
+                    Rate = rate.Rate
+                }
             });
+
             return GraphQLSaveResult(saveResult);
+        }
+
+        public async Task<ISaveDataResult> DeleteAgencyCommissionRate(Guid commRateId)
+        {
+            var result = await jamesClient.DeleteAgencyCommissionRate
+                .ExecuteAsync(new DeleteAgencyCommissionRateInput{ CommRateId = commRateId });
+            
+            return GraphQLSaveResult(result);
         }
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
@@ -779,6 +786,20 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(saveResult);
         }
+
+        public async Task<ISaveDataResult> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing,
+            int? profitSharingMinimumPremium)
+        {
+            var result = await jamesClient.SetAgencyProfitSharing.ExecuteAsync(new SetAgencyProfitSharingInfoInput
+            {
+                AgencyId = agencyId,
+                ProfitSharing = profitSharing,
+                ProfitSharingMinimumPremium = profitSharingMinimumPremium
+            });
+
+            return GraphQLSaveResult(result);
+        }
+        
         public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId,
             Guid? agentId, bool appointingState, string? comments,
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,

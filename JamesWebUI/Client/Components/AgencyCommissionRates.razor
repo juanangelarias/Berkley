@@ -1,86 +1,99 @@
-﻿@using James.Shared
-
-@inject IDataAccess DataAccess;
-@inject ILoggingService Logging;
+﻿@inject IDataAccess DataAccess;
 
 @inherits JamesLayoutComponentBase
 
-<RenderModeBackground />
-<RadzenTemplateForm TItem="List<AgencyCommission>" Data="@_commissionRates" Submit="@SaveEdit">
+<RenderModeBackground/>
+
+<RadzenColumn Size="12">
     <RadzenRow>
-        <RadzenColumn Size="5">
-            <RadzenFieldset Text="Contract Rates" Name="contractRates">
-                <TieredValueEditor T="double" EditMode=@_editMode
-                                   @ref=@_contractEditor 
-                                   ShowValidations="@ValidationRequired"
-                                   CreationFunction=@(() => CreateNewTier("Contract"))
-                                   ValuePlaceholder="Commission Rate" ValueHeaderText="Commission Rate"
-                                   ValueMinimum="1" ValueMaximum="100" Values=@_contractRates />
-            </RadzenFieldset>
-        </RadzenColumn>
-        <RadzenColumn Size="5">
-            <RadzenFieldset Text="Commercial Rates">
-                <TieredValueEditor T="double" EditMode=@_editMode
-                                   @ref=@_commercialEditor 
-                                   ShowValidations="@ValidationRequired"
-                                   CreationFunction=@(() => CreateNewTier("Commission"))
-                                   ValuePlaceholder="Commission Rate" ValueHeaderText="Commission Rate"
-                                   ValueMinimum="1" ValueMaximum="100" Values=@_commercialRates />
-            </RadzenFieldset>
-        </RadzenColumn>
-        <RadzenColumn>
-            @if (_editMode)
-            {
-                <RadzenButton ButtonType="ButtonType.Submit" Text="Save" />
-                <RadzenButton Click=@CancelEdit Text="Cancel" />
-            }
-            else
-            {
-                <RadzenButton Click=@(_=>_editMode=true)>Edit</RadzenButton>
-            }
-            <br />
-            <span style="font-size:small">Temp UI by Greg</span>
-        </RadzenColumn>
+        <RadzenTabs TabPosition="TabPosition.Top">
+            <Tabs>
+                <RadzenTabsItem Text="Contract">
+                    <RadzenTabs TabPosition="TabPosition.Left">
+                        <Tabs>
+                            <RadzenTabsItem Text="Current">
+                                <AgencyCommissionRatesGrid AgencyId="Agency.Id"
+                                                           BondType="BondType.Contract"
+                                                           CommissionType="CommissionType.Current"
+                                                           Rates="_contractCurrentRates" OnCreate="OnCreateCommission"
+                                                           OnUpdate="OnUpdateCommission" OnDelete="OnDeleteCommission"/>
+                            </RadzenTabsItem>
+                            <RadzenTabsItem Text="Scheduled">
+                                <AgencyCommissionRatesGrid AgencyId="Agency.Id"
+                                                           BondType="BondType.Contract"
+                                                           CommissionType="CommissionType.Scheduled"
+                                                           Rates="_contractScheduledRates" OnCreate="OnCreateCommission"
+                                                           OnUpdate="OnUpdateCommission" OnDelete="OnDeleteCommission"/>
+                            </RadzenTabsItem>
+                        </Tabs>
+                    </RadzenTabs>
+                </RadzenTabsItem>
+                <RadzenTabsItem Text="Commercial">
+                    <RadzenTabs TabPosition="TabPosition.Left">
+                        <Tabs>
+                            <RadzenTabsItem Text="Current">
+                                <AgencyCommissionRatesGrid AgencyId="Agency.Id"
+                                                           BondType="BondType.Commercial"
+                                                           CommissionType="CommissionType.Current"
+                                                           Rates="_commercialCurrentRates" OnCreate="OnCreateCommission"
+                                                           OnUpdate="OnUpdateCommission" OnDelete="OnDeleteCommission"/>
+                            </RadzenTabsItem>
+                            <RadzenTabsItem Text="Scheduled">
+                                <AgencyCommissionRatesGrid AgencyId="Agency.Id"
+                                                           BondType="BondType.Commercial"
+                                                           CommissionType="CommissionType.Scheduled"
+                                                           Rates="_commercialScheduledRates"
+                                                           OnCreate="OnCreateCommission"
+                                                           OnUpdate="OnUpdateCommission" OnDelete="OnDeleteCommission"/>
+                            </RadzenTabsItem>
+                        </Tabs>
+                    </RadzenTabs>
+                </RadzenTabsItem>
+            </Tabs>
+        </RadzenTabs>
     </RadzenRow>
-</RadzenTemplateForm>
+    <RadzenRow>
+        <AgencyCommissionProfit Agency="Agency"/>
+    </RadzenRow>
+</RadzenColumn>
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
+    [Parameter] public Agency Agency { get; set; } = null!;
 
     [Parameter] public string AgencyStatus { get; set; } = null!;
-    /*[CascadingParameter]
-    private Task<AuthenticationState>? authenticationState { get; set; }*/
 
-    private string _agencyStatus = "";
-    private bool _editMode;
-    private List<AgencyCommission> _commissionRates = null!;
-    private List<ITieredValue<double>> _commercialRates = null!;
-    private List<ITieredValue<double>> _contractRates = null!;
-    private TieredValueEditor<double> _contractEditor = null!;
-    private TieredValueEditor<double> _commercialEditor = null!;
     
+    private List<AgencyCommission> _commissionRates = null!;
+    private List<AgencyCommission> _commercialCurrentRates = null!;
+    private List<AgencyCommission> _commercialScheduledRates = null!;
+    private List<AgencyCommission> _contractCurrentRates = null!;
+    private List<AgencyCommission> _contractScheduledRates = null!;
+
+    private string _keyAgencyCommission = string.Empty;
+
     private IDataAccessResult<List<AgencyCommission>> _ratesResult = null!;
 
     private LoadItem RatesLoad => AddEventNotify(new LoadItem
+    {
+        Key = _keyAgencyCommission,
+        AsyncLoadTask = async () => _ratesResult = await DataAccess.GetAgencyCommissionRates(Agency.Id),
+        CacheLoadTask = cache => _ratesResult = new DataAccessResult<List<AgencyCommission>>
         {
-            Key = $"AgencyCommissionRates{AgencyId}",
-            AsyncLoadTask = async () => _ratesResult = await DataAccess.GetAgencyCommissionRates(AgencyId),
-            CacheLoadTask = cache => _ratesResult = new DataAccessResult<List<AgencyCommission>>
-            {
-                Data = (List<AgencyCommission>)cache!
-            },
-            ResultVariable = () => _ratesResult
-        }, "agency commission rates");   
+            Data = (List<AgencyCommission>)cache!
+        },
+        ResultVariable = () => _ratesResult
+    }, "agency commission rates");
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        _keyAgencyCommission = $"AgencyCommissionRates{Agency.Id}";
         await LoadRates();
     }
 
-    async Task LoadRates()
+    private async Task LoadRates()
     {
-        if(AgencyId == Guid.Empty)
+        if (Agency.Id == Guid.Empty)
             return;
 
         await DataCache.GetCacheOrLoadDataAsync(RatesLoad);
@@ -88,61 +101,87 @@
         if (!_ratesResult.Success)
             return;
 
-        _commissionRates = _ratesResult.Data!;
-        _commercialRates = _commissionRates
-            .Where(r => r.BondType == "Commercial")
-            .Cast<ITieredValue<double>>().ToList();
-        _contractRates = _commissionRates
-            .Where(r => r.BondType == "Contract")
-            .Cast<ITieredValue<double>>().ToList();
-        StateHasChanged();
+        _commissionRates = _ratesResult.Data ?? [];
+
+        DistributeCommissions();
     }
 
-    async Task CancelEdit()
+    private void DistributeCommissions()
     {
-        _editMode = false;
-        await LoadRates();
-    }
-
-    async Task SaveEdit()
-    {
-        //UNDONE: Save to DB
-        if (IsValid())
-        {
-            var ratesToSave = new List<AgencyCommission>(
-                _contractEditor.Values!.Cast<AgencyCommission>());
-            ratesToSave.AddRange(_commercialEditor.Values?.Cast<AgencyCommission>() ?? []);
-            var saveResult = await DataAccess.SetAgencyCommissionRates(AgencyId, ratesToSave.ToArray());
-
-            if (saveResult.Success)
-                NotifySuccessfulSave("commission rates");
-            else
-                NotifySaveError(saveResult.Errors, "commission rates");
-
-            _editMode = false;
-            await LoadRates();
-        }
+        _commercialCurrentRates = _commissionRates.Where(r => r.BondType.ToLower() == "commercial" && r.Expires == null).ToList();
+        _commercialScheduledRates = _commissionRates.Where(r => r.BondType.ToLower() == "commercial" && r.Expires != null).ToList();
+        
+        _contractCurrentRates = _commissionRates.Where(r => r.BondType.ToLower() == "contract" && r.Expires == null).ToList();
+        _contractScheduledRates = _commissionRates.Where(r => r.BondType.ToLower() == "contract" && r.Expires != null).ToList();
     }
 
     private string[] _noValidationStatuses = { "Pending", "Lost", "Terminated" };
     private bool ValidationRequired => !_noValidationStatuses.Contains(AgencyStatus);
 
-    private bool IsValid()
+    private async Task OnCreateCommission(AgencyCommission rate)
     {
-        if (!ValidationRequired) return true;
-        if (_contractEditor.IsValid() && _commercialEditor.IsValid())
-            return true;
-        NotificationService.Notify(new NotificationMessage
+        var result = await DataAccess.SetAgencyCommissionRate(rate);
+
+        if (!result.Success)
         {
-            Severity = NotificationSeverity.Error,
-            Summary = "Commission rates must exist, have no gaps and not overlap",
-            Duration = 5000, CloseOnClick = true, Payload = DateTime.Now
-        });
-        return false;
+            NotifySaveError(result.Errors, "agency commission rates");
+        }
+        else
+        {
+            _commissionRates.Add(rate);
+            DistributeCommissions();
+            DataCache.UpdateCache(_keyAgencyCommission, _commissionRates);
+
+            StateHasChanged();
+        }
     }
 
-    AgencyCommission CreateNewTier(string bondType)
+    private async Task OnUpdateCommission(AgencyCommission rate)
     {
-        return new AgencyCommission() { AgencyId = AgencyId, BondType = bondType };
+        var result = await DataAccess.SetAgencyCommissionRate(rate);
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "agency commission rates");
+        }
+        else
+        {
+            NotifySuccessfulSave("agency commission");
+            var toUpdate = _commissionRates.FirstOrDefault(f => f.Id == rate.Id);
+            if (toUpdate != null)
+            {
+                _commissionRates.Remove(toUpdate);
+                _commissionRates.Add(rate);
+            }
+
+            DistributeCommissions();
+            DataCache.UpdateCache(_keyAgencyCommission, _commissionRates);
+
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnDeleteCommission(Guid id)
+    {
+        var result = await DataAccess.DeleteAgencyCommissionRate(id);
+        
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "agency commission rates");
+        }
+        else
+        {
+            NotifySuccessfulSave("agency commission");
+            var toRemove = _commissionRates.FirstOrDefault(f => f.Id == id);
+            if (toRemove != null)
+            {
+                _commissionRates.Remove(toRemove);
+                
+                DistributeCommissions();
+                DataCache.UpdateCache(_keyAgencyCommission, _commissionRates);
+
+                StateHasChanged();
+            }
+        }
     }
 }

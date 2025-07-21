@@ -80,7 +80,13 @@ mutation SetAgencyLicense ($input: SetAgencyLicenseInput!) {
       id
     }
   }
-} 
+}
+
+mutation SetAgencyProfitSharing ($input: SetAgencyProfitSharingInfoInput!) {
+    setAgencyProfitSharingInfo(input: $input){
+        boolean
+    }
+}
 
 mutation SetPowerOfAttorneyDocumentStatus($input: SetPowerOfAttorneyDocumentStatusInput!) {
   setPowerOfAttorneyDocumentStatus(input: $input) {
@@ -114,4 +120,8 @@ mutation SetPowerOfAttorney ($input: SetPowerOfAttorneyInput!) {
 
 mutation SaveAgencyCommissionRates($input:SaveCommissionRatesInput!) {
     saveCommissionRates(input: $input){boolean}
+}
+
+mutation DeleteAgencyCommissionRate($input: DeleteAgencyCommissionRateInput!) {
+    deleteAgencyCommissionRate(input: $input){boolean}
 }

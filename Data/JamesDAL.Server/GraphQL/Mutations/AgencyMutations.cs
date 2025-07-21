@@ -414,60 +414,58 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> SaveCommissionRates(Guid agencyId, AgencyCommission[] rates,
+        public async Task<bool> SaveCommissionRates(AgencyCommission rate,
             [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
 
-            //Make sure agency Id is set
-            foreach (var rate in rates)
-                rate.AgencyId = agencyId;
+            if (rate.AgencyId == Guid.Empty)
+                return false;
 
-            //Get existing rate ids
-            var existingRates = await ctx.AgencyCommissions
-                .Where(ac => ac.AgencyId == agencyId).ToListAsync();
-            
-            //If minimum has changed, Id must be changed to cause Entities to remove/replace it
-            //  since Entities will not allow primary keys to be changed.
-            foreach (var existingRate in existingRates)
+            //Get existing rate id
+            var existingRate = await ctx.AgencyCommissions
+                .FirstOrDefaultAsync(ac => ac.Id == rate.Id);
+
+            if (existingRate != null)
             {
-                var updateSource = rates.FirstOrDefault(r => r.Id == existingRate.Id);
-                if (updateSource == null) continue;
-                if (updateSource.Minimum != existingRate.Minimum)
-                    updateSource.Id = Guid.NewGuid();
+                existingRate.BondType = rate.BondType;
+                existingRate.Minimum = rate.Minimum;
+                existingRate.Maximum = rate.Maximum;
+                existingRate.Rate = rate.Rate;
+                existingRate.Effective = rate.Effective;
+                existingRate.Expires = rate.Expires;
             }
-
-            var existingIds = existingRates.Select(r => r.Id).ToImmutableList();
-            var idsToSave = rates.Select(r => r.Id).ToImmutableList();
-            //Delete removed rates
-            var deletedRates = existingRates
-                .Where(er => !idsToSave.Contains(er.Id));
-            ctx.AgencyCommissions.RemoveRange(deletedRates);
-            //Update updated rates
-            var updatedRates = existingRates
-                .Where(er => idsToSave.Contains(er.Id)).ToImmutableList();
-            ctx.AgencyCommissions.UpdateRange(updatedRates);
-
-            //Make sure only relevant columns are updated
-            foreach (var updatedRate in updatedRates)
+            else
             {
-                var updateSource = rates.First(r => r.Id == updatedRate.Id);
-                if (updatedRate.Maximum != updateSource.Maximum)
-                    updatedRate.Maximum = updateSource.Maximum;
-                if (Math.Abs(updatedRate.Rate - updateSource.Rate) > 0.01d)
-                    updatedRate.Rate = updateSource.Rate;
-                //NOTE: Database trigger should update Modified, not code
+                ctx.AgencyCommissions.Add(rate);
             }
-            //Add new rates
-            var newRates = rates.Where(r => !existingIds.Contains(r.Id)).ToList();
-            ctx.AgencyCommissions.AddRange(newRates);
 
             await ctx.SaveChangesAsync();
 
             return true;
             //UNDONE: Support subscriptions with event sender
         }
+
+        [Authorize]
+        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId,
+            [Service] ITopicEventSender eventSender,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var commRateToRemove = ctx.AgencyCommissions
+                .FirstOrDefault(f => f.Id == commRateId);
+
+            if (commRateToRemove == null)
+                return false;
+
+            ctx.AgencyCommissions.Remove(commRateToRemove);
+            await ctx.SaveChangesAsync();
+            return true;
+
+        }
+        
         [Authorize]
         public async Task<bool> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
             bool need1099, bool nasbp, string branchKey, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -507,7 +505,28 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+
+        [Authorize]
+        public async Task<bool> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing, 
+            int? profitSharingMinimumPremium, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var agency = await ctx.Agencies.FirstOrDefaultAsync(f => f.Id == agencyId);
+                if (agency == null)
+                    return false;
+
+                agency.ProfitSharing = profitSharing;
+                agency.ProfitSharingMinimumPremium = profitSharingMinimumPremium;
+                await ctx.SaveChangesAsync();
+                
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
-
-
 }

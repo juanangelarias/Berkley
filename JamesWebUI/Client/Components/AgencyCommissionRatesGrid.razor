@@ -1,0 +1,264 @@
+﻿@inherits JamesLayoutComponentBase
+
+<Theme/>
+<RenderModeBackground/>
+
+<RadzenDataGrid TItem="AgencyCommission" Data="@_visibleRates" @ref="RatesGrid" Density="Density.Compact"
+                Style="border-radius: 10px; height: 250px" EmptyText="No records to display" IsLoading="@_isLoading"
+                SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
+                RowUpdate="UpdateRate" RowCreate="CreateRate" AllowPaging="true" PageSize="10" AllowSorting="true">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="New Record" Variant="Variant.Text" Click="@InsertNewRow"></RadzenButton>
+            <RadzenFormField Text="Filter Date" Visible="AreDatesVisible">
+                <RadzenDatePicker TValue="DateOnly" @bind-Value="@(_filterDate)" Visible="AreDatesVisible" 
+                                  AllowClear="true" DateFormat="MM/dd/yyyy" 
+                                  Change="@(args => SetDateFilter(args))"/>
+            </RadzenFormField>
+        </RadzenStack>
+    </HeaderTemplate>
+    <Columns>
+        <RadzenDataGridColumn TItem="AgencyCommission" Title="Minimum" Property="Minimum" FormatString="{0:d}"
+                              Filterable="false" SortOrder="SortOrder.Ascending" Width="200px">
+            <Template Context="commission">
+                <RadzenText Text="@(commission.Minimum.ToString("C0"))"/>
+            </Template>
+            <EditTemplate Context="commission">
+                <RadzenNumeric TValue="int" @bind-Value="@(commission.Minimum)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="AgencyCommission" Title="Maximum" Property="Maximum" FormatString="{0:d}"
+                              Filterable="false" SortOrder="SortOrder.Ascending" Width="200px">
+            <Template Context="commission">
+                <RadzenText Text="@((commission.Maximum ?? 0).ToString("C0"))"/>
+            </Template>
+            <EditTemplate Context="commission">
+                <RadzenNumeric TValue="int?" @bind-Value="@(commission.Maximum)" Name="numMaximum"/>
+                <RadzenCustomValidator Component="numMaximum"
+                                       Validator="@(() => commission.Maximum >= commission.Minimum)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="AgencyCommission" Title="Percentage" Property="Rate" FormatString="{0:P}"
+                              Filterable="false" SortOrder="SortOrder.Ascending" Width="200px">
+            <Template Context="commission">
+                <RadzenText Text="@(commission.Rate.ToString("P1"))"/>
+            </Template>
+            <EditTemplate Context="commission">
+                <RadzenNumeric TValue="double" @bind-Value="@(commission.Rate)" Name="numRate" Min="0"/>
+                <RadzenCustomValidator Component="numRate" Validator="@(() => commission.Rate > 0)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="AgencyCommission" Title="Begin date" Property="Effective"
+                              FormatString="{0:MM/dd/yyyy}" Filterable="false" Width="200px">
+            <Template Context="commission">
+                <RadzenText Text="@(commission.Effective.ToString("MM/dd/yyyy"))"/>
+            </Template>
+            <EditTemplate Context="commission">
+                <RadzenDatePicker TValue="DateTime" ShowTime="false" @bind-Value="@commission.Effective"
+                                  DateFormat="MM/dd/yyyy"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="AgencyCommission" Title="End Date" Property="Expires"
+                              Filterable="false" Width="200px" Visible="AreDatesVisible">
+            <Template Context="commission">
+                <RadzenText Text="@(commission.Expires?.ToString("MM/dd/yyyy"))"/>
+            </Template>
+            <EditTemplate Context="commission">
+                <RadzenDatePicker TValue="DateTime?" @bind-Value="@commission.Expires" Name="dpExpires"
+                                  Min="@commission.Effective" DateFormat="MM/dd/yyyy"/>
+                <RadzenCustomValidator Component="dpExpires"
+                                       Validator="@(() => commission.Expires >= commission.Effective)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="AgencyCommission" Width="75px" Filterable="false" Sortable="false"
+                              TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+            <Template Context="rate">
+                <RadzenButton Icon="edit" ButtonStyle=" ButtonStyle.Light" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" Click="@(_ => EditRow(rate))" @onclick:stopPropagation="true"/>
+                <RadzenButton Icon="delete" ButtonStyle=" ButtonStyle.Danger" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" Shade="Shade.Light" class="my-1 ms-1"
+                              Click="@(_ => DeleteRow(rate))" @onclick:stopPropagation="true"/>
+            </Template>
+            <EditTemplate Context="rate">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" Click="@(_ => SaveRow(rate))"/>
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelEdit(rate))"/>
+                <RadzenButton Icon="delete" ButtonStyle=" ButtonStyle.Danger" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" Shade="Shade.Light" class="my-1 ms-1"
+                              Click="@(_ => DeleteRow(rate))" @onclick:stopPropagation="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
+</RadzenDataGrid>
+
+@code {
+    [Parameter, EditorRequired] public required Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public required BondType BondType { get; set; } // Commercial or Contract
+    [Parameter, EditorRequired] public required CommissionType CommissionType { get; set; } // Current or Special
+    [Parameter, EditorRequired] public required List<AgencyCommission>? Rates { get; set; } = []; // Commission Rates
+    [Parameter, EditorRequired] public EventCallback<AgencyCommission> OnCreate { get; set; }
+    [Parameter, EditorRequired] public EventCallback<AgencyCommission> OnUpdate { get; set; }
+    [Parameter, EditorRequired] public EventCallback<Guid> OnDelete { get; set; }
+
+    private List<AgencyCommission> _visibleRates = [];
+    private RadzenDataGrid<AgencyCommission> RatesGrid { get; set; } = null!;
+    private bool AreDatesVisible => CommissionType == CommissionType.Scheduled;
+    private bool _isLoading;
+    private DateOnly _filterDate;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _visibleRates = Rates == null
+        ? []
+        : Rates
+            .OrderBy(o => o.Effective)
+            .ThenBy(t => t.Minimum)
+            .ToList();
+    }
+
+    private bool Validate(AgencyCommission commission)
+    {
+        var errors = new List<string>();
+        if (commission.Minimum < 0)
+            errors.Add("Commission Minimum can not be less than zero");
+
+        if (commission.Minimum > commission.Maximum)
+            errors.Add($"The Minimum ({commission.Minimum}) should be less than Maximum ({commission.Maximum})");
+
+        switch (CommissionType)
+        {
+            case CommissionType.Current when Rates != null && Rates.Any():
+                errors.AddRange(Rates
+                    .Where(r => r.Id != commission.Id && 
+                                r.Effective == commission.Effective &&
+                                (commission.Minimum >= r.Minimum && commission.Minimum <= r.Maximum ||
+                                 commission.Maximum >= r.Minimum && commission.Maximum <= r.Maximum))
+                    .Select(_ => "The minimum or maximum is overlapping existing commission"));
+                break;
+            case CommissionType.Scheduled when Rates != null && Rates.Any():
+                errors.AddRange(Rates
+                    .Where(r => r.Id != commission.Id &&
+                                (commission.Minimum >= r.Minimum && commission.Minimum <= r.Maximum ||
+                                 commission.Maximum >= r.Minimum && commission.Maximum <= r.Maximum) &&
+                                (commission.Effective >= r.Effective && commission.Effective <= r.Expires ||
+                                 commission.Expires >= r.Effective && commission.Expires <= r.Expires))
+                    .Select(_ => "The effective date or the expires date is overlapping existing commission"));
+                break;
+            default:
+                break;
+        }
+
+        foreach (var error in errors)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Summary = error,
+                Severity = NotificationSeverity.Error,
+                Duration = 5000
+            });
+        }
+
+        return !errors.Any();
+    }
+
+    private async Task InsertNewRow()
+    {
+        await ShowLoading();
+        var newRow = new AgencyCommission { AgencyId = AgencyId, Id = Guid.NewGuid(), BondType = BondType.ToString() };
+        await RatesGrid.InsertRow(newRow);
+    }
+
+    private async Task ShowLoading()
+    {
+        _isLoading = true;
+
+        await Task.Yield();
+
+        _isLoading = false;
+    }
+
+    private async Task EditRow(AgencyCommission rate)
+    {
+        await ShowLoading();
+        await RatesGrid.EditRow(rate);
+    }
+
+    private async Task DeleteRow(AgencyCommission rate)
+    {
+        await ShowLoading();
+        await OnDelete.InvokeAsync(rate.Id);
+        Rates?.Remove(rate);
+        await RatesGrid.Reload();
+    }
+
+    private async Task SaveRow(AgencyCommission rate)
+    {
+        await ShowLoading();
+
+        rate.AgencyId = AgencyId;
+        
+        if (!Validate(rate))
+            return;
+
+        await RatesGrid.UpdateRow(rate);
+        await RatesGrid.Reload();
+    }
+
+    private async Task CancelEdit(AgencyCommission rate)
+    {
+        await ShowLoading();
+        RatesGrid.CancelEditRow(rate);
+        await RatesGrid.Reload();
+    }
+
+    private async Task UpdateRate(AgencyCommission rate)
+    {
+        rate.AgencyId = AgencyId;
+        
+        await ShowLoading();
+        await OnUpdate.InvokeAsync(rate);
+    }
+
+    private async Task CreateRate(AgencyCommission rate)
+    {
+        await ShowLoading();
+        await OnCreate.InvokeAsync(rate);
+    }
+
+    private async Task SetDateFilter(DateTime? date)
+    {
+        if (date == null)
+        {
+            _visibleRates = Rates == null
+                ? []
+                : Rates
+                    .OrderBy(o => o.Effective)
+                    .ThenBy(t => t.Minimum)
+                    .ToList();
+        }
+        else
+        {
+            _visibleRates = Rates == null
+                ? []
+                : Rates
+                    .Where(r => date >= r.Effective && date <= r.Expires)
+                    .OrderBy(o => o.Effective)
+                    .ThenBy(t => t.Minimum)
+                    .ToList();
+        }
+
+        await RatesGrid.Reload();
+    }
+}

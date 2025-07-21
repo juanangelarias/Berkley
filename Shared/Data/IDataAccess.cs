@@ -84,9 +84,12 @@ namespace James.Shared.Data
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode);
         public Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
             bool need1099, bool nasbp, string branchKey);
+        public Task<ISaveDataResult> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing,
+            int? profitSharingMinimumPremium);
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
         public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
-        public Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates);
+        public Task<ISaveDataResult> SetAgencyCommissionRate(AgencyCommission rate);
+        public Task<ISaveDataResult> DeleteAgencyCommissionRate(Guid commRateId);
         public Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber);
         public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
         public Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes();

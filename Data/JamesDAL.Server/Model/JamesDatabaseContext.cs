@@ -955,7 +955,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => new { e.AgencyId, e.BondType, e.Minimum }).IsClustered(false);
 
-            entity.ToTable("AgencyCommission");
+            entity.ToTable("AgencyCommission", tb => tb.HasTrigger("trgAgencyCommissionModified"));
 
             entity.HasIndex(e => e.Id, "UQ_AgencyCommission_Id").IsUnique();
 

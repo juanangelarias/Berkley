@@ -186,7 +186,7 @@
                     <AgencyAccountsAndBonds agencyToDisplay="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Commission Rates" TabName="tabCommissionRates">
-                    <AgencyCommissionRates AgencyId="@_agencyToDisplay.Id" AgencyStatus="@_agencyToDisplay?.Status" />
+                    <AgencyCommissionRates Agency="@_agencyToDisplay" AgencyStatus="@_agencyToDisplay?.Status" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Virtual File" TabName="tabVirtualFile">
                     <ImagingFull ImagingId="@_agencyToDisplay?.AgencyNumber" DocumentCategory="ImagingDocumentCategory.Agency" />
@@ -270,12 +270,14 @@
     
     private async Task SaveAgencyChanges()
     {
-        //TODO: Handle errors
-        await DataAccess.SetAgencyGeneralInfo(_agencyToDisplay.Id, _agencyToDisplay.IdNavigation.FullName, _agencyToDisplay.IdNavigation.ParentNavigation!.Id,
+        var result = await DataAccess.SetAgencyGeneralInfo(_agencyToDisplay.Id, _agencyToDisplay.IdNavigation.FullName, _agencyToDisplay.IdNavigation.ParentNavigation!.Id,
             _agencyToDisplay.IdNavigation.TaxIdEncrypted, _agencyToDisplay.NationalProducerNumber, _agencyToDisplay.W9, _agencyToDisplay.Need1099,
             _agencyToDisplay.Nasbp, _agencyToDisplay.Branch);
         EditMode = !EditMode;
-        NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
+        if (!result.Success)
+            NotifySaveError(result.Errors, "agency");
+        else
+            NotifySuccessfulSave("agency");
     }
 
     public void Dispose()

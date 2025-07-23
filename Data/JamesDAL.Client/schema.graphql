@@ -512,6 +512,10 @@ type AccountStatusDm {
   accountStatusLogs: [AccountStatusLog!]!
 }
 
+input AgencyLicenseBulkUpdateInput {
+  licenses: [AgencyLicenseBulkInput!]!
+}
+
 type Surcharge {
   id: UUID!
   created: DateTime!
@@ -897,6 +901,10 @@ type AddressTypeDm {
 
 scalar UUID
 
+input AgencyLicenseBulkInsertInput {
+  licenses: [AgencyLicenseBulkInput!]!
+}
+
 type PersonalFinancialStatement {
   id: UUID!
   created: DateTime!
@@ -1024,6 +1032,9 @@ type Mutation {
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
   setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
+  agencyLicenseBulkUpdate(input: AgencyLicenseBulkUpdateInput!): AgencyLicenseBulkUpdatePayload!
+  agencyLicenseBulkInsert(input: AgencyLicenseBulkInsertInput!): AgencyLicenseBulkInsertPayload!
+  agencyLicenseBulkDelete(input: AgencyLicenseBulkDeleteInput!): AgencyLicenseBulkDeletePayload!
   createAddress(input: CreateAddressInput!): CreateAddressPayload!
   createPhoneNumber(input: CreatePhoneNumberInput!): CreatePhoneNumberPayload!
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
@@ -1422,6 +1433,21 @@ type BondTransactionPurpose {
   bondTransaction: BondTransaction!
 }
 
+input AgencyLicenseBulkInput {
+  id: UUID!
+  agencyId: UUID!
+  state: String!
+  licenseNumber: String
+  isResident: Boolean!
+  insurerId: UUID!
+  expiration: LocalDate
+  comments: String
+  appointment: LocalDate
+  termination: LocalDate
+  appointingState: Boolean!
+  isActive: Boolean!
+}
+
 type CreateAddressPayload {
   boolean: Boolean
 }
@@ -1442,6 +1468,10 @@ type DivisionDm {
   imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
   profitCenters: [ProfitCenter!]!
+}
+
+type AgencyLicenseBulkInsertPayload {
+  boolean: Boolean
 }
 
 input AddSecurityRoleInput {
@@ -1889,6 +1919,10 @@ type ProfitCenter {
   inverseBudgetDefaultNavigation: [ProfitCenter!]!
   lineOfBusinessNavigation: LineOfBusinessDm!
   underWriter: Underwriter
+}
+
+type AgencyLicenseBulkDeletePayload {
+  boolean: Boolean
 }
 
 type SetAccountGeneralInfoPayload {
@@ -2643,6 +2677,10 @@ type ScalingDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
+type AgencyLicenseBulkUpdatePayload {
+  boolean: Boolean
+}
+
 type ReferenceTypeDm {
   id: UUID!
   created: DateTime!
@@ -2892,6 +2930,10 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+input AgencyLicenseBulkDeleteInput {
+  licenseIds: [UUID!]!
 }
 
 type AccountReference {

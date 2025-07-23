@@ -2,6 +2,7 @@
 using HotChocolate.Subscriptions;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using James.Data.Server.GraphQL.Types;
 using James.Shared;
 
 namespace James.Data.Server.GraphQL.Mutations
@@ -10,8 +11,10 @@ namespace James.Data.Server.GraphQL.Mutations
     public class AgencyMutation
     {
         [Authorize]
-        public async Task<Agency> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9, bool need1099, bool profitSharing, string address1, string address2, string address3, string city, string stateCode,
-            string postalCode, string billingAddress1, string billingAddress2, string billingAddress3, string billingCity, string billingStateCode, string billingPostalCode,
+        public async Task<Agency> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9,
+            bool need1099, bool profitSharing, string address1, string address2, string address3, string city,
+            string stateCode, string postalCode, string billingAddress1, string billingAddress2, string billingAddress3,
+            string billingCity, string billingStateCode, string billingPostalCode,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -24,7 +27,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 EntityType = "Agency",
                 IsIndividual = false
             };
-            
+
             Agency newAgency = new Agency()
             {
                 Id = newId,
@@ -66,9 +69,11 @@ namespace James.Data.Server.GraphQL.Mutations
             //TODO: Insert the new agency
             return new Agency();
         }
-        public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee, 
-            Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
-            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+
+        public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
+            string documentType, string? addressee, Guid addressId, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode, [Service] ITopicEventSender eventSender,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var oldInventory = ctx.AgencyInventories.Where(a => a.Id == inventoryId)
@@ -96,15 +101,16 @@ namespace James.Data.Server.GraphQL.Mutations
             {
                 await ctx.SaveChangesAsync();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 loggingService.LogException(ex, "Exception saving agency inventory to database", "Database");
             }
 
             return oldInventory;
         }
-        public async Task<AgencyLicense> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState, 
-            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+
+        public async Task<AgencyLicense> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId,
+            bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -131,12 +137,14 @@ namespace James.Data.Server.GraphQL.Mutations
 
             return oldLicense;
         }
+
         [Authorize]
-        public async Task<bool> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+        public async Task<bool> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
+            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive,
-            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+            [Service] ILoggingService loggingService)
         {
-            
             var ctx = await contextFactory.CreateDbContextAsync();
             try
             {
@@ -170,9 +178,9 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
-            Guid changedBy, string? comments,
-            [Service] ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<bool> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective,
+            string oldStatus, string newStatus, Guid changedBy, string? comments,
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             try
@@ -198,14 +206,13 @@ namespace James.Data.Server.GraphQL.Mutations
             {
                 return false;
             }
-
         }
+
         [Authorize]
-        public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status,
-            [Service]ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<bool> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit,
+            string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status,
+            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            Console.WriteLine($"Creating POA - Reference Number: {referenceNumber}");
-            
             var ctx = await contextFactory.CreateDbContextAsync();
             try
             {
@@ -225,12 +232,12 @@ namespace James.Data.Server.GraphQL.Mutations
                 await ctx.SaveChangesAsync();
                 return true;
             }
-            catch(Exception e)
+            catch
             {
-                Console.WriteLine($"Error creating POA: {e.Message}");
                 return false;
             }
         }
+
         [Authorize]
         public async Task<bool> CreateAgencyPOADocumentLink(Guid poaId, Guid? imagingDocumentId,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -248,6 +255,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+
         [Authorize]
         public async Task<bool> CreateAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -265,8 +273,10 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+
         [Authorize]
-        public async Task<bool> DeleteAgencyPOA(Guid poaId, [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<bool> DeleteAgencyPOA(Guid poaId, [Service] ITopicEventSender eventSender,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             try
@@ -274,12 +284,14 @@ namespace James.Data.Server.GraphQL.Mutations
                 var poa = ctx.PowerOfAttorneys.FirstOrDefault(p => p.Id == poaId);
                 if (poa == null)
                     return false;
-                
+
                 var poaDocs = ctx.PowerOfAttorneyDocumentStatuses.Where(p => p.Poaid == poaId).ToList();
                 ctx.PowerOfAttorneys.Remove(poa);
-                foreach (var poaDoc in poaDocs) { 
+                foreach (var poaDoc in poaDocs)
+                {
                     ctx.PowerOfAttorneyDocumentStatuses.Remove(poaDoc);
                 }
+
                 await ctx.SaveChangesAsync();
                 return true;
             }
@@ -288,10 +300,12 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+
         [Authorize]
-        public async Task<bool> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, string addressee,
-            string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId,
-            [Service]ITopicEventSender eventSender, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<bool> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity,
+            string documentType, string addressee, string address1, string? address2, string? address3, string city,
+            string? stateCode, string? postalCode, Guid approverId, [Service] ITopicEventSender eventSender,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             try
@@ -319,8 +333,8 @@ namespace James.Data.Server.GraphQL.Mutations
                     Approver = Guid.Parse("67ACEB0B-5C24-4147-9372-FE1F237F2C22")
                 };
                 ctx.Add(newAddress);
-                ctx.Add(newInventory); 
-                await ctx.SaveChangesAsync(); 
+                ctx.Add(newInventory);
+                await ctx.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -328,8 +342,10 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+
         [Authorize]
-        public async Task<bool> DeleteLicense(Guid licenseId, [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<bool> DeleteLicense(Guid licenseId, [Service] ITopicEventSender eventSender,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             bool success = false;
 
@@ -346,8 +362,10 @@ namespace James.Data.Server.GraphQL.Mutations
             return success;
             //UNDONE: Support subscriptions with event sender
         }
+
         [Authorize]
-        public async Task<bool> DeleteAgencyInventory(Guid inventoryId, [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<bool> DeleteAgencyInventory(Guid inventoryId, [Service] ITopicEventSender eventSender,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             bool success = false;
 
@@ -363,8 +381,10 @@ namespace James.Data.Server.GraphQL.Mutations
 
             return success;
         }
+
         [Authorize]
-        public async Task<PowerOfAttorney> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status,
+        public async Task<PowerOfAttorney> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,
+            string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
 
@@ -386,11 +406,14 @@ namespace James.Data.Server.GraphQL.Mutations
                 await ctx.SaveChangesAsync();
                 return oldPowerOfAttorney;
             }
+
             return new PowerOfAttorney();
             //UNDONE: Support subscriptions with event sender
         }
+
         [Authorize]
-        public async Task<PowerOfAttorneyDocumentStatus> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId, string? comments,
+        public async Task<PowerOfAttorneyDocumentStatus> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested,
+            DateTime? received, Guid documentTypeId, string? comments,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -409,13 +432,13 @@ namespace James.Data.Server.GraphQL.Mutations
                 await ctx.SaveChangesAsync();
                 return oldDocStatus;
             }
+
             return new PowerOfAttorneyDocumentStatus();
             //UNDONE: Support subscriptions with event sender
         }
 
         [Authorize]
-        public async Task<bool> SaveCommissionRates(Guid agencyId, AgencyCommission[] rates,
-            [Service] ITopicEventSender eventSender,
+        public async Task<bool> SaveCommissionRates(Guid agencyId, AgencyCommission[] rates, [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -427,7 +450,7 @@ namespace James.Data.Server.GraphQL.Mutations
             //Get existing rate ids
             var existingRates = await ctx.AgencyCommissions
                 .Where(ac => ac.AgencyId == agencyId).ToListAsync();
-            
+
             //If minimum has changed, Id must be changed to cause Entities to remove/replace it
             //  since Entities will not allow primary keys to be changed.
             foreach (var existingRate in existingRates)
@@ -459,6 +482,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     updatedRate.Rate = updateSource.Rate;
                 //NOTE: Database trigger should update Modified, not code
             }
+
             //Add new rates
             var newRates = rates.Where(r => !existingIds.Contains(r.Id)).ToList();
             ctx.AgencyCommissions.AddRange(newRates);
@@ -468,18 +492,20 @@ namespace James.Data.Server.GraphQL.Mutations
             return true;
             //UNDONE: Support subscriptions with event sender
         }
+
         [Authorize]
-        public async Task<bool> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
-            bool need1099, bool nasbp, string branchKey, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<bool> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId,
+            string? npn, bool w9, bool need1099, bool nasbp, string branchKey,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
 
                 var legalEntity = await ctx.LegalEntities.FirstOrDefaultAsync(l => l.Id == agencyId);
-                if(legalEntity == null)
+                if (legalEntity == null)
                     return false;
-                
+
                 var agency = await ctx.Agencies.FirstOrDefaultAsync(a => a.Id == agencyId);
 
                 if (null != agency)
@@ -500,6 +526,7 @@ namespace James.Data.Server.GraphQL.Mutations
 
                     return true;
                 }
+
                 return false;
             }
             catch
@@ -507,7 +534,104 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+
+        [Authorize]
+        public async Task<bool> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                var ids = licenses.Select(s => s.Id).ToList();
+                var toUpdate = ctx.AgencyLicenses
+                    .Where(r => ids.Contains(r.Id));
+
+                foreach (var license in toUpdate)
+                {
+                    var input = licenses.First(s => s.Id == license.Id);
+
+                    license.AgencyId = input.AgencyId;
+                    license.State = input.State;
+                    license.LicenseNumber = input.LicenseNumber;
+                    license.IsResident = input.IsResident;
+                    license.InsurerId = input.InsurerId;
+                    license.Expiration = input.Expiration;
+                    license.Comments = input.Comments;
+                    license.Appointment = input.Appointment;
+                    license.Termination = input.Termination;
+                    license.AppointingState = input.AppointingState;
+                    license.IsActive = input.IsActive;
+                    license.Modified = DateTime.Now;
+                }
+                
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        [Authorize]
+        public async Task<bool> AgencyLicenseBulkInsert(List<AgencyLicenseBulk> licenses,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                var toInsert = licenses
+                    .Select(s => new AgencyLicense
+                    {
+                        Id = s.Id,
+                        AgencyId = s.AgencyId,
+                        State = s.State,
+                        LicenseNumber = s.LicenseNumber,
+                        IsResident = s.IsResident,
+                        InsurerId = s.InsurerId,
+                        Expiration = s.Expiration,
+                        Comments = s.Comments,
+                        Appointment = s.Appointment,
+                        Termination = s.Termination,
+                        AppointingState = s.AppointingState,
+                        IsActive = s.IsActive,
+                        Created = DateTime.Now,
+                        Modified = DateTime.Now
+                    })
+                    .ToList();
+
+                await ctx.AddRangeAsync(toInsert);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        [Authorize]
+        public async Task<bool> AgencyLicenseBulkDelete(List<Guid> licenseIds,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+
+                var toDelete = ctx.AgencyLicenses
+                    .Where(l => licenseIds.Contains(l.Id))
+                    .ToList();
+
+                ctx.RemoveRange(toDelete);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
     }
-
-
 }

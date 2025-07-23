@@ -3,6 +3,7 @@ using James.Data.Imaging;
 using James.Data.Server.Exceptions;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
+using James.Data.Server.GraphQL.Types;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Imaging;
@@ -11,8 +12,8 @@ using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server
 {
-    //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutation generalMutation, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService, IHttpContextAccessor contextAccessor, IUserShared userShared) : IDataAccess
+    //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     {
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
@@ -334,6 +335,31 @@ namespace James.Data.Server
                 return new SaveDataResult { Errors = [ex.Message] };
             }
         }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkDelete(List<Guid> licenseIds)
+        {
+            var result = await ExecuteSave(async () =>
+                await agencyMutation.AgencyLicenseBulkDelete(licenseIds,contextFactory));
+
+            return result;
+        }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkInsert(List<AgencyLicenseBulk> licenses)
+        {
+            var result = await ExecuteSave((async () =>
+                await agencyMutation.AgencyLicenseBulkInsert(licenses, contextFactory)));
+            
+            return result;
+        }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses)
+        {
+            var result = await ExecuteSave(async () =>
+                await agencyMutation.AgencyLicenseBulkUpdate(licenses, contextFactory));
+
+            return result;
+        }
+        
         public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId,
             bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive)

@@ -14,7 +14,6 @@ using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using James.Test.Shared;
 using JamesWebUI.Client.Services;
-using JamesWebUI.Server.SharedServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -22,6 +21,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using System.Data.SqlClient;
 using System.Net.Http.Headers;
+using JamesWebUI.Server.SharedServices;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 

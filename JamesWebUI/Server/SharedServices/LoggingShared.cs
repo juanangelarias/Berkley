@@ -1,10 +1,9 @@
-﻿using James.Data.Server.GraphQL.Mutations;
-using James.Shared.Model;
+﻿using James.Shared.Model;
 using James.Shared.Server;
 
 namespace JamesWebUI.Server.SharedServices
 {
-    public class LoggingShared(ILogger<LoggingMutation> logger, IUserShared userShared) : ILoggingShared
+    public class LoggingShared(ILogger<LoggingShared> logger, IUserShared userShared) : ILoggingShared
     {
         public async Task<bool> Log(int eventId, string message, string details, Severity severity,
                 string category = "General", string? exceptionDetail = null,

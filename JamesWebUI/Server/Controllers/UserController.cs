@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using James.Shared.Server;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
-using James.Shared.Server;
-using JamesWebUI.Server.SharedServices;
 
 namespace JamesWebUI.Server.Controllers
 {
@@ -27,7 +26,7 @@ namespace JamesWebUI.Server.Controllers
             try
             {
                 var token = Request.Headers[HeaderNames.Authorization].ToString().Split(" ").Last();
-                var userInfo = _userShared.GetUserInfoAsync(token).Result;
+                var userInfo = _userShared.GetCurrentUser().Result;
                 Debug.WriteLine($"User info returned: {userInfo}");
                 return new JsonResult(userInfo);
             }

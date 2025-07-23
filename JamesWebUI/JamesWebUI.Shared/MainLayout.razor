@@ -1,6 +1,6 @@
-﻿@using JamesWebUI.Client.Pages
+﻿
+@using JamesWebUI.Client.Pages
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
-@using ThemeService = JamesWebUI.Client.Services.ThemeService
 @inherits JamesLayoutComponentBase
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
@@ -14,7 +14,7 @@
 <PageTitle>BasisTNG</PageTitle>
 <style>
     .rz-sidebar {
-        background: #FCFCFC !important;
+        background: #FCFCFC;
         border-color: #FCFCFC !important;
     }
 
@@ -39,7 +39,7 @@
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                         <RadzenButton Icon="Search" Variant="Variant.Outlined" Click="SuperSearchClicked" />
                         <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;"
-                                        TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes"
+                                        TValue="string" TextProperty="Text" ValueProperty="Value" Data="@JamesWebUI.Client.Services.ThemeService.Themes"
                                         Value="@JamesThemeService.CurrentTheme" Change="@ChangeTheme">
                             <ValueTemplate>
                                 @context.Text Theme
@@ -60,10 +60,6 @@
                                         <rect width="80" height="6" fill="@context.Header" />
                                     </svg>
                                     @context.Text
-                                    @if (context.Premium)
-                                    {
-                                        <RadzenBadge title="To use it in your application you need an active Radzen Professional or Enterprise subscription.">PRO</RadzenBadge>
-                                    }
                                 </RadzenStack>
                             </Template>
                         </RadzenDropDown>
@@ -76,12 +72,13 @@
         <RadzenRow>
             <AccessControl />
         </RadzenRow>
-        <RadzenRow AlignItems="AlignItems.End">
-            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-        </RadzenRow>
+        <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" class="sidebar-expander"
+                                 Icon="@(sidebarExpanded? "chevron_left":"chevron_right")" />
+            </RadzenRow>
         <RadzenRow>
 
-            <RadzenStack Orientation="@(sidebarExpanded? Orientation.Horizontal: Orientation.Vertical)" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+            <RadzenStack Orientation="@(sidebarExpanded ? Orientation.Horizontal : Orientation.Vertical)" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
                 <RadzenButton Variant="Variant.Text" Icon="note" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)" />
                 <RadzenButton Variant="Variant.Text" Icon="notifications" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)">
                     <RadzenBadge Variant="Variant.Outlined" BadgeStyle="BadgeStyle.Secondary" Text="15" title="You have new notifications." />
@@ -89,47 +86,27 @@
                 <RadzenButton Variant="Variant.Text" Icon="mail" Size="ButtonSize.Small" />
             </RadzenStack>
         </RadzenRow>
-        <RadzenRow>
-            <RadzenButton Icon="logout" Text="Logout" Click="BeginSignOut" Variant="Variant.Text" Size="ButtonSize.Small" />
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
-                             Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
-                <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard" />
-                <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds" />
-                <RadzenPanelMenuItem Text="Accounts" Icon="account_balance" Path="Account" />
-                <RadzenPanelMenuItem Text="Agencies" Icon="store" Path="Agency" />
-                <RadzenPanelMenuItem Text="Agents" Icon="person" Path="Agents" />
-                <RadzenPanelMenuItem Text="Obligees" Icon="person" Path="Obligee" />
-                <RadzenPanelMenuItem Text="Finances" Icon="request_quote" Path="Finances" />
-                @if (Environment.MachineName.Equals("localhost", StringComparison.InvariantCultureIgnoreCase) ||
-                                Environment.MachineName.StartsWith("USUBL", StringComparison.InvariantCultureIgnoreCase))
-                {
-                    //Show up only on developer machines
-                    <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl" />
-                }
-                else
-                {
-                    //TODO: Remove this when confirmed that it doesn't show up on servers.
-                    <RadzenPanelMenuItem Text="@Environment.MachineName" Icon="build" Path="GraphQl" />
-                }
-
-            </RadzenPanelMenu>
-        </RadzenRow>
-        <AuthorizeView Policy="InRoleChangePermissions">
-            <RadzenRow>&nbsp;</RadzenRow>
-            <RadzenRow>
-                <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
-                                 Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
-                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="Admin">
-                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Users" />
-                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles" />
-                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions" />
-                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings" />
-                    </RadzenPanelMenuItem>
-                </RadzenPanelMenu>
-            </RadzenRow>
-        </AuthorizeView>
+        <RadzenPanelMenu DisplayStyle="@(sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
+                         Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
+            <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard" />
+            <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds" />
+            <RadzenPanelMenuItem Text="Accounts" Icon="account_balance" Path="Account" />
+            <RadzenPanelMenuItem Text="Agencies" Icon="store" Path="Agency" />
+            <RadzenPanelMenuItem Text="Agents" Icon="person" Path="Agents" />
+            <RadzenPanelMenuItem Text="Obligees" Icon="person" Path="Obligee" />
+            <RadzenPanelMenuItem Text="Finances" Icon="request_quote" Path="Finances" />
+            @if (Environment.MachineName.Equals("localhost", StringComparison.InvariantCultureIgnoreCase) ||
+               Environment.MachineName.StartsWith("USUBL", StringComparison.InvariantCultureIgnoreCase))
+            {
+                //Show up only on developer machines
+                <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl" />
+            }
+            else
+            {
+                //TODO: Remove this when confirmed that it doesn't show up on servers.
+                <RadzenPanelMenuItem Text="@Environment.MachineName" Icon="build" Path="GraphQl" />
+            }
+        </RadzenPanelMenu>
     </RadzenSidebar>
     <RadzenBody>
         <ErrorBoundary>
@@ -156,7 +133,7 @@
 @code {
     private bool sidebarExpanded = true;
     private bool notebookExpanded = false;
-    public Notification[] notifications;
+    public Notification[] notifications = [];
 
     protected override void OnInitialized()
     {
@@ -183,7 +160,7 @@
         NavigationManager.NavigateToLogout("authentication/logout");
     }
 
-    private DialogOptions _superSearchDialogOptions = new()
+    private DialogOptions _superSearchDialogOptions = new DialogOptions()
     {
         AutoFocusFirstElement = true,
         CloseDialogOnOverlayClick = true,
@@ -198,4 +175,25 @@
     {
         await DialogService.OpenAsync<SuperSearch>("Super Search", options: _superSearchDialogOptions);
     }
+
+
+    //Code to load our javascript functions
+    //TODO:Code review to decide if there is a better place
+    //IJSObjectReference? _module;
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+    //    await base.OnAfterRenderAsync(firstRender);
+    //    if (firstRender)
+    //        _module = await JS.InvokeAsync<IJSObjectReference>(
+    //            "import", "./Shared/MainLayout.razor.js");
+    //}
+
+    //public async ValueTask DisposeAsync()
+    //{
+    //    if (_module != null)
+    //    {
+    //        await _module.DisposeAsync();
+    //    }
+    //}
+    //End javascript load code
 }

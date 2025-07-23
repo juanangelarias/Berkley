@@ -1,6 +1,5 @@
 ﻿using James.Shared.Model;
 using JamesWebUI.Server.Controllers;
-using JamesWebUI.Server.Model;
 using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;

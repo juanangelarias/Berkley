@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="StrawberryShake.Blazor" Version="15.1.3" />
-    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="15.1.3" />
+    <PackageReference Include="StrawberryShake.Blazor" Version="15.1.4" />
+    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="15.1.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +34,7 @@
     <None Remove="GraphQL\Mutations\ObligeeMutations.graphql" />
     <None Remove="GraphQL\Queries\AgentQueries.graphql" />
     <None Remove="GraphQL\Queries\Obligee.graphql" />
+    <None Remove="GraphQL\Queries\Security.graphql" />
   </ItemGroup>
 
   <ItemGroup>

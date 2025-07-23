@@ -19,7 +19,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -102,13 +102,21 @@ a, .btn-link {
 
 /* Below area classes to match font styles used in Figma. */
 /* Stubbed out by Greg, but Stefanie will confirm them when she has a chance */
-.figma-subtable-header{
+.figma-subtable-header {
     font: bold 14px Inter, sans-serif;
 }
 
-.single-spaced-text{
-    margin-top:0;
-    margin-bottom:0;
-    padding-top:0;
-    padding-bottom:0;
+.single-spaced-text {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.sidebar-expander {
+    transform: translate(60%, 0%);
+    z-index:10;
+}
+div:has(button.sidebar-expander){
+    overflow-x:visible;
 }

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Web;
+﻿using System.Web;
+using Microsoft.AspNetCore.Components;
 
 namespace JamesWebUI.Client.Services
 {

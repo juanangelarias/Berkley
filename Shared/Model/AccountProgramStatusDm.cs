@@ -16,5 +16,9 @@ public partial class AccountProgramStatusDm
 
     public int? OldId { get; set; }
 
+    public virtual ICollection<AccountProgramStatusHistory> AccountProgramStatusHistoryNewStatusNavigations { get; set; } = new List<AccountProgramStatusHistory>();
+
+    public virtual ICollection<AccountProgramStatusHistory> AccountProgramStatusHistoryOldStatusNavigations { get; set; } = new List<AccountProgramStatusHistory>();
+
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 }

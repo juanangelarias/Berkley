@@ -144,6 +144,8 @@ public partial class Account
 
     public Guid? CreditReportImagingId { get; set; }
 
+    public Guid? BusinessTypeRiskCodeId { get; set; }
+
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
@@ -179,6 +181,8 @@ public partial class Account
     public virtual BusinessTypeClassCodeDm? BusinessTypeClassNavigation { get; set; }
 
     public virtual BusinessTypeDm? BusinessTypeNavigation { get; set; }
+
+    public virtual BusinessTypeRiskCodeDm? BusinessTypeRiskCode { get; set; }
 
     public virtual ICollection<CashFlowStatement> CashFlowStatements { get; set; } = new List<CashFlowStatement>();
 

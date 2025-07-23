@@ -14,24 +14,11 @@ public partial class Agent
 
     public string? NationalProducerNumber { get; set; }
 
-    [Obsolete("Use standard phone number lookup instead.")]
-    public Guid? DefaultPhoneNumber { get; set; }
-
-    [Obsolete("Use standard phone number lookup instead.")]
-    public Guid? DefaultCellNumber { get; set; }
-
-    [Obsolete("Use standard email lookup instead.")]
-    public string? DefaultEmail { get; set; }
-
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
     public virtual ICollection<AgencyLicense> AgencyLicenses { get; set; } = new List<AgencyLicense>();
 
     public virtual ICollection<AgentsInAgency> AgentsInAgencies { get; set; } = new List<AgentsInAgency>();
-
-    public virtual PhoneNumber? DefaultCellNumberNavigation { get; set; }
-
-    public virtual PhoneNumber? DefaultPhoneNumberNavigation { get; set; }
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 }

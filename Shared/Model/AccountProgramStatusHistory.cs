@@ -33,4 +33,8 @@ public partial class AccountProgramStatusHistory
     public string AccountNum { get; set; } = null!;
 
     public virtual AccountProgram AccountProgram { get; set; } = null!;
+
+    public virtual AccountProgramStatusDm NewStatusNavigation { get; set; } = null!;
+
+    public virtual AccountProgramStatusDm? OldStatusNavigation { get; set; }
 }

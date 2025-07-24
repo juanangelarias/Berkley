@@ -27,4 +27,8 @@ public partial class AgencyStatusLog
     public virtual Agency AgencyNumberNavigation { get; set; } = null!;
 
     public virtual UserProfile? ChangedByNavigation { get; set; }
+
+    public virtual AgencyStatusDm? NewStatusNavigation { get; set; }
+
+    public virtual AgencyStatusDm? OldStatusNavigation { get; set; }
 }

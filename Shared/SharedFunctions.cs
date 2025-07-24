@@ -84,5 +84,18 @@ namespace James.Shared
             }
             return sb.ToString();
         }
+
+        public static string CombineWithCommasAndAnd(this List<string> items)
+        {
+            if (items == null! || items.Count == 0)
+                return string.Empty;
+            if (items.Count == 1)
+                return items[0];
+            if (items.Count == 2)
+                return $"{items[0]} and {items[1]}";
+
+            return string.Join(", ", items.GetRange(0, items.Count - 1)) + " and " + items;
+        }
+
     }
 }

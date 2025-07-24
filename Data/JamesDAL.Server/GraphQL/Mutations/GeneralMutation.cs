@@ -13,7 +13,7 @@ namespace James.Data.Server.GraphQL.Mutations
         public async Task<bool> CreateAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode,
             Guid legalEntityId, string addressType, string identifier,
-            [Service] ITopicEventSender eventSender, 
+            [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             try
@@ -50,7 +50,7 @@ namespace James.Data.Server.GraphQL.Mutations
             catch (Exception ex)
             {
 
-                loggingService.LogException(ex, "Exception saving created address to database", category:StandardLoggingCategories.DataAccess);
+                loggingService.LogException(ex, "Exception saving created address to database", category: StandardLoggingCategories.DataAccess);
                 return false;
             }
         }
@@ -63,7 +63,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 PhoneNumber newNumber = new PhoneNumber()
                 {
                     Id = phoneId,
-                    CountryCode = countryCode??"US",
+                    CountryCode = countryCode ?? "US",
                     MainNumber = mainNumber,
                     Extension = extension
                 };
@@ -121,7 +121,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<Address> SetAddress(Guid addressId, string address1, string? address2, 
+        public async Task<Address> SetAddress(Guid addressId, string address1, string? address2,
             string? address3, string city, string? stateCode, string? postalCode, string identifier,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
@@ -151,7 +151,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 loggingService.LogException(ex, "Exception saving address to database", category: StandardLoggingCategories.DataAccess);
             }
 
-            await eventSender.SendAsync($"{nameof(Subscription.OnAddressModified)}_{addressId}", new SubscriptionResult<Address>{Identifier = identifier, Result = oldAddress });
+            await eventSender.SendAsync($"{nameof(Subscription.OnAddressModified)}_{addressId}", new SubscriptionResult<Address> { Identifier = identifier, Result = oldAddress });
 
             return oldAddress;
         }
@@ -210,7 +210,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     if (value == null)
                         return true;//Nothing to delete from DB
                     //TODO:Change to UserSettings below when schema change is done
-                    ctx.UserPreferences.Add(new UserPreference{Username = username, Key = key, Value = value});
+                    ctx.UserPreferences.Add(new UserPreference { Username = username, Key = key, Value = value });
                     await ctx.SaveChangesAsync();
                 }
                 else
@@ -234,5 +234,89 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+
+        //TODO: Restrict to people in the change permissions role
+        [Authorize]
+        public async Task<bool> AddPrincipalToSecurityRole(Guid principalId, string role,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var existing =
+                    await ctx.Securities.FirstOrDefaultAsync(s => s.Role == role && s.PrincipalId == principalId);
+                if (null == existing)
+                {
+                    await ctx.Securities.AddAsync(new Security { PrincipalId = principalId, Role = role });
+                    await ctx.SaveChangesAsync();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                loggingService.LogException(ex, "Exception adding principal to security role", category: StandardLoggingCategories.DataAccess);
+                return false;
+            }
+        }
+
+        //TODO: Restrict to people in the change permissions role
+        [Authorize]
+        public async Task<bool> RemovePrincipalFromSecurityRole(Guid principalId, string role,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var existing =
+                    await ctx.Securities.FirstOrDefaultAsync(s => s.Role == role && s.PrincipalId == principalId);
+                if (null == existing) return true;
+                ctx.Securities.Remove(existing);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                loggingService.LogException(ex, "Exception removing principal from security role", category: StandardLoggingCategories.DataAccess);
+                return false;
+            }
+        }
+
+        //TODO: Restrict to people in the change permissions role
+        [Authorize]
+        public async Task<bool> AddSecurityRole(string role, string description, int ord,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        {
+            //TODO:Update to fire a subscription event if the client caches the full list
+            try
+            {
+                if (string.IsNullOrWhiteSpace(role))
+                    throw new ArgumentException("role.Role cannot be null or whitespace.");
+                var newRole = new SecurityRole
+                {
+                    Id = Guid.NewGuid(), Role = role, Description = description, Ord = ord
+                };
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var existing =
+                    await ctx.SecurityRoles.FirstOrDefaultAsync(s => s.Role == newRole.Role);
+                if (null != existing)
+                    return false;
+                if (newRole.Ord < 1)
+                {
+                    //Set the order to one higher than the previous max.
+                    //HACK: Not worrying about a transaction to prevent simultaneously creating roles that might have the same order
+                    var maxOrd = await ctx.SecurityRoles.MaxAsync(sr => sr.Ord);
+                    newRole.Ord = 1 + maxOrd;
+                }
+                await ctx.SecurityRoles.AddAsync(newRole);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                loggingService.LogException(ex, "Exception adding security role", category: StandardLoggingCategories.DataAccess);
+                return false;
+            }
+        }
+
     }
 }

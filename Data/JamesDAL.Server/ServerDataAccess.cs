@@ -229,7 +229,7 @@ namespace James.Data.Server
             Guid legalEntityId, string addressType, string identifier)
         {
             return await ExecuteSave(async () =>
-                await generalMutation.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode, 
+                await generalMutation.CreateAddress(addressId, address1, address2, address3, city, stateCode, postalCode,
                 legalEntityId, addressType, identifier, eventSender, contextFactory, loggingService));
 
         }
@@ -246,7 +246,7 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<List<CountryDm>>> GetAllCountries()
         {
-            return await ExecuteGet(async()=>await query.GetAllCountries(contextFactory));
+            return await ExecuteGet(async () => await query.GetAllCountries(contextFactory));
         }
         public async Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId)
         {
@@ -460,7 +460,7 @@ namespace James.Data.Server
         {
             var response =
                 await ExecuteGet(async () => await query.GetBondRequestNumberType(bondNumber, contextFactory));
-            
+
             if (response == null)
                 throw new NotFoundException("Bond Request Number Type not found");
 
@@ -484,12 +484,12 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
         {
-            return await ExecuteGet(async () => new Dictionary<string, string>( await query.GetUserSettings(contextFactory, contextAccessor)));
+            return await ExecuteGet(async () => new Dictionary<string, string>(await query.GetUserSettings(contextFactory, contextAccessor)));
         }
 
         public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
         {
-            return await ExecuteSave(async ()=> await generalMutation.SetUserSetting(key, value, contextFactory, userShared, loggingService));
+            return await ExecuteSave(async () => await generalMutation.SetUserSetting(key, value, contextFactory, userShared, loggingService));
         }
 
         public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
@@ -501,6 +501,43 @@ namespace James.Data.Server
             ImagingDocumentCategory docCategory, Guid documentId)
         {
             return await ExecuteGet(async () => await query.GetDocumentDetails(docCategory, documentId, imagingAccess));
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRole>>> GetAllSecurityRoles()
+        {
+            return await ExecuteGet(async () => await query.GetAllSecurityRoles(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId)
+        {
+            return await ExecuteGet(async () => await query.GetSecurityRolesByUser(userId, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRoleMember>>> GetSecurityRoleMembers(string role)
+        {
+            return await ExecuteGet(async () => await query.GetSecurityRoleMembers(role, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role)
+        {
+            return await ExecuteGet(async () =>
+                await generalMutation.AddPrincipalToSecurityRole(principalId, role, contextFactory, loggingService));
+        }
+
+        public async Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role)
+        {
+            return await ExecuteGet(async () =>
+                await generalMutation.RemovePrincipalFromSecurityRole(principalId, role, contextFactory, loggingService));
+        }
+
+        public async Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
+        {
+            return await ExecuteSave(async()=> await generalMutation.AddSecurityRole(role.Role, role.Description, role.Ord, contextFactory, loggingService));
+        }
+
+        public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
+        {
+            return await ExecuteGet(async()=> await query.GetAllEmployees(contextFactory));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
@@ -561,12 +598,12 @@ namespace James.Data.Server
 
         public IDisposable SearchResultReady(string searchTerm, Action<SubscriptionResult<List<JamesSearchResult>>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
-            return OnSearchResultReady(searchTerm).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<List<JamesSearchResult>>> (onNext,onError,onComplete));
+            return OnSearchResultReady(searchTerm).Subscribe(new ServerSideSubscriptionSubscriber<SubscriptionResult<List<JamesSearchResult>>>(onNext, onError, onComplete));
         }
 
         public Task<ISaveDataResult> StartSuperSearch(string searchTerm, SearchOptions options)
         {
-            return ExecuteSave(async ()=> await query.Search(searchTerm, options, eventSender, contextFactory, loggingService));
+            return ExecuteSave(async () => await query.Search(searchTerm, options, eventSender, contextFactory, loggingService));
         }
 
         public Task<IDataAccessResult<List<Account>>> GetIdAccountNumbers()

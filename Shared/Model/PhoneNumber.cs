@@ -20,10 +20,6 @@ public partial class PhoneNumber
 
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
-    public virtual ICollection<Agent> AgentDefaultCellNumberNavigations { get; set; } = new List<Agent>();
-
-    public virtual ICollection<Agent> AgentDefaultPhoneNumberNavigations { get; set; } = new List<Agent>();
-
     public virtual ICollection<Branch> Branches { get; set; } = new List<Branch>();
 
     public virtual LegalEntityPhone? LegalEntityPhone { get; set; }

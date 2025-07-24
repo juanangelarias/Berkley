@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class CreditReportDm
+public partial class AuthorityUsedDm
 {
     public Guid Id { get; set; }
 
@@ -12,5 +12,5 @@ public partial class CreditReportDm
 
     public DateTime Modified { get; set; }
 
-    public string CreditReport { get; set; } = null!;
+    public string AuthorityUsed { get; set; } = null!;
 }

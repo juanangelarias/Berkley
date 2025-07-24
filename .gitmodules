@@ -1,0 +1,4 @@
+[submodule "JApplicationLog"]
+	path = JApplicationLog
+	url = https://stash.wrberkley.com/scm/bsd/applicationlog.git
+	branch = master

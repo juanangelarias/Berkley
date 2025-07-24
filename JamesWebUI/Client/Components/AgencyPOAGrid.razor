@@ -299,6 +299,9 @@
     //Enable row edit mode for a POA record.
     private async Task EditPoaRow(PowerOfAttorney poaToEdit)
     {
+        if (poaToEdit.AgencyId == Guid.Empty)
+            poaToEdit.AgencyId = Agency.Id;
+        
         await ShowLoading();
         await POAGrid.EditRow(poaToEdit);
     }

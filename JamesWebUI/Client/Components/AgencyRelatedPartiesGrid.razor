@@ -7,12 +7,12 @@
 
 <RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency"
                 AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true"
-                Style="height: 400px; border-radius: 10px;" IsLoading="@_isLoading">
+                Style="height: 400px; border-radius: 10px;" IsLoading="@_isLoading" FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
                                Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
-                               Click="@(args => ExportLicenseGrid(args))"
+                               Click="@(args => ExportGrid(args))"
                                Disabled="@_isLoading" Size="ButtonSize.Small">
                 <ChildContent>
                     <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
@@ -112,7 +112,7 @@
         _isLoading = false;
     }
 
-    private void ExportLicenseGrid(RadzenSplitButtonItem? item)
+    private void ExportGrid(RadzenSplitButtonItem? item)
     {
         if (item == null)
             return;

@@ -13,7 +13,7 @@
 <RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@AgencyLicenses"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
-                AllowFiltering="true" FilterMode="FilterMode.Simple"
+                AllowFiltering="true" FilterMode="FilterMode.Advanced"
                 AllowColumnPicking="true" AllowGrouping="true"
                 RowUpdate="UpdateLicenseRow" EditMode="@_editMode" RowCreate="@OnLicenseCreate"
                 IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
@@ -23,7 +23,7 @@
             <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow"/>
             <RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
                                Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
-                               Click="@(args => ExportLicenseGrid(args))"
+                               Click="@(args => ExportGrid(args))"
                                Disabled="@_isLoading" Size="ButtonSize.Small">
                 <ChildContent>
                     <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
@@ -537,7 +537,7 @@
         NotifySaveError([message], "license certificate");
     }
 
-    private void ExportLicenseGrid(RadzenSplitButtonItem? item)
+    private void ExportGrid(RadzenSplitButtonItem? item)
     {
         if(item == null)
             return;

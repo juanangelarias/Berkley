@@ -10,17 +10,22 @@
 <Theme />
 
 <RadzenDataGrid @ref="POAGrid" TItem="PowerOfAttorney" Data="PowerOfAttorneys"
-                AllowFiltering="true" FilterMode="FilterMode.Simple" Style="height: 400px; border-radius: 10px;"
+                AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 400px; border-radius: 10px;"
                 AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true" Density="Density.Compact"
                 RowCreate="@OnPoaCreate" RowUpdate="@UpdatePoaRow" EditMode="DataGridEditMode.Single"
                 IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New POA" Variant="Variant.Text" Click="@InsertPOARow" />
-            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading" />
-            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading" />
+            <RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
+                               Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
+                               Click="@(args => ExportGrid(args))"
+                               Disabled="@_isLoading" Size="ButtonSize.Small">
+                <ChildContent>
+                    <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
+                    <RadzenSplitButtonItem Text="CSV" Value="CSV" Icon="download"/>
+                </ChildContent>
+            </RadzenSplitButton>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="poa">
@@ -431,13 +436,20 @@
             });
     }
 
-    private void ExportLicenseGrid(ExportFormat format)
+    private void ExportGrid(RadzenSplitButtonItem? item)
     {
+        if (item == null)
+            return;
+
+        var format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+
         var substitutions = new ExportColumnSubstitutions();
-        substitutions.AddSubstitution("Insurer.IdNavigation.FullName", title: "Insurer");
-        substitutions.AddSubstitution("ReferenceNumber", title: "Reference Number");
-        substitutions.AddSubstitution("FirstIssued", title: "First Issued");
-        substitutions.AddSubstitution("CurrentIssued", title: "Current Issued");
+        substitutions.AddSubstitution("Status", "Status", "Status");
+        substitutions.AddSubstitution("Insurer.IdNavigation.FullName", "Insurer.IdNavigation.FullName", "Insurer");
+        substitutions.AddSubstitution("Limit", "Limit", "Limit");
+        substitutions.AddSubstitution("ReferenceNumber", "ReferenceNumber", "Reference No.");
+        substitutions.AddSubstitution("FirstIssued", "FirstIssued", "First Issued Date");
+        substitutions.AddSubstitution("CurrentIssued", "CurrentIssued", "Current POA Date");
         NavigationManager.NavigateTo(ExportDataGridUrl(POAGrid,
                 $"/export/AgencyPOAs/{Agency.Id}", format, substitutions),
             true);

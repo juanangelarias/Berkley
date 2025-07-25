@@ -15,7 +15,6 @@ type CreditReportHistory {
   definition: String
   remarks: String
   accountNumNavigation: Account!
-  creditReportNavigation: CreditReportDm!
 }
 
 type SetPowerOfAttorneyPayload {
@@ -170,6 +169,8 @@ type AgencyStatusLog {
   comments: String
   agencyNumberNavigation: Agency!
   changedByNavigation: UserProfile
+  newStatusNavigation: AgencyStatusDm
+  oldStatusNavigation: AgencyStatusDm
 }
 
 input DeleteAddressInput {
@@ -831,6 +832,8 @@ type AccountProgramStatusHistory {
   accountProgramId: UUID!
   accountNum: String!
   accountProgram: AccountProgram!
+  newStatusNavigation: AccountProgramStatusDm!
+  oldStatusNavigation: AccountProgramStatusDm
 }
 
 type KeyValuePairOfStringAndString {
@@ -1374,6 +1377,19 @@ type AgencyCompetition {
   enteredByNavigation: UserProfile!
 }
 
+type BusinessTypeRiskCodeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  businessType: String!
+  subType: String
+  riskCode: Int!
+  isContract: Boolean!
+  oldName: String!
+  newName: String!
+  accounts: [Account!]!
+}
+
 type BondStatusLetter {
   id: UUID!
   created: DateTime!
@@ -1530,7 +1546,8 @@ type SecurityRole {
   modified: DateTime!
   role: String!
   ord: Int!
-  description: String!
+  description: String
+  securities: [Security!]!
 }
 
 input SetAccountGeneralInfoInput {
@@ -1648,14 +1665,6 @@ type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
 }
 
-type CreditReportDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  creditReport: String!
-  creditReportHistories: [CreditReportHistory!]!
-}
-
 type Account {
   id: UUID!
   created: DateTime!
@@ -1726,6 +1735,7 @@ type Account {
   interimWips: Boolean!
   indemnityComments: String
   creditReportImagingId: UUID
+  businessTypeRiskCodeId: UUID
   accountPrograms: [AccountProgram!]!
   accountStatusLogs: [AccountStatusLog!]!
   additionalRelatedParties: [AdditionalRelatedParty!]!
@@ -1744,6 +1754,7 @@ type Account {
   branchReviewByNavigation: UserProfile
   businessTypeClassNavigation: BusinessTypeClassCodeDm
   businessTypeNavigation: BusinessTypeDm
+  businessTypeRiskCode: BusinessTypeRiskCodeDm
   cashFlowStatements: [CashFlowStatement!]!
   coPrincipals: [CoPrincipal!]!
   cpacontact: LegalEntity
@@ -2100,6 +2111,8 @@ type AgencyStatusDm {
   modified: DateTime!
   status: String!
   agencies: [Agency!]!
+  agencyStatusLogNewStatusNavigations: [AgencyStatusLog!]!
+  agencyStatusLogOldStatusNavigations: [AgencyStatusLog!]!
 }
 
 type LogExceptionPayload {
@@ -2638,8 +2651,6 @@ type PhoneNumber {
   mainNumber: String!
   extension: String
   accounts: [Account!]!
-  agentDefaultCellNumberNavigations: [Agent!]!
-  agentDefaultPhoneNumberNavigations: [Agent!]!
   branches: [Branch!]!
   legalEntityPhone: LegalEntityPhone
 }
@@ -2852,13 +2863,8 @@ type Agent {
   created: DateTime!
   modified: DateTime!
   nationalProducerNumber: String
-  defaultPhoneNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
-  defaultCellNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
-  defaultEmail: String @deprecated(reason: "Use standard email lookup instead.")
   agencyLicenses: [AgencyLicense!]!
   agentsInAgencies: [AgentsInAgency!]!
-  defaultCellNumberNavigation: PhoneNumber
-  defaultPhoneNumberNavigation: PhoneNumber
   idNavigation: LegalEntity!
   accounts: [Account!]!
   licenses: [AgencyLicense!]!
@@ -2896,6 +2902,15 @@ type InforceAccountLOA {
   accountNum: String!
   contractLOA: LineOfAuthorityLog
   commercialLOA: LineOfAuthorityLog
+}
+
+type Security {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  principalId: UUID!
+  role: String!
+  roleNavigation: SecurityRole!
 }
 
 input CreateObligeeInput {
@@ -2983,6 +2998,8 @@ type AccountProgramStatusDm {
   modified: DateTime
   description: String!
   oldId: Int
+  accountProgramStatusHistoryNewStatusNavigations: [AccountProgramStatusHistory!]!
+  accountProgramStatusHistoryOldStatusNavigations: [AccountProgramStatusHistory!]!
   accountPrograms: [AccountProgram!]!
 }
 

@@ -192,7 +192,7 @@
                 .OrderBy(p => p.Insurer.IdNavigation.FullName)
                 .GroupBy(p => p.Insurer.IdNavigation.FullName)
                 .Select(p => p.FirstOrDefault()?.Insurer
-                             ?? new Insurer { IdNavigation = new LegalEntity { FullName = "Invalid Insurer" } })
+                             ?? new Insurer { IdNavigation = new LegalEntity { FullName = "No Insurer Defined" } })
                 .ToList();
         }
     }, "agency POAs");

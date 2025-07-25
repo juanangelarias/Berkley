@@ -1,4 +1,5 @@
-﻿@using James.Shared.Imaging
+﻿@using ClientBusinessLogic
+@using James.Shared.Imaging
 @using SharedBusinessLogic
 
 @inherits JamesLayoutComponentBase
@@ -360,44 +361,21 @@
         else
             NotifySaveError(result.Errors, "Agency POA");
     }
-
     private bool ValidatePoaFields(PowerOfAttorney poa)
     {
-        var flag = true;
-        if (poa.AgencyId == Guid.Empty)
+        var errors = Validators.ValidatePoaFields(poa);
+
+        foreach (var error in errors)
         {
             NotificationService.Notify(new NotificationMessage
             {
                 Severity = NotificationSeverity.Error,
-                Summary = "Agency has not been defined. Please correct and try again.",
+                Summary = error,
                 Duration = 2000
             });
-            flag = false;
         }
 
-        if (string.IsNullOrWhiteSpace(poa.Status))
-        {
-            NotificationService.Notify(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Error,
-                Summary = "Status has not been defined. Please correct and try again.",
-                Duration = 2000
-            });
-            flag = false;
-        }
-
-        if (poa.Insurer.Id == Guid.Empty)
-        {
-            NotificationService.Notify(new NotificationMessage
-            {
-                Severity = NotificationSeverity.Error,
-                Summary = "Insurer has not been defined. Please correct and try again.",
-                Duration = 2000
-            });
-            flag = false;
-        }
-
-        return flag;
+        return errors.Count == 0;
     }
 
     private async Task DeletePoaRow(PowerOfAttorney powerOfAttorney)

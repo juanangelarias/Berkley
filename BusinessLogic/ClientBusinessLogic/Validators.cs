@@ -30,6 +30,7 @@ namespace ClientBusinessLogic
                 }
             }
         }
+        
         public static bool ValidateAddress(Address address)
         {
              
@@ -60,6 +61,28 @@ namespace ClientBusinessLogic
         public static bool ValidateFileName(string filename)
         {
             return ImagingBusinessLogic.ValidWindowsFilenamePattern.IsMatch(filename);
+        }
+        
+        public static List<string> ValidatePoaFields(PowerOfAttorney poa)
+        {
+            var errors = new List<string>();
+            
+            if (poa.AgencyId == Guid.Empty)
+            {
+                errors.Add("Agency has not been defined. Please correct and try again.");
+            }
+
+            if (string.IsNullOrWhiteSpace(poa.Status))
+            {
+                errors.Add("Status has not been defined. Please correct and try again.");
+            }
+
+            if (poa.Insurer.Id == Guid.Empty)
+            {
+                errors.Add("Insurer has not been defined. Please correct and try again.");
+            }
+
+            return errors;
         }
     }
 }

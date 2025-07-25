@@ -224,6 +224,7 @@
 
     private DataGridEditMode _editMode = DataGridEditMode.Multiple;
     private bool _bulkMode;
+    private string LicensesKey => $"AgencyLicenses{Agency.Id}";
 
     private bool _isLoading;
 
@@ -233,7 +234,7 @@
 
     private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem
     {
-        Key = $"AgencyLicenses{Agency.Id}",
+        Key = LicensesKey,
         AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(Agency.Id),
         CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
         {
@@ -364,7 +365,7 @@
             if (toDelete != null)
             {
                 AgencyLicenses.Remove(toDelete);
-                DataCache.UpdateCache($"AgencyLicenses{Agency.Id}", AgencyLicenses);
+                DataCache.UpdateCache(LicensesKey, AgencyLicenses);
             }
 
             await LicenseGrid.Reload();
@@ -443,8 +444,8 @@
         {
             license.InsurerId = license.Insurer.Id;
             AgencyLicenses.Add(license);
-
-            DataCache.UpdateCache($"AgencyLicenses{Agency.Id}", AgencyLicenses);
+            
+            DataCache.UpdateCache(LicensesKey, AgencyLicenses);
         }
     }
 
@@ -483,7 +484,7 @@
         if (!result.Success)
             await HandleError("Error Setting Agency License", result.Errors);
         else
-            DataCache.UpdateCache($"AgencyLicenses{Agency.Id}", AgencyLicenses);
+            DataCache.UpdateCache(LicensesKey, AgencyLicenses);
     }
 
     private async Task StateFilterChange()

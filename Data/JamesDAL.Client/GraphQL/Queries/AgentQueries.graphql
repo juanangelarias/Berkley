@@ -73,9 +73,6 @@
 
 query SearchAgents($input: String!) {
 	searchAgents(searchString: $input) {
-	defaultCellNumber
-	defaultEmail
-	defaultPhoneNumber
 	id
 	idNavigation {
 		fullName

@@ -31,31 +31,31 @@
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="Address2" Filterable="false"
-                              Property="Address.Address2" Visible="false">
+                              Property="IdNavigation.MainAddress.Address2" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address2
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="Address3" Filterable="false"
-                              Property="Address.Address3" Visible="false">
+                              Property="IdNavigation.MainAddress.Address3" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address3
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="City"
-                              Property="MainAddress.City">
+                              Property="IdNavigation.MainAddress.City">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.City
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="State"
-                              Property="MainAddress.State">
+                              Property="IdNavigation.MainAddress.State">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.StateCode
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="Zip Code"
-                              Property="MainAddress.PostalCode" Visible="false">
+                              Property="IdNavigation.MainAddress.PostalCode" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.PostalCode
             </Template>

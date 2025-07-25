@@ -269,22 +269,25 @@ query GetAgencyPOAs($agencyId: UUID!) {
 query GetAgencyRelatedParties($input: UUID!){
   agencyRelatedParties (agencyId: $input) {
       agencyNumber
+      id
       idNavigation {
           fullName
-          mainAddress {
-              address1
-              address2
-              address3
-              city
-              country
-              countryCode
-              postalCode
-              stateCode
+          legalEntityAddresses {
+              addressId
+              legalEntityId
+              type
+              address {
+                  address1
+                  address2
+                  address3
+                  city
+                  postalCode
+                  stateCode
+              }
           }
       }
-      id
   }
-} 
+}
 
 query GetAllPoaStatuses{
   allPoaStatuses {

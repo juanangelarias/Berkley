@@ -162,8 +162,8 @@ query GetAgencyCommissionRates($agencyId: UUID!){
     }
 }
 
-query GetAgencyStatuses(){
-	agencyStatuses(){
+query GetAgencyStatuses{
+	agencyStatuses{
 		id,
 		status
 	}
@@ -268,21 +268,21 @@ query GetAgencyPOAs($agencyId: UUID!) {
 
 query GetAgencyRelatedParties($input: UUID!){
   agencyRelatedParties (agencyId: $input) {
-    agencyNumber
-    idNavigation{
-        fullName
-        legalEntityAddresses{
-          address{
-            address1
-            address2
-            address3
-            city
-            stateCode
-            postalCode
+      agencyNumber
+      idNavigation {
+          fullName
+          mainAddress {
+              address1
+              address2
+              address3
+              city
+              country
+              countryCode
+              postalCode
+              stateCode
           }
-        }
-    }
-    id
+      }
+      id
   }
 } 
 

@@ -25,7 +25,7 @@
             <RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
                                Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
                                Click="@(args => ExportGrid(args))"
-                               Disabled="@_isLoading" Size="ButtonSize.Small">
+                               Disabled="@_isLoading" Size="ButtonSize.ExtraSmall">
                 <ChildContent>
                     <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
                     <RadzenSplitButtonItem Text="CSV" Value="CSV" Icon="download"/>
@@ -80,11 +80,11 @@
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%"/>
                 <RadzenRequiredValidator Text="State is required" Component="State" Popup="true"/>
             </EditTemplate>
-            <FilterTemplate>
+            @*<FilterTemplate>
                 <RadzenDropDown @bind-Value="@_stateFilter" Change="StateFilterChange"
                                 Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<string>"
                                 Data="@AgencyLicenses.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a.FirstOrDefault()?.State).ToList()"/>
-            </FilterTemplate>
+            </FilterTemplate>*@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="75px" Property="AppointingState">
             <Template Context="license">
@@ -547,10 +547,10 @@
         var format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
         
         var substitutions = new ExportColumnSubstitutions();
-        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName");
-        substitutions.AddSubstitution("IsActive", "IsActive", title: "Is Active");
-        substitutions.AddSubstitution("IsResident", "IsResident", title: "Is Resident");
-        substitutions.AddSubstitution("AppointingState", "AppointingState", title: "Appointing State");
+        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Insurer");
+        substitutions.AddSubstitution("IsActive", "IsActive", "Is_Active");
+        substitutions.AddSubstitution("IsResident", "IsResident", "Is_Resident");
+        substitutions.AddSubstitution("AppointingState", "AppointingState", "Appointing_State");
         NavigationManager.NavigateTo(ExportDataGridUrl(LicenseGrid,
                 $"/export/AgencyLicenses/{Agency.Id}", format, substitutions),
             true);

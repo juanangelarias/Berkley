@@ -12,7 +12,7 @@
                 AllowPaging="true" PageSize="10" AllowSorting="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenSplitButton Text="Export" Click="@(args => ExportLicenseGrid(args))" 
+            <RadzenSplitButton Text="Export" Click="@(args => ExportGrid(args))" 
                                Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary"
                                Icon="download">
                 <ChildContent>
@@ -160,19 +160,19 @@
         await DataCache.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
     }
 
-    private void ExportLicenseGrid(RadzenSplitButtonItem option)
+    private void ExportGrid(RadzenSplitButtonItem option)
     {
         var format = option.Value == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
 
         var substitutions = new ExportColumnSubstitutions();
         //TODO: Determine substitutions
-        substitutions.AddSubstitution("IdNavigation.GivenName", "IdNavigation.GivenName", "Given Name");
-        substitutions.AddSubstitution("IdNavigation.MiddleInitial", "IdNavigation.MiddleInitial", "Middle Initial");
-        substitutions.AddSubstitution("IdNavigation.FamilyName", "IdNavigation.FamilyName", "Family Initial");
-        substitutions.AddSubstitution("", "License.LicenseNumber", "License Number");
+        substitutions.AddSubstitution("IdNavigation.GivenName", "IdNavigation.GivenName", "Given_Name");
+        substitutions.AddSubstitution("IdNavigation.MiddleInitial", "IdNavigation.MiddleInitial", "Middle_Initial");
+        substitutions.AddSubstitution("IdNavigation.FamilyName", "IdNavigation.FamilyName", "Family_Initial");
+        substitutions.AddSubstitution("", "License.LicenseNumber", "License_Number");
         substitutions.AddSubstitution("", "License.State");
-        substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
-        substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
+        substitutions.AddSubstitution("", "License.IsResident", "Is_Resident");
+        substitutions.AddSubstitution("", "License.AppointingState", "Appointing_State");
         substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
         NavigationManager.NavigateTo(ExportDataGridUrl(AgentsGrid,
                 $"/export/AgencyContacts/{AgencyId}", format, substitutions),

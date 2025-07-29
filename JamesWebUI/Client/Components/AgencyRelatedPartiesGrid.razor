@@ -7,13 +7,18 @@
 
 <RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency"
                 AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true"
-                Style="height: 400px; border-radius: 10px;" IsLoading="@_isLoading">
+                Style="height: 400px; border-radius: 10px;" IsLoading="@_isLoading" FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading" />
-            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading" />
+            <RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
+                               Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
+                               Click="@(args => ExportGrid(args))"
+                               Disabled="@_isLoading" Size="ButtonSize.ExtraSmall">
+                <ChildContent>
+                    <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
+                    <RadzenSplitButtonItem Text="CSV" Value="CSV" Icon="download"/>
+                </ChildContent>
+            </RadzenSplitButton>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -26,31 +31,31 @@
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="Address2" Filterable="false"
-                              Property="Address.Address2" Visible="false">
+                              Property="IdNavigation.MainAddress.Address2" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address2
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="Address3" Filterable="false"
-                              Property="Address.Address3" Visible="false">
+                              Property="IdNavigation.MainAddress.Address3" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address3
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="City"
-                              Property="MainAddress.City">
+                              Property="IdNavigation.MainAddress.City">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.City
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="State"
-                              Property="MainAddress.State">
+                              Property="IdNavigation.MainAddress.State">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.StateCode
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Agency" Title="Zip Code"
-                              Property="MainAddress.PostalCode" Visible="false">
+                              Property="IdNavigation.MainAddress.PostalCode" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.PostalCode
             </Template>
@@ -107,17 +112,22 @@
         _isLoading = false;
     }
 
-    private void ExportLicenseGrid(ExportFormat format)
+    private void ExportGrid(RadzenSplitButtonItem? item)
     {
+        if (item == null)
+            return;
+
+        var format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+
         var substitutions = new ExportColumnSubstitutions();
-        substitutions.AddSubstitution("IdNavigation.FullName", title: "Agency Name");
-        //TODO: Discuss business rules for exporting addresses.  Maybe add a column for export?
-        substitutions.AddSubstitution("Address.Address1", title: "Address1");
-        substitutions.AddSubstitution("Address.Address2", title: "Address2");
-        substitutions.AddSubstitution("Address.Address3", title: "Address3");
-        substitutions.AddSubstitution("MainAddress.City", title: "City");
-        substitutions.AddSubstitution("MainAddress.State", title: "State");
-        substitutions.AddSubstitution("MainAddress.PostalCode", title: "Zip Code");
+        substitutions.AddSubstitution("AgencyNumber", "AgencyNumber", "Number");
+        substitutions.AddSubstitution("IdNavigation.FullName", "IdNavigation.FullName", "Agency");
+        substitutions.AddSubstitution("MainAddress.Address1", "MainAddress.Address1", "Address");
+        substitutions.AddSubstitution("Address.Address2", "Address.Address2", "Address2");
+        substitutions.AddSubstitution("Address.Address3", "Address.Address3", "Address3");
+        substitutions.AddSubstitution("MainAddress.City", "MainAddress.City", "City");
+        substitutions.AddSubstitution("MainAddress.State", "MainAddress.StateCode", "State");
+        substitutions.AddSubstitution("MainAddress.PostalCode", "MainAddress.PostalCode", "Zip");
         NavigationManager.NavigateTo(ExportDataGridUrl(RelatedPartiesGrid,
                 $"/export/AgencyRelatedParties/{AgencyId}", format, substitutions),
             true);

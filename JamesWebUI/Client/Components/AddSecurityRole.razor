@@ -1,0 +1,79 @@
+﻿@using James.Shared
+@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject ILocalStorageService LocalStorageService
+@inject TooltipService TooltipService
+@attribute [Authorize]
+
+<Theme />
+<PageTitle>Admin - Add Security Role</PageTitle>
+<RenderModeBackground></RenderModeBackground>
+
+<RadzenText TextStyle="TextStyle.DisplayH3">Add Security Role</RadzenText>
+<RadzenPanel Style="border-radius: 20px;min-height:200px;" class="rz-shadow-7">
+    <RadzenStack>
+        <RadzenFormField Text="Role Name">
+            <RadzenTextBox @bind-Value="@_newRole.Role" />
+        </RadzenFormField>
+        <RadzenFormField Text="Description">
+            <RadzenTextBox @bind-Value="@_newRole.Description" />
+        </RadzenFormField>
+    </RadzenStack>
+</RadzenPanel>
+<RadzenRow>
+    <RadzenColumn>
+        <div style="display:flex;justify-content:center;">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="5em">
+                <RadzenButton Text="OK" MouseEnter="@(er => ShowOkToolTip(er))" Click="() => AddRole(true)" />
+                <RadzenButton Text="Add" Click="() => AddRole(false)" />
+                <RadzenButton Text="Cancel" Click="() => DialogService.Close(HasAdded)" />
+            </RadzenStack>
+        </div>
+    </RadzenColumn>
+</RadzenRow>
+@code {
+    private bool HasAdded { get; set; }
+    SecurityRole _newRole = new (){Role = "", Description = ""};
+
+    List<SecurityRole> _securityRoles = null!;
+    private IDataAccessResult<List<SecurityRole>> _loadSecurityRolesResult = null!;
+    private LoadItem RolesLoadItem => AddEventNotify(
+        new()
+        {
+            Key = "SecRoles",
+            AsyncLoadTask = async () => _loadSecurityRolesResult = await DataAccess.GetAllSecurityRoles(),
+            CacheLoadTask = cache => _loadSecurityRolesResult = new DataAccessResult<List<SecurityRole>> { Data = (List<SecurityRole>)cache! },
+            ResultVariable = () => _loadSecurityRolesResult,
+            AfterLoad = () =>
+            {
+                _securityRoles = _loadSecurityRolesResult.Data!;
+                //Save to local storage asynchronously and don't wait for the save to finish
+                Task.Factory.StartNew(data =>
+                    LocalStorageService.SetItemAsyncWithExpiry("SecRoles", TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
+            },
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRole>>("SecRoles")
+        }, "security roles");
+
+    private readonly TooltipOptions _tooltipOptions = new()
+    {
+        Position = TooltipPosition.Top,
+        Style = "max-width: 300px; min-width: 200px;",
+    };
+    private void ShowOkToolTip(ElementReference eRef) => TooltipService.Open(eRef, "Add users and close", _tooltipOptions);
+
+    private async Task AddRole(bool closeAfterwards)
+    {
+        var result = await DataAccess.AddSecurityRole(_newRole);
+        if (result.Success)
+        {
+            NotifySuccessfulSave("New role");
+            _newRole = new() { Role = "", Description = "" };
+            HasAdded = true;
+        }
+        else
+            NotifySaveError(result.Errors, "new role");
+        if (closeAfterwards)
+            DialogService.Close(HasAdded);
+    }
+}

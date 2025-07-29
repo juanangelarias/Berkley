@@ -42,9 +42,6 @@ namespace James.Data.Imaging
                     // Encoding is before transport, so we prepend the MTOM message encoding binding element
                     // https://learn.microsoft.com/en-us/dotnet/framework/wcf/extending/custom-bindings
                     _customBinding = new CustomBinding(elementsWithoutEncodingElement.Prepend(newEncodingElement));
-//#if P8DEBUG
-//                    _customBinding.Elements.AddRange();
-//#endif
                 }
                 return _customBinding;
             }

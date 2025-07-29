@@ -3,7 +3,7 @@ SET server="%1"
 SET DestinationPath=\James\
 SET DestinationSubFolder=JamesWebUI.Server
 SET noPath=^.
-SET NetVersion=NET8.0
+SET NetVersion=NET9.0
 :: Allow shortcuts of dev/int/tst/prod to work
 if "%1"=="int" (set server=USILG01-ISI024)
 if /i "%1"=="dev" (set server=USILG01-ISD076)

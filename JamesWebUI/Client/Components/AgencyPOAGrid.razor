@@ -58,11 +58,6 @@
         <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Insurer" Property="Insurer" Width="300px"
                               FilterValue="@_insurerFilter" FilterProperty="Insurer.IdNavigation.FullName" 
                               FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or">
-            @*<FilterTemplate>
-                <RadzenDropDown @bind-Value="@_insurerFilter" Data="@_insurerList" AllowClear="true" Style="width:95%"
-                                TextProperty="IdNavigation.FullName" Multiple="true" 
-                                Change="InsurerFilterChanged"/>
-            </FilterTemplate>*@
             <Template Context="poa">
                 <RadzenText Text="@poa.Insurer.IdNavigation.FullName"/>
             </Template>

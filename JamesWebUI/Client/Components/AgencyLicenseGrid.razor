@@ -80,11 +80,6 @@
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%"/>
                 <RadzenRequiredValidator Text="State is required" Component="State" Popup="true"/>
             </EditTemplate>
-            @*<FilterTemplate>
-                <RadzenDropDown @bind-Value="@_stateFilter" Change="StateFilterChange"
-                                Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<string>"
-                                Data="@AgencyLicenses.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a.FirstOrDefault()?.State).ToList()"/>
-            </FilterTemplate>*@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="75px" Property="AppointingState">
             <Template Context="license">

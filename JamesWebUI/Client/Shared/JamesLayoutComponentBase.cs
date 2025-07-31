@@ -294,9 +294,3 @@ public static class AuthUserExtensions
         return user.Claims.FirstOrDefault(c => c.Type == "sid")?.Value;
     }
 }
-
-public class ColSelect(string property, string title = "")
-{
-    public string Property { get; set; } = property;
-    public string Title { get; set; } = title;
-}

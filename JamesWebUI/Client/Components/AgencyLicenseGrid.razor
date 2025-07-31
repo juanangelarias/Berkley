@@ -536,10 +536,11 @@
 
     private void ExportGrid(RadzenSplitButtonItem? item)
     {
-        if(item == null)
-            return;
-
-        var format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+        // ToDo: Define in User Settings the default Export Format
+        var format = ExportFormat.Excel;
+        
+        if(item != null)
+            format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
         
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Insurer");

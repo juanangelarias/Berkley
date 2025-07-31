@@ -444,9 +444,9 @@
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Status", "Status", "Status");
         substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Insurer");
-        substitutions.AddSubstitution("ReferenceNumber", "ReferenceNumber", "Reference_Number");
-        substitutions.AddSubstitution("FirstIssued", "FirstIssued", "First_Issued");
-        substitutions.AddSubstitution("CurrentIssued", "CurrentIssued", "Current_Issued");
+        substitutions.AddSubstitution("ReferenceNumber", "ReferenceNumber", "Reference Number");
+        substitutions.AddSubstitution("FirstIssued", "FirstIssued", "First Issued");
+        substitutions.AddSubstitution("CurrentIssued", "CurrentIssued", "Current Issued");
         NavigationManager.NavigateTo(ExportDataGridUrl(POAGrid,
                 $"/export/AgencyPOAs/{Agency.Id}", format, substitutions),
             true);

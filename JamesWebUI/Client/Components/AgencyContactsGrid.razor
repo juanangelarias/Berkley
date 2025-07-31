@@ -160,9 +160,13 @@
         await DataCache.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
     }
 
-    private void ExportGrid(RadzenSplitButtonItem option)
+    private void ExportGrid(RadzenSplitButtonItem? item)
     {
-        var format = option.Value == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+        // ToDo: Define in User Settings the default Export Format
+        var format = ExportFormat.Excel;
+        
+        if(item != null)
+            format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
 
         var substitutions = new ExportColumnSubstitutions();
         //TODO: Determine substitutions

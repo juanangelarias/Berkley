@@ -1,4 +1,5 @@
 ﻿@using ClientBusinessLogic
+@using James.Shared
 @using James.Shared.Imaging
 @using SharedBusinessLogic
 
@@ -7,6 +8,7 @@
 @inject TooltipService TooltipService
 @inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
+@inject IUserSettingService UserSettingService
 
 <Theme/>
 
@@ -163,6 +165,7 @@
 
     private List<Insurer> _insurerList = [];
     private List<string> _statusList = [];
+    private ExportFormat _defaultExportFormat;
 
     private bool _isLoading;
 
@@ -243,6 +246,15 @@
         await ShowLoading();
 
         await LoadData();
+        await SetUserSettings();
+    }
+
+    private async Task SetUserSettings()
+    {
+        var usExportFormat = await UserSettingService.GetUserSettingAsync(UserSettingsKeys.ExportToFormat);
+        var valid = Enum.TryParse(usExportFormat, out _defaultExportFormat);
+        if (!valid)
+            _defaultExportFormat = ExportFormat.Unknown;
     }
 
     private async Task LoadData()
@@ -434,13 +446,23 @@
             });
     }
 
-    private void ExportGrid(RadzenSplitButtonItem? item)
+    private async Task ExportGrid(RadzenSplitButtonItem? item)
     {
-        // ToDo: Define in User Settings the default Export Format
-        var format = ExportFormat.Excel;
-        
-        if(item != null)
+        ExportFormat format;
+        if (item == null)
+        {
+            if(_defaultExportFormat == ExportFormat.Unknown)
+                return;
+            
+            format = _defaultExportFormat;
+        }
+        else
+        {
             format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+
+            if (_defaultExportFormat == ExportFormat.Unknown)
+                await UserSettingService.SetUserSettingAsync(UserSettingsKeys.ExportToFormat, format.ToString());
+        }
         
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Status", "Status", "Status");

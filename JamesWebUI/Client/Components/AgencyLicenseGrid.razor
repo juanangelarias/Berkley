@@ -1,11 +1,12 @@
-﻿@using James.Shared.Imaging
+﻿@using James.Shared
+@using James.Shared.Imaging
 @using SharedBusinessLogic
 
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-
 @inject IDataAccess DataAccess
+@inject IUserSettingService UserSettingService
 
 <Theme/>
 
@@ -220,6 +221,7 @@
     private DataGridEditMode _editMode = DataGridEditMode.Multiple;
     private bool _bulkMode;
     private string LicensesKey => $"AgencyLicenses{Agency.Id}";
+    private ExportFormat _defaultExportFormat;
 
     private bool _isLoading;
 
@@ -282,6 +284,15 @@
         await base.OnParametersSetAsync();
 
         await LoadData();
+        await SetUserSettings();
+    }
+
+    private async Task SetUserSettings()
+    {
+        var usExportFormat = await UserSettingService.GetUserSettingAsync(UserSettingsKeys.ExportToFormat);
+        var valid = Enum.TryParse(usExportFormat, out _defaultExportFormat);
+        if (!valid)
+            _defaultExportFormat = ExportFormat.Unknown;
     }
 
     private async Task LoadData()
@@ -534,13 +545,23 @@
         NotifySaveError([message], "license certificate");
     }
 
-    private void ExportGrid(RadzenSplitButtonItem? item)
+    private async Task ExportGrid(RadzenSplitButtonItem? item)
     {
-        // ToDo: Define in User Settings the default Export Format
-        var format = ExportFormat.Excel;
-        
-        if(item != null)
+        ExportFormat format;
+        if (item == null)
+        {
+            if(_defaultExportFormat == ExportFormat.Unknown)
+                return;
+            
+            format = _defaultExportFormat;
+        }
+        else
+        {
             format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+
+            if (_defaultExportFormat == ExportFormat.Unknown)
+                await UserSettingService.SetUserSettingAsync(UserSettingsKeys.ExportToFormat, format.ToString());
+        }
         
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Insurer");

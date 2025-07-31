@@ -1,8 +1,10 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@using James.Shared
+@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-
+@inject IUserSettingService UserSettingService
 @inject IDataAccess DataAccess
+
 <Theme />
 
 <RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency"
@@ -71,6 +73,7 @@
     private List<Agency> RelatedParties { get; set; } = [];
     private RadzenDataGrid<Agency> RelatedPartiesGrid { get; set; } = null!;
     private bool _isLoading;
+    private ExportFormat _defaultExportFormat;
     
     private IDataAccessResult<List<Agency>> _relatedPartiesResult = null!;
 
@@ -92,7 +95,17 @@
 
         await ShowLoading();
         await LoadRelatedParties();
+        await SetUserSettings();
     }
+
+    private async Task SetUserSettings()
+    {
+        var usExportFormat = await UserSettingService.GetUserSettingAsync(UserSettingsKeys.ExportToFormat);
+        var valid = Enum.TryParse(usExportFormat, out _defaultExportFormat);
+        if (!valid)
+            _defaultExportFormat = ExportFormat.Unknown;
+    }
+    
     private async Task LoadRelatedParties()
     {
         if(AgencyId == Guid.Empty)
@@ -112,13 +125,23 @@
         _isLoading = false;
     }
 
-    private void ExportGrid(RadzenSplitButtonItem? item)
+    private async Task ExportGrid(RadzenSplitButtonItem? item)
     {
-        // ToDo: Define in User Settings the default Export Format
-        var format = ExportFormat.Excel;
-        
-        if(item != null)
+        ExportFormat format;
+        if (item == null)
+        {
+            if(_defaultExportFormat == ExportFormat.Unknown)
+                return;
+            
+            format = _defaultExportFormat;
+        }
+        else
+        {
             format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
+
+            if (_defaultExportFormat == ExportFormat.Unknown)
+                await UserSettingService.SetUserSettingAsync(UserSettingsKeys.ExportToFormat, format.ToString());
+        }
 
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("AgencyNumber", "AgencyNumber", "Number");

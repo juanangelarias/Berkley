@@ -4,7 +4,6 @@
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-
 @inject IDataAccess DataAccess
 
 <Theme/>
@@ -22,15 +21,7 @@
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow"/>
-            <RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
-                               Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
-                               Click="@(args => ExportGrid(args))"
-                               Disabled="@_isLoading" Size="ButtonSize.ExtraSmall">
-                <ChildContent>
-                    <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
-                    <RadzenSplitButtonItem Text="CSV" Value="CSV" Icon="download"/>
-                </ChildContent>
-            </RadzenSplitButton>
+            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End"
                          Style="margin-left: 10rem">
                 <RadzenButton Visible="!_bulkMode" Text="Bulk Edit" Icon="edit"
@@ -80,11 +71,6 @@
                                 TextProperty="Name" ValueProperty="Code" Style="width:95%"/>
                 <RadzenRequiredValidator Text="State is required" Component="State" Popup="true"/>
             </EditTemplate>
-            @*<FilterTemplate>
-                <RadzenDropDown @bind-Value="@_stateFilter" Change="StateFilterChange"
-                                Style="width: 95%;" Multiple="true" AllowClear="true" TValue="List<string>"
-                                Data="@AgencyLicenses.OrderBy(a => a.State).GroupBy(a => a.State).Select(a => a.FirstOrDefault()?.State).ToList()"/>
-            </FilterTemplate>*@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="75px" Property="AppointingState">
             <Template Context="license">
@@ -225,6 +211,7 @@
     private DataGridEditMode _editMode = DataGridEditMode.Multiple;
     private bool _bulkMode;
     private string LicensesKey => $"AgencyLicenses{Agency.Id}";
+    private ExportFormat _defaultExportFormat;
 
     private bool _isLoading;
 
@@ -539,13 +526,8 @@
         NotifySaveError([message], "license certificate");
     }
 
-    private void ExportGrid(RadzenSplitButtonItem? item)
+    private void ExportGrid(ExportFormat format)
     {
-        if(item == null)
-            return;
-
-        var format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
-        
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Insurer");
         substitutions.AddSubstitution("IsActive", "IsActive", "Is_Active");

@@ -1,8 +1,8 @@
 ﻿@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-
 @inject IDataAccess DataAccess
+
 <Theme />
 
 <RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency"
@@ -10,15 +10,7 @@
                 Style="height: 400px; border-radius: 10px;" IsLoading="@_isLoading" FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
-                               Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
-                               Click="@(args => ExportGrid(args))"
-                               Disabled="@_isLoading" Size="ButtonSize.ExtraSmall">
-                <ChildContent>
-                    <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
-                    <RadzenSplitButtonItem Text="CSV" Value="CSV" Icon="download"/>
-                </ChildContent>
-            </RadzenSplitButton>
+            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -71,6 +63,7 @@
     private List<Agency> RelatedParties { get; set; } = [];
     private RadzenDataGrid<Agency> RelatedPartiesGrid { get; set; } = null!;
     private bool _isLoading;
+    private ExportFormat _defaultExportFormat;
     
     private IDataAccessResult<List<Agency>> _relatedPartiesResult = null!;
 
@@ -93,6 +86,7 @@
         await ShowLoading();
         await LoadRelatedParties();
     }
+    
     private async Task LoadRelatedParties()
     {
         if(AgencyId == Guid.Empty)
@@ -112,19 +106,14 @@
         _isLoading = false;
     }
 
-    private void ExportGrid(RadzenSplitButtonItem? item)
+    private void ExportGrid(ExportFormat format)
     {
-        if (item == null)
-            return;
-
-        var format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
-
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("AgencyNumber", "AgencyNumber", "Number");
         substitutions.AddSubstitution("IdNavigation.FullName", "IdNavigation.FullName", "Agency");
         substitutions.AddSubstitution("MainAddress.Address1", "MainAddress.Address1", "Address");
-        substitutions.AddSubstitution("Address.Address2", "Address.Address2", "Address2");
-        substitutions.AddSubstitution("Address.Address3", "Address.Address3", "Address3");
+        substitutions.AddSubstitution("MainAddress.Address2", "MainAddress.Address2", "Address2");
+        substitutions.AddSubstitution("MainAddress.Address3", "MainAddress.Address3", "Address3");
         substitutions.AddSubstitution("MainAddress.City", "MainAddress.City", "City");
         substitutions.AddSubstitution("MainAddress.State", "MainAddress.StateCode", "State");
         substitutions.AddSubstitution("MainAddress.PostalCode", "MainAddress.PostalCode", "Zip");

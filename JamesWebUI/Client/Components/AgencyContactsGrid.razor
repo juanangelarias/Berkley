@@ -12,14 +12,7 @@
                 AllowPaging="true" PageSize="10" AllowSorting="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenSplitButton Text="Export" Click="@(args => ExportGrid(args))" 
-                               Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary"
-                               Icon="download">
-                <ChildContent>
-                    <RadzenSplitButtonItem Text="Excel" Icon="border_all" Value="excel"/>
-                    <RadzenSplitButtonItem Text="CSV" Icon="article" Value="csv"/>
-                </ChildContent>
-            </RadzenSplitButton>
+            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
@@ -117,7 +110,7 @@
             Data = (List<Agent>)cache!
         },
         ResultVariable = () => _agentsResult,
-        AfterLoad = async void () =>
+        AfterLoad = void () =>
         {
             if (_agentsResult.Success)
                 Agents = _agentsResult.Data!;
@@ -131,9 +124,9 @@
         AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
         CacheLoadTask = cache => _insurersResult = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
         ResultVariable = () => _insurersResult,
-        AfterLoad = async void () =>
+        AfterLoad = void () =>
         {
-            if (_insurersResult.Success)
+            if ( _insurersResult.Success)
                 AllInsurers = _insurersResult.Data!;
         }
     }, "insurers");
@@ -142,7 +135,7 @@
     {
         await base.OnInitializedAsync();
 
-        _isLoading = false;
+         _isLoading = false;
     }
     
     protected override async Task OnParametersSetAsync()
@@ -160,23 +153,17 @@
         await DataCache.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
     }
 
-    private void ExportGrid(RadzenSplitButtonItem? item)
+    private void ExportGrid(ExportFormat format)
     {
-        // ToDo: Define in User Settings the default Export Format
-        var format = ExportFormat.Excel;
-        
-        if(item != null)
-            format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
-
         var substitutions = new ExportColumnSubstitutions();
         //TODO: Determine substitutions
-        substitutions.AddSubstitution("IdNavigation.GivenName", "IdNavigation.GivenName", "Given_Name");
-        substitutions.AddSubstitution("IdNavigation.MiddleInitial", "IdNavigation.MiddleInitial", "Middle_Initial");
-        substitutions.AddSubstitution("IdNavigation.FamilyName", "IdNavigation.FamilyName", "Family_Initial");
-        substitutions.AddSubstitution("", "License.LicenseNumber", "License_Number");
+        substitutions.AddSubstitution("IdNavigation.GivenName", "IdNavigation.GivenName", "Given Name");
+        substitutions.AddSubstitution("IdNavigation.MiddleInitial", "IdNavigation.MiddleInitial", "Middle Initial");
+        substitutions.AddSubstitution("IdNavigation.FamilyName", "IdNavigation.FamilyName", "FamilyInitial");
+        substitutions.AddSubstitution("", "License.LicenseNumber", "License Number");
         substitutions.AddSubstitution("", "License.State");
-        substitutions.AddSubstitution("", "License.IsResident", "Is_Resident");
-        substitutions.AddSubstitution("", "License.AppointingState", "Appointing_State");
+        substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
+        substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
         substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
         NavigationManager.NavigateTo(ExportDataGridUrl(AgentsGrid,
                 $"/export/AgencyContacts/{AgencyId}", format, substitutions),

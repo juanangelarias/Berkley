@@ -25,6 +25,4 @@ public partial class CreditReportHistory
     public string? Remarks { get; set; }
 
     public virtual Account AccountNumNavigation { get; set; } = null!;
-
-    public virtual CreditReportDm CreditReportNavigation { get; set; } = null!;
 }

@@ -18,7 +18,7 @@ public class ExportColumnSubstitution
     /// <summary>
     /// Obscure Unicode character that can be used in Titles and then converted back into a space when exporting the file
     /// </summary>
-    public const char SpaceSubstitution = '\u4f60';
+    public const char SpaceSubstitution = '_';
     public ExportColumnSubstitution()
     {
         Original = "";

@@ -77,6 +77,9 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
             DateOnly? currentIssued, string? comments, string status);
         public Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId);
+        public Task<ISaveDataResult> AgencyLicenseBulkDelete(List<Guid> licenseIds);
+        public Task<ISaveDataResult> AgencyLicenseBulkInsert(List<AgencyLicenseBulk> licenses);
+        public Task<ISaveDataResult> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses);
         public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
             string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
@@ -140,6 +143,14 @@ namespace James.Shared.Data
             string? documentType = null);
         public Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(ImagingDocumentCategory docCategory,
             Guid documentId);
+
+        public Task<IDataAccessResult<List<SecurityRole>>> GetAllSecurityRoles();
+        public Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId);
+        public Task<IDataAccessResult<List<SecurityRoleMember>>> GetSecurityRoleMembers(string role);
+        public Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role);
+        public Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role);
+        public Task<ISaveDataResult> AddSecurityRole(SecurityRole role);
+        public Task<IDataAccessResult<List<Employee>>> GetAllEmployees();
 
         public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames();
 

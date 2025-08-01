@@ -128,6 +128,10 @@ public partial class VBond
 
     public int SfaaCode { get; set; }
 
+    public string General { get; set; } = null!;
+
+    public string? Description { get; set; }
+
     public bool NmlsclassCode { get; set; }
 
     public string? RateClass { get; set; }

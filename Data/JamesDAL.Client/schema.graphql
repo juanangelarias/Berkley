@@ -15,7 +15,6 @@ type CreditReportHistory {
   definition: String
   remarks: String
   accountNumNavigation: Account!
-  creditReportNavigation: CreditReportDm!
 }
 
 type SetPowerOfAttorneyPayload {
@@ -170,6 +169,8 @@ type AgencyStatusLog {
   comments: String
   agencyNumberNavigation: Agency!
   changedByNavigation: UserProfile
+  newStatusNavigation: AgencyStatusDm
+  oldStatusNavigation: AgencyStatusDm
 }
 
 input DeleteAddressInput {
@@ -229,6 +230,11 @@ type LegalEntity {
 type BondRequestNumberType {
   bondRequestNumber: String!
   type: String!
+}
+
+input AddPrincipalToSecurityRoleInput {
+  principalId: UUID!
+  role: String!
 }
 
 type Notebook {
@@ -507,6 +513,10 @@ type AccountStatusDm {
   accountStatusLogs: [AccountStatusLog!]!
 }
 
+input AgencyLicenseBulkUpdateInput {
+  licenses: [AgencyLicenseBulkInput!]!
+}
+
 type Surcharge {
   id: UUID!
   created: DateTime!
@@ -626,11 +636,20 @@ type Query {
   obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!
   obligeeSecondaryBonds(obligeeId: UUID!): [Bond!]!
   search(searchTerm: String! options: SearchOptionsInput!): String!
+  allSecurityRoles: [SecurityRole!]!
+  securityRolesByUser(principalId: UUID!): [SecurityRole!]!
+  securityRoleMembers(role: String!): [SecurityRoleMember!]!
+  allEmployees: [Employee!]!
   allStates: [State!]!
 }
 
 type SaveCommissionRatesPayload {
   boolean: Boolean
+}
+
+input RemovePrincipalFromSecurityRoleInput {
+  principalId: UUID!
+  role: String!
 }
 
 type CreateAgencyPayload {
@@ -813,6 +832,8 @@ type AccountProgramStatusHistory {
   accountProgramId: UUID!
   accountNum: String!
   accountProgram: AccountProgram!
+  newStatusNavigation: AccountProgramStatusDm!
+  oldStatusNavigation: AccountProgramStatusDm
 }
 
 type KeyValuePairOfStringAndString {
@@ -882,6 +903,10 @@ type AddressTypeDm {
 }
 
 scalar UUID
+
+input AgencyLicenseBulkInsertInput {
+  licenses: [AgencyLicenseBulkInput!]!
+}
 
 type PersonalFinancialStatement {
   id: UUID!
@@ -1010,6 +1035,9 @@ type Mutation {
   setPowerOfAttorneyDocumentStatus(input: SetPowerOfAttorneyDocumentStatusInput!): SetPowerOfAttorneyDocumentStatusPayload!
   saveCommissionRates(input: SaveCommissionRatesInput!): SaveCommissionRatesPayload!
   setAgencyGeneralInfo(input: SetAgencyGeneralInfoInput!): SetAgencyGeneralInfoPayload!
+  agencyLicenseBulkUpdate(input: AgencyLicenseBulkUpdateInput!): AgencyLicenseBulkUpdatePayload!
+  agencyLicenseBulkInsert(input: AgencyLicenseBulkInsertInput!): AgencyLicenseBulkInsertPayload!
+  agencyLicenseBulkDelete(input: AgencyLicenseBulkDeleteInput!): AgencyLicenseBulkDeletePayload!
   createAddress(input: CreateAddressInput!): CreateAddressPayload!
   createPhoneNumber(input: CreatePhoneNumberInput!): CreatePhoneNumberPayload!
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
@@ -1017,6 +1045,9 @@ type Mutation {
   deletePhoneNumber(input: DeletePhoneNumberInput!): DeletePhoneNumberPayload!
   setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
   setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
+  addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
+  removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
+  addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1259,6 +1290,10 @@ input CreateAgencyStatusLogInput {
   comments: String
 }
 
+type AddSecurityRolePayload {
+  boolean: Boolean
+}
+
 type SetAddressPayload {
   address: Address
 }
@@ -1342,6 +1377,19 @@ type AgencyCompetition {
   enteredByNavigation: UserProfile!
 }
 
+type BusinessTypeRiskCodeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  businessType: String!
+  subType: String
+  riskCode: Int!
+  isContract: Boolean!
+  oldName: String!
+  newName: String!
+  accounts: [Account!]!
+}
+
 type BondStatusLetter {
   id: UUID!
   created: DateTime!
@@ -1401,6 +1449,21 @@ type BondTransactionPurpose {
   bondTransaction: BondTransaction!
 }
 
+input AgencyLicenseBulkInput {
+  id: UUID!
+  agencyId: UUID!
+  state: String!
+  licenseNumber: String
+  isResident: Boolean!
+  insurerId: UUID!
+  expiration: LocalDate
+  comments: String
+  appointment: LocalDate
+  termination: LocalDate
+  appointingState: Boolean!
+  isActive: Boolean!
+}
+
 type CreateAddressPayload {
   boolean: Boolean
 }
@@ -1421,6 +1484,16 @@ type DivisionDm {
   imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
   profitCenters: [ProfitCenter!]!
+}
+
+type AgencyLicenseBulkInsertPayload {
+  boolean: Boolean
+}
+
+input AddSecurityRoleInput {
+  role: String!
+  description: String!
+  ord: Int!
 }
 
 type Address {
@@ -1465,6 +1538,16 @@ input SetPowerOfAttorneyInput {
   currentIssued: LocalDate
   comments: String
   status: String!
+}
+
+type SecurityRole {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  role: String!
+  ord: Int!
+  description: String
+  securities: [Security!]!
 }
 
 input SetAccountGeneralInfoInput {
@@ -1582,14 +1665,6 @@ type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
 }
 
-type CreditReportDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  creditReport: String!
-  creditReportHistories: [CreditReportHistory!]!
-}
-
 type Account {
   id: UUID!
   created: DateTime!
@@ -1660,6 +1735,7 @@ type Account {
   interimWips: Boolean!
   indemnityComments: String
   creditReportImagingId: UUID
+  businessTypeRiskCodeId: UUID
   accountPrograms: [AccountProgram!]!
   accountStatusLogs: [AccountStatusLog!]!
   additionalRelatedParties: [AdditionalRelatedParty!]!
@@ -1678,6 +1754,7 @@ type Account {
   branchReviewByNavigation: UserProfile
   businessTypeClassNavigation: BusinessTypeClassCodeDm
   businessTypeNavigation: BusinessTypeDm
+  businessTypeRiskCode: BusinessTypeRiskCodeDm
   cashFlowStatements: [CashFlowStatement!]!
   coPrincipals: [CoPrincipal!]!
   cpacontact: LegalEntity
@@ -1855,8 +1932,18 @@ type ProfitCenter {
   underWriter: Underwriter
 }
 
+type AgencyLicenseBulkDeletePayload {
+  boolean: Boolean
+}
+
 type SetAccountGeneralInfoPayload {
   boolean: Boolean
+}
+
+type SecurityRoleMember {
+  id: UUID!
+  name: String!
+  isRole: Boolean!
 }
 
 type VImagingCategoryTabDivisionType {
@@ -2024,6 +2111,8 @@ type AgencyStatusDm {
   modified: DateTime!
   status: String!
   agencies: [Agency!]!
+  agencyStatusLogNewStatusNavigations: [AgencyStatusLog!]!
+  agencyStatusLogOldStatusNavigations: [AgencyStatusLog!]!
 }
 
 type LogExceptionPayload {
@@ -2089,6 +2178,10 @@ type AdditionalObligee {
   interest: String
   bondNumber: String!
   bondNumberNavigation: Bond!
+}
+
+type AddPrincipalToSecurityRolePayload {
+  boolean: Boolean
 }
 
 "The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
@@ -2301,6 +2394,10 @@ type State {
   surcharges: [Surcharge!]!
 }
 
+type RemovePrincipalFromSecurityRolePayload {
+  boolean: Boolean
+}
+
 type CreateLicensePayload {
   boolean: Boolean
 }
@@ -2316,7 +2413,7 @@ input SetAccountSystemsInput {
 
 input SetDefaultUserSettingInput {
   key: String!
-  value: String!
+  value: String
 }
 
 input DeleteAgencyInventoryInput {
@@ -2554,8 +2651,6 @@ type PhoneNumber {
   mainNumber: String!
   extension: String
   accounts: [Account!]!
-  agentDefaultCellNumberNavigations: [Agent!]!
-  agentDefaultPhoneNumberNavigations: [Agent!]!
   branches: [Branch!]!
   legalEntityPhone: LegalEntityPhone
 }
@@ -2591,6 +2686,10 @@ type ScalingDm {
   scaling: String!
   cashFlowStatements: [CashFlowStatement!]!
   personalFinancialHeaders: [PersonalFinancialHeader!]!
+}
+
+type AgencyLicenseBulkUpdatePayload {
+  boolean: Boolean
 }
 
 type ReferenceTypeDm {
@@ -2764,13 +2863,8 @@ type Agent {
   created: DateTime!
   modified: DateTime!
   nationalProducerNumber: String
-  defaultPhoneNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
-  defaultCellNumber: UUID @deprecated(reason: "Use standard phone number lookup instead.")
-  defaultEmail: String @deprecated(reason: "Use standard email lookup instead.")
   agencyLicenses: [AgencyLicense!]!
   agentsInAgencies: [AgentsInAgency!]!
-  defaultCellNumberNavigation: PhoneNumber
-  defaultPhoneNumberNavigation: PhoneNumber
   idNavigation: LegalEntity!
   accounts: [Account!]!
   licenses: [AgencyLicense!]!
@@ -2810,6 +2904,15 @@ type InforceAccountLOA {
   commercialLOA: LineOfAuthorityLog
 }
 
+type Security {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  principalId: UUID!
+  role: String!
+  roleNavigation: SecurityRole!
+}
+
 input CreateObligeeInput {
   id: UUID!
   fullName: String!
@@ -2842,6 +2945,10 @@ type LegalEntityEmail {
   emailAddress: String!
   legalEntity: LegalEntity!
   typeNavigation: EmailTypeDm!
+}
+
+input AgencyLicenseBulkDeleteInput {
+  licenseIds: [UUID!]!
 }
 
 type AccountReference {
@@ -2891,6 +2998,8 @@ type AccountProgramStatusDm {
   modified: DateTime
   description: String!
   oldId: Int
+  accountProgramStatusHistoryNewStatusNavigations: [AccountProgramStatusHistory!]!
+  accountProgramStatusHistoryOldStatusNavigations: [AccountProgramStatusHistory!]!
   accountPrograms: [AccountProgram!]!
 }
 

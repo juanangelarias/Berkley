@@ -1,0 +1,43 @@
+﻿query GetAllSecurityRoles {
+  allSecurityRoles {
+    id
+    role
+    description
+    ord
+  }
+}
+
+query GetSecurityRoleMembers($role: String!) {
+  securityRoleMembers(role: $role) {
+    id
+    name
+    isRole
+  }
+}
+
+query GetAllEmployees {
+  allEmployees {
+    id
+    activeDirectoryAccount
+    fullName
+    title
+  }
+}
+
+mutation AddPrincipalToSecurityRole($input: AddPrincipalToSecurityRoleInput!) {
+  addPrincipalToSecurityRole(input: $input) {
+    boolean
+  }
+}
+
+mutation RemovePrincipalFromSecurityRole($input:RemovePrincipalFromSecurityRoleInput!){
+  removePrincipalFromSecurityRole(input:$input){
+    boolean
+  }
+}
+
+mutation AddSecurityRole($input: AddSecurityRoleInput!) {
+  addSecurityRole(input: $input) {
+    boolean
+  }
+} 

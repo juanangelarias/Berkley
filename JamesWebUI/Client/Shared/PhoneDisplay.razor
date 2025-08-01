@@ -66,7 +66,7 @@
         if(PhoneId == Guid.Empty)
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(PhoneLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(PhoneLoad);
     }
 
     private async Task DeletePhoneNumber()

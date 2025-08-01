@@ -203,7 +203,7 @@
     
     private async Task LoadStates()
     {
-        await DataCache.GetCacheOrLoadDataAsync(StatesLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(StatesLoad);
 
         AllStates = _statesResult.Data!;
     }

@@ -188,14 +188,14 @@
         
         BusyDialog();
 
-        await DataCache.GetCacheOrLoadDataAsync(AgentLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgentLoad);
 
         DialogService.Close();
     }
     
     private async Task LoadSelectInsurerDropDown()
     {
-        await DataCache.GetCacheOrLoadDataAsync(InsurerLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(InsurerLoad);
     }
 
     private void BusyDialog()

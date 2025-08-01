@@ -48,7 +48,7 @@
     
     private async Task SearchAgent(LoadDataArgs args)
     {
-        await DataCache.GetCacheOrLoadDataAsync(AgentsLoad(args.Filter));
+        await DataAccess.GetCacheOrLoadDataAsync(AgentsLoad(args.Filter));
     }
     
     private async Task ResultSelected(dynamic args)

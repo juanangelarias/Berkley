@@ -107,7 +107,7 @@
         if (string.IsNullOrEmpty(AgencyNumber))
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(AccountLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AccountLoad);
     }
 
     protected async Task ShowLoading()

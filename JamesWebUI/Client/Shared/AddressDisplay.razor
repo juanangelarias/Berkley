@@ -159,7 +159,7 @@
         if (Guid.Empty == AddressId)
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(AddressLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AddressLoad);
     }
 
     /// <summary>

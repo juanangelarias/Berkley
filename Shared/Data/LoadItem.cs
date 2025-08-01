@@ -26,7 +26,13 @@ public class LoadItem : IDisposable
     /// Action to take on the loaded data when loaded from Cache
     /// </summary>
     /// <remarks>Data is retrieved as an object and needs to be copied to the result variable as a strongly typed object.</remarks>
+    //[Obsolete]
     public Func<Task<object?>>? LocalStorageCacheLoadTask { get; init; }
+
+    /// <summary>
+    /// Set as false to prevent any caching in browser local storage
+    /// </summary>
+    public bool UseBrowserStorageIfAvailable { get; init; } = true;
 
     /// <summary>
     /// Argumentless lambda expression or function that returns the result variable.

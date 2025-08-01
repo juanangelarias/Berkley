@@ -76,7 +76,7 @@
                 //NOTE: Subscriptions for the address editors are added via the AddressDisplay AddSubscription function
                 li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async void (_) =>
                 {
-                    DataCache.Clear("addresses");
+                    DataAccess.Clear("addresses");
                     await LoadAddresses();
                 });
             }
@@ -84,7 +84,7 @@
 
     private async Task LoadAddresses()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AddressesLoadItem);
+        await DataAccess.GetCacheOrLoadDataAsync(AddressesLoadItem);
     }
     
     private async Task AddressCreated(Guid addressToSelect)

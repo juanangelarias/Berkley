@@ -12,7 +12,9 @@ using Severity = James.Shared.Model.Severity;
 
 namespace James.Data.Client
 {
-    public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging) : IDataAccess
+    public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging, 
+        IBrowserStorageCache browserStorageCache
+    ) : BaseDataAccess(browserStorageCache), IDataAccess
     {
         public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
         {
@@ -334,7 +336,7 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(result);
         }
-        public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
+        public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expriration, int single, int aggregate,
             string? comments, Guid statusId)
         {
             //TODO: Fix
@@ -344,7 +346,7 @@ namespace James.Data.Client
             //{
             //    ProgramId = programId,
             //    Effective = effective,
-            //    Expritation = expritation,
+            //    Expritation = expriration,
             //    Single = single,
             //    Aggregate = aggregate,
             //    Comments = comments,

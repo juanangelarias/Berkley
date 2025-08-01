@@ -506,7 +506,7 @@
         if (string.IsNullOrWhiteSpace(AccountToDisplay?.AccountNum))
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(InforceLOALoad);
+        await DataAccess.GetCacheOrLoadDataAsync(InforceLOALoad);
     }
 
     private async Task CreditReportUploaded(Guid? documentId, string accountNum)

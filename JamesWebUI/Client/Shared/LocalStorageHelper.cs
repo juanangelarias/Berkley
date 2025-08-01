@@ -3,6 +3,7 @@ using James.Shared.Data;
 
 namespace JamesWebUI.Client.Shared
 {
+    [Obsolete]
     public static class LocalStorageHelper
     {
         public static async Task SetItemAsyncWithExpiry<T>(this ILocalStorageService localStorageService, string key, TimeSpan expiry, T data)

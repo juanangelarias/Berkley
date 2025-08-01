@@ -103,7 +103,7 @@
             InsurersLoad
         ];
 
-        await DataCache.ParallelGetCacheOrDataAsync(items);
+        await DataAccess.ParallelGetCacheOrDataAsync(items);
     }
 
     async Task EditAll()

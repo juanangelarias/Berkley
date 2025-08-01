@@ -215,7 +215,7 @@
             LicencesLoad
         ];
 
-        await DataCache.ParallelGetCacheOrDataAsync(items);
+        await DataAccess.ParallelGetCacheOrDataAsync(items);
     }
 
     private void Reset()
@@ -234,7 +234,7 @@
     {
         await ShowLoading();
         
-        await DataCache.GetCacheOrLoadDataAsync(LicencesLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(LicencesLoad);
     }
 
     private async Task InsertLicenseRow()

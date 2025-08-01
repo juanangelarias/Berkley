@@ -40,13 +40,12 @@ builder.Services.AddBlazoredLocalStorage(config =>
 });
 
 builder.Services
-    .AddScoped<LocalStorageKeyListingService>()
     .AddScoped<AddressPhoneFormatService>()
     .AddScoped<ThemeService>()
     .AddSingleton<ILoggingService, LoggingService>()
     .AddScoped<IDataAccess, ClientDataAccess>()
     .AddScoped<UserSettingService>()
-    .AddSingleton<IDataCache, DataCache>()
+    .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
     .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
 

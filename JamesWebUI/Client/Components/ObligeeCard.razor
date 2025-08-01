@@ -34,6 +34,6 @@
     
     private async Task LoadObligee()
     {
-        await DataCache.GetCacheOrLoadDataAsync(ObligeeLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(ObligeeLoad);
     }
 }

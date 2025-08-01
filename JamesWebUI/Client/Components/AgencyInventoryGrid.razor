@@ -208,7 +208,7 @@
         if (AgencyId == Guid.Empty)
             return;
 
-        await DataCache.ParallelGetCacheOrDataAsync(StatesLoad, DocumentsLoad, InventoryLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(StatesLoad, DocumentsLoad, InventoryLoad);
     }
 
     void Reset()
@@ -227,7 +227,7 @@
     {
         await ShowLoading();
 
-        await DataCache.GetCacheOrLoadDataAsync(InventoryLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(InventoryLoad);
     }
 
     private async Task EditInventoryRow(AgencyInventory inventory)

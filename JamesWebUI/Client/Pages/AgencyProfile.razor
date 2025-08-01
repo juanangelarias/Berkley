@@ -258,12 +258,12 @@
         if (null != Id)
             loadItems.Add(AgencyByAgencyNumberLoadItem(Id));
         
-        await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
+        await DataAccess.ParallelGetCacheOrDataAsync(loadItems.ToArray());
     }
     
     private async Task LoadBranches()
     {
-        await DataCache.GetCacheOrLoadDataAsync(BranchesLoadItem());        
+        await DataAccess.GetCacheOrLoadDataAsync(BranchesLoadItem());        
     }
     
     private async Task SaveAgencyChanges()

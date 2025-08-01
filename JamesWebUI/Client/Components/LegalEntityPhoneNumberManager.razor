@@ -60,7 +60,7 @@
 
     private async Task LoadPhoneNumbers()
     {
-        await DataCache.GetCacheOrLoadDataAsync(PhoneNumbersLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(PhoneNumbersLoad);
     }
 
     private async Task PhoneNumberCreated(Guid phoneToSelect)

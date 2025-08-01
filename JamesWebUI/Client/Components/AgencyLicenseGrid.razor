@@ -301,12 +301,12 @@
             AgencyLicensesLoad
         ];
 
-        await DataCache.ParallelGetCacheOrDataAsync(loadItems);
+        await DataAccess.ParallelGetCacheOrDataAsync(loadItems);
     }
 
     private async Task LoadLicenses()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AgencyLicensesLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyLicensesLoad);
     }
 
     private async Task InsertLicenseRow()
@@ -365,7 +365,7 @@
             if (toDelete != null)
             {
                 AgencyLicenses.Remove(toDelete);
-                DataCache.UpdateCache(LicensesKey, AgencyLicenses);
+                DataAccess.UpdateCache(LicensesKey, AgencyLicenses);
             }
 
             await LicenseGrid.Reload();
@@ -445,7 +445,7 @@
             license.InsurerId = license.Insurer.Id;
             AgencyLicenses.Add(license);
             
-            DataCache.UpdateCache(LicensesKey, AgencyLicenses);
+            DataAccess.UpdateCache(LicensesKey, AgencyLicenses);
         }
     }
 
@@ -484,7 +484,7 @@
         if (!result.Success)
             await HandleError("Error Setting Agency License", result.Errors);
         else
-            DataCache.UpdateCache(LicensesKey, AgencyLicenses);
+            DataAccess.UpdateCache(LicensesKey, AgencyLicenses);
     }
 
     private async Task StateFilterChange()

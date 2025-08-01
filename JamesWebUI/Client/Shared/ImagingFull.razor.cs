@@ -53,7 +53,7 @@ namespace JamesWebUI.Client.Shared
                 ResultVariable = () => docsResult
             };
 
-            await DataCache.ParallelGetCacheOrDataAsync(() =>
+            await DataAccess.ParallelGetCacheOrDataAsync(() =>
                 PopulateDocuments(docsResult), 
                 AddEventNotify(loadDocCategoryTabDivisionType, "imaging categories, types and divisions"),
                 AddEventNotify(loadDocTypes, "imaging document types"),

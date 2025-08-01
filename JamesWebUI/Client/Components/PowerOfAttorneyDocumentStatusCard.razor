@@ -82,7 +82,7 @@
     {
         if (null == DocTypes || DocTypes.Count==0)
         {
-            await DataCache.GetCacheOrLoadDataAsync(PoADocumentsLoad);
+            await DataAccess.GetCacheOrLoadDataAsync(PoADocumentsLoad);
         }
     }
     

@@ -83,7 +83,7 @@
         if(AgencyId == Guid.Empty)
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(RatesLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(RatesLoad);
 
         if (!_ratesResult.Success)
             return;

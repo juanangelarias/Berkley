@@ -122,7 +122,7 @@
         if (string.IsNullOrWhiteSpace(ObligeeNumber))
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(ObligeeLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(ObligeeLoad);
     }
     
     private async Task LoadPossibleDuplicates()

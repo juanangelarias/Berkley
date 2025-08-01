@@ -225,7 +225,7 @@
         if(string.IsNullOrWhiteSpace(AccountNumber))
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(AccountLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AccountLoad);
     }
     
     private async Task LoadInforceLOAs()
@@ -233,7 +233,7 @@
         if(string.IsNullOrWhiteSpace(AccountNumber))
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(InforceAccountLOALoad);
+        await DataAccess.GetCacheOrLoadDataAsync(InforceAccountLOALoad);
     }
     
     private void BusyDialog()

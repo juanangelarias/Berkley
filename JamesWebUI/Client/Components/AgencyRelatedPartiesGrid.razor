@@ -95,7 +95,7 @@
         
         await ShowLoading();
 
-        await DataCache.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
     }
     
     protected async Task ShowLoading()

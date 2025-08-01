@@ -134,12 +134,12 @@
             AgencyStatusLogLoad
         ];
 
-        await DataCache.ParallelGetCacheOrDataAsync(loadItems);
+        await DataAccess.ParallelGetCacheOrDataAsync(loadItems);
     }
 
     private async Task LoadAgencyStatusLog()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AgencyStatusLogLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyStatusLogLoad);
     }
 
     private void Reset()

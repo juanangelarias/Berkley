@@ -93,7 +93,7 @@
 
     private async Task LoadObligeeBonds()
     {
-        await DataCache.GetCacheOrLoadDataAsync(BondLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(BondLoad);
     }
 
     protected async Task ShowLoading()

@@ -18,13 +18,7 @@
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow" />
-            <RadzenSplitButton Text="Export" Icon="download" Click="@(args => ExportLicenseGrid(args))"
-                               Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Disabled="@IsLoading">
-                <ChildContent>
-                    <RadzenSplitButtonItem Text="Excel" Value="excel" Icon="border_all"/>
-                    <RadzenSplitButtonItem Text="CSV" Value="csv" Icon="article"/>
-                </ChildContent>
-            </RadzenSplitButton>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -349,10 +343,8 @@
         IsLoading = false;
     }
 
-    private void ExportLicenseGrid(RadzenSplitButtonItem args)
+    private void ExportGrid(ExportFormat format)
     {
-        var format = args.Value == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
-        
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Sent", "Sent", "Date Sent");
         substitutions.AddSubstitution("DocumentType", "DocumentType", "Doc Type");

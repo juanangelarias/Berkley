@@ -209,6 +209,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
             ExportColumnSubstitutions? propertySubstitutions = null)
         {
             propertySubstitutions ??= new();
+            
             var selectColumns = dataGrid.ColumnsCollection
                 .Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property))
                 .Select(c => new

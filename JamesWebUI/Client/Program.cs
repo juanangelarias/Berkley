@@ -44,8 +44,8 @@ builder.Services
     .AddScoped<ThemeService>()
     .AddSingleton<ILoggingService, LoggingService>()
     .AddScoped<IDataAccess, ClientDataAccess>()
-    .AddScoped<UserSettingService>()
     .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
+    .AddScoped<IUserSettingService, UserSettingService>()
     .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
 

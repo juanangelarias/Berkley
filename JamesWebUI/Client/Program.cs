@@ -45,7 +45,7 @@ builder.Services
     .AddScoped<ThemeService>()
     .AddSingleton<ILoggingService, LoggingService>()
     .AddScoped<IDataAccess, ClientDataAccess>()
-    .AddScoped<UserSettingService>()
+    .AddScoped<IUserSettingService, UserSettingService>()
     .AddSingleton<IDataCache, DataCache>()
     .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();

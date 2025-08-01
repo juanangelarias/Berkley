@@ -123,7 +123,7 @@ try
                     .AddScoped<ServerImagingAccess>()
                     .AddScoped<IDataAccess, ServerDataAccess>()
                     .AddSingleton<IDataCache, DataCache>()
-                    .AddScoped<UserSettingService>()
+                    .AddScoped<IUserSettingService, UserSettingService>()
                     .AddScoped<IAuthorizationHandler, RoleRequirementHandler>()
                     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
 

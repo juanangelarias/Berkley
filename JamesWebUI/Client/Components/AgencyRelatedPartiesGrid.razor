@@ -1,8 +1,6 @@
-﻿@using James.Shared
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-@inject IUserSettingService UserSettingService
 @inject IDataAccess DataAccess
 
 <Theme />
@@ -12,15 +10,7 @@
                 Style="height: 400px; border-radius: 10px;" IsLoading="@_isLoading" FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
-                               Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
-                               Click="@(args => ExportGrid(args))"
-                               Disabled="@_isLoading" Size="ButtonSize.ExtraSmall">
-                <ChildContent>
-                    <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
-                    <RadzenSplitButtonItem Text="CSV" Value="CSV" Icon="download"/>
-                </ChildContent>
-            </RadzenSplitButton>
+            <ExportGridTo IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -95,15 +85,6 @@
 
         await ShowLoading();
         await LoadRelatedParties();
-        await SetUserSettings();
-    }
-
-    private async Task SetUserSettings()
-    {
-        var usExportFormat = await UserSettingService.GetUserSettingAsync(UserSettingsKeys.ExportToFormat);
-        var valid = Enum.TryParse(usExportFormat, out _defaultExportFormat);
-        if (!valid)
-            _defaultExportFormat = ExportFormat.Unknown;
     }
     
     private async Task LoadRelatedParties()
@@ -125,24 +106,8 @@
         _isLoading = false;
     }
 
-    private async Task ExportGrid(RadzenSplitButtonItem? item)
+    private void ExportGrid(ExportFormat format)
     {
-        ExportFormat format;
-        if (item == null)
-        {
-            if(_defaultExportFormat == ExportFormat.Unknown)
-                return;
-            
-            format = _defaultExportFormat;
-        }
-        else
-        {
-            format = item.Value.ToLower() == "excel" ? ExportFormat.Excel : ExportFormat.CSV;
-
-            if (_defaultExportFormat == ExportFormat.Unknown)
-                await UserSettingService.SetUserSettingAsync(UserSettingsKeys.ExportToFormat, format.ToString());
-        }
-
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("AgencyNumber", "AgencyNumber", "Number");
         substitutions.AddSubstitution("IdNavigation.FullName", "IdNavigation.FullName", "Agency");

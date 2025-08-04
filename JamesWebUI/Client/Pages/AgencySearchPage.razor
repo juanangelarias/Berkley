@@ -126,7 +126,7 @@
     
     private IDataAccessResult<List<Agency>> _agenciesResult = null!;
 
-    private LoadItem AgenciesLoad => AddEventNotify(new LoadItem
+    private LoadItem AgenciesLoad => AddEventNotify(new LoadItem<List<Agency>>
     {
         Key = "SearchAgencies",
         AsyncLoadTask = async () => _agenciesResult = await DataAccess.SearchAgencies(_txtAgencyNameSearch.Value, _searchOptions.ActiveOnly),

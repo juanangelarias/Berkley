@@ -3,6 +3,10 @@ using System.Text.Json.Serialization;
 
 namespace James.Shared.Data;
 
+/// <summary>
+/// Base class for the generic version.
+/// </summary>
+/// <remarks>Should only be used when UseBrowserStorageIfAvailable = false</remarks>
 public class LoadItem : IDisposable
 {
     /// <summary>
@@ -61,7 +65,7 @@ public class LoadItem : IDisposable
     /// </summary>
     public Action? AfterLoad { get; init; }
 
-    public event EventHandler Loaded;//TODO:Review if this is needed, or is the after load Action all that is needed
+    public event EventHandler Loaded;//TODO:Review if this is needed, or is the AfterLoad Action all that is needed
 
     internal void FireLoaded()
     {
@@ -79,6 +83,10 @@ public class LoadItem : IDisposable
     }
 }
 
+public class LoadItem<T> : LoadItem
+{
+}
+
 public class CachedResult
 {
     public object? DataObject { get; set; }
@@ -88,7 +96,7 @@ public class CachedResult
 
 public class CachedResult<T> : CachedResult
 {
-    private static JsonSerializerOptions ignoreCycles = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions _ignoreCycles = new JsonSerializerOptions
     {
         ReferenceHandler = ReferenceHandler.IgnoreCycles,
         WriteIndented = false
@@ -103,7 +111,7 @@ public class CachedResult<T> : CachedResult
                 try
                 {
                     //DataObject = JsonSerializer.Deserialize<T>(je.ToString());
-                    DataObject = je.Deserialize<T>(ignoreCycles);
+                    DataObject = je.Deserialize<T>(_ignoreCycles);
                 }
                 catch (Exception ex)
                 {

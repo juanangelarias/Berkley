@@ -90,7 +90,7 @@
     
     private IDataAccessResult<List<Bond>> _agencyBondsResult = null!;
 
-    private LoadItem AgencyBondsLoad => AddEventNotify(new LoadItem
+    private LoadItem AgencyBondsLoad => AddEventNotify(new LoadItem<List<Bond>>
         {
             Key = $"AgencyBondGrid{AgencyId}",
             AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId),

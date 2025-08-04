@@ -190,7 +190,7 @@
     private IDataAccessResult<Account> _accountResult = null!;
     private IDataAccessResult<InforceAccountLOA> _inforceAccountLOAResult = null!;
 
-    private LoadItem AccountLoad => AddEventNotify(new LoadItem
+    private LoadItem AccountLoad => AddEventNotify(new LoadItem<Account>
         {
             Key = $"Account{AccountNumber}",
             AsyncLoadTask = async () => _accountResult = await DataAccess.GetAccountByNumber(AccountNumber),
@@ -199,7 +199,7 @@
             AfterLoad = () => { AccountToDisplay = _accountResult.Data!; }
         }, "account");
     
-    private LoadItem InforceAccountLOALoad => AddEventNotify(new LoadItem
+    private LoadItem InforceAccountLOALoad => AddEventNotify(new LoadItem<InforceAccountLOA>
         {
             Key = $"InforceAccountLOA{AccountNumber}",
             AsyncLoadTask = async () => _inforceAccountLOAResult = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountNumber!),

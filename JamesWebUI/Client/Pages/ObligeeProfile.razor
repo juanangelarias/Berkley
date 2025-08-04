@@ -92,7 +92,7 @@
     private bool PossibleDuplicates { get; set; } = false;
     
     private IDataAccessResult<Obligee?> _obligeeResult = null!;
-    private LoadItem ObligeeLoad => AddEventNotify(new LoadItem
+    private LoadItem ObligeeLoad => AddEventNotify(new LoadItem<Obligee>
         {
             Key = $"Obligee{ObligeeNumber}",
             AsyncLoadTask = async () =>_obligeeResult = await DataAccess.GetObligeeByObligeeNumber(ObligeeNumber),

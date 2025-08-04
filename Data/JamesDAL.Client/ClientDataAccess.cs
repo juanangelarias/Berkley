@@ -14,7 +14,7 @@ namespace James.Data.Client
 {
     public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging, 
         IBrowserStorageCache browserStorageCache
-    ) : BaseDataAccess(browserStorageCache), IDataAccess
+    ) : BaseDataAccess(browserStorageCache, logging), IDataAccess
     {
         public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
         {
@@ -199,6 +199,7 @@ namespace James.Data.Client
         }
         public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension, Guid legalEntityId, string phoneType)
         {
+            //TODO: Make functional
             return new SaveDataResult();
         }
         public async Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId)
@@ -516,14 +517,14 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory, bool useDocCategoryAsCriteria = true)
         {
-            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), docCategory.Name());
+            var category = Enum.Parse<GraphQL.ImagingDocumentCategory>(docCategory.Name());
             return await ExecuteGet<ImagingSearchCriteria>(async () =>
                 await jamesClient.GetImagingSearchCriteria.ExecuteAsync(id, category, useDocCategoryAsCriteria));
         }
 
         public async Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory, string? documentType = null)
         {
-            var category = (GraphQL.ImagingDocumentCategory)Enum.Parse(typeof(GraphQL.ImagingDocumentCategory), docCategory.Name());
+            var category = Enum.Parse< GraphQL.ImagingDocumentCategory>(docCategory.Name());
             var result = await ExecuteGet<List<ImagingDocument>>(async () => await jamesClient.GetImagingDocuments.ExecuteAsync(imagingId, category, documentType), "SearchDocuments", "GetImagingDocuments");
             return result;
         }
@@ -980,7 +981,9 @@ namespace James.Data.Client
                 var subPropertyInfo = new ReflectionProperty(resultData.GetType(), level);
                 var propInfo = subPropertyInfo.PropertyInfo();
                 if (null == propInfo)
+#pragma warning disable CA2201
                     throw new NullReferenceException($"{levels} {level}");
+#pragma warning restore CA2201
                 resultValue = subPropertyInfo.PropertyInfo().GetValue(resultValue);
             }
             var subData = ThisToThat.ToEntityType<T>(resultValue);
@@ -1009,24 +1012,6 @@ namespace James.Data.Client
                 logging.LogException(ex, graphQlFunctionName + " returned exception",
                     exceptionDetail, Severity.Error, "GraphQl");
                 return new DataAccessResult<T> { Data = defaultValue, Errors = [ex.Message] };
-            }
-        }
-
-        private async Task<DataAccessResultString> ExecuteGetString(Func<Task<IOperationResult>> dataFunc,
-            [CallerMemberName] string graphQlFunctionName = "GraphQL call", string? defaultValue = null)
-        {
-            try
-            {
-                var result = await dataFunc();
-                var gqlResult = GraphQLResultString(result);
-                return gqlResult;
-            }
-            catch (Exception ex)
-            {
-                var exceptionDetail = ex.ToText();
-                logging.LogException(ex, graphQlFunctionName + " returned exception",
-                    exceptionDetail, Severity.Error, "GraphQl");
-                return new DataAccessResultString { Data = defaultValue, Errors = [ex.Message] };
             }
         }
 

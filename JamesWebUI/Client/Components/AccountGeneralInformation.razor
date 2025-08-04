@@ -396,7 +396,7 @@
     
     private IDataAccessResult<InforceAccountLOA> _inforceLOAResult = null!;
 
-    private LoadItem InforceLOALoad => AddEventNotify(new LoadItem
+    private LoadItem InforceLOALoad => AddEventNotify(new LoadItem<InforceAccountLOA>
         {
             Key = $"GetInforceLOAs{AccountToDisplay?.AccountNum}",
             AsyncLoadTask = async () => { _inforceLOAResult = await DataAccess.GetInforceAccountLOAsByAccountNumber(AccountToDisplay?.AccountNum ?? ""); },

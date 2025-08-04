@@ -61,7 +61,7 @@
     
     private IDataAccessResult<List<AgencyCommission>> _ratesResult = null!;
 
-    private LoadItem RatesLoad => AddEventNotify(new LoadItem
+    private LoadItem RatesLoad => AddEventNotify(new LoadItem<List<AgencyCommission>>
         {
             Key = $"AgencyCommissionRates{AgencyId}",
             AsyncLoadTask = async () => _ratesResult = await DataAccess.GetAgencyCommissionRates(AgencyId),

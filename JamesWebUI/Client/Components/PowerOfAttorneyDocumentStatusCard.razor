@@ -55,7 +55,7 @@
     
     private IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>> _PoADocumentsResult = null!;
 
-    private LoadItem PoADocumentsLoad => AddEventNotify(new LoadItem
+    private LoadItem PoADocumentsLoad => AddEventNotify(new LoadItem<List<PowerOfAttorneyDocumentNameDm>>
     {
         Key = "POADocumentName",
         AsyncLoadTask = async () => _PoADocumentsResult = await DataAccess.GetPoaDocumentNames(),

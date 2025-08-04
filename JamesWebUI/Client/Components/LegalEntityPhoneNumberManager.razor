@@ -39,7 +39,7 @@
     
     private IDataAccessResult<List<PhoneNumber>> _phoneNumbersResult = null!;
 
-    private LoadItem PhoneNumbersLoad => AddEventNotify(new LoadItem
+    private LoadItem PhoneNumbersLoad => AddEventNotify(new LoadItem<List<PhoneNumber>>
         {
             Key = $"PhoneNumbers{LegalEntityId}",
             AsyncLoadTask = async () => _phoneNumbersResult = await DataAccess.GetAllLegalEntityPhoneNumbers(LegalEntityId),

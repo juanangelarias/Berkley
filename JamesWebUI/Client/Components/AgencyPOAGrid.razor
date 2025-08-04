@@ -163,7 +163,7 @@
 
     private IDataAccessResult<List<PowerOfAttorney>> _poas = null!;
 
-    private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem
+    private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem<List<PowerOfAttorney>>
     {
         Key = AgencyPOAKey,
         AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id),
@@ -193,7 +193,7 @@
 
     private IDataAccessResult<List<Insurer>> _insurers = null!;
 
-    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = "Insurers",
         AsyncLoadTask = async () => _insurers = await DataAccess.GetAllInsurers(),
@@ -211,7 +211,7 @@
 
     private IDataAccessResult<List<PowerOfAttorneyStatusDm>> _statuses = null!;
 
-    private LoadItem StatusesLoad => AddEventNotify(new LoadItem
+    private LoadItem StatusesLoad => AddEventNotify(new LoadItem<List<PowerOfAttorneyStatusDm>>
     {
         Key = "Statuses",
         AsyncLoadTask = async () => _statuses = await DataAccess.GetAllPoaStatuses(),

@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
+using System.Text.Json;
 
 namespace James.Shared.Data
 {
-    public abstract class BaseDataAccess(IBrowserStorageCache browserStorageCache)
+    public abstract class BaseDataAccess(IBrowserStorageCache browserStorageCache, ILoggingService logger)
     {
         private readonly ConcurrentDictionary<string, CachedResult> _cachedResults = new();
 
@@ -21,13 +22,6 @@ namespace James.Shared.Data
         private int _cacheUses;
         private readonly Hashtable _executingLoadItems = new();
         private readonly Random _rnd = new();
-        private ILoggingService? _logger;
-
-        public async Task GetCacheOrLoadDataAsync(LoadItem loadItem, ILoggingService logger)
-        {
-            _logger = logger;
-            await GetCacheOrLoadDataAsync(loadItem);
-        }
 
         public async Task GetCacheOrLoadDataAsync(LoadItem loadItem)
         {
@@ -47,20 +41,38 @@ namespace James.Shared.Data
                         if (BrowserStorageCache.UseBrowserStorageCache)
                         {
                             var localCachedValue = await BrowserStorageCache.GetCacheItem<object>(loadItem.Key);
-                            if (localCachedValue != null!) //TODO:Investigate doing this through a LoadItem<T> to check for != default(T)
+                            while (localCachedValue != null!) //NOTE:  Using while instead of if to allow the use of break; to leave early
                             {
+                                if (localCachedValue.DataObject is JsonElement jElement )
+                                {
+                                    if (loadItem.GetType().IsGenericType)
+                                    {
+                                        var genType = loadItem.GetType().GenericTypeArguments.First();
+                                        localCachedValue.DataObject =
+                                            JsonSerializer.Deserialize(jElement.GetRawText(), genType);
+                                    }
+                                    else
+                                    {
+                                        //Continue like no cache is available, but leave warning in log.
+                                        logger.LogWarning("LoadItem should be upgraded to LoadItem<T>",
+                                            category: StandardLoggingCategories.DataAccess,
+                                            data: new Dictionary<string, string>
+                                            {
+                                                { "loadItemKey", loadItem.Key }
+                                            });
+                                        break;
+                                    }
+                                }
                                 _cachedResults[loadItem.Key] = localCachedValue;
                                 //Once the cache has been set, continue like it was a cache hit so that the load result is properly set
                                 loadItem.CacheLoadTask(_cachedResults[loadItem.Key].DataObject);
+                                break;
                             }
-                            ////Run AfterLoad as though data was just loaded
-                            //loadItem.AfterLoad?.Invoke();
-                            //goto ExpireCacheIfNeeded; //<Evil grin>A goto statement!</Evil grin>
                         }
                     }
                     catch (Exception ex)
                     {
-                        _logger?.LogException(ex, "Exception trying to load from LocalStorage",
+                        logger.LogException(ex, "Exception trying to load from LocalStorage",
                             category: StandardLoggingCategories.BrowserFeatures,
                             data: new Dictionary<string, string> { { "Key", loadItem.Key } });
                         throw;
@@ -97,6 +109,12 @@ namespace James.Shared.Data
                         DataObject = loadItem.ResultVariable().DataObject,
                         CacheUntil = DateTime.Now + loadItem.CacheDuration
                     };
+                    if (loadItem.UseBrowserStorageIfAvailable)
+                    {
+                        //Update local browser storage cache without waiting for it to complete.
+                        _ = BrowserStorageCache.SetItemAsyncWithExpiry(loadItem.Key, loadItem.CacheDuration,
+                                                                        loadItem.ResultVariable().DataObject);
+                    }
                     loadItem.FireLoaded();
                     loadItem.AfterLoad?.Invoke();
                     loadItem.AddSubscriptionTask?.Invoke(loadItem);

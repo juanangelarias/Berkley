@@ -33,7 +33,7 @@
     private string _selectedAgent = "";
     private IDataAccessResult<List<Agent>> _searchResult = null!;
 
-    private LoadItem AgentsLoad(string filter) => AddEventNotify(new LoadItem
+    private LoadItem AgentsLoad(string filter) => AddEventNotify(new LoadItem<List<Agent>>
         {
             Key = $"SearchResult{SelectedAgentId}",
             AsyncLoadTask = async () => _searchResult = await DataAccess.SearchAgents(filter),

@@ -147,7 +147,7 @@
     private bool _isLoading;
     
     private IDataAccessResult<Agent> _agentResult = null!;
-    private LoadItem LicencesLoad => AddEventNotify(new LoadItem
+    private LoadItem LicencesLoad => AddEventNotify(new LoadItem<Agent>
         {
             Key = $"Licenses{AgentId}",
             AsyncLoadTask = async () => _agentResult = await DataAccess.GetAgent(AgentId),
@@ -161,7 +161,7 @@
     
     
     private IDataAccessResult<List<State>> _statesResult = null!;
-    private LoadItem StatesLoad => AddEventNotify(new LoadItem
+    private LoadItem StatesLoad => AddEventNotify(new LoadItem<List<State>>
     {
         Key = "States",
         AsyncLoadTask = async () => _statesResult = await DataAccess.GetAllStates(),
@@ -178,7 +178,7 @@
     }, "states");
     
     private IDataAccessResult<List<Insurer>> _insurersResult = null!;
-    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = "Insurers",
         AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),

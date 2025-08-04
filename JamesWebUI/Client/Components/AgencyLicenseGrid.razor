@@ -219,7 +219,7 @@
 
     private IDataAccessResult<List<AgencyLicense>> _licenses = null!;
 
-    private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem
+    private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem<List<AgencyLicense>>
     {
         Key = LicensesKey,
         AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(Agency.Id),
@@ -233,7 +233,7 @@
 
     private IDataAccessResult<List<State>> _states = null!;
 
-    private LoadItem StatesLoad => AddEventNotify(new LoadItem
+    private LoadItem StatesLoad => AddEventNotify(new LoadItem<List<State>>
     {
         Key = "States",
         AsyncLoadTask = async () => _states = await DataAccess.GetAllStates(),
@@ -251,7 +251,7 @@
 
     private IDataAccessResult<List<Insurer>> _insurers = null!;
 
-    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = "Insurers",
         AsyncLoadTask = async () => _insurers = await DataAccess.GetAllInsurers(),

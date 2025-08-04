@@ -41,7 +41,7 @@
     private List<AdditionalRelatedParty> RelatedParties { get; set; } = [];
     IDataAccessResult<List<AdditionalRelatedParty>> _relatedPartiesResult = null!;
 
-    private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem
+    private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem<List<AdditionalRelatedParty>>
         {
             Key = $"GetAccountAdditionalRelatedParties{AccountToDisplay.AccountNum}",
             AsyncLoadTask = async () => { _relatedPartiesResult = await DataAccess.GetAdditionalRelatedParties(AccountToDisplay.AccountNum); },

@@ -104,7 +104,7 @@
     private IDataAccessResult<List<Agent>> _agentsResult = null!;
     private IDataAccessResult<List<Insurer>> _insurersResult = null!;
 
-    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem
+    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<Agent>>
     {
         Key = $"AgencyContacts{AgencyId}",
         AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(AgencyId),
@@ -113,7 +113,7 @@
             Data = (List<Agent>)cache!
         },
         ResultVariable = () => _agentsResult,
-        AfterLoad = async void () =>
+        AfterLoad = void () =>
         {
             if (_agentsResult.Success)
                 Agents = _agentsResult.Data!;
@@ -121,13 +121,13 @@
     }, "agency contacts");
 
 
-    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = "Insurers",
         AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
         CacheLoadTask = cache => _insurersResult = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
         ResultVariable = () => _insurersResult,
-        AfterLoad = async void () =>
+        AfterLoad = void () =>
         {
             if (_insurersResult.Success)
                 AllInsurers = _insurersResult.Data!;

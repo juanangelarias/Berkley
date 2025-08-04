@@ -15,7 +15,8 @@ namespace James.Data.Server
         AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, 
         GeneralMutation generalMutation, ServerImagingAccess imagingAccess, 
         ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService, 
-        IHttpContextAccessor contextAccessor, IUserShared userShared, IBrowserStorageCache browserStorageCache) : BaseDataAccess(browserStorageCache), IDataAccess
+        IHttpContextAccessor contextAccessor, IUserShared userShared, IBrowserStorageCache browserStorageCache) 
+        : BaseDataAccess(browserStorageCache, loggingService), IDataAccess
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     {
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)

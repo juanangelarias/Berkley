@@ -107,7 +107,7 @@
     
     private IDataAccessResult<List<AccountProgram>> _accountProgramResult = null!;
 
-    private LoadItem AccountProgramLoad => AddEventNotify(new LoadItem
+    private LoadItem AccountProgramLoad => AddEventNotify(new LoadItem<List<AccountProgram>>
         {
             Key = $"AccountProgramDisplay{AccountNumber}",
             AsyncLoadTask = async () => _accountProgramResult = await DataAccess.GetAccountProgramHistory(AccountNumber),

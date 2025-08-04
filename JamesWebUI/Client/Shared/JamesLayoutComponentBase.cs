@@ -188,8 +188,16 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         return loadItem;
     }
 
-        private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-            string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property ?? "";
+        /*private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+            string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property ?? "";*/
+
+        private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions)
+        {
+            var result = string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property ?? "";
+            
+            return result;
+        }
+            
 
         private static string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
         {
@@ -203,8 +211,13 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         return originalFilter;
     }
 
-        private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-                string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";
+        /*private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+                string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";*/
+        private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions)
+        {
+            var result = string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";
+            return result;
+        }
 
         public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
             ExportColumnSubstitutions? propertySubstitutions = null)

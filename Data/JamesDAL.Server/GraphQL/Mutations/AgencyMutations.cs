@@ -391,8 +391,8 @@ namespace James.Data.Server.GraphQL.Mutations
             catch (Exception ex)
             {
                 loggingService.LogException(ex, "Exception deleting agency license in database", "Database");
+                return false;
             }
-
 
             return success;
         }

@@ -387,6 +387,10 @@ namespace James.Data.Server.GraphQL.Mutations
                     await ctx.SaveChangesAsync(true);
                     success = true;
                 }
+                else
+                {
+                    return false;
+                }
             }
             catch (Exception ex)
             {

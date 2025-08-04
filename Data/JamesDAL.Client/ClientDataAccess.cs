@@ -12,17 +12,16 @@ using Severity = James.Shared.Model.Severity;
 
 namespace James.Data.Client
 {
-
     public class ClientDataAccess(IJamesClient jamesClient, ILoggingService logging) : IDataAccess
     {
         public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
         {
             //TODO: Fix
-            return new DataAccessResult<List<Agent>>();
+            return await Task.FromResult( new DataAccessResult<List<Agent>>());
         }
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
-            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber)!,
+            return await ExecuteGet<Account>(async () => await jamesClient.GetAccountByNumber.ExecuteAsync(accountNumber),
                 "AccountByNumber");
 
         }
@@ -79,7 +78,6 @@ namespace James.Data.Client
         {
             return (await ExecuteGet<Agency>(async () => await jamesClient.GetAgencyByAgencyNumber.ExecuteAsync(agencyNumber),
                 "AgencyByAgencyNumber"))!;
-
         }
 
         public async Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId)
@@ -373,7 +371,6 @@ namespace James.Data.Client
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode)
         {
-            //throw new NotImplementedException();
             return await ExecuteGet<AgencyInventory>(async () =>
             await jamesClient.SetAgencyInventory.ExecuteAsync(new SetAgencyInventoryInput
             {
@@ -535,6 +532,68 @@ namespace James.Data.Client
             throw new NotImplementedException("Imaging details can only be accessed serverside.");
         }
 
+        public async Task<IDataAccessResult<List<SecurityRole>>> GetAllSecurityRoles()
+        {
+            var result = await ExecuteGet<List<SecurityRole>>(
+                async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId)
+        {
+            var result = await ExecuteGet<List<SecurityRole>>(
+            async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<SecurityRoleMember>>> GetSecurityRoleMembers(string role)
+        {
+            var result = await ExecuteGet<List<SecurityRoleMember>>(
+                async () => await jamesClient.GetSecurityRoleMembers.ExecuteAsync(role), "SecurityRoleMembers");
+            return result;
+        }
+
+        public async Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role)
+        {
+            var result = await ExecuteSave(
+                async () => await jamesClient.AddPrincipalToSecurityRole.ExecuteAsync(new AddPrincipalToSecurityRoleInput
+                {
+                    PrincipalId = principalId,
+                    Role = role
+                } ), "AddPrincipalToSecurityRole");
+            return result;
+        }
+
+        public async Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role)
+        {
+            var result = await ExecuteSave(
+                async () => await jamesClient.RemovePrincipalFromSecurityRole.ExecuteAsync(new RemovePrincipalFromSecurityRoleInput()
+                {
+                    PrincipalId = principalId,
+                    Role = role
+                }), "RemovePrincipalFromSecurityRole");
+            return result;
+        }
+
+        public async Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
+        {
+            var result = await ExecuteSave(
+                async () => await jamesClient.AddSecurityRole.ExecuteAsync(new AddSecurityRoleInput()
+                {
+                    Role = role.Role,
+                    Description = role.Description,
+                    Ord = role.Ord
+                }));
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
+        {
+            var result = await ExecuteGet<List<Employee>>(
+                async () => await jamesClient.GetAllEmployees.ExecuteAsync(), "AllEmployees");
+            return result;
+        }
+
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
         {
             return await ExecuteGet<List<PowerOfAttorneyDocumentNameDm>>(async () => await jamesClient.GetPOADocumentNames.ExecuteAsync(), "PoaDocumentNames");
@@ -694,6 +753,75 @@ namespace James.Data.Client
         {
             var saveResult = await jamesClient.DeleteAgencyPOA.ExecuteAsync(new DeleteAgencyPOAInput { PoaId = poaId });
             return GraphQLSaveResult(saveResult);
+        }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkDelete(List<Guid> licenseIds)
+        {
+            var result = await jamesClient.AgencyLicenseBulkDelete.ExecuteAsync(new AgencyLicenseBulkDeleteInput
+                { LicenseIds = licenseIds });
+
+            return new SaveDataResult
+            {
+                Errors = result.Errors.Select(s => s.Message).ToArray()
+            };
+        }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkInsert(List<AgencyLicenseBulk> licenses)
+        {
+            var result = await jamesClient.AgencyLicenseBulkInsert.ExecuteAsync(new AgencyLicenseBulkInsertInput
+            {
+                Licenses = licenses
+                    .Select(s => new AgencyLicenseBulkInput
+                    {
+                        Id = s.Id,
+                        AgencyId = s.AgencyId,
+                        InsurerId = s.InsurerId,
+                        Appointment = s.Appointment,
+                        AppointingState = s.AppointingState,
+                        Comments = s.Comments,
+                        Expiration = s.Expiration,
+                        IsActive = s.IsActive,
+                        IsResident = s.IsResident,
+                        LicenseNumber = s.LicenseNumber,
+                        State = s.State,
+                        Termination = s.Termination
+                    })
+                    .ToList()
+            });
+
+            return new SaveDataResult
+            {
+                Errors = result.Errors.Select(s => s.Message).ToArray()
+            };
+        }
+        
+        public async Task<ISaveDataResult> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses)
+        {
+            var result = await jamesClient.AgencyLicenseBulkUpdate.ExecuteAsync(new AgencyLicenseBulkUpdateInput
+            {
+                Licenses = licenses
+                    .Select(s => new AgencyLicenseBulkInput
+                    {
+                        Id = s.Id,
+                        AgencyId = s.AgencyId,
+                        InsurerId = s.InsurerId,
+                        Appointment = s.Appointment,
+                        AppointingState = s.AppointingState,
+                        Comments = s.Comments,
+                        Expiration = s.Expiration,
+                        IsActive = s.IsActive,
+                        IsResident = s.IsResident,
+                        LicenseNumber = s.LicenseNumber,
+                        State = s.State,
+                        Termination = s.Termination
+                    })
+                    .ToList()
+            });
+
+            return new SaveDataResult
+            {
+                Errors = result.Errors.Select(s => s.Message).ToArray()
+            };
         }
 
         public async Task<IDataAccessResult<Obligee>> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,

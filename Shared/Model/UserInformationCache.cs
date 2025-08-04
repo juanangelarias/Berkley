@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace JamesWebUI.Server.Model
+namespace James.Shared.Model
 {
     public class UserInformationCache<T>
     {
@@ -20,7 +20,7 @@ namespace JamesWebUI.Server.Model
         public async Task<T?> GetAsync(string key)
         {
             lock(this)
-            RemoveStale();
+                RemoveStale();
             if (_cache.ContainsKey(key))
                 Debug.WriteLine("Cache hit!");
             else if (null != LookupTask)

@@ -1,0 +1,197 @@
+﻿@using James.Shared
+@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject ILocalStorageService LocalStorageService
+@inject TooltipService TooltipService
+@attribute [Authorize]
+
+<Theme />
+<PageTitle>Admin - Add Role Members</PageTitle>
+<RenderModeBackground></RenderModeBackground>
+
+<RadzenText TextStyle="TextStyle.DisplayH3">Add Role Member</RadzenText>
+<RadzenPanel Style="border-radius: 20px;" class="rz-shadow-7">
+    <RadzenTabs>
+        <Tabs>
+            <RadzenTabsItem Text="Employees">
+                <RadzenDataGrid SelectionMode="DataGridSelectionMode.Multiple"
+                                Data="@_employees" AllowRowSelectOnRowClick="true"
+                                Density="Density.Compact"
+                                AllowAlternatingRows="true"
+                                @bind-Value=@_selectedEmployees>
+                    <Columns>
+                        <RadzenDataGridColumn Title="Employee" Property="@nameof(Employee.FullName)" />
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Roles">
+                <RadzenDataGrid SelectionMode="DataGridSelectionMode.Multiple"
+                                Data="@_securityRoles" AllowRowSelectOnRowClick="true"
+                                Density="Density.Compact"
+                                AllowAlternatingRows="true"
+                                @bind-Value=@_selectedRoles>
+                    <Columns>
+                        <RadzenDataGridColumn Title="Role" Property="@nameof(SecurityRole.Role)" />
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+</RadzenPanel>
+<RadzenRow>
+    <RadzenColumn>
+        <div style="display:flex;justify-content:center;">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="5em">
+                <RadzenButton Text="OK" MouseEnter="@(er => ShowOkToolTip(er))" Click="() => AddPrincipals(true)"/>
+                <RadzenButton Text="Add" Click="() => AddPrincipals(false)" />
+                <RadzenButton Text="Cancel" Click="() => DialogService.Close(HasAdded)" />
+            </RadzenStack>
+        </div>
+    </RadzenColumn>
+</RadzenRow>
+@code {
+    [Parameter, EditorRequired] public required string Role { get; set; }
+    private bool HasAdded { get; set; }
+
+    private List<Employee> _employees = new();
+    private const string LoadEmployeesKey = "Emp";
+    private IDataAccessResult<List<Employee>> _loadEmployeesResult = null!;
+    private LoadItem EmployeesLoadItem => AddEventNotify(
+        new()
+        {
+            Key = LoadEmployeesKey,
+            //TODO: Add actual data called when created
+            AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetAllEmployees(),
+            CacheLoadTask = cache => _loadEmployeesResult = new DataAccessResult<List<Employee>> { Data = (List<Employee>)cache! },
+            ResultVariable = () => _loadEmployeesResult,
+            AfterLoad = () =>
+            {
+                _employees = _loadEmployeesResult.Data!;
+                //Save to local storage asynchronously and don't wait for the save to finish
+                Task.Factory.StartNew(data =>
+                    LocalStorageService.SetItemAsyncWithExpiry(LoadEmployeesKey, TimeSpan.FromHours(1), data), _loadEmployeesResult.Data);
+            },
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<Employee>>(LoadEmployeesKey)
+        }, "security roles");
+
+
+    List<SecurityRole> _securityRoles = null!;
+    private IDataAccessResult<List<SecurityRole>> _loadSecurityRolesResult = null!;
+    private LoadItem RolesLoadItem => AddEventNotify(
+        new()
+        {
+            Key = "SecRoles",
+            AsyncLoadTask = async () => _loadSecurityRolesResult = await DataAccess.GetAllSecurityRoles(),
+            CacheLoadTask = cache => _loadSecurityRolesResult = new DataAccessResult<List<SecurityRole>> { Data = (List<SecurityRole>)cache! },
+            ResultVariable = () => _loadSecurityRolesResult,
+            AfterLoad = () =>
+            {
+                _securityRoles = _loadSecurityRolesResult.Data!;
+                //Save to local storage asynchronously and don't wait for the save to finish
+                Task.Factory.StartNew(data =>
+                    LocalStorageService.SetItemAsyncWithExpiry("SecRoles", TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
+            },
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRole>>("SecRoles")
+        }, "security roles");
+
+    List<SecurityRoleMember> _securityRoleMembers = null!;
+    private IDataAccessResult<List<SecurityRoleMember>> _loadMembersResult = null!;
+    private LoadItem MembersLoadItem(string role) => AddEventNotify(
+        new()
+        {
+            Key = $"RlMbr{role}",
+            AsyncLoadTask = async () => _loadMembersResult = await DataAccess.GetSecurityRoleMembers(role),
+            //await Task.FromResult<IDataAccessResult<List<SecurityRoleMember>>>(new DataAccessResult<List<SecurityRoleMember>>()),//DataAccess.GetMyData(),
+            CacheLoadTask = cache => _loadMembersResult = new DataAccessResult<List<SecurityRoleMember>> { Data = (List<SecurityRoleMember>)cache! },
+            CacheDuration = TimeSpan.FromMinutes(2),
+            ResultVariable = () => _loadMembersResult,
+            AfterLoad = () =>
+            {
+                _securityRoleMembers = _loadMembersResult.Data!;
+                //Save to local storage asynchronously and don't wait for the save to finish
+                Task.Factory.StartNew(data =>
+                    LocalStorageService.SetItemAsyncWithExpiry($"RlMbr{role}", TimeSpan.FromMinutes(2), data), _loadMembersResult.Data);
+            },
+            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRoleMember>>($"RlMbr{role}")
+        }, "role members");
+
+    private IList<Employee> _selectedEmployees { get; set; } = new List<Employee>();
+    private IList<SecurityRole> _selectedRoles { get; set; } = new List<SecurityRole>();
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await DataCache.ParallelGetCacheOrDataAsync([MembersLoadItem(Role), EmployeesLoadItem, RolesLoadItem]);
+    }
+
+    RenderFragment GetEmployeesAlreadyInRoleDialog(List<string> employees)
+    {
+        return __builder =>
+        {
+            <RadzenStack Gap="1em">
+                <RadzenText>@(employees.CombineWithCommasAndAnd()) @(employees.Count > 1 ? "are" : "is") already in this role due to membership in another role.</RadzenText>
+                <RadzenText>Are you sure you want to add them explicitly anyway?</RadzenText>
+            </RadzenStack>
+        };
+    }
+
+    private readonly TooltipOptions _tooltipOptions = new()
+    {
+        Position = TooltipPosition.Top,
+        Style = "max-width: 300px; min-width: 200px;",
+    };
+    private void ShowOkToolTip(ElementReference eRef) => TooltipService.Open(eRef, "Add users and close", _tooltipOptions);
+
+    private async Task AddPrincipals(bool closeAfterwards)
+    {
+        //Warn if any employees who are being added that already have been added due to other roles they are members of
+        var existingMembers = _selectedEmployees.Where(emp => _securityRoleMembers.Any(srm => srm.IsRole == false && srm.Name == emp.FullName)).ToList();
+        var existingMemberNames = existingMembers.Select(e => e.FullName).ToList();
+        if (existingMembers.Any())
+        {
+            var confirmationResult = await DialogService.Confirm(
+                GetEmployeesAlreadyInRoleDialog(existingMemberNames),
+                "Confirm", new ConfirmOptions { OkButtonText = "Add explicitly", CancelButtonText = "Cancel" });
+            if (confirmationResult != true)
+            {
+                foreach (var existingMember in existingMembers)
+                    _selectedEmployees.Remove(existingMember);
+                return;
+            }
+        }
+
+        //HACK: This makes a db call for every addition.  Could be more efficient, but multiple adds are rare.
+        var cumulativeSaveErrors = new List<string>();
+        foreach (var selectedEmployee in _selectedEmployees)
+        {
+            var result = await DataAccess.AddPrincipalToSecurityRole(selectedEmployee.Id, Role);
+            if (!result.Success)
+                cumulativeSaveErrors.Add($"{selectedEmployee.FullName} could not be added to security role {Role}");
+            cumulativeSaveErrors.AddRange(result.Errors);
+        }
+        foreach (var selectedRole in _selectedRoles)
+        {
+            var result = await DataAccess.AddPrincipalToSecurityRole(selectedRole.Id, Role);
+            if (!result.Success)
+                cumulativeSaveErrors.Add($"Role {selectedRole.Role} could not be added to security role {Role}");
+            cumulativeSaveErrors.AddRange(result.Errors);
+        }
+        if (cumulativeSaveErrors.Count ==0)
+        {
+            NotifySuccessfulSave("New roll members");
+            _selectedEmployees.Clear();
+            _securityRoles.Clear();
+            HasAdded = true;
+
+        }
+        else
+            NotifySaveIssue(cumulativeSaveErrors.ToArray(),"Adding new roll members failed.");
+
+        //Reload members
+        DataCache.Clear($"RlMbr{Role}");
+        await DataCache.GetCacheOrLoadDataAsync(RolesLoadItem);
+        if (closeAfterwards)
+            DialogService.Close(HasAdded);
+    }
+
+}

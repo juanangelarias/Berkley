@@ -30,6 +30,7 @@ namespace ClientBusinessLogic
                 }
             }
         }
+        
         public static bool ValidateAddress(Address address)
         {
              
@@ -60,6 +61,33 @@ namespace ClientBusinessLogic
         public static bool ValidateFileName(string filename)
         {
             return ImagingBusinessLogic.ValidWindowsFilenamePattern.IsMatch(filename);
+        }
+
+        /// <summary>
+        /// Validates the fields of a Power of Attorney object and returns a list of errors if any required fields are invalid or missing.
+        /// </summary>
+        /// <param name="poa">The Power of Attorney object to validate.</param>
+        /// <returns>A list of error messages indicating the fields that are invalid or missing. Returns an empty list if all fields are valid.</returns>
+        public static List<string> ValidatePoaFields(PowerOfAttorney poa)
+        {
+            var errors = new List<string>();
+            
+            if (poa.AgencyId == Guid.Empty)
+            {
+                errors.Add("Agency has not been defined. Please correct and try again.");
+            }
+
+            if (string.IsNullOrWhiteSpace(poa.Status))
+            {
+                errors.Add("Status has not been defined. Please correct and try again.");
+            }
+
+            if (poa.Insurer.Id == Guid.Empty)
+            {
+                errors.Add("Insurer has not been defined. Please correct and try again.");
+            }
+
+            return errors;
         }
     }
 }

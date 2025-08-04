@@ -1,4 +1,4 @@
-﻿namespace JamesWebUI.Client.Classes
+﻿namespace James.Shared.Model
 {
     public class Notification
     {

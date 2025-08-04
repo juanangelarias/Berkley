@@ -1,0 +1,25 @@
+﻿<RadzenSplitButton Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem"
+                   Wrap="FlexWrap.Wrap" ButtonStyle="ButtonStyle.Secondary" Text="Export"
+                   Click="@(args => Export(args))" Style="height: 30px;"
+                   Disabled="@IsLoading" Size="ButtonSize.ExtraSmall" >
+    <ChildContent>
+        <RadzenSplitButtonItem Text="Excel" Value="Excel" Icon="download"/>
+        <RadzenSplitButtonItem Text="CSV" Value="CSV" Icon="download"/>
+    </ChildContent>
+</RadzenSplitButton>
+
+@code {
+    [Parameter, EditorRequired] public required bool IsLoading { get; set; }
+    [Parameter, EditorRequired] public required EventCallback<ExportFormat> ExportGrid { get; set; }
+
+    private void Export(RadzenSplitButtonItem? item)
+    {
+        var format = item == null
+            ? ExportFormat.Excel
+            : item.Value.ToLower() == "excel"
+                ? ExportFormat.Excel
+                : ExportFormat.CSV;
+
+        ExportGrid.InvokeAsync(format);
+    }
+}

@@ -364,19 +364,38 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> DeleteAgencyInventory(Guid inventoryId, [Service] ITopicEventSender eventSender,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<bool> DeleteAgencyInventory(Guid inventoryId, [Service] ITopicEventSender eventSender, 
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             bool success = false;
 
             var ctx = await contextFactory.CreateDbContextAsync();
             var inventoryToRemove = ctx.AgencyInventories.FirstOrDefault(i => i.Id == inventoryId);
 
-            if (null != inventoryToRemove)
+            try
             {
-                ctx.AgencyInventories.Remove(inventoryToRemove);
-                await ctx.SaveChangesAsync(true);
-                success = true;
+                if (null != inventoryToRemove)
+                {
+                    ctx.AgencyInventories.Remove(inventoryToRemove);
+                    
+                    var addressToRemove = ctx.Addresses.FirstOrDefault(f => f.Id == inventoryToRemove!.AddressId);
+                    if (addressToRemove != null)
+                    {
+                        ctx.Addresses.Remove(addressToRemove);
+                    }
+                    
+                    await ctx.SaveChangesAsync(true);
+                    success = true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                loggingService.LogException(ex, "Exception deleting agency license in database", "Database");
+                return false;
             }
 
             return success;

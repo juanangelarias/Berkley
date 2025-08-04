@@ -12,10 +12,7 @@
                 AllowPaging="true" PageSize="10" AllowSorting="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@_isLoading" />
-            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@_isLoading" />
+            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
@@ -129,7 +126,7 @@
         ResultVariable = () => _insurersResult,
         AfterLoad = void () =>
         {
-            if (_insurersResult.Success)
+            if ( _insurersResult.Success)
                 AllInsurers = _insurersResult.Data!;
         }
     }, "insurers");
@@ -138,7 +135,7 @@
     {
         await base.OnInitializedAsync();
 
-        _isLoading = false;
+         _isLoading = false;
     }
     
     protected override async Task OnParametersSetAsync()
@@ -156,13 +153,13 @@
         await DataAccess.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
     }
 
-    private void ExportLicenseGrid(ExportFormat format)
+    private void ExportGrid(ExportFormat format)
     {
         var substitutions = new ExportColumnSubstitutions();
         //TODO: Determine substitutions
-        substitutions.AddSubstitution("IdNavigation.GivenName", title: "Given Name");
-        substitutions.AddSubstitution("IdNavigation.MiddleInitial", title: "Middle Initial");
-        substitutions.AddSubstitution("IdNavigation.FamilyName", title: "Family Initial");
+        substitutions.AddSubstitution("IdNavigation.GivenName", "IdNavigation.GivenName", "Given Name");
+        substitutions.AddSubstitution("IdNavigation.MiddleInitial", "IdNavigation.MiddleInitial", "Middle Initial");
+        substitutions.AddSubstitution("IdNavigation.FamilyName", "IdNavigation.FamilyName", "Family Name");
         substitutions.AddSubstitution("", "License.LicenseNumber", "License Number");
         substitutions.AddSubstitution("", "License.State");
         substitutions.AddSubstitution("", "License.IsResident", "Is Resident");

@@ -452,7 +452,7 @@ namespace James.Data.Server
         }
         public async Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId)
         {
-            return await ExecuteSave(async () => await agencyMutation.DeleteAgencyInventory(inventoryId, eventSender, contextFactory));
+            return await ExecuteSave(async () => await agencyMutation.DeleteAgencyInventory(inventoryId, eventSender, contextFactory, loggingService));
         }
         public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
         {

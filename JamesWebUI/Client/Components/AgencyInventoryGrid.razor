@@ -12,16 +12,13 @@
 <RadzenDataGrid TItem="AgencyInventory" @ref="@InventoryGrid" Data="@AgencyInventories"
                 Style="border-radius: 10px; height: 400px;" Density="Density.Compact" EmptyText="No records to display"
                 AllowSorting="true" AllowGrouping="true" EditMode="DataGridEditMode.Single" AllowColumnPicking="true"
-                AllowFiltering="true" FilterMode="FilterMode.Simple" SelectionMode="DataGridSelectionMode.Single"
+                AllowFiltering="true" FilterMode="FilterMode.Advanced" SelectionMode="DataGridSelectionMode.Single"
                 RowUpdate="UpdateInventoryRow" RowCreate="CreateInventoryRow"
                 IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow" />
-            <RadzenButton Text="Excel" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.Excel))" Disabled="@IsLoading" />
-            <RadzenButton Text="CSV" Icon="download" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.ExtraSmall"
-                          Click="@(_ => ExportLicenseGrid(ExportFormat.CSV))" Disabled="@IsLoading" />
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -246,8 +243,14 @@
 
         if (result.Success)
         {
+            var toRemove = AgencyInventories.FirstOrDefault(f => f.Id == inventory.Id);
+            if(toRemove != null)
+                AgencyInventories.Remove(toRemove);
+            
+            DataCache.UpdateCache($"Inventory{AgencyId}", AgencyInventories);
+            
             NotifySuccessfulSave("agency inventory deleted");
-            await LoadInventory();
+            await InventoryGrid.Reload();
         }
         else
         {
@@ -340,15 +343,16 @@
         IsLoading = false;
     }
 
-    private void ExportLicenseGrid(ExportFormat format)
+    private void ExportGrid(ExportFormat format)
     {
         var substitutions = new ExportColumnSubstitutions();
-        substitutions.AddSubstitution("Sent", title: "Date Sent");
-        substitutions.AddSubstitution("DocumentType", title: "Doc Type");
+        substitutions.AddSubstitution("Sent", "Sent", "Date Sent");
+        substitutions.AddSubstitution("DocumentType", "DocumentType", "Doc Type");
+        substitutions.AddSubstitution("Quantity", title: "Quantity");
         substitutions.AddSubstitution("Addressee", title: "Sent To");
-        substitutions.AddSubstitution("Address.Address1", title: "Address1");
-        substitutions.AddSubstitution("Address.Address2", title: "Address2");
-        substitutions.AddSubstitution("Address.Address3", title: "Address3");
+        substitutions.AddSubstitution("Address.Address1", title: "Address");
+        substitutions.AddSubstitution("Address.Address2", title: "Address 2");
+        substitutions.AddSubstitution("Address.Address3", title: "Address 3");
         substitutions.AddSubstitution("Address.City", title: "City");
         substitutions.AddSubstitution("Address.StateCode", title: "State");
         substitutions.AddSubstitution("Address.PostalCode", title: "Zip Code");

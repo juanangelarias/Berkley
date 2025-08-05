@@ -7,7 +7,7 @@
 
 <RadzenDataGrid TItem="Account" @ref="@_agencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true" AllowSorting="true"
                 Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true" Density="Density.Compact"
-                AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                AllowFiltering="true" FilterMode="FilterMode.Advanced" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <Template Context="account">
         <RadzenDataGrid Data="account.Bonds" TItem="Bond" Style="height: 400px; border-radius: 10px;">

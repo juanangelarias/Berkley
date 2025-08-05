@@ -79,7 +79,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     protected void NotifySuccessfulSave(string itemSaved = "Changes")
     {
         itemSaved = itemSaved[..1].ToUpper() + itemSaved[1..];
-        
+
         NotificationService.Notify(new NotificationMessage
         {
             Severity = NotificationSeverity.Info,
@@ -98,15 +98,35 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     {
         var summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} " +
                       $"saving {itemSaved}.  {string.Join("  ", errors)}";
-        
-        if(logError)
+
+        if (logError)
             LoggingService.LogError(summary, errors);
-        
+
         NotificationService.Notify(new NotificationMessage
         {
             Severity = NotificationSeverity.Error,
             Summary = summary,
-            Duration = 300000   // Treat as fatal 5 minutes
+            Duration = 300000 // Treat as fatal 5 minutes
+        });
+    }
+
+    /// <summary>
+    /// Generates non-standard notification that a save event failed.
+    /// </summary>
+    /// <param name="errors">Errors that were returned.</param>
+    /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
+    /// <param name="logError">If true will log the error using the LoggingService</param>
+    /// <remarks>Use only when the standard message is not sufficient.  Text should be brief and details should be logged in the errors.</remarks>
+    protected void NotifySaveIssue(string[] errors, string notficationText, bool logError = true)
+    {
+        if (logError)
+            LoggingService.LogError(notficationText, errors);
+
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Error,
+            Summary = notficationText,
+            Duration = 300000 // Treat as fatal 5 minutes
         });
     }
 
@@ -122,13 +142,13 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
             ? $"There {(errors.Length == 1 ? "was a fatal error" : "were fatal error(s)"
                 )} retrieving {itemSaved}.  {string.Join("  ", errors)}"
             : $"There was an error retrieving {itemSaved}.  Retrying...";
-        
+
         LoggingService.LogError(msg, errors);
         NotificationService.Notify(new NotificationMessage
         {
             Severity = fatal ? NotificationSeverity.Error : NotificationSeverity.Warning,
             Summary = msg,
-            Duration = fatal ? 300000 :15000    // Fatal: 5 minutes Else: 15 seconds
+            Duration = fatal ? 300000 : 15000 // Fatal: 5 minutes Else: 15 seconds
         });
     }
 
@@ -168,55 +188,62 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         return loadItem;
     }
 
-        private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-            string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Property ?? "";
 
-        private static string SubstituteFilterPropertyIfNeeded(string originalFilter, ExportColumnSubstitutions substitutions)
+    private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+        string.IsNullOrWhiteSpace(original)
+            ? original
+            : (string.IsNullOrEmpty(substitutions[original].Property)
+                ? original
+                : substitutions[original].Property);
+
+    private static string SubstituteFilterPropertyIfNeeded(string originalFilter,
+        ExportColumnSubstitutions substitutions)
+    {
+        if (originalFilter == null!) return null!;
+        foreach (var substitution in substitutions)
         {
-            if (originalFilter == null!) return null!;
-            foreach (var substitution in substitutions)
-            {
-                originalFilter = Regex.Replace(originalFilter, $"(?<=[(\\s\\(^]){substitution.Original}(?=[\\s\\)])",
-                    substitution.Property ?? "");
-            }
+            originalFilter = Regex.Replace(originalFilter, $"(?<=[(\\s\\(^]){substitution.Original}(?=[\\s\\)])",
+                substitution.Property ?? "");
+        }
 
         return originalFilter;
     }
 
-        private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-                string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";
+    private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
+        string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";
 
-        public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
-            ExportColumnSubstitutions? propertySubstitutions = null)
-        {
-            propertySubstitutions ??= new();
-            var selectColumns = dataGrid.ColumnsCollection
-                .Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property))
-                .Select(c => new
-                {
-                    Property = SubstitutePropertyIfNeeded(c.Property, propertySubstitutions),
-                    Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)
-                }).ToList();
-            selectColumns.AddRange(propertySubstitutions.Where(s => s.Value.Original == string.Empty)
-                .Select(s => new { s.Value.Property, s.Value.Title }));
-            var selectColumnString = string.Join(",",
-                selectColumns
-                    .Select(cSub => cSub with
-                    {
-                        Title = cSub.Title?.Replace(".", "_")
-                    })
-                    .Select(pt =>
-                        pt.Property == pt.Title
-                            ? pt.Property
-                            : $"{pt.Property} as {pt.Title?.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
-            var query = new Query()
+    public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
+        ExportColumnSubstitutions? propertySubstitutions = null)
+    {
+        propertySubstitutions ??= new();
+
+        var selectColumns = dataGrid.ColumnsCollection
+            .Where(c => c.GetVisible() && !string.IsNullOrEmpty(c.Property))
+            .Select(c => new
             {
-                OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),
-                Filter = SubstituteFilterPropertyIfNeeded(dataGrid.Query.Filter, propertySubstitutions),
-                Select = selectColumnString
-            };
-            return query.ToUrl($"{url}/{(format == ExportFormat.CSV ? "CSV" : "Excel")}");
-        }
+                Property = SubstitutePropertyIfNeeded(c.Property, propertySubstitutions),
+                Title = SubstituteTitleIfNeeded(c.Property, propertySubstitutions)
+            }).ToList();
+        selectColumns.AddRange(propertySubstitutions.Where(s => s.Value.Original == string.Empty)
+            .Select(s => new { s.Value.Property, s.Value.Title }));
+        var selectColumnString = string.Join(",",
+            selectColumns
+                .Select(cSub => cSub with
+                {
+                    Title = cSub.Title?.Replace(".", "_")
+                })
+                .Select(pt =>
+                    pt.Property == pt.Title
+                        ? pt.Property
+                        : $"{pt.Property} as {pt.Title?.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
+        var query = new Query()
+        {
+            OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),
+            Filter = SubstituteFilterPropertyIfNeeded(dataGrid.Query.Filter, propertySubstitutions),
+            Select = selectColumnString
+        };
+        return query.ToUrl($"{url}/{(format == ExportFormat.CSV ? "CSV" : "Excel")}");
+    }
 
     protected async Task HandleError(string defaultError, string[] errors)
     {

@@ -1,5 +1,6 @@
 using ApplicationLog;
 using Auth0.AspNetCore.Authentication;
+using Blazored.LocalStorage;
 using James.Data.Imaging;
 using James.Data.Server;
 using James.Data.Server.GraphQL;
@@ -10,24 +11,26 @@ using James.Shared.Data;
 using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using JamesWebUI.Client.Components;
-using JamesWebUI.Server.AuthenticationStateSyncer;
+using JamesWebUI.Client.Services;
+using JamesWebUI.Server.Helpers;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Radzen;
 using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
-using Blazored.LocalStorage;
+using System.Text.Json.Serialization;
+using JamesWebUI.Client.Security;
+using JamesWebUI.Server.AuthenticationStateSyncer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
-using JamesWebUI.Client.Services;
-using System.Text.Json.Serialization;
-using JamesWebUI.Server.Helpers;
+using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
 var config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
@@ -61,7 +64,6 @@ try
             options.Audience = builder.Configuration["Auth0:Audience"];
         });
 
-    //ImagingTokenHandler.ImagingCredentials = tokenRequestCredentials;
     var kong0TokenUrl = new Uri(config["Kong0:token_url"] ?? "https://dev-auth-login.berkley.com/oauth/token");
     var tokenClientBuilder = builder.Services.AddHttpClient("P8FileNetTokens").ConfigureHttpClient(
         client =>
@@ -83,7 +85,6 @@ try
             o.EnableSensitiveDataLogging();//TODO: Disable in production environment
             //o.UseMemoryCache()
         });
-    builder.Services.AddAuthorization();
     builder.Services
         .AddGraphQLServer()
         .AddAuthorization()
@@ -104,9 +105,9 @@ try
         options.ReturnUrlParameter = "redirectUri";
     });
     builder.Services.AddRadzenComponents();
-    builder.Services.AddBlazoredLocalStorage(config =>
+    builder.Services.AddBlazoredLocalStorage(localStorageConfig =>
     {
-        config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        localStorageConfig.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
 
     builder.Services.AddSignalR(e =>
@@ -114,15 +115,18 @@ try
         e.EnableDetailedErrors = true;
         e.MaximumReceiveMessageSize = 1024*1024*4;//4MB since some cached values are over 3MB
     });
-    builder.Services.AddScoped<JamesWebUI.Client.Services.ThemeService>();
-    builder.Services.AddScoped<IUserShared, UserShared>();
-    builder.Services.AddScoped<ILoggingShared, LoggingShared>();
-    builder.Services.AddScoped<ILoggingService, ServerLoggingService>();
-    builder.Services.AddScoped<ImagingKong0Helper>();
-    builder.Services.AddScoped<ServerImagingAccess>();
-    builder.Services.AddScoped<IDataAccess, ServerDataAccess>();
-    builder.Services.AddScoped<IDataCache, DataCache>();
-    builder.Services.AddScoped<UserSettingService>();
+    builder.Services.AddScoped<ThemeService>()
+                    .AddScoped<IUserShared, UserShared>()
+                    .AddScoped<ILoggingShared, LoggingShared>()
+                    .AddScoped<ILoggingService, ServerLoggingService>()
+                    .AddScoped<ImagingKong0Helper>()
+                    .AddScoped<ServerImagingAccess>()
+                    .AddScoped<IDataAccess, ServerDataAccess>()
+                    .AddSingleton<IDataCache, DataCache>()
+                    .AddScoped<IUserSettingService, UserSettingService>()
+                    .AddScoped<IAuthorizationHandler, RoleRequirementHandler>()
+                    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
+
     if (OperatingSystem.IsWindows())
     {
         //Imaging Kong0 setup
@@ -140,7 +144,8 @@ try
     builder.Services.AddScoped<GeneralMutation>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
-         .AddInteractiveWebAssemblyComponents();
+         .AddInteractiveWebAssemblyComponents()
+         .AddAuthenticationStateSerialization();
     builder.Services.AddScoped<LocalStorageKeyListingService>();
     builder.Services.AddScoped<AddressPhoneFormatService>();
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
@@ -218,7 +223,6 @@ try
 
     app.UseWebSockets();
 
-    //var serverSideLogger = (ILoggingService)app.Services.GetService(typeof(ILoggingService))!;
     app.MapGet(JamesConstants.LOG_IN_PATH, async (HttpContext httpContext, string redirectUri = "/") =>
     {
         //Note: Our Auth0 uses the ReturnUrl query value, even though the standard
@@ -261,10 +265,11 @@ try
 
     app.MapRazorPages();
     app.MapControllers();
+    // Ensure static assets are mapped before interactive WebAssembly render mode
+    app.MapStaticAssets();
     app.MapRazorComponents<App>()
         .AddInteractiveServerRenderMode()
         .AddInteractiveWebAssemblyRenderMode();
-    //.AddAdditionalAssemblies(typeof(App).Assembly)
 
     app.MapGraphQL();
 

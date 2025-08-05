@@ -19,4 +19,10 @@ public partial class BusinessTypeRiskCodeDm
     public int RiskCode { get; set; }
 
     public bool IsContract { get; set; }
+
+    public string OldName { get; set; } = null!;
+
+    public string NewName { get; set; } = null!;
+
+    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 }

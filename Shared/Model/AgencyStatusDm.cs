@@ -15,4 +15,8 @@ public partial class AgencyStatusDm
     public string Status { get; set; } = null!;
 
     public virtual ICollection<Agency> Agencies { get; set; } = new List<Agency>();
+
+    public virtual ICollection<AgencyStatusLog> AgencyStatusLogNewStatusNavigations { get; set; } = new List<AgencyStatusLog>();
+
+    public virtual ICollection<AgencyStatusLog> AgencyStatusLogOldStatusNavigations { get; set; } = new List<AgencyStatusLog>();
 }

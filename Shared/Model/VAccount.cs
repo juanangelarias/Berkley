@@ -14,6 +14,8 @@ public partial class VAccount
 
     public string AccountNum { get; set; } = null!;
 
+    public string FullName { get; set; } = null!;
+
     public bool OpenClaim { get; set; }
 
     public string? YearOpened { get; set; }
@@ -27,6 +29,8 @@ public partial class VAccount
     public DateOnly? DunBradstreetDate { get; set; }
 
     public string? DunBradstreetSic { get; set; }
+
+    public string Sicdesc { get; set; } = null!;
 
     public string? Bank { get; set; }
 
@@ -128,6 +132,10 @@ public partial class VAccount
 
     public string AccountStatus { get; set; } = null!;
 
+    public int? ProgramSingle { get; set; }
+
+    public int? ProgramAggregate { get; set; }
+
     public string? CountryCode { get; set; }
 
     public string? MainNumber { get; set; }
@@ -145,4 +153,8 @@ public partial class VAccount
     public string? StateCode { get; set; }
 
     public string? PostalCode { get; set; }
+
+    public string UnderwriterInitials { get; set; } = null!;
+
+    public string UnderWriter { get; set; } = null!;
 }

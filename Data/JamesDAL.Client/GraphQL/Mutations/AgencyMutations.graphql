@@ -122,6 +122,20 @@ mutation SaveAgencyCommissionRates($input:SaveCommissionRatesInput!) {
     saveCommissionRates(input: $input){boolean}
 }
 
+mutation AgencyLicenseBulkInsert($input:AgencyLicenseBulkInsertInput!){
+    agencyLicenseBulkInsert(input: $input){boolean}
+}
+
+mutation AgencyLicenseBulkUpdate($input:AgencyLicenseBulkUpdateInput!){
+    agencyLicenseBulkUpdate(input: $input){boolean}
+}
+
+mutation AgencyLicenseBulkDelete($input:AgencyLicenseBulkDeleteInput!){
+    agencyLicenseBulkDelete(input: $input){boolean}
+}
+
+
+
 mutation DeleteAgencyCommissionRate($input: DeleteAgencyCommissionRateInput!) {
     deleteAgencyCommissionRate(input: $input){boolean}
 }

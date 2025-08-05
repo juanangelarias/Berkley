@@ -8,9 +8,9 @@
 <RenderModeBackground/>
 
 <RadzenColumn Size="12">
-    <RadzenRow>
-        <RadzenColumn Size="6">
-            <RadzenCard class="rz-px-2">
+    <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenColumn Size="5">
+            <RadzenCard class="rz-px-2" Style="height: 250px;">
                 <RadzenRow Gap="1rem" Wrap="FlexWrap.Wrap" class="rz-p-sm-2">
                     <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
                         <RadzenLabel Component="swProfitSharing" Text="Profit sharing"/>
@@ -41,7 +41,7 @@
             </RadzenCard>
         </RadzenColumn>
         <RadzenColumn Size="6" Visible="@(!_isProfitSharingDisabled)">
-            <Animate Animation="Animations.SlideUp" Duration="TimeSpan.FromSeconds(0.5)">
+            <Animate Animation="Animations.FadeIn" Duration="TimeSpan.FromSeconds(0.5)">
                 <AgencyRelatedPartiesGrid AgencyId="Agency.Id" NotResumed="false"/>
             </Animate>
         </RadzenColumn>

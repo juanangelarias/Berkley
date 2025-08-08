@@ -14,39 +14,53 @@
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
-        <RadzenDataGridColumn TItem="Agency" Title="Agency #" Property="AgencyNumber" Width="100px" />
-        <RadzenDataGridColumn TItem="Agency" Title="Agency Name" Property="IdNavigation.FullName" />
-        <RadzenDataGridColumn TItem="Agency" Title="Address" Filterable="false"
+        <RadzenDataGridColumn TItem="Agency" Title="Status" Property="Status" Width="110px" TextAlign="TextAlign.Center">
+            <Template Context="relParty">
+                @if (relParty.Status == "Active")
+                {
+                    <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success"/>
+                }
+                else
+                {
+                    <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger"/>
+                }
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agency" Title="Agency" Property="AgencyNumber" Width="110px"
+                              TextAlign="TextAlign.Right"/>
+        <RadzenDataGridColumn TItem="Agency" Title="Agency Name" Property="IdNavigation.FullName"
+                              MinWidth="250px"/>
+        <RadzenDataGridColumn TItem="Agency" Title="Address" Filterable="false" MaxWidth="200px"
                               Property="MainAddress.Address1" Visible="@NotResumed">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address1
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="Address2" Filterable="false"
+        <RadzenDataGridColumn TItem="Agency" Title="Address2" Filterable="false" MaxWidth="200px"
                               Property="IdNavigation.MainAddress.Address2" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address2
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="Address3" Filterable="false"
+        <RadzenDataGridColumn TItem="Agency" Title="Address3" Filterable="false" MaxWidth="200px"
                               Property="IdNavigation.MainAddress.Address3" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address3
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="City"
+        <RadzenDataGridColumn TItem="Agency" Title="City" Width="150x"
                               Property="IdNavigation.MainAddress.City">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.City
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="State"
+        <RadzenDataGridColumn TItem="Agency" Title="State" Width="80px" TextAlign="TextAlign.Center"
                               Property="IdNavigation.MainAddress.State">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.StateCode
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="Zip Code"
+        <RadzenDataGridColumn TItem="Agency" Title="Zip Code" Width="110px" TextAlign="TextAlign.Center"
                               Property="IdNavigation.MainAddress.PostalCode" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.PostalCode

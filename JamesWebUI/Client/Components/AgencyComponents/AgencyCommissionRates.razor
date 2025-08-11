@@ -61,7 +61,6 @@
     [Parameter] public Agency Agency { get; set; } = null!;
 
     [Parameter] public string AgencyStatus { get; set; } = null!;
-
     
     private List<AgencyCommission> _commissionRates = null!;
     private List<AgencyCommission> _commercialCurrentRates = null!;
@@ -69,25 +68,28 @@
     private List<AgencyCommission> _contractCurrentRates = null!;
     private List<AgencyCommission> _contractScheduledRates = null!;
 
-    private string _keyAgencyCommission = string.Empty;
+    private string KeyAgencyCommission => $"AgencyCommissionRates{Agency.Id}";
 
     private IDataAccessResult<List<AgencyCommission>> _ratesResult = null!;
 
     private LoadItem RatesLoad => AddEventNotify(new LoadItem
     {
-        Key = _keyAgencyCommission,
+        Key = KeyAgencyCommission,
         AsyncLoadTask = async () => _ratesResult = await DataAccess.GetAgencyCommissionRates(Agency.Id),
         CacheLoadTask = cache => _ratesResult = new DataAccessResult<List<AgencyCommission>>
         {
             Data = (List<AgencyCommission>)cache!
         },
-        ResultVariable = () => _ratesResult
+        ResultVariable = () => _ratesResult,
+        AfterLoad = () =>
+        {
+            
+        }
     }, "agency commission rates");
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        _keyAgencyCommission = $"AgencyCommissionRates{Agency.Id}";
         await LoadRates();
     }
 
@@ -130,7 +132,7 @@
         {
             _commissionRates.Add(rate);
             DistributeCommissions();
-            DataCache.UpdateCache(_keyAgencyCommission, _commissionRates);
+            DataCache.UpdateCache(KeyAgencyCommission, _commissionRates);
 
             StateHasChanged();
         }
@@ -155,7 +157,7 @@
             }
 
             DistributeCommissions();
-            DataCache.UpdateCache(_keyAgencyCommission, _commissionRates);
+            DataCache.UpdateCache(KeyAgencyCommission, _commissionRates);
 
             StateHasChanged();
         }
@@ -178,7 +180,7 @@
                 _commissionRates.Remove(toRemove);
                 
                 DistributeCommissions();
-                DataCache.UpdateCache(_keyAgencyCommission, _commissionRates);
+                DataCache.UpdateCache(KeyAgencyCommission, _commissionRates);
 
                 StateHasChanged();
             }

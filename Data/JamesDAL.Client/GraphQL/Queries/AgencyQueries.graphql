@@ -156,10 +156,13 @@ query GetAgencyAgents($agencyId: UUID!){
 
 query GetAgencyCommissionRates($agencyId: UUID!){
     agencyCommissionRates(agencyId: $agencyId){
-        id,
-        bondType,
-        minimum,
-        maximum,
+        agencyId
+        bondType
+        effective
+        expires
+        id
+        maximum
+        minimum
         rate
     }
 }

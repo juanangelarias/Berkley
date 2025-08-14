@@ -138,15 +138,6 @@ public static class Validators
 
         if (included)
             errors.Add("The dates provided are inside of previous periods.");
-
-        var maxExpireDate = existingPeriods.Max(a => a.End);
-        var nextEffectiveDate = maxExpireDate?.AddDays(1);
-        if (existingPeriods.Count != 0 &&
-            nextEffectiveDate != null &&
-            effectiveDate != nextEffectiveDate)
-        {
-            errors.Add("Effective date must be the next day after the previous effective date.");
-        }
     }
 
     /// <summary>
@@ -257,8 +248,8 @@ public static class Validators
         if (previous != null && previous.To + 1 != editedRange.From)
             errors.Add("The minimum must be the previous range's maximum plus 1.", true);
 
-        if (next != null && next.From - 1 != editedRange.To)
-            errors.Add("The maximum must be the next range's minimum minus 1.", true);
+        if (next != null && next.From <= editedRange.To)
+            errors.Add("The maximum must not exceed the next range's minimum minus 1.", true);
 
         if (editedRange.From >= editedRange.To)
             errors.Add("The minimum must be less than the maximum.", true);

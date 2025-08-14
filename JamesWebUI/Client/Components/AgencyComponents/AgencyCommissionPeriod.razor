@@ -10,7 +10,7 @@
             <ChildContent>
                 <RadzenFormField Text="Effective">
                     <RadzenDatePicker TValue="DateTime" @bind-Value="@_effectiveDate" Name="Effective" DateFormat="d"
-                                      ReadOnly="@_isEffectiveDateReadOnly"/>
+                                       AllowInput="@_isEffectiveDateReadOnly" InitialViewDate="@_minimumEffectiveDate"/>
                 </RadzenFormField>
                 <RadzenFormField Text="Expire" Visible="@(CommissionType == CommissionType.Scheduled)" DateFormat="d">
                     <RadzenDatePicker TValue="DateTime?" @bind-Value="@_expireDate" Name="Expire"/>
@@ -35,6 +35,7 @@
 
     private DateTime _effectiveDate;
     private DateTime? _expireDate;
+    private readonly DateTime _minimumEffectiveDate = DateTime.Today;
     private List<string> _errors = [];
     private string _errorsText = "";
     private bool _isEffectiveDateReadOnly;
@@ -47,8 +48,7 @@
                 ? Periods.Max(a => a.End)!.Value.AddDays(1)
                 : DateTime.Today;
 
-        _isEffectiveDateReadOnly = CommissionType == CommissionType.Scheduled &&
-                                   Periods.Any();
+        _isEffectiveDateReadOnly = CommissionType == CommissionType.Scheduled;
     }
 
     private void Save()

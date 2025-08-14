@@ -21,7 +21,7 @@
         <RadzenRow Gap="1rem">
             <RadzenColumn Size="8">
                 <RadzenDataGrid TItem="AgencyCommissionRateRange" Data="_ranges" @ref="RangeGrid"
-                                AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                                AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 300px"
                                 AllowGrouping="false" Density="Density.Compact"
                                 RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate"
                                 EditMode="DataGridEditMode.Single" IsLoading="@_isLoading"
@@ -115,16 +115,15 @@
             </RadzenColumn>
             <RadzenColumn Size="4">
                 <RadzenRow>
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" JustifyContent="JustifyContent.Right"
-                                 AlignItems="AlignItems.Stretch" Style="width: 100%;">
-                        <RadzenLabel Text="Messages"/>
+                    <RadzenCard Style="width: 100%; height: 300px;">
                         <RadzenStack Gap="0.25rem">
+                            <RadzenText Text="Messages" TextAlign="TextAlign.Start"/>
                             @foreach (var error in _errorMessages)
                             {
                                 <RadzenLabel Text="@error.Key" Style="@(GetMessageStyle(error.Value))"/>
                             }
                         </RadzenStack>
-                    </RadzenStack>
+                    </RadzenCard>
                 </RadzenRow>
             </RadzenColumn>
         </RadzenRow>
@@ -385,6 +384,6 @@
 
     private string GetMessageStyle(bool isError)
     {
-        return isError ? "color: red" : "color: black";
+        return isError ? "color: red" : "color: blue";
     }
 }

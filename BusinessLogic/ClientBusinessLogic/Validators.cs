@@ -173,6 +173,11 @@ public static class Validators
 
     #region Agency Commission Range and Rate validation
 
+    /// <summary>
+    /// Identifies gaps in a list of agency commission rate ranges and returns any errors found as a dictionary.
+    /// </summary>
+    /// <param name="ranges">The list of agency commission rate ranges to validate for gaps.</param>
+    /// <returns>A dictionary containing error messages with their associated boolean status indicating invalid ranges.</returns>
     public static Dictionary<string, bool> LookForGaps(List<AgencyCommissionRateRange> ranges)
     {
         var errors = new Dictionary<string, bool>();
@@ -207,6 +212,11 @@ public static class Validators
         return errors;
     }
 
+    /// <summary>
+    /// Determines the ID of the first gap in a sequence of agency commission rate ranges.
+    /// </summary>
+    /// <param name="ranges">The list of agency commission rate ranges to evaluate.</param>
+    /// <returns>The ID of the range where the first gap is found, or 0 if no gap exists.</returns>
     public static int GetFirstGap(List<AgencyCommissionRateRange> ranges)
     {
         var previousLine = 0;
@@ -225,6 +235,12 @@ public static class Validators
         return 0;
     }
 
+    /// <summary>
+    /// Validates the range of agency commission rates and checks for potential conflicts or invalid values.
+    /// </summary>
+    /// <param name="existingRanges">A list of existing agency commission rate ranges.</param>
+    /// <param name="editedRange">The agency commission rate range being validated.</param>
+    /// <returns>A dictionary containing error messages as keys, with a boolean indicating the presence of an error.</returns>
     public static Dictionary<string, bool> ValidateAgencyCommissionRange(List<AgencyCommissionRateRange> existingRanges,
         AgencyCommissionRateRange editedRange)
     {

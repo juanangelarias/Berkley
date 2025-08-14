@@ -12,7 +12,7 @@
                 AllowPaging="true" PageSize="10" AllowSorting="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
@@ -96,7 +96,6 @@
     private List<Agent> Agents { get; set; } = [];
     private RadzenDataGrid<Agent> AgentsGrid { get; set; } = null!;
     private List<Insurer> AllInsurers { get; set; } = [];
-    private bool _isLoading = true;
     
     private IDataAccessResult<List<Agent>> _agentsResult = null!;
     private IDataAccessResult<List<Insurer>> _insurersResult = null!;
@@ -135,12 +134,14 @@
     {
         await base.OnInitializedAsync();
 
-         _isLoading = false;
+         IsLoading = false;
     }
     
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        await ShowLoading();
 
         await LoadData();
     }

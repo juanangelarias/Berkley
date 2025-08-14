@@ -42,7 +42,10 @@
         </RadzenColumn>
         <RadzenColumn Size="6" Visible="@(!_isProfitSharingDisabled)">
             <Animate Animation="Animations.FadeIn" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyRelatedPartiesGrid AgencyId="Agency.Id" NotResumed="false"/>
+                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5">
+                    <RadzenLabel Text="Related Parties"/>
+                    <AgencyRelatedPartiesGrid AgencyId="Agency.Id" NotResumed="false"/>
+                </RadzenStack>
             </Animate>
         </RadzenColumn>
     </RadzenRow>

@@ -10,7 +10,7 @@
                 AllowFiltering="true" FilterMode="FilterMode.Simple"
                 AllowColumnPicking="true" AllowGrouping="true"
                 RowUpdate="UpdateLicenseRow" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
-                IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow" />
@@ -143,8 +143,6 @@
     private List<State> AllStates { get; set; } = [];
 
     private List<string>? _stateFilter;
-
-    private bool _isLoading;
     
     private IDataAccessResult<Agent> _agentResult = null!;
     private LoadItem LicencesLoad => AddEventNotify(new LoadItem
@@ -343,10 +341,10 @@
     
     protected async Task ShowLoading()
     {
-        _isLoading = true;
+        IsLoading = true;
 
         await Task.Yield();
 
-        _isLoading = false;
+        IsLoading = false;
     }
 }

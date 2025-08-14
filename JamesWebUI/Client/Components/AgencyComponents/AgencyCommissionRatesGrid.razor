@@ -1,4 +1,5 @@
 ﻿@using ClientBusinessLogic
+
 @inherits JamesLayoutComponentBase
 
 <Theme/>
@@ -24,8 +25,8 @@
                                 AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 300px"
                                 AllowGrouping="false" Density="Density.Compact"
                                 RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate"
-                                EditMode="DataGridEditMode.Single" IsLoading="@_isLoading"
-                                Filter="@ShowLoading">
+                                EditMode="DataGridEditMode.Single" IsLoading="@IsLoading">
+                                @*Filter="@ShowLoading">*@
                     <HeaderTemplate>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                             <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
@@ -146,8 +147,6 @@
     private Dictionary<string, bool> _errorMessages = [];
     private bool _aGapExist;
     
-    private bool _isLoading;
-
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -276,15 +275,6 @@
 
         ReSortRanges();
         CheckForGaps();
-    }
-
-    private async Task ShowLoading()
-    {
-        _isLoading = true;
-
-        await Task.Yield();
-
-        _isLoading = false;
     }
 
     private async Task AddPeriod(MouseEventArgs obj)

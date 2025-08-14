@@ -7,10 +7,10 @@
 
 <RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency"
                 AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed"
-                Style="@style"  IsLoading="@_isLoading" FilterMode="FilterMode.Advanced">
+                Style="@style"  IsLoading="@IsLoading" FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Visible="@NotResumed">
-            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -78,7 +78,6 @@
     
     private List<Agency> RelatedParties { get; set; } = [];
     private RadzenDataGrid<Agency> RelatedPartiesGrid { get; set; } = null!;
-    private bool _isLoading;
     private string style = string.Empty;
     
     private IDataAccessResult<List<Agency>> _relatedPartiesResult = null!;
@@ -101,7 +100,7 @@
         
         style = NotResumed
             ? "height: 400px; border-radius: 10px;"
-            : "height: 250px; border-radius: 10px;";
+            : "height: 225px; border-radius: 10px;";
 
         await ShowLoading();
         await LoadRelatedParties();
@@ -119,11 +118,11 @@
     
     protected async Task ShowLoading()
     {
-        _isLoading = true;
+        IsLoading = true;
 
         await Task.Yield();
 
-        _isLoading = false;
+        IsLoading = false;
     }
 
     private void ExportGrid(ExportFormat format)

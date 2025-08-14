@@ -4,7 +4,6 @@
 
 @inherits JamesLayoutComponentBase
 
-@inject TooltipService TooltipService
 @inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
 
@@ -14,12 +13,12 @@
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 400px; border-radius: 10px;"
                 AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true" Density="Density.Compact"
                 RowCreate="@OnPoaCreate" RowUpdate="@UpdatePoaRow" EditMode="DataGridEditMode.Single"
-                IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
+                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
                 Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New POA" Variant="Variant.Text" Click="@InsertPOARow"/>
-            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="poa">
@@ -157,8 +156,6 @@
     private List<string> _statusList = [];
     private ExportFormat _defaultExportFormat;
 
-    private bool _isLoading;
-
     #region Loaders
 
     private IDataAccessResult<List<PowerOfAttorney>> _poas = null!;
@@ -259,15 +256,6 @@
         await ShowLoading();
         await POAGrid.UpdateRow(powerOfAttorney);
         await LoadPOAs();
-    }
-
-    private async Task ShowLoading()
-    {
-        _isLoading = true;
-
-        await Task.Yield();
-
-        _isLoading = false;
     }
 
     private async Task InsertPOARow()

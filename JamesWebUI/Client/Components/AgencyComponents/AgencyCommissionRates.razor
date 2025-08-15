@@ -193,6 +193,7 @@
             _commissionRates.Remove(commissionRate);
 
         _commissionRates.Add(record);
+        DistributeCommissions();
 
         return [];
     }

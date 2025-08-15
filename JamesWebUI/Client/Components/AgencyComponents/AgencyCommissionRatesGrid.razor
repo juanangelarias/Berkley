@@ -30,7 +30,7 @@
                     <HeaderTemplate>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                             <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
-                                          Variant="Variant.Text"/>
+                                          Variant="Variant.Text" Disabled="@(!APeridosIsSelected)"/>
                         </RadzenStack>
                     </HeaderTemplate>
                     <Columns>
@@ -146,6 +146,7 @@
     private List<AgencyCommissionRateRange> _ranges = [];
     private Dictionary<string, bool> _errorMessages = [];
     private bool _aGapExist;
+    private bool APeridosIsSelected => _selectedPeriod != null;
     
     protected override void OnParametersSet()
     {

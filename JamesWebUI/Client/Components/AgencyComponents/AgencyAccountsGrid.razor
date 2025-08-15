@@ -26,31 +26,31 @@
         </RadzenDataGrid>
     </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="Account" Title="Status" Frozen="true" Width="75px"/>
-        <RadzenDataGridColumn TItem="Account" Title="Account #" Property="AccountNum" Frozen="true" Width="100px"/>
-        <RadzenDataGridColumn TItem="Account" Title="Name" Property="IdNavigation.FullName" Frozen="true" Width="250px" />
-        <RadzenDataGridColumn TItem="Account" Title="Address" Width="250px" Property="MainAddress.Address1">
+        <RadzenDataGridColumn TItem="Account" Title="Status" Frozen="true" Width="120px"/>
+        <RadzenDataGridColumn TItem="Account" Title="Account #" Property="AccountNum" Frozen="true" Width="150px"/>
+        <RadzenDataGridColumn TItem="Account" Title="Name" Property="IdNavigation.FullName" Frozen="true" MinWidth="200px" />
+        <RadzenDataGridColumn TItem="Account" Title="Address" Property="MainAddress.Address1" MinWidth="200px">
             <Template Context="account">
                 <RadzenText Text="@account.MainAddress?.Address1" />
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Account" Title="City">
+        <RadzenDataGridColumn TItem="Account" Title="City" Width="150px">
             <Template Context="account">
                 <RadzenText Text="@account.MainAddress?.City" />
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Account" Title="State" Width="100px" Property="MainAddress.StateCode">
+        <RadzenDataGridColumn TItem="Account" Title="State" Width="120px" Property="MainAddress.StateCode">
             <Template Context="account">
                 <RadzenText Text="@account.MainAddress?.StateCode" />
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Account" Title="Postal Code">
+        <RadzenDataGridColumn TItem="Account" Title="Postal Code" Width="175px">
             <Template Context="account">
                 <RadzenText Text="@account.MainAddress?.PostalCode" />
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="Account" Title="Branch" Property="Branch" Width="125px" />
-        <RadzenDataGridColumn TItem="Account" Title="Bond Count" Width="100px">
+        <RadzenDataGridColumn TItem="Account" Title="Bond Count" Width="175px">
             <Template Context="account">
                 <RadzenText Text="@account.Bonds.Count().ToString()"/>
             </Template>

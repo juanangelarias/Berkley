@@ -242,8 +242,8 @@ public static class Validators
             .OrderByDescending(o => o.To)
             .FirstOrDefault(f => f.To < editedRange.From);
         var next = existingRanges
-            .OrderBy(o => o.From)
-            .FirstOrDefault(f => f.From > editedRange.To);
+            .OrderBy(o => o.Id)
+            .FirstOrDefault(f => f.Id > editedRange.Id);
 
         if (previous != null && previous.To + 1 != editedRange.From)
             errors.Add("The minimum must be the previous range's maximum plus 1.", true);

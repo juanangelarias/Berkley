@@ -472,12 +472,9 @@ namespace James.Data.Server.GraphQL.Mutations
 
             if (existingRate != null)
             {
-                existingRate.BondType = rate.BondType;
                 existingRate.Minimum = rate.Minimum;
                 existingRate.Maximum = rate.Maximum;
                 existingRate.Rate = rate.Rate;
-                existingRate.Effective = rate.Effective;
-                existingRate.Expires = rate.Expires;
             }
             else
             {

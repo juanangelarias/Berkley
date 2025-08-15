@@ -129,6 +129,9 @@ public static class Validators
     private static void ValidateScheduleCommissionDates(DateTime effectiveDate, DateTime? expireDate,
         List<DateRange> existingPeriods, List<string> errors)
     {
+        if(expireDate == null)
+            errors.Add("An expiration date is required for scheduled commissions.");
+        
         if (effectiveDate > expireDate)
             errors.Add("Effective date cannot be after the expire date.");
 

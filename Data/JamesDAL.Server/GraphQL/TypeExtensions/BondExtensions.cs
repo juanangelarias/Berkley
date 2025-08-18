@@ -1,7 +1,4 @@
-﻿using HotChocolate.Types;
-using James.Data.Server.Model;
-
-namespace James.Data.Server.GraphQL.TypeExtensions
+﻿namespace James.Data.Server.GraphQL.TypeExtensions
 {
 
     [ExtendObjectType(typeof(Bond), IgnoreProperties = new[]{ "BondType", "Agency", "Obligee", "ResponsibleParty" })]

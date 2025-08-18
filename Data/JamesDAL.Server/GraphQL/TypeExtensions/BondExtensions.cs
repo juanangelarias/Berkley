@@ -40,7 +40,7 @@ namespace James.Data.Server.GraphQL.TypeExtensions
             if (null == bond.Obligee)
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
-                bond.Agency = await ctx.LegalEntities.SingleAsync(agc => agc.Id == bond.ObligeeId);
+                bond.Obligee = await ctx.LegalEntities.SingleAsync(agc => agc.Id == bond.ObligeeId);
             }
             return bond.Obligee;
         }
@@ -50,7 +50,7 @@ namespace James.Data.Server.GraphQL.TypeExtensions
             if (null == bond.ResponsibleParty)
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
-                bond.Agency = await ctx.LegalEntities.SingleAsync(agc => agc.Id == bond.ResponsiblePartyId);
+                bond.ResponsibleParty = await ctx.LegalEntities.SingleAsync(agc => agc.Id == bond.ResponsiblePartyId);
             }
             return bond.ResponsibleParty;
         }

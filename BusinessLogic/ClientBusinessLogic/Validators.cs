@@ -243,9 +243,11 @@ public static class Validators
         existingRanges = existingRanges.OrderBy(a => a.To).ToList();
         var previous = existingRanges
             .OrderByDescending(o => o.To)
+            .Where(r=>r.From < editedRange.From)
             .FirstOrDefault(f => f.To < editedRange.From);
         var next = existingRanges
             .OrderBy(o => o.Id)
+            .Where(r=>r.To > editedRange.To)
             .FirstOrDefault(f => f.Id > editedRange.Id);
 
         if (previous != null && previous.To + 1 != editedRange.From)

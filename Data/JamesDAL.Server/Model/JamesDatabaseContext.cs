@@ -36,6 +36,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<AccountStatusLog> AccountStatusLogs { get; set; }
 
+	public virtual DbSet<AccountWatch> AccountWatches { get; set; }
+	
     public virtual DbSet<AdditionalObligee> AdditionalObligees { get; set; }
 
     public virtual DbSet<AdditionalRelatedParty> AdditionalRelatedParties { get; set; }
@@ -349,6 +351,8 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<VBond> VBonds { get; set; }
 
     public virtual DbSet<VConfiguration> VConfigurations { get; set; }
+
+    public virtual DbSet<VEntityTopParent> VEntityTopParents { get; set; }
 
     public virtual DbSet<VImagingCategoryTabDivisionType> VImagingCategoryTabDivisionTypes { get; set; }
 
@@ -822,6 +826,41 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_AccountStatusLog_UserProfile");
         });
 
+		modelBuilder.Entity<AccountWatch>(entity =>
+        {
+            entity.ToTable("AccountWatch");
+			entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.HasIndex(e => new { e.AccountId, e.WatchDate, e.WatchStatusId }, "IX_AccountWatch")
+                .IsUnique()
+                .IsDescending(false, true, false);
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.ActionPlan).HasMaxLength(500);
+            entity.Property(e => e.Created).HasColumnType("datetime");
+            entity.Property(e => e.Modified).HasColumnType("datetime");
+            entity.Property(e => e.Reason).HasMaxLength(500);
+            entity.Property(e => e.WatchDate).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Account).WithMany()
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccountWatch_Account");
+
+            entity.HasOne(d => d.OldWatchStatus).WithMany()
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.OldWatchStatusId)
+                .HasConstraintName("FK_AccountWatch_WatchStatusDM1");
+
+            entity.HasOne(d => d.WatchStatus).WithMany()
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.WatchStatusId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccountWatch_WatchStatusDM");
+        });
+
+        
         modelBuilder.Entity<AdditionalObligee>(entity =>
         {
             entity.HasKey(e => e.Id).IsClustered(false);
@@ -5143,7 +5182,7 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<VAccount>(entity =>
         {
-            //Needed edit to the generated code.  Do not replace.
+            //Needed edit to the generated code.  Do not replace it.
             entity
                 .HasKey(e => e.AccountNum);
             entity
@@ -5275,7 +5314,7 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<VAccountStatus>(entity =>
         {
-            //Needed edit to the generated code.  Do not replace.
+            //Needed edit to the generated code.  Do not replace it.
             entity
                 .HasKey(e=>e.AccountNum);
             entity

@@ -10,7 +10,9 @@ using Radzen;
 using StrawberryShake;
 using System.Text.Json.Serialization;
 using JamesWebUI.Client.AuthenticationStateSyncer;
+using JamesWebUI.Client.Helpers;
 using JamesWebUI.Client.Security;
+using JamesWebUI.Client.States;
 using Microsoft.AspNetCore.Components.Authorization;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
@@ -49,6 +51,14 @@ builder.Services
     .AddSingleton<IDataCache, DataCache>()
     .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
+
+#region States
+
+builder.Services
+    // A
+    .AddScoped<IAccountState, AccountState>();
+
+#endregion
 
 builder.Services.AddOidcAuthentication(options =>
 {

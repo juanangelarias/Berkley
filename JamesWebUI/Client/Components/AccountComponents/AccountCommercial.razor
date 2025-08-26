@@ -1,0 +1,31 @@
+﻿@inject IAccountState AccountState
+
+<Theme />
+<RenderModeBackground/>
+
+<RadzenColumn Size="12">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+        <RadzenRow>
+            <RadzenPanel allowCollapse="true" allowExpand="true">
+                <RadzenRow Gap="1rem" JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenColumn Size="4">
+                        <AccountBasicInfo/>
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenPanel>
+        </RadzenRow>
+    </RadzenStack>
+</RadzenColumn>
+
+
+<h3>Commercial Account</h3>
+
+@code {
+    
+}

@@ -1,0 +1,55 @@
+﻿@inject AccountState AccountState
+
+@inherits JamesLayoutComponentBase
+
+<RadzenCard Style="border-radius: 10px">
+    <RadzenColumn Size="12">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
+                <RadzenColumn Size="3">
+                    <RadzenFormField Text="Account No.">
+                        <RadzenTextBox @bind-Value="@AccountState.Account!.AccountNum"
+                                       ReadOnly="true"/>
+                        <RadzenRequiredValidator Text="Account No. is required"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="9">
+                    <RadzenFormField Text="Name">
+                        <RadzenTextBox @bind-Value="@AccountState.Account!.IdNavigation.FullName" 
+                                       ReadOnly="@(!_isEditMode)"/>
+                        <RadzenRequiredValidator Text="Name is required"/>
+                        <RadzenLengthValidator Min="5" Max="255" Text="The lenght should be between 5 and 255 characters"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
+                <RadzenColumn Size="9">
+                    <RadzenFormField Text="Concerns/Watch">
+                        @*<RadzenTextBox @bind-Value="@AccountState.Account!.Concerns"
+                                       ReadOnly="true" Style="background-color: @ConcernColor" />*@
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="2">
+                    <RadzenButton Style="width: 100%" Text="Reason/Action Plan"
+                                  Click="ShowReasonAndActionPlan"/>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenCard>
+
+@code {
+    private bool _isEditMode;
+    private const string ConcernColor = "#ffff00";
+    private const string WatchColor = "#ff0000";
+
+    private void ToggleEditMode()
+    {
+        _isEditMode = !_isEditMode;
+    }
+    
+    private void ShowReasonAndActionPlan()
+    {
+        throw new NotImplementedException();
+    }
+}

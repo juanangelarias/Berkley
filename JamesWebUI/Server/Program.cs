@@ -23,7 +23,9 @@ using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using JamesWebUI.Client.Helpers;
 using JamesWebUI.Client.Security;
+using JamesWebUI.Client.States;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -93,8 +95,8 @@ try
         .AddSubscriptionType<Subscription>()
         .AddJamesGraphQlTypes()
         .AddMutationConventions()
-        .AddInMemorySubscriptions()
-        ;
+        .AddInMemorySubscriptions();
+    
     builder.Services.AddControllersWithViews();
     builder.Services.AddRazorPages();
     builder.Services.ConfigureApplicationCookie(options =>
@@ -172,6 +174,14 @@ try
                 .AllowAnyMethod();
         });
     });
+    
+    #region States
+
+    builder.Services
+        // A
+        .AddScoped<IAccountState, AccountState>();
+
+    #endregion
 
     //Set up logging
     ConfirmAppSettingsEntry("ApplicationId");

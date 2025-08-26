@@ -94,6 +94,20 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result;
         }
+
+        [Authorize]
+        public async Task<List<LegalEntityEmail>> GetAllLegalEntityEmails(Guid legalEntityId,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var result = await ctx.LegalEntityEmails
+                .Where(a => a.LegalEntityId == legalEntityId)
+                .ToListAsync();
+            
+            return result;
+        }
+        
         [Authorize]
         public async Task<List<PhoneTypeDm>> GetPhoneTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

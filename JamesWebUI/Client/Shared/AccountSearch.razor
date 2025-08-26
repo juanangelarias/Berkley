@@ -22,6 +22,8 @@
 </RadzenStack>
 
 @code {
+    [Parameter, EditorRequired] public EventCallback<string> SetAccount { get; set; }
+    
     private List<Account> SearchResults { get; set; } = new List<Account>();
     private Account SelectedAccount { get; set; } = new Account();
     private RadzenAutoComplete autoComplete { get; set; } = null!;
@@ -43,10 +45,10 @@
 
     private async Task ResultSelected(dynamic args)
     {
-
         if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Account))
         {
-            NavigationManager.NavigateTo("/Account/" + ((Account)autoComplete.Value).AccountNum.ToString());
+            await SetAccount.InvokeAsync(((Account)autoComplete.Value).AccountNum);
+            //NavigationManager.NavigateTo("/Account/" + ((Account)autoComplete.Value).AccountNum.ToString());
             autoComplete.Value = "";
         }
     }

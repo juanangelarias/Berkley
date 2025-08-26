@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
+using JamesWebUI.Client.Components.GeneralUse;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
@@ -94,6 +95,22 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         IsLoading = false;
     }
     
+    public async Task BusyDialog(string message)
+    {
+        await DialogService.OpenAsync<BusyDialog>("",
+            new Dictionary<string, object> { { "Message", message } },
+            new DialogOptions
+            {
+                Resizable = false,
+                Draggable = false,
+                CloseDialogOnEsc = false,
+                CloseDialogOnOverlayClick = false,
+                ShowClose = false,
+                ShowTitle = false,
+                Style = "min-height:auto;min-width:auto;width:auto"
+            });
+    }
+    
     #region Common Client Actions
 
     /// <summary>
@@ -135,12 +152,11 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     }
 
     /// <summary>
-    /// Generates non-standard notification that a save event failed.
+    /// Generates a non-standard notification indicating that a save event has failed.
     /// </summary>
-    /// <param name="errors">Errors that were returned.</param>
-    /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
-    /// <param name="logError">If true will log the error using the LoggingService</param>
-    /// <remarks>Use only when the standard message is not sufficient.  Text should be brief and details should be logged in the errors.</remarks>
+    /// <param name="errors">An array of errors returned from the attempted save operation.</param>
+    /// <param name="notficationText">The descriptive text to be displayed in the notification.</param>
+    /// <param name="logError">Indicates whether the errors should be logged using the LoggingService. Defaults to true.</param>
     protected void NotifySaveIssue(string[] errors, string notficationText, bool logError = true)
     {
         if (logError)
@@ -227,14 +243,14 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         foreach (var substitution in substitutions)
         {
             originalFilter = Regex.Replace(originalFilter, $"(?<=[(\\s\\(^]){substitution.Original}(?=[\\s\\)])",
-                substitution.Property ?? "");
+                substitution.Property);
         }
 
         return originalFilter;
     }
 
     private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-        string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title ?? "";
+        string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title;
 
     public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
         ExportColumnSubstitutions? propertySubstitutions = null)
@@ -254,12 +270,12 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
             selectColumns
                 .Select(cSub => cSub with
                 {
-                    Title = cSub.Title?.Replace(".", "_")
+                    Title = cSub.Title.Replace(".", "_")
                 })
                 .Select(pt =>
                     pt.Property == pt.Title
                         ? pt.Property
-                        : $"{pt.Property} as {pt.Title?.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
+                        : $"{pt.Property} as {pt.Title.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
         var query = new Query()
         {
             OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),

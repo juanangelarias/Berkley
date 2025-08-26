@@ -107,7 +107,19 @@ query GetAllLegalEntityPhoneNumbers($input: UUID!) {
 	id
 	mainNumber
 	modified
+        legalEntityPhone {
+            type
+        }
 	}
+}
+
+query GetAllLegalEntityEmails($input: UUID!){
+    allLegalEntityEmails(legalEntityId: $input) {
+        emailAddress
+        id
+        legalEntityId
+        type
+    }
 }
 
 query GetAllCountries {

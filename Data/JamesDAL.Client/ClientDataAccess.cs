@@ -222,6 +222,13 @@ namespace James.Data.Client
             return await ExecuteGet<List<PhoneNumber>>(
                 async () => await jamesClient.GetAllLegalEntityPhoneNumbers.ExecuteAsync(legalEntityId), "AllLegalEntityPhoneNumbers");
         }
+
+        public async Task<IDataAccessResult<List<LegalEntityEmail>>> GetAllLegalEntityEmails(Guid legalEntityId)
+        {
+            return await ExecuteGet<List<LegalEntityEmail>>(
+                async () => await jamesClient.GetAllLegalEntityEmails.ExecuteAsync(legalEntityId), "AllLegalEntityEmails");
+        }
+        
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
             return await ExecuteGet<List<Bond>>(

@@ -156,6 +156,12 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllLegalEntityPhoneNumbers(legalEntityId, contextFactory));
         }
+
+        public async Task<IDataAccessResult<List<LegalEntityEmail>>> GetAllLegalEntityEmails(Guid legalEntityId)
+        {
+            return await ExecuteGet(async () => await query.GetAllLegalEntityEmails(legalEntityId, contextFactory));
+        }
+        
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));

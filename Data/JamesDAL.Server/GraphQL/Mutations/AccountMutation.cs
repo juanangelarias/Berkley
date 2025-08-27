@@ -149,6 +149,30 @@ namespace James.Data.Server.GraphQL.Mutations
 
             return oldProgram;
         }
+
+        [Authorize]
+        public async Task<AccountWatch> SetAccountWatch(Guid id, Guid accountId, DateTime watchDate, Guid watchStatusId,
+            Guid? oldWatchStatusId,
+            string reason, string actionPlan, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var accountWatch = new AccountWatch
+            {
+                Id = id,
+                AccountId = accountId,
+                WatchDate = watchDate,
+                WatchStatusId = watchStatusId,
+                OldWatchStatusId = oldWatchStatusId,
+                Reason = reason,
+                ActionPlan = actionPlan
+            };
+            
+            ctx.AccountWatches.Add(accountWatch);
+            await ctx.SaveChangesAsync();
+            
+            return accountWatch;
+        }
     }
 }
 

@@ -162,5 +162,19 @@ namespace James.Data.Server.GraphQL.Queries
                 .ToListAsync();
             return matchingAccounts;
         }
+
+        [Authorize]
+        public async Task<List<AccountWatch>> GetAllAccountWatches(Guid accountId,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.AccountWatches
+                .Include(i=>i.WatchStatus)
+                .Include(i=>i.OldWatchStatus)
+                .Where(r=>r.AccountId == accountId)
+                .ToListAsync();
+            
+            return result;
+        }
     }
 }

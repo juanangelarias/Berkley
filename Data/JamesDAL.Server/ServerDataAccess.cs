@@ -98,6 +98,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllInventoryDocTypes(contextFactory));
         }
+        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatusDms()
+        {
+            return await ExecuteGet(async () => await query.GetAllWatchStatuses(contextFactory));
+        }
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, contextFactory));
@@ -161,7 +165,11 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllLegalEntityEmails(legalEntityId, contextFactory));
         }
-        
+        public async Task<IDataAccessResult<List<EmailTypeDm>>> GetAllEmailTypes()
+        {
+            return await ExecuteGet(async () => await query.GetEmailTypes(contextFactory));
+        }
+
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));
@@ -195,6 +203,14 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await accountMutation.SetAccountAdditionalInformation(accountId, fullIndemnity, corpIndemnity, personalIndemnity, keyManagementLifeInsurance,
                 managementIncentives, fundedBuySell, multipleActiveOwners, trackCommAccount, berkleyAffiliate, comments, contextFactory));
+        }
+        public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId, string emailAddress, string type)
+        {
+            return await ExecuteGet(async () => await generalMutation.SetLegalEntityEmail(id, legalEntityId, emailAddress, type, contextFactory));
+        }
+        public async Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteLegalEntityEmail(id, contextFactory));
         }
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
@@ -585,6 +601,17 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorneyDocumentStatus(id, requested,
                 received, documentTypeId, comments, eventSender, contextFactory));
+        }
+        
+        public async Task<IDataAccessResult<AccountWatch>> SetAccountWatch(Guid id, Guid accountId, DateTime watchDate,
+            Guid watchStatusId, Guid? oldWatchStatusId, string reason, string actionPlan)
+        {
+            return await ExecuteGet(async () => await accountMutation.SetAccountWatch(id, accountId, watchDate,
+                watchStatusId, oldWatchStatusId, reason, actionPlan, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId)
+        {
+            return await ExecuteGet(async () => await query.GetAllAccountWatches(accountId, contextFactory));
         }
 
         //UNDONE:  Refactor to DRY out the code

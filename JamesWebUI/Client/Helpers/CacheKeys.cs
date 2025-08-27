@@ -12,4 +12,5 @@ public static class CacheKeys
     public const string EmailTypes = "EmailTypes";
     public const string PhoneTypes = "PhoneTypes";
     public const string States = "States";
+    public const string WatchStatuses = "WatchStatuses";
 }

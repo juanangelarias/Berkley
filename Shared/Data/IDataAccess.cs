@@ -30,6 +30,8 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId);
         public Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId);
         public Task<IDataAccessResult<List<LegalEntityEmail>>> GetAllLegalEntityEmails(Guid legalEntityId);
+        public Task<IDataAccessResult<List<EmailTypeDm>>> GetAllEmailTypes();
+        public Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatusDms();
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
@@ -51,6 +53,8 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity, bool? personalIndemnity,
             bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
             bool? trackCommAccount, bool? berkleyAffiliate, string? comments);
+        public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId, string emailAddress, string type);
+        public Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id);
         public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId);
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
@@ -160,6 +164,11 @@ namespace James.Shared.Data
 
         public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
             DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
+        
+        public Task<IDataAccessResult<AccountWatch>> SetAccountWatch(Guid id, Guid accountId, DateTime watchDate,
+            Guid watchStatusId, Guid? oldWatchStatusId, string reason, string actionPlan);
+        
+        public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId);
     }
 
     public interface ISaveDataResult

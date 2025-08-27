@@ -315,3 +315,22 @@ query GetIdAccountNumbers {
       accountNum
   }
 }
+
+query GetAllAccountWatches($input: UUID!) {
+    allAccountWatches(accountId: $input){
+        actionPlan
+        id
+        oldWatchStatusId
+        reason
+        watchDate
+        watchStatusId
+        oldWatchStatus {
+            watchStatus
+            backgroundColor
+        }
+        watchStatus {
+            watchStatus
+            backgroundColor
+        }
+    }
+}

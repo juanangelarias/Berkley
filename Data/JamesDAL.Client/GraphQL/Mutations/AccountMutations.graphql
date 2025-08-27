@@ -38,3 +38,25 @@ mutation SetAccountProgram($input: SetAccountProgramInput!) {
     }
   }
 } 
+
+mutation SetAccountWatch($input: SetAccountWatchInput!) {
+    setAccountWatch(input: $input) {
+        accountWatch {
+            watchStatusId
+            watchStatus {
+                watchStatus
+                backgroundColor
+            }
+            watchDate
+            reason
+            oldWatchStatusId
+            oldWatchStatus {
+                watchStatus
+                backgroundColor
+            }
+            id
+            actionPlan
+            accountId
+        }
+    }
+}

@@ -352,8 +352,6 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<VConfiguration> VConfigurations { get; set; }
 
-    public virtual DbSet<VEntityTopParent> VEntityTopParents { get; set; }
-
     public virtual DbSet<VImagingCategoryTabDivisionType> VImagingCategoryTabDivisionTypes { get; set; }
 
     public virtual DbSet<VSecurityPrincipal> VSecurityPrincipals { get; set; }
@@ -5504,6 +5502,9 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.Property(e => e.WatchStatus)
                 .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.BackgroundColor)
+                .HasMaxLength(10)
                 .IsUnicode(false);
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")

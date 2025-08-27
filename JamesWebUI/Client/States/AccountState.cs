@@ -8,19 +8,28 @@ using Radzen;
 
 namespace JamesWebUI.Client.States;
 
-public interface IAccountState: IStateBase
+public interface IAccountState : IStateBase
 {
     UserType UserType { get; set; }
     bool IsUserManager { get; set; }
     List<string> Types { get; set; }
-    string SelectedType { get; set; }
+    AccountLayout? SelectedType { get; set; }
     string? AccountNumber { get; set; }
     Account? Account { get; set; }
     List<BsgAddress> Addresses { get; set; }
     List<BsgPhoneNumber> PhoneNumbers { get; set; }
     List<BsgEmail> Emails { get; set; }
+    List<AddressTypeDm> AddressTypes { get; set; }
+    List<CountryDm> Countries { get; set; }
+    List<EmailTypeDm> EmailTypes { get; set; }
+    List<PhoneTypeDm> PhoneNumberTypes { get; set; }
+    List<State> States { get; set; }
+    bool IsAccountLoaded { get; set; }
+    List<WatchStatusDm> WatchStatuses { get; set; }
+    List<AccountWatch> AccountWatches { get; set; }
+    AccountWatch? LastAccountWatch { get; set; }
 
-    Task Initialize();
+    Task<bool> Initialize();
     Task SaveAddress(BsgAddress address, bool isNew = false);
     Task DeleteAddress(Guid addressId);
     Task SavePhoneNumber(BsgPhoneNumber phoneNumber);
@@ -29,36 +38,38 @@ public interface IAccountState: IStateBase
     Task DeleteEmail(Guid emailId);
 }
 
-public class AccountState(IDataAccess dataAccess, 
-    IDataCache dataCache, 
+public class AccountState(
+    IDataAccess dataAccess,
+    IDataCache dataCache,
     ILoggingService loggingService,
-    NotificationService notificationService) 
+    NotificationService notificationService)
     : StateBase(loggingService, notificationService), IAccountState
 {
-    private readonly IDataAccess _dataAccess = dataAccess;
-    private readonly IDataCache _dataCache = dataCache;
-
     #region Field & Properties
 
     public UserType UserType { get; set; }
     public bool IsUserManager { get; set; }
     public List<string> Types { get; set; } = ["Default", "Commercial", "Contract"];
-    public bool ShowDefault { get; set; }
-    public bool ShowCommercial { get; set; }
-    public bool ShowContract { get; set; }
     public string? AccountNumber { get; set; }
     public Account? Account { get; set; }
+    public List<AddressTypeDm> AddressTypes { get; set; } = [];
+    public List<CountryDm> Countries { get; set; } = [];
+    public List<EmailTypeDm> EmailTypes { get; set; } = [];
+    public List<PhoneTypeDm> PhoneNumberTypes { get; set; } = [];
+    public List<State> States { get; set; } = [];
+    public List<WatchStatusDm> WatchStatuses { get; set; } = [];
+    public AccountLayout? SelectedType { get; set; }
 
-    #region SelectedType
+    #region IsAccountLoaded
 
-    private string _selectedType = "Commercial";
+    private bool _isAccountLoaded;
 
-    public string SelectedType
+    public bool IsAccountLoaded
     {
-        get => _selectedType;
+        get => _isAccountLoaded;
         set
         {
-            _selectedType = value;
+            _isAccountLoaded = value;
             OnPropertyChanged();
         }
     }
@@ -100,7 +111,7 @@ public class AccountState(IDataAccess dataAccess,
 
     public List<BsgPhoneNumber> PhoneNumbers
     {
-        get 
+        get
         {
             var n = 0;
             while (!_isPhoneNumbersLoaded)
@@ -152,9 +163,55 @@ public class AccountState(IDataAccess dataAccess,
 
     #endregion
 
+    #region AccountWatches
+
+    private List<AccountWatch> _accountWatches = [];
+
+    public List<AccountWatch> AccountWatches
+    {
+        get
+        {
+            var n = 0;
+            while (!_isAccountWatchesLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                    return [];
+
+                Task.Delay(3000).Wait();
+            }
+
+            return _accountWatches;
+        }
+        set
+        {
+            _accountWatches = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region LastAccountWatch
+
+    private AccountWatch? _lastAccountWatch;
+
+    public AccountWatch? LastAccountWatch
+    {
+        get => _lastAccountWatch;
+        set
+        {
+            _lastAccountWatch = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
     private bool _isAddressesLoaded;
     private bool _isPhoneNumbersLoaded;
     private bool _isEmailsLoaded;
+    private bool _isAccountWatchesLoaded;
 
     #endregion
 
@@ -167,13 +224,13 @@ public class AccountState(IDataAccess dataAccess,
     private LoadItem AddressTypesLoad => AddEventNotify(new LoadItem
     {
         Key = CacheKeys.AddressTypes,
-        AsyncLoadTask = async () => _addressTypesResult = await _dataAccess.GetAddressTypes(),
+        AsyncLoadTask = async () => _addressTypesResult = await dataAccess.GetAddressTypes(),
         CacheLoadTask = cache => _addressTypesResult = new DataAccessResult<List<AddressTypeDm>>
         {
             Data = (List<AddressTypeDm>)cache!
         },
         ResultVariable = () => _addressTypesResult,
-        AfterLoad = () => { }
+        AfterLoad = () => { AddressTypes = _addressTypesResult.Data!; }
     }, "address types");
 
     #endregion
@@ -185,32 +242,32 @@ public class AccountState(IDataAccess dataAccess,
     private LoadItem CountriesLoad => AddEventNotify(new LoadItem
     {
         Key = CacheKeys.Countries,
-        AsyncLoadTask = async () => _countriesResult = await _dataAccess.GetAllCountries(),
+        AsyncLoadTask = async () => _countriesResult = await dataAccess.GetAllCountries(),
         CacheLoadTask = cache => _countriesResult = new DataAccessResult<List<CountryDm>>
         {
             Data = (List<CountryDm>)cache!
         },
         ResultVariable = () => _countriesResult,
-        AfterLoad = () => { }
+        AfterLoad = () => { Countries = _countriesResult.Data!; }
     }, "countries");
 
     #endregion
 
     #region EmailTypes
 
-    /*private IDataAccessResult<List<EmailTypeDm>> _emailTypesResult = null!;
+    private IDataAccessResult<List<EmailTypeDm>> _emailTypesResult = null!;
 
     private LoadItem EmailTypesLoad => AddEventNotify(new LoadItem
     {
         Key = CacheKeys.EmailTypes,
-        AsyncLoadTask = async () => _emailTypesResult = await _dataAccess.GetAllEmailTypes(),
+        AsyncLoadTask = async () => _emailTypesResult = await dataAccess.GetAllEmailTypes(),
         CacheLoadTask = cache => _emailTypesResult = new DataAccessResult<List<EmailTypeDm>>
         {
             Data = (List<EmailTypeDm>)cache!
         },
         ResultVariable = () => _emailTypesResult,
-        AfterLoad = () => { }
-    }, "email types");*/
+        AfterLoad = () => { EmailTypes = _emailTypesResult.Data!; }
+    }, "email types");
 
     #endregion
 
@@ -221,13 +278,13 @@ public class AccountState(IDataAccess dataAccess,
     private LoadItem PhoneTypesLoad => AddEventNotify(new LoadItem
     {
         Key = CacheKeys.PhoneTypes,
-        AsyncLoadTask = async () => _phoneTypesResult = await _dataAccess.GetPhoneTypes(),
+        AsyncLoadTask = async () => _phoneTypesResult = await dataAccess.GetPhoneTypes(),
         CacheLoadTask = cache => _phoneTypesResult = new DataAccessResult<List<PhoneTypeDm>>
         {
             Data = (List<PhoneTypeDm>)cache!
         },
         ResultVariable = () => _phoneTypesResult,
-        AfterLoad = () => { }
+        AfterLoad = () => { PhoneNumberTypes = _phoneTypesResult.Data!; }
     }, "phone types");
 
     #endregion
@@ -239,40 +296,68 @@ public class AccountState(IDataAccess dataAccess,
     private LoadItem StatesLoad => AddEventNotify(new LoadItem
     {
         Key = CacheKeys.States,
-        AsyncLoadTask = async () => _statesResult = await _dataAccess.GetAllStates(),
+        AsyncLoadTask = async () => _statesResult = await dataAccess.GetAllStates(),
         CacheLoadTask = cache => _statesResult = new DataAccessResult<List<State>>
         {
             Data = (List<State>)cache!
         },
         ResultVariable = () => _statesResult,
-        AfterLoad = () => { }
+        AfterLoad = () => { States = _statesResult.Data!; }
     }, "states");
 
     #endregion
-    
+
+    #region WatchStatuses
+
+    private IDataAccessResult<List<WatchStatusDm>> _watchStatusesResult = null!;
+
+    private LoadItem WatchStatusesLoad => AddEventNotify(new LoadItem
+    {
+        Key = CacheKeys.WatchStatuses,
+        AsyncLoadTask = async () => _watchStatusesResult = await dataAccess.GetWatchStatusDms(),
+        CacheLoadTask = cache => _watchStatusesResult = new DataAccessResult<List<WatchStatusDm>>
+        {
+            Data = (List<WatchStatusDm>)cache!
+        },
+        ResultVariable = () => _watchStatusesResult,
+        AfterLoad = () => { WatchStatuses = _watchStatusesResult.Data!; }
+    }, "watch statuses");
+
     #endregion
 
-    public async Task Initialize()
+    #endregion
+
+    public async Task<bool> Initialize()
     {
         // ToDo: With Greg define how to obtain the user type (Commercial or Contract)
         IsUserManager = true;
         UserType = UserType.Commercial;
 
-        if (string.IsNullOrEmpty(AccountNumber))
-            return;
+        SelectedType = UserType switch
+        {
+            UserType.Commercial => AccountLayout.Commercial,
+            UserType.Contract => AccountLayout.Contract,
+            UserType.Default => AccountLayout.Default,
+            UserType.Undefined => null,
+            _ => throw new ArgumentOutOfRangeException()
+        };
         
+
+        if (string.IsNullOrEmpty(AccountNumber))
+            return false;
+
         LoadDomainTables().Forget();
-        await LoadAccount(true);
+        return await LoadAccount(true);
     }
 
     public async Task SaveAddress(BsgAddress address, bool isNew = false)
     {
         if (address.IsNew)
         {
-            await _dataAccess.CreateAddress(address.Id, address.Address1, address.Address2,
+            await dataAccess.CreateAddress(address.Id, address.Address1, address.Address2,
                 address.Address3, address.City, address.StateCode, address.PostalCode, Account!.Id,
                 address.Type, "account address");
-            
+
             Addresses.Add(address);
         }
         else
@@ -292,18 +377,17 @@ public class AccountState(IDataAccess dataAccess,
                     Type = address.Type
                 }
             };
-            await _dataAccess.SetAddress(newAddress, "account address");
+            await dataAccess.SetAddress(newAddress, "account address");
         }
-        
     }
 
     public async Task DeleteAddress(Guid addressId)
     {
-        if(addressId == Guid.Empty)
+        if (addressId == Guid.Empty)
             return;
 
-        await _dataAccess.DeleteAddress(addressId, "account address");
-        
+        await dataAccess.DeleteAddress(addressId, "account address");
+
         var toRemove = Addresses.FirstOrDefault(a => a.Id == addressId);
         if (toRemove != null)
             Addresses.Remove(toRemove);
@@ -311,18 +395,18 @@ public class AccountState(IDataAccess dataAccess,
 
     public async Task SavePhoneNumber(BsgPhoneNumber phoneNumber)
     {
-        await _dataAccess.CreatePhoneNumber(phoneNumber.Id, phoneNumber.CountryCode, 
-            phoneNumber.MainNumber, phoneNumber.Extension, Account!.Id, 
+        await dataAccess.CreatePhoneNumber(phoneNumber.Id, phoneNumber.CountryCode,
+            phoneNumber.MainNumber, phoneNumber.Extension, Account!.Id,
             phoneNumber.Type);
     }
 
     public async Task DeletePhoneNumber(Guid phoneNumberId)
     {
-        if(phoneNumberId == Guid.Empty)
+        if (phoneNumberId == Guid.Empty)
             return;
-        
-        await _dataAccess.DeletePhoneNumber(phoneNumberId);
-        
+
+        await dataAccess.DeletePhoneNumber(phoneNumberId);
+
         var toRemove = PhoneNumbers.FirstOrDefault(a => a.Id == phoneNumberId);
         if (toRemove != null)
             PhoneNumbers.Remove(toRemove);
@@ -332,36 +416,40 @@ public class AccountState(IDataAccess dataAccess,
     {
         throw new NotImplementedException();
     }
-    
+
     public async Task DeleteEmail(Guid emailId)
     {
         throw new NotImplementedException();
     }
-    
-    private async Task LoadAccount(bool isMain = false)
-    {
-        if(string.IsNullOrEmpty(AccountNumber))
-            return;
 
-        var accountResult = await _dataAccess.GetAccountByNumber(AccountNumber!);
+    private async Task<bool> LoadAccount(bool isMain = false)
+    {
+        if (string.IsNullOrEmpty(AccountNumber))
+            return false;
+
+        var accountResult = await dataAccess.GetAccountByNumber(AccountNumber!);
         if (!accountResult.Success)
         {
             NotifyLoadError(accountResult.Errors, "account", true);
-        } 
-        
-        Account = accountResult.Data;
-        
-        if (isMain)
-        {
-            LoadAddresses().Forget();
-            LoadPhoneNumbers().Forget();
-            LoadEmails().Forget();
         }
+
+        Account = accountResult.Data;
+        IsAccountLoaded = true;
+
+        if (!isMain) 
+            return true;
+        
+        LoadAddresses().Forget();
+        LoadPhoneNumbers().Forget();
+        LoadEmails().Forget();
+        LoadAccountWatches().Forget();
+
+        return true;
     }
 
     private async Task LoadAddresses()
     {
-        var addressesResult = await _dataAccess.GetAllLegalEntityAddresses(Account!.Id);
+        var addressesResult = await dataAccess.GetAllLegalEntityAddresses(Account!.Id);
         if (!addressesResult.Success)
         {
             NotifyLoadError(addressesResult.Errors, "addresses", true);
@@ -375,7 +463,7 @@ public class AccountState(IDataAccess dataAccess,
 
     private async Task LoadPhoneNumbers()
     {
-        var phoneNumbersResult = await _dataAccess.GetAllLegalEntityPhoneNumbers(Account!.Id);
+        var phoneNumbersResult = await dataAccess.GetAllLegalEntityPhoneNumbers(Account!.Id);
         if (!phoneNumbersResult.Success)
         {
             NotifyLoadError(phoneNumbersResult.Errors, "phone numbers", true);
@@ -386,23 +474,36 @@ public class AccountState(IDataAccess dataAccess,
             .ToList();
         _isPhoneNumbersLoaded = true;
     }
-    
+
     private async Task LoadEmails()
     {
-        var emailsResult = await _dataAccess.GetAllLegalEntityEmails(Account!.Id);
+        var emailsResult = await dataAccess.GetAllLegalEntityEmails(Account!.Id);
         if (!emailsResult.Success)
         {
             NotifyLoadError(emailsResult.Errors, "emails", true);
         }
 
         Emails = emailsResult.Data!
-            .Select(s=> new BsgEmail(s))
+            .Select(s => new BsgEmail(s))
             .ToList();
         _isEmailsLoaded = true;
     }
 
+    private async Task LoadAccountWatches()
+    {
+        var result = await dataAccess.GetAccountWatches(Account!.Id);
+        if (!result.Success)
+        {
+            NotifyLoadError(result.Errors, "account watches", true);
+        }
+        
+        AccountWatches = result.Data!;
+        _isAccountWatchesLoaded = true;
+    }
+
     private async Task LoadDomainTables()
     {
-        await _dataCache.ParallelGetCacheOrDataAsync(AddressTypesLoad, CountriesLoad, PhoneTypesLoad, StatesLoad);
+        await dataCache.ParallelGetCacheOrDataAsync(AddressTypesLoad, CountriesLoad, PhoneTypesLoad,
+            StatesLoad, WatchStatusesLoad);
     }
 }

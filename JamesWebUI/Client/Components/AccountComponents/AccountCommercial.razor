@@ -1,31 +1,33 @@
 ﻿@inject IAccountState AccountState
 
-<Theme />
+<Theme/>
 <RenderModeBackground/>
 
-<RadzenColumn Size="12">
-    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-        <RadzenRow>
-            <RadzenPanel allowCollapse="true" allowExpand="true">
-                <RadzenRow Gap="1rem" JustifyContent="JustifyContent.SpaceBetween">
-                    <RadzenColumn Size="4">
-                        <AccountBasicInfo/>
-                    </RadzenColumn>
-                    <RadzenColumn Size="4">
-                        
-                    </RadzenColumn>
-                    <RadzenColumn Size="4">
-                        
-                    </RadzenColumn>
-                </RadzenRow>
-            </RadzenPanel>
-        </RadzenRow>
-    </RadzenStack>
+
+<RadzenColumn Size="12" Visible="@(IsAccountLoaded)">
+    <RadzenPanel Style="border-radius: 20px;" class="rz-shadow-7">
+        <ChildContent>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenColumn Size="4">
+                    <RadzenCard Style="width: 100%">
+                        @*<AccountBasicInfo/>*@
+                    </RadzenCard>
+                </RadzenColumn>
+                <RadzenColumn Size="4">
+                    <RadzenCard Style="width: 100%">
+
+                    </RadzenCard>
+                </RadzenColumn>
+                <RadzenColumn Size="4">
+                    <RadzenCard Style="width: 100%">
+
+                    </RadzenCard>
+                </RadzenColumn>
+            </RadzenRow>
+        </ChildContent>
+    </RadzenPanel>
 </RadzenColumn>
 
-
-<h3>Commercial Account</h3>
-
 @code {
-    
+    private bool IsAccountLoaded => AccountState.IsAccountLoaded;
 }

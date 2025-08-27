@@ -122,6 +122,21 @@ query GetAllLegalEntityEmails($input: UUID!){
     }
 }
 
+query GetAllWatchStatuses {
+    allWatchStatuses {
+        backgroundColor
+        id
+        watchStatus
+    }
+}
+
+query GetAllEmailTypes {
+    emailTypes {
+        id
+        type
+    }
+}
+
 query GetAllCountries {
   allCountries {
     abbreviation

@@ -228,7 +228,17 @@ namespace James.Data.Client
             return await ExecuteGet<List<LegalEntityEmail>>(
                 async () => await jamesClient.GetAllLegalEntityEmails.ExecuteAsync(legalEntityId), "AllLegalEntityEmails");
         }
-        
+        public async Task<IDataAccessResult<List<EmailTypeDm>>> GetAllEmailTypes()
+        {
+            return await ExecuteGet<List<EmailTypeDm>>(async () => 
+                await jamesClient.GetAllEmailTypes.ExecuteAsync(), "AllEmailTypes");
+        }
+        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatusDms()
+        {
+            return await ExecuteGet<List<WatchStatusDm>>(async () =>
+                await jamesClient.GetAllWatchStatuses.ExecuteAsync(), "AllWatchStatuses");
+        }
+
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
         {
             return await ExecuteGet<List<Bond>>(
@@ -341,6 +351,27 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(result);
         }
+        
+        public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId, string emailAddress, string type)
+        {
+            var result = await ExecuteGet<LegalEntityEmail>(async () =>
+                await jamesClient.SetEmailAddress.ExecuteAsync( new()
+                {
+                    Id = id,
+                    LegalEntityId = legalEntityId,
+                    EmailAddress = emailAddress,
+                    Type = type
+                }), graphQlFunctionName: "SetLegalEntityEmail");
+
+            return result;
+        }
+        
+        public async Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.DeleteAddress.ExecuteAsync(new() { AddressId = id }));
+        }
+        
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
             string? comments, Guid statusId)
         {
@@ -627,6 +658,26 @@ namespace James.Data.Client
                     DocumentTypeId = documentTypeId,
                     Comments = comments
                 }));
+        }
+        public async Task<IDataAccessResult<AccountWatch>> SetAccountWatch(Guid id, Guid accountId, DateTime watchDate,
+            Guid watchStatusId, Guid? oldWatchStatusId, string reason, string actionPlan)
+        {
+            return await ExecuteGet<AccountWatch>(async () => await jamesClient.SetAccountWatch.ExecuteAsync(
+                new()
+                {
+                    Id = id,
+                    AccountId = accountId,
+                    WatchDate = watchDate,
+                    WatchStatusId = watchStatusId,
+                    OldWatchStatusId = oldWatchStatusId,
+                    Reason = reason,
+                    ActionPlan = actionPlan
+                }));
+        }
+        public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId)
+        {
+            return await ExecuteGet<List<AccountWatch>>(async () =>
+                await jamesClient.GetAllAccountWatches.ExecuteAsync(accountId));
         }
 
         private sealed class AddressModifiedWatchClass(IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription) :

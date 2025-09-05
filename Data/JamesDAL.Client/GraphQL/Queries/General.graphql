@@ -32,18 +32,36 @@ query GetAllBranches{
     bccreceiver
     branchKey
     branchOfficeAddressId
-    created
     emailReceiver
     generalLedgerCode
     headCount
     homeOffice
     id
-    modified
     name
     phoneId
     region
   }
 }
+
+query GetDivisions{
+    divisions {
+        id
+        active
+        divisionCode
+        division
+    }
+}
+
+query GetUnderwriters{
+    underwriters {
+        id
+        idNavigation {
+            initials
+            fullName
+        }
+    }
+}
+
 
 query GetAllLegalEntityAddresses($input: UUID!) {
   allLegalEntityAddresses (legalEntityId: $input) {
@@ -124,7 +142,6 @@ query GetAllLegalEntityEmails($input: UUID!){
 
 query GetAllWatchStatuses {
     allWatchStatuses {
-        backgroundColor
         id
         watchStatus
     }

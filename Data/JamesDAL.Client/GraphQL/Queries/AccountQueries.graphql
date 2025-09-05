@@ -50,6 +50,13 @@
         }
       }
     }
+      accountWatches {
+          id,
+          actionPlan
+          reason,
+          watchDate
+          watchStatus
+      }
     accountNum
     division
     homeOfficeReviewByNavigation {
@@ -66,6 +73,7 @@
       }
       martindaleHubbellRating
     }
+    underwriterId
     underwriter {
       idNavigation {
         fullName
@@ -74,6 +82,22 @@
         email
       }
       reportsTo
+    }
+    branch  
+    branchNavigation {
+      id
+      branchKey
+      name
+    }
+    divisionNavigation {
+      id
+      divisionCode
+      division  
+    }
+    accountStatusLogs {
+      accountStatus
+      effective
+      id
     }
     bankPhone {
       countryCode
@@ -136,6 +160,10 @@
         fullName
       }
       martindaleHubbellRating
+    }
+    indemnitors {
+      id
+      agreementDate
     }
     yearOpened
     currentManagementYear
@@ -320,17 +348,8 @@ query GetAllAccountWatches($input: UUID!) {
     allAccountWatches(accountId: $input){
         actionPlan
         id
-        oldWatchStatusId
         reason
         watchDate
-        watchStatusId
-        oldWatchStatus {
-            watchStatus
-            backgroundColor
-        }
-        watchStatus {
-            watchStatus
-            backgroundColor
-        }
+        watchStatus
     }
 }

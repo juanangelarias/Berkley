@@ -8,9 +8,7 @@ public partial class AccountWatch
 
     public DateTime WatchDate { get; set; }
 
-    public Guid WatchStatusId { get; set; }
-
-    public Guid? OldWatchStatusId { get; set; }
+    public string WatchStatus { get; set; } = null!;
 
     public string Reason { get; set; } = null!;
 
@@ -22,7 +20,5 @@ public partial class AccountWatch
 
     public virtual Account Account { get; set; } = null!;
 
-    public virtual WatchStatusDm? OldWatchStatus { get; set; }
-
-    public virtual WatchStatusDm WatchStatus { get; set; } = null!;
+    public virtual WatchStatusDm WatchStatusNavigation { get; set; } = null!;
 }

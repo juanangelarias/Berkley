@@ -11,73 +11,33 @@
 <PageTitle>BasisTNG - Account Profile</PageTitle>
 <RenderModeBackground></RenderModeBackground>
 
-<RadzenColumn Size="12" Visible="@(!_isAccountLoaded)">
-    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-        <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-            <RadzenColumn Size="4">
-                <BusyDialog Message="Loading..."/>
-            </RadzenColumn>
-        </RadzenRow>
-    </RadzenStack>
-</RadzenColumn>
-
-<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-    <RadzenPanel Style="border-radius: 10px;" class="rz-shadow=7">
-        <ChildContent>
-            <RadzenRow JustifyContent="JustifyContent.End">
-                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
-                    <RadzenLabel Text="View Type: " Style="font-size: small;"/>
-                    <RadzenDropDown Data="@(Enum.GetValues(typeof(AccountLayout)).Cast<Enum>())"
-                                    @bind-Value="@AccountState.SelectedType"
-                                    Text="Select View Type" Style="font-size: small; height: 35px;"/>
-                </RadzenStack>
-            </RadzenRow>
-            <RadzenRow JustifyContent="JustifyContent.End">
-                <RadzenColumn Size="4">
-
-                </RadzenColumn>
-                <RadzenColumn Size="4">
-
-                </RadzenColumn>
-                <RadzenColumn Size="4">
-
-                </RadzenColumn>
-            </RadzenRow>
-        </ChildContent>
-    </RadzenPanel>
-</RadzenStack>
-<RadzenRow Style="width: 100%;">
-    <RadzenColumn Size="12" Visible="@_isAccountLoaded">
-        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-            <RadzenRow JustifyContent="JustifyContent.End" Visible="@AccountState.IsUserManager">
-                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
-                    <RadzenLabel Text="View Type: " Style="font-size: small;"/>
-                    <RadzenDropDown Data="@(Enum.GetValues(typeof(AccountLayout)).Cast<Enum>())"
-                                    @bind-Value="@AccountState.SelectedType"
-                                    Text="Select View Type" Style="font-size: small; height: 35px;"/>
-                </RadzenStack>
-            </RadzenRow>
-            <RadzenRow Gap="1rem">
-                <RadzenPanel Style="border-radius: 20px; width: 100%;" class="rz-shadow-2">
-                    <RadzenRow JustifyContent="JustifyContent.End" class="rz-text-align-center">
-                        <RadzenColumn Size="4">
-                            <RadzenText TextStyle="TextStyle.DisplayH5"
-                                        Text="@AccountState.Account?.IdNavigation.FullName"/>
-                        </RadzenColumn>
-                        <RadzenColumn Size="4">
-                            <AccountSearch SetAccount="OnSetAccount"/>
-                        </RadzenColumn>
-                        <RadzenColumn Size="4">
-                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End"
+<RadzenColumn Size="12">
+    <RadzenStack Orientation="Orientation.Vertical">
+        <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+            <RadzenCard Variant="Variant.Text" Style="width: 100%; margin: 0; padding: 0;" >
+                <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                    <RadzenColumn Size="8">
+                            <AccountSearch SetAccount="OnSetAccount" CreateNewAccount="CreateNewAccount"/>
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <RadzenCard Variant="Variant.Text" Style="width: 100%;">
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
                                          JustifyContent="JustifyContent.End">
-                                <RadzenText Text="Status: "/>
-                                <RadzenText Text="Placeholder"/>
+                                <RadzenLabel Text="View Type: " Style="font-size: small;"
+                                             Visible="@AccountState.IsUserManager"/>
+                                <RadzenDropDown Data="@(Enum.GetValues(typeof(AccountLayout)).Cast<Enum>())"
+                                                @bind-Value="@AccountState.SelectedType"
+                                                Text="Select View Type" Style="font-size: small; height: 35px;"
+                                                Visible="@AccountState.IsUserManager"/>
                             </RadzenStack>
-                        </RadzenColumn>
-                    </RadzenRow>
-                </RadzenPanel>
-            </RadzenRow>
-            <RadzenRow Style="width: 100%">
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenCard>
+        </RadzenRow>
+        @if (AccountState.IsAccountLoaded)
+        {
+            <RadzenRow Style="width: 100%; margin-top: -30px;">
                 @switch (AccountState.SelectedType)
                 {
                     case AccountLayout.Commercial:
@@ -91,33 +51,51 @@
                         break;
                     default:
                         <RadzenColumn span="12">
-                            <RadzenRow>
+                            <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
                                 <RadzenText Text="The user needs to be defined as Commercial or Contract user"
-                                            TextStyle="TextStyle.DisplayH4" TextAlign="TextAlign.Center"/>
+                                            TextStyle="TextStyle.DisplayH5" TextAlign="TextAlign.Center"/>
                             </RadzenRow>
                         </RadzenColumn>
                         break;
                 }
             </RadzenRow>
-        </RadzenStack>
-    </RadzenColumn>
-</RadzenRow>
+        }
+        else
+        {
+            <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+                    <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+                        <RadzenColumn Size="4">
+                            <BusyDialog Message="Loading..."/>
+                        </RadzenColumn>
+                    </RadzenRow>
+                </RadzenStack>
+            </RadzenRow>
+        }
+    </RadzenStack>
+</RadzenColumn>
 
 @code {
     [Parameter] public string? AccountNumber { get; set; }
-
-    private bool _isAccountLoaded;
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
+        await AccountState.SetLayout();
+
         if (string.IsNullOrEmpty(AccountNumber))
+        {
+            AccountState.ClearAccount();
+            AccountState.IsAccountLoaded = true;
             return;
+        }
 
         AccountState.AccountNumber = AccountNumber;
 
-        _isAccountLoaded = await AccountState.Initialize();
+        await AccountState.Initialize();
+
+        StateHasChanged();
     }
 
     private async Task OnSetAccount(string arg)
@@ -126,5 +104,10 @@
         AccountState.AccountNumber = arg;
 
         await AccountState.Initialize();
+    }
+    
+    private async Task CreateNewAccount()
+    {
+        throw new NotImplementedException();
     }
 }

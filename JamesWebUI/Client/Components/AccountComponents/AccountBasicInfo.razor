@@ -1,39 +1,107 @@
-﻿@inject IAccountState AccountState
+﻿@using JamesWebUI.Client.Model
+
+@inject IAccountState AccountState
 
 @inherits JamesLayoutComponentBase
 
-<RadzenCard Style="border-radius: 10px; width: 100%;">
+<Theme/>
+
+<RadzenCard Style="border-radius: 10px; width: 100%; overflow-x: scroll; white-space: nowrap;">
     <RadzenColumn Size="12">
-        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-            @*<RadzenRow JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+            <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
+                <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary" 
+                              Click="@ToggleEditMode" Disabled="@(_isEditMode)"/>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
                 <RadzenColumn Size="3">
-                    <RadzenFormField Text="Account No.">
+                    <BsgFormField Text="Account No.">
                         <RadzenTextBox @bind-Value="@AccountState.Account!.AccountNum"
                                        ReadOnly="true"/>
                         <RadzenRequiredValidator Text="Account No. is required"/>
-                    </RadzenFormField>
+                    </BsgFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="9">
-                    <RadzenFormField Text="Name">
-                        <RadzenTextBox @bind-Value="@AccountState.Account!.IdNavigation.FullName" 
+                    <BsgFormField Text="Name">
+                        <RadzenTextBox @bind-Value="@AccountState.Account!.IdNavigation.FullName"
                                        ReadOnly="@(!_isEditMode)"/>
                         <RadzenRequiredValidator Text="Name is required"/>
-                        <RadzenLengthValidator Min="5" Max="255" Text="The lenght should be between 5 and 255 characters"/>
-                    </RadzenFormField>
+                        <RadzenLengthValidator Min="5" Max="255"
+                                               Text="The lenght should be between 5 and 255 characters"/>
+                    </BsgFormField>
                 </RadzenColumn>
             </RadzenRow>
-            <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
-                <RadzenColumn Size="9">
-                    <RadzenFormField Text="Concerns/Watch">
-                        $1$<RadzenTextBox @bind-Value="@AccountState.Account!.Concerns"
-                                       ReadOnly="true" Style="background-color: @ConcernColor" />#1#
-                    </RadzenFormField>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenColumn Size="5">
+                    <BsgFormField Text="Concerns/Watch">
+                        <RadzenTextBox Value="@(AccountState.ActiveWatch?.WatchStatus ?? "None")" ReadOnly="true"/>
+                    </BsgFormField>
                 </RadzenColumn>
-                <RadzenColumn Size="2">
-                    <RadzenButton Style="width: 100%" Text="Reason/Action Plan"
-                                  Click="ShowReasonAndActionPlan"/>
+                <RadzenColumn Size="6">
+                    <RadzenButton Text="Reason/Action Plan" ButtonStyle="@(GetButtonStyle())"
+                                  Click="@ShowReasonAndActionPlan" Style="width: 100%"
+                                  Disabled="@(!_isEditMode)"/>
                 </RadzenColumn>
-            </RadzenRow>*@
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="Underwriter">
+                        <RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        FilterOperator="StringFilterOperator.Contains"
+                                        AllowFiltering="true"
+                                        Data="@AccountState.UnderwritersLookup"
+                                        TextProperty="@nameof(BsgLookup.Name)"
+                                        ValueProperty="@nameof(BsgLookup.Id)"
+                                        AllowClear="true"
+                                        @bind-Value="@AccountState.Account!.UnderwriterId"
+                                        Disabled="@(!_isEditMode)" Style="color: black;"/>
+                    </BsgFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="Branch">
+                        <RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        FilterOperator="StringFilterOperator.Contains"
+                                        AllowFiltering="true"
+                                        Data="@AccountState.BranchesLookup"
+                                        TextProperty="@nameof(BsgLookup.Label)"
+                                        ValueProperty="@nameof(BsgLookup.Code)"
+                                        AllowClear="true"
+                                        @bind-Value="@AccountState.Account!.Branch"
+                                        Disabled="@(!_isEditMode)" Style="color: black;"/>
+                    </BsgFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="HO Lead">
+                        <RadzenTextBox Value="HO Lead (TBD)" ReadOnly="@_isEditMode"/>
+                    </BsgFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="Division">
+                        <RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                        FilterOperator="StringFilterOperator.Contains"
+                                        AllowFiltering="true"
+                                        Data="@AccountState.DivisionsLookup"
+                                        TextProperty="@nameof(BsgLookup.Label)"
+                                        ValueProperty="@nameof(BsgLookup.Code)"
+                                        AllowClear="true"
+                                        @bind-Value="@AccountState.Account!.Division"
+                                        Disabled="@(!_isEditMode)" Style="color: black;"/>
+                    </BsgFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="SIC Code">
+                        <RadzenTextBox Value="SIC Code (TBD)" ReadOnly="@_isEditMode"/>
+                    </BsgFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem" Visible="@(_isEditMode)">
+                <RadzenButton Text="Save" Icon="save" Click="OnSave" ButtonStyle="ButtonStyle.Success"/>
+                <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Secondary"/>
+            </RadzenRow>
         </RadzenStack>
     </RadzenColumn>
 </RadzenCard>
@@ -45,9 +113,68 @@
     {
         _isEditMode = !_isEditMode;
     }
-    
-    private void ShowReasonAndActionPlan()
+
+    private async Task ShowReasonAndActionPlan()
     {
-        throw new NotImplementedException();
+        var options = new DialogOptions()
+        {
+            Resizable = false,
+            Draggable = true,
+            Width = "700px",
+            Height = "550px",
+            ShowClose = false,
+            CloseDialogOnOverlayClick = false
+        };
+
+        var parameters = new Dictionary<string, object>();
+
+        await DialogService
+            .OpenAsync<AccountWatches>("Account Watches and Concerns", parameters, options);
+        
+        StateHasChanged();
+    }
+
+    private ButtonStyle GetButtonStyle()
+    {
+        return AccountState.ActiveWatch?.WatchStatus switch
+        {
+            "None" => ButtonStyle.Success,
+            "Concerns" => ButtonStyle.Warning,
+            "Watch" => ButtonStyle.Danger,
+            _ => ButtonStyle.Success
+        };
+    }
+
+    private async Task OnSave(MouseEventArgs arg)
+    {
+        NotificationService.Notify(new()
+        {
+            Detail = "On Save clicked", 
+            Duration = 1000, 
+            Severity = NotificationSeverity.Info
+        });
+        
+        var response = await AccountState.SaveAccountBasicInfo();
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors);
+        }
+        else
+        {
+            NotifySuccessfulSave("basic information");
+            _isEditMode = false;
+        }
+    }
+
+    private void OnCancel(MouseEventArgs obj)
+    {
+        NotificationService.Notify(new()
+        {
+            Detail = "On Cancel clicked", 
+            Duration = 1000, 
+            Severity = NotificationSeverity.Info
+        });
+        _isEditMode = false;
     }
 }

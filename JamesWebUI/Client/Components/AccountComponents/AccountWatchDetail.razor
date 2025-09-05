@@ -1,0 +1,33 @@
+﻿@using JustifyContent = Radzen.JustifyContent
+@using Orientation = Radzen.Orientation
+<RadzenCard Variant="Variant.Text">
+    <RadzenColumn Size="12">
+        <RadzenRow Gap="1rem">
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                <RadzenColumn Size="5">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+                        <RadzenText Text="Reason" TextStyle="TextStyle.Subtitle1" Style="width: 300px"/>
+                        <RadzenTextArea @bind-Value="@AccountWatch.Reason" Style="width: 300px;" Rows="4"/>
+                    </RadzenStack>
+                </RadzenColumn>
+                <RadzenColumn Size="5">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+                        <RadzenText Text="Action Plan" TextStyle="TextStyle.Subtitle1" Style="width: 300px"/>
+                        <RadzenTextArea @bind-Value="@AccountWatch.ActionPlan" Style="width: 300px;" Rows="4"/>
+                    </RadzenStack>
+                </RadzenColumn>
+            </RadzenStack>
+        </RadzenRow>
+    </RadzenColumn>
+</RadzenCard>
+
+@code {
+    [Parameter, EditorRequired] public AccountWatchDisplay AccountWatch { get; set; } = null!;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        
+        StateHasChanged();
+    }
+}

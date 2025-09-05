@@ -110,6 +110,19 @@ namespace James.Data.Client
             return await ExecuteGet<List<Branch>>(
                 async () => await jamesClient.GetAllBranches.ExecuteAsync(), "AllBranches");
         }
+        public async Task<IDataAccessResult<List<DivisionDm>>> GetDivisions()
+        {
+            var response = await ExecuteGet<List<DivisionDm>>(
+                async () => await jamesClient.GetDivisions.ExecuteAsync(), "Divisions");
+            return response;
+        }
+        public async Task<IDataAccessResult<List<Underwriter>>> GetUnderwriters()
+        {
+            var response = await ExecuteGet<List<Underwriter>>(
+                    async () => await jamesClient.GetUnderwriters.ExecuteAsync(), "Underwriters");
+
+                return response;
+        }
         public async Task<IDataAccessResult<List<State>>> GetAllStates()
         {
             return await ExecuteGet<List<State>>(
@@ -233,10 +246,12 @@ namespace James.Data.Client
             return await ExecuteGet<List<EmailTypeDm>>(async () => 
                 await jamesClient.GetAllEmailTypes.ExecuteAsync(), "AllEmailTypes");
         }
-        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatusDms()
+        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatuses()
         {
-            return await ExecuteGet<List<WatchStatusDm>>(async () =>
-                await jamesClient.GetAllWatchStatuses.ExecuteAsync(), "AllWatchStatuses");
+            var response = await ExecuteGet<List<WatchStatusDm>>(async () =>
+                    await jamesClient.GetAllWatchStatuses.ExecuteAsync(), "AllWatchStatuses");
+            
+                return response;
         }
 
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
@@ -659,25 +674,63 @@ namespace James.Data.Client
                     Comments = comments
                 }));
         }
-        public async Task<IDataAccessResult<AccountWatch>> SetAccountWatch(Guid id, Guid accountId, DateTime watchDate,
-            Guid watchStatusId, Guid? oldWatchStatusId, string reason, string actionPlan)
+        public async Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, Guid accountId, DateTime watchDate,
+            string watchStatus, string reason, string actionPlan)
         {
-            return await ExecuteGet<AccountWatch>(async () => await jamesClient.SetAccountWatch.ExecuteAsync(
+            return (await ExecuteGet<AccountWatch>(async () => await jamesClient.CreateAccountWatch.ExecuteAsync(
                 new()
                 {
                     Id = id,
                     AccountId = accountId,
                     WatchDate = watchDate,
-                    WatchStatusId = watchStatusId,
-                    OldWatchStatusId = oldWatchStatusId,
+                    WatchStatus = watchStatus,
                     Reason = reason,
                     ActionPlan = actionPlan
-                }));
+                })));
         }
+        
+        public async Task<IDataAccessResult<AccountWatch>> UpdateAccountWatch(Guid id, string watchStatus,
+            string reason, string actionPlan)
+        {
+            return (await ExecuteGet<AccountWatch>(async () => await jamesClient.UpdateAccountWatch.ExecuteAsync(
+                new()
+                {
+                    Id = id,
+                    WatchStatus = watchStatus,
+                    Reason = reason,
+                    ActionPlan = actionPlan
+                })));
+        }
+
+        public async Task<ISaveDataResult> SetAccountCommercialInfo(Guid accountId, string fullName, Guid underwriterId,
+            string branchKey, string divisionCode, Guid sicCodeId, Guid hoLead)
+        {
+            var response = await jamesClient
+                .SetAccountCommercialInfo.ExecuteAsync(new()
+                {
+                    AccountId = accountId,
+                    FullName = fullName,
+                    UnderwriterId = underwriterId,
+                    BranchKey = branchKey,
+                    DivisionCode = divisionCode,
+                    SicCodeId = sicCodeId,
+                    HoLead = hoLead
+                });
+
+            return GraphQLSaveResult(response);
+        }
+
+        public async Task<ISaveDataResult> DeleteAccountWatch(Guid id)
+        {
+            return await ExecuteSave(async () => await jamesClient.DeleteAccountWatch.ExecuteAsync(new() { Id = id }));
+        }
+        
         public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId)
         {
-            return await ExecuteGet<List<AccountWatch>>(async () =>
+            var response = await ExecuteGet<List<AccountWatch>>(async () =>
                 await jamesClient.GetAllAccountWatches.ExecuteAsync(accountId));
+
+            return response;
         }
 
         private sealed class AddressModifiedWatchClass(IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription) :

@@ -104,8 +104,6 @@ public partial class Account
 
     public Guid? UnderwriterId { get; set; }
 
-    public string WatchStatus { get; set; } = null!;
-
     public string? Naics { get; set; }
 
     public Guid? HomeOfficeReviewBy { get; set; }
@@ -149,6 +147,8 @@ public partial class Account
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
+    
+    public virtual ICollection<AccountWatch> AccountWatches { get; set; } = new List<AccountWatch>();
 
     public virtual ICollection<AdditionalRelatedParty> AdditionalRelatedParties { get; set; } = new List<AdditionalRelatedParty>();
 
@@ -217,8 +217,6 @@ public partial class Account
     public virtual Underwriter? Underwriter { get; set; }
 
     public virtual ICollection<UnderwriterRecommendation> UnderwriterRecommendations { get; set; } = new List<UnderwriterRecommendation>();
-
-    public virtual WatchStatusDm WatchStatusNavigation { get; set; } = null!;
 
     public virtual ICollection<WorkInProgressJob> WorkInProgressJobs { get; set; } = new List<WorkInProgressJob>();
 }

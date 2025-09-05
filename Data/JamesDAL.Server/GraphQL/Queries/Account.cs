@@ -5,38 +5,49 @@ namespace James.Data.Server.GraphQL.Queries
     public partial class Query
     {
         [Authorize]
-        public async Task<Account?> GetAccountByNumber(string? accountNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<Account?> GetAccountByNumber(string? accountNumber,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             if (accountNumber == null)
                 return null;
             var ctx = await contextFactory.CreateDbContextAsync();
-            return await ctx.Accounts.Include(a => a.IdNavigation)
-                .Include(a => a.IdNavigation.LegalEntityAddresses)
-                .ThenInclude(a => a.Address)
-                .Include(a => a.IdNavigation.LegalEntityPhones)
-                .ThenInclude(a => a.PhoneNumber)
-                .Include(a => a.IdNavigation.LegalEntityEmails)
-                .Include(a => a.AgencyNumberNavigation)
-                .ThenInclude(ag => ag!.IdNavigation)
-                .ThenInclude(agi => agi.LegalEntityAddresses)
-                .ThenInclude(agia => agia.Address)
-                .Include(a => a.Underwriter)
-                .ThenInclude(uw => uw!.IdNavigation)
-                .Include(a => a.Agent)
-                .ThenInclude(ag => ag!.IdNavigation)
-                .Include(a => a.HomeOfficeReviewByNavigation)
-                .Include(a => a.BranchReviewByNavigation)
-                .Include(a => a.BankPhone)
-                .Include(a => a.Cpafirm)
-                .ThenInclude(c => c!.LegalEntityPhones)
-                .Include(a => a.Cpacontact)
-                .Include(a => a.BusinessTypeNavigation)
-                .Include(a => a.BusinessTypeClassNavigation)
-                .Include(a => a.LawFirm)
-                .ThenInclude(a => a!.IdNavigation)
-                .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim())
+            var data = await ctx.Accounts.Include(a => a.IdNavigation)
+                       .Include(a => a.IdNavigation.LegalEntityAddresses)
+                       .ThenInclude(a => a.Address)
+                       .Include(a => a.IdNavigation.LegalEntityPhones)
+                       .ThenInclude(a => a.PhoneNumber)
+                       .Include(a => a.IdNavigation.LegalEntityEmails)
+                       .Include(a => a.AgencyNumberNavigation)
+                       .ThenInclude(ag => ag!.IdNavigation)
+                       .ThenInclude(agi => agi.LegalEntityAddresses)
+                       .ThenInclude(agia => agia.Address)
+                       .Include(a => a.Underwriter)
+                       .ThenInclude(uw => uw!.IdNavigation)
+                       .Include(a => a.Agent)
+                       .ThenInclude(ag => ag!.IdNavigation)
+                       .Include(a => a.HomeOfficeReviewByNavigation)
+                       .Include(a => a.BranchReviewByNavigation)
+                       .Include(a => a.BankPhone)
+                       .Include(a => a.Cpafirm)
+                       .ThenInclude(c => c!.LegalEntityPhones)
+                       .Include(a => a.Cpacontact)
+                       .Include(a => a.BusinessTypeNavigation)
+                       .Include(a => a.BusinessTypeClassNavigation)
+                       .Include(a => a.LawFirm)
+                       .ThenInclude(a => a!.IdNavigation)
+                       .Include(i => i.AccountWatches)
+                       .ThenInclude(t => t.WatchStatusNavigation)
+                       .Include(i => i.BranchNavigation)
+                       .Include(i => i.DivisionNavigation)
+                       .Include(i => i.AccountStatusLogs)
+                       .ThenInclude(t => t.AccountStatusNavigation)
+                       .Include(i => i.Indemnitors)
+                       .FirstOrDefaultAsync(a => a.AccountNum.Trim() == accountNumber.Trim())
                    ?? throw new GraphQLException("No account with this account number exists.");
+
+            return data;
         }
+
         [Authorize]
         public async Task<List<Account>> SearchAccounts(string searchString, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -169,8 +180,7 @@ namespace James.Data.Server.GraphQL.Queries
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.AccountWatches
-                .Include(i=>i.WatchStatus)
-                .Include(i=>i.OldWatchStatus)
+                .Include(i=>i.WatchStatusNavigation)
                 .Where(r=>r.AccountId == accountId)
                 .ToListAsync();
             

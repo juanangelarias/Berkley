@@ -1,7 +1,7 @@
 ﻿using James.Shared;
 using James.Shared.Data;
-using James.Shared.Extensions;
 using James.Shared.Model;
+using JamesWebUI.Client.Components.GeneralUse;
 using JamesWebUI.Client.Helpers;
 using JamesWebUI.Client.Model;
 using Radzen;
@@ -16,6 +16,10 @@ public interface IAccountState : IStateBase
     AccountLayout? SelectedType { get; set; }
     string? AccountNumber { get; set; }
     Account? Account { get; set; }
+    string AccountStatus { get; set; }
+    bool IsAccountActive { get; set; }
+    string FirstIndemnityDate { get; set; }
+    IconStyle AccountStatusStyle { get; set; }
     List<BsgAddress> Addresses { get; set; }
     List<BsgPhoneNumber> PhoneNumbers { get; set; }
     List<BsgEmail> Emails { get; set; }
@@ -27,15 +31,24 @@ public interface IAccountState : IStateBase
     bool IsAccountLoaded { get; set; }
     List<WatchStatusDm> WatchStatuses { get; set; }
     List<AccountWatch> AccountWatches { get; set; }
-    AccountWatch? LastAccountWatch { get; set; }
+    AccountWatch? ActiveWatch { get; set; }
+    List<BsgLookup> BranchesLookup { get; set; }
+    List<BsgLookup> DivisionsLookup { get; set; }
+    List<BsgLookup> UnderwritersLookup { get; set; }
+    Task CreateAccountWatch(AccountWatch accountWatch);
+    Task UpdateAccountWatch(AccountWatch accountWatch);
+    Task DeleteAccountWatch(Guid accountWatchId);
 
+    Task SetLayout();
     Task<bool> Initialize();
+    void ClearAccount();
     Task SaveAddress(BsgAddress address, bool isNew = false);
     Task DeleteAddress(Guid addressId);
     Task SavePhoneNumber(BsgPhoneNumber phoneNumber);
     Task DeletePhoneNumber(Guid phoneNumberId);
     Task SaveEmail(BsgEmail email, bool isNew = false);
     Task DeleteEmail(Guid emailId);
+    Task<SaveDataResult> SaveAccountBasicInfo();
 }
 
 public class AccountState(
@@ -52,13 +65,274 @@ public class AccountState(
     public List<string> Types { get; set; } = ["Default", "Commercial", "Contract"];
     public string? AccountNumber { get; set; }
     public Account? Account { get; set; }
-    public List<AddressTypeDm> AddressTypes { get; set; } = [];
-    public List<CountryDm> Countries { get; set; } = [];
-    public List<EmailTypeDm> EmailTypes { get; set; } = [];
-    public List<PhoneTypeDm> PhoneNumberTypes { get; set; } = [];
-    public List<State> States { get; set; } = [];
-    public List<WatchStatusDm> WatchStatuses { get; set; } = [];
+    public string AccountStatus { get; set; } = "";
+    public IconStyle AccountStatusStyle { get; set; }
+    public bool IsAccountActive { get; set; }
+    public string FirstIndemnityDate { get; set; } = "";
     public AccountLayout? SelectedType { get; set; }
+
+    #region AddressTypes
+
+    private List<AddressTypeDm> _addressTypes = [];
+
+    public List<AddressTypeDm> AddressTypes
+    {
+        get
+        {
+            var n = 0;
+            while (!_isAddressTypesLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                    return [];
+
+                Task.Delay(2000);
+            }
+
+            return _addressTypes;
+        }
+        set
+        {
+            _addressTypes = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region Countries
+
+    private List<CountryDm> _countries = [];
+
+    public List<CountryDm> Countries
+    {
+        get
+        {
+            var n = 0;
+            while (!_isCountriesLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                    return [];
+
+                Task.Delay(2000);
+            }
+
+            return _countries;
+        }
+        set
+        {
+            _countries = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region EmailTypes
+
+    private List<EmailTypeDm> _emailTypes = [];
+
+    public List<EmailTypeDm> EmailTypes
+    {
+        get
+        {
+            var n = 0;
+            while (!_isEmailTypesLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                    return [];
+
+                Task.Delay(2000);
+            }
+
+            return _emailTypes;
+        }
+        set
+        {
+            _emailTypes = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region PhoneNumberTypes
+
+    private List<PhoneTypeDm> _phoneNumberTypes = [];
+
+    public List<PhoneTypeDm> PhoneNumberTypes
+    {
+        get
+        {
+            var n = 0;
+            while (!_isPhoneNumberTypesLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                    return [];
+
+                Task.Delay(2000);
+            }
+
+            return _phoneNumberTypes;
+        }
+        set
+        {
+            _phoneNumberTypes = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region States
+
+    private List<State> _states = [];
+
+    public List<State> States
+    {
+        get
+        {
+            var n = 0;
+            while (!_isStatesLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                    return [];
+
+                Task.Delay(2000);
+            }
+
+            return _states;
+        }
+        set
+        {
+            _states = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region WatchStatuses
+
+    private List<WatchStatusDm> _watchStatuses = [];
+
+    public List<WatchStatusDm> WatchStatuses
+    {
+        get
+        {
+            var n = 0;
+            while (!_isWatchStatusesLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                    return [];
+
+                Task.Delay(2000);
+            }
+
+            return _watchStatuses;
+        }
+        set
+        {
+            _watchStatuses = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region BranchesLookup
+
+    private List<BsgLookup> _branchesLookup = [];
+
+    public List<BsgLookup> BranchesLookup
+    {
+        get
+        {
+            var n = 0;
+            while (!_isBranchesLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                {
+                    return [];
+                }
+
+                Task.Delay(2000);
+            }
+
+            return _branchesLookup;
+        }
+        set
+        {
+            _branchesLookup = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region DivisionsLookup
+
+    private List<BsgLookup> _divisionsLookup = [];
+
+    public List<BsgLookup> DivisionsLookup
+    {
+        get
+        {
+            var n = 0;
+            while (!_isDivisionsLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                {
+                    return [];
+                }
+
+                Task.Delay(2000);
+            }
+            return _divisionsLookup;
+        }
+        set
+        {
+            _divisionsLookup = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region UnderwritersLookup
+
+    private List<BsgLookup> _underwritersLookup = [];
+
+    public List<BsgLookup> UnderwritersLookup
+    {
+        get
+        {
+            var n = 0;
+            while (!_isUnderwritersLoaded)
+            {
+                n += 1;
+                if (n > 5)
+                    return [];
+
+                Task.Delay(2000);
+            }
+            return _underwritersLookup;
+        }
+        set
+        {
+            _underwritersLookup = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
 
     #region IsAccountLoaded
 
@@ -82,20 +356,7 @@ public class AccountState(
 
     public List<BsgAddress> Addresses
     {
-        get
-        {
-            var n = 0;
-            while (!_isAddressesLoaded)
-            {
-                n += 1;
-                if (n > 5)
-                    return [];
-
-                Task.Delay(3000).Wait();
-            }
-
-            return _addresses;
-        }
+        get => _addresses;
         set
         {
             _addresses = value;
@@ -111,20 +372,7 @@ public class AccountState(
 
     public List<BsgPhoneNumber> PhoneNumbers
     {
-        get
-        {
-            var n = 0;
-            while (!_isPhoneNumbersLoaded)
-            {
-                n += 1;
-                if (n > 5)
-                    return [];
-
-                Task.Delay(3000).Wait();
-            }
-
-            return _phoneNumbers;
-        }
+        get => _phoneNumbers;
         set
         {
             _phoneNumbers = value;
@@ -140,20 +388,7 @@ public class AccountState(
 
     public List<BsgEmail> Emails
     {
-        get
-        {
-            var n = 0;
-            while (!_isEmailsLoaded)
-            {
-                n += 1;
-                if (n > 5)
-                    return [];
-
-                Task.Delay(3000).Wait();
-            }
-
-            return _emails;
-        }
+        get => _emails;
         set
         {
             _emails = value;
@@ -169,20 +404,7 @@ public class AccountState(
 
     public List<AccountWatch> AccountWatches
     {
-        get
-        {
-            var n = 0;
-            while (!_isAccountWatchesLoaded)
-            {
-                n += 1;
-                if (n > 5)
-                    return [];
-
-                Task.Delay(3000).Wait();
-            }
-
-            return _accountWatches;
-        }
+        get => _accountWatches;
         set
         {
             _accountWatches = value;
@@ -192,26 +414,31 @@ public class AccountState(
 
     #endregion
 
-    #region LastAccountWatch
+    #region ActiveWatch
 
-    private AccountWatch? _lastAccountWatch;
+    private AccountWatch? _activeWatch;
 
-    public AccountWatch? LastAccountWatch
+    public AccountWatch? ActiveWatch
     {
-        get => _lastAccountWatch;
+        get => _activeWatch;
         set
         {
-            _lastAccountWatch = value;
+            _activeWatch = value;
             OnPropertyChanged();
         }
     }
 
     #endregion
 
-    private bool _isAddressesLoaded;
-    private bool _isPhoneNumbersLoaded;
-    private bool _isEmailsLoaded;
-    private bool _isAccountWatchesLoaded;
+    private bool _isBranchesLoaded;
+    private bool _isDivisionsLoaded;
+    private bool _isUnderwritersLoaded;
+    private bool _isWatchStatusesLoaded;
+    private bool _isCountriesLoaded;
+    private bool _isPhoneNumberTypesLoaded;
+    private bool _isEmailTypesLoaded;
+    private bool _isAddressTypesLoaded;
+    private bool _isStatesLoaded;
 
     #endregion
 
@@ -230,7 +457,11 @@ public class AccountState(
             Data = (List<AddressTypeDm>)cache!
         },
         ResultVariable = () => _addressTypesResult,
-        AfterLoad = () => { AddressTypes = _addressTypesResult.Data!; }
+        AfterLoad = () =>
+        {
+            AddressTypes = _addressTypesResult.Data!;
+            _isAddressTypesLoaded = true;
+        }
     }, "address types");
 
     #endregion
@@ -248,7 +479,11 @@ public class AccountState(
             Data = (List<CountryDm>)cache!
         },
         ResultVariable = () => _countriesResult,
-        AfterLoad = () => { Countries = _countriesResult.Data!; }
+        AfterLoad = () =>
+        {
+            Countries = _countriesResult.Data!;
+            _isCountriesLoaded = true;
+        }
     }, "countries");
 
     #endregion
@@ -266,7 +501,11 @@ public class AccountState(
             Data = (List<EmailTypeDm>)cache!
         },
         ResultVariable = () => _emailTypesResult,
-        AfterLoad = () => { EmailTypes = _emailTypesResult.Data!; }
+        AfterLoad = () =>
+        {
+            EmailTypes = _emailTypesResult.Data!;
+            _isEmailTypesLoaded = true;
+        }
     }, "email types");
 
     #endregion
@@ -284,7 +523,11 @@ public class AccountState(
             Data = (List<PhoneTypeDm>)cache!
         },
         ResultVariable = () => _phoneTypesResult,
-        AfterLoad = () => { PhoneNumberTypes = _phoneTypesResult.Data!; }
+        AfterLoad = () =>
+        {
+            PhoneNumberTypes = _phoneTypesResult.Data!; 
+            _isPhoneNumberTypesLoaded = true;
+        }
     }, "phone types");
 
     #endregion
@@ -302,7 +545,11 @@ public class AccountState(
             Data = (List<State>)cache!
         },
         ResultVariable = () => _statesResult,
-        AfterLoad = () => { States = _statesResult.Data!; }
+        AfterLoad = () =>
+        {
+            States = _statesResult.Data!; 
+            _isStatesLoaded = true;
+        }
     }, "states");
 
     #endregion
@@ -314,20 +561,111 @@ public class AccountState(
     private LoadItem WatchStatusesLoad => AddEventNotify(new LoadItem
     {
         Key = CacheKeys.WatchStatuses,
-        AsyncLoadTask = async () => _watchStatusesResult = await dataAccess.GetWatchStatusDms(),
+        AsyncLoadTask = async () => _watchStatusesResult = await dataAccess.GetWatchStatuses(),
         CacheLoadTask = cache => _watchStatusesResult = new DataAccessResult<List<WatchStatusDm>>
         {
             Data = (List<WatchStatusDm>)cache!
         },
         ResultVariable = () => _watchStatusesResult,
-        AfterLoad = () => { WatchStatuses = _watchStatusesResult.Data!; }
+        AfterLoad = () =>
+        {
+            WatchStatuses = _watchStatusesResult.Data!;
+            _isWatchStatusesLoaded = true;       
+        }
     }, "watch statuses");
 
     #endregion
 
+    #region Branches
+
+    private IDataAccessResult<List<Branch>> _branchesResult = null!;
+
+    private LoadItem BranchesLoad => AddEventNotify(new LoadItem
+    {
+        Key = CacheKeys.Branches,
+        AsyncLoadTask = async () => _branchesResult = await dataAccess.GetAllBranches(),
+        CacheLoadTask = cache => _branchesResult = new DataAccessResult<List<Branch>>
+        {
+            Data = (List<Branch>)cache!
+        },
+        ResultVariable = () => _branchesResult,
+        AfterLoad = () =>
+        {
+            BranchesLookup = _branchesResult.Data!
+                .Select(s => new BsgLookup
+                {
+                    Id = s.Id,
+                    Code = s.BranchKey,
+                    Name = s.Name,
+                })
+                .ToList();
+            _isBranchesLoaded = true;
+        }
+    }, "branches");
+
     #endregion
 
-    public async Task<bool> Initialize()
+    #region Divisions
+
+    private IDataAccessResult<List<DivisionDm>> _divisionsResult = null!;
+
+    private LoadItem DivisionsLoad => AddEventNotify(new LoadItem
+    {
+        Key = CacheKeys.Divisions,
+        AsyncLoadTask = async () => _divisionsResult = await dataAccess.GetDivisions(),
+        CacheLoadTask = cache => _divisionsResult = new DataAccessResult<List<DivisionDm>>
+        {
+            Data = (List<DivisionDm>)cache!
+        },
+        ResultVariable = () => _divisionsResult,
+        AfterLoad = () =>
+        {
+            DivisionsLookup = _divisionsResult.Data!
+                .Select(s => new BsgLookup
+                {
+                    Id = s.Id,
+                    Code = s.DivisionCode,
+                    Name = s.Division
+                })
+                .ToList();
+            _isDivisionsLoaded = true;       
+        }
+    }, "divisions");
+
+    #endregion
+
+    #region Underwriters
+
+    private IDataAccessResult<List<Underwriter>> _underwritersResult = null!;
+
+    private LoadItem UnderwritersLoad => AddEventNotify(new LoadItem
+    {
+        Key = CacheKeys.Underwriters,
+        AsyncLoadTask = async () => _underwritersResult = await dataAccess.GetUnderwriters(),
+        CacheLoadTask = cache => _underwritersResult = new DataAccessResult<List<Underwriter>>
+        {
+            Data = (List<Underwriter>)cache!
+        },
+        ResultVariable = () => _underwritersResult,
+        AfterLoad = () =>
+        {
+            UnderwritersLookup = _underwritersResult.Data!
+                .Select(s => new BsgLookup
+                {
+                    Id = s.Id,
+                    Code = s.IdNavigation.Initials,
+                    Name = s.IdNavigation.FullName,
+                })
+                .ToList();
+            _isUnderwritersLoaded = true;    
+        }
+    }, "underwriters");
+
+    #endregion
+
+    #endregion
+
+    public async Task SetLayout()
     {
         // ToDo: With Greg define how to obtain the user type (Commercial or Contract)
         IsUserManager = true;
@@ -341,13 +679,25 @@ public class AccountState(
             UserType.Undefined => null,
             _ => throw new ArgumentOutOfRangeException()
         };
-        
-
+    }
+    
+    public async Task<bool> Initialize()
+    {
         if (string.IsNullOrEmpty(AccountNumber))
             return false;
 
-        LoadDomainTables().Forget();
+        await LoadDomainTables();
         return await LoadAccount(true);
+    }
+
+    public void ClearAccount()
+    {
+        Account = null;
+        Addresses = [];
+        PhoneNumbers = [];
+        Emails = [];
+        AccountWatches = [];
+        ActiveWatch = null;
     }
 
     public async Task SaveAddress(BsgAddress address, bool isNew = false)
@@ -422,8 +772,18 @@ public class AccountState(
         throw new NotImplementedException();
     }
 
+    public async Task<SaveDataResult> SaveAccountBasicInfo()
+    {
+        var response = await dataAccess
+            .SetAccountCommercialInfo(Account!.Id, Account.IdNavigation.FullName, Account!.UnderwriterId!.Value,
+                Account.Branch, Account.Division, Guid.Empty, Guid.Empty);
+
+        return (SaveDataResult)response;
+    }
+    
     private async Task<bool> LoadAccount(bool isMain = false)
     {
+        IsAccountLoaded = false;
         if (string.IsNullOrEmpty(AccountNumber))
             return false;
 
@@ -434,76 +794,93 @@ public class AccountState(
         }
 
         Account = accountResult.Data;
-        IsAccountLoaded = true;
 
-        if (!isMain) 
-            return true;
+        Addresses = Account?.IdNavigation.LegalEntityAddresses
+            .Select(s => new BsgAddress(s.Type, s.Address))
+            .ToList() ?? [];
+        PhoneNumbers = Account?.IdNavigation.LegalEntityPhones
+            .Select(s => new BsgPhoneNumber(s.Type, s.PhoneNumber))
+            .ToList() ?? [];
+        Emails = Account?.IdNavigation.LegalEntityEmails
+            .Select(s => new BsgEmail(s))
+            .ToList() ?? [];
+        AccountWatches = Account?.AccountWatches
+            .OrderByDescending(o => o.WatchDate)
+            .ToList() ?? [];
+
+        ActiveWatch = AccountWatches
+            .FirstOrDefault();
+
+        var statusLog = Account?.AccountStatusLogs
+            .OrderByDescending(o => o.Effective)
+            .FirstOrDefault();
+
+        var status = statusLog?.AccountStatus ?? "";
+        AccountStatus = status.ToLower() switch
+        {
+            "active" => "Active",
+            "term. agent" => "Terminated",
+            "term. comp." => "Terminated",
+            "declined" => "Terminated",
+            "lost" => "Terminated",
+            "prospect" => "Prospect",
+            "pending" => "Prospect",
+            "on hold" => "Prospect",
+            _ => "Not Defined"
+        };
+
+        AccountStatusStyle = AccountStatus.ToLower() switch
+        {
+            "active" => IconStyle.Success,
+            "prospect" => IconStyle.Warning,
+            "terminated" => IconStyle.Danger,
+            _ => IconStyle.Base
+        };
         
-        LoadAddresses().Forget();
-        LoadPhoneNumbers().Forget();
-        LoadEmails().Forget();
-        LoadAccountWatches().Forget();
+        IsAccountActive = statusLog?.AccountStatusNavigation?.Active ?? false;
+
+        var firstIndemnity = Account?.Indemnitors
+            .OrderBy(o => o.AgreementDate)
+            .FirstOrDefault()?
+            .AgreementDate;
+        
+        FirstIndemnityDate = firstIndemnity == null 
+            ? "First indemnity: None"
+            : $"First indemnity: {firstIndemnity:MM/dd/yyyy}";
+        
+        IsAccountLoaded = true;
 
         return true;
     }
 
-    private async Task LoadAddresses()
-    {
-        var addressesResult = await dataAccess.GetAllLegalEntityAddresses(Account!.Id);
-        if (!addressesResult.Success)
-        {
-            NotifyLoadError(addressesResult.Errors, "addresses", true);
-        }
-
-        Addresses = addressesResult.Data!.Select(s =>
-                new BsgAddress(s.LegalEntityAddress!.Type, s))
-            .ToList();
-        _isAddressesLoaded = true;
-    }
-
-    private async Task LoadPhoneNumbers()
-    {
-        var phoneNumbersResult = await dataAccess.GetAllLegalEntityPhoneNumbers(Account!.Id);
-        if (!phoneNumbersResult.Success)
-        {
-            NotifyLoadError(phoneNumbersResult.Errors, "phone numbers", true);
-        }
-
-        PhoneNumbers = phoneNumbersResult.Data!
-            .Select(s => new BsgPhoneNumber(s.LegalEntityPhone!.Type, s))
-            .ToList();
-        _isPhoneNumbersLoaded = true;
-    }
-
-    private async Task LoadEmails()
-    {
-        var emailsResult = await dataAccess.GetAllLegalEntityEmails(Account!.Id);
-        if (!emailsResult.Success)
-        {
-            NotifyLoadError(emailsResult.Errors, "emails", true);
-        }
-
-        Emails = emailsResult.Data!
-            .Select(s => new BsgEmail(s))
-            .ToList();
-        _isEmailsLoaded = true;
-    }
-
-    private async Task LoadAccountWatches()
-    {
-        var result = await dataAccess.GetAccountWatches(Account!.Id);
-        if (!result.Success)
-        {
-            NotifyLoadError(result.Errors, "account watches", true);
-        }
-        
-        AccountWatches = result.Data!;
-        _isAccountWatchesLoaded = true;
-    }
-
     private async Task LoadDomainTables()
     {
+        var start = DateTime.Now;
         await dataCache.ParallelGetCacheOrDataAsync(AddressTypesLoad, CountriesLoad, PhoneTypesLoad,
-            StatesLoad, WatchStatusesLoad);
+            StatesLoad, WatchStatusesLoad, BranchesLoad, DivisionsLoad, UnderwritersLoad);
+        
+        var elapsed = DateTime.Now - start;
+        var elapsedTxt = elapsed.ToString(@"mm\:ss\.fff");
+        Console.WriteLine($"Load domain tables took {elapsedTxt} seconds");
     }
+
+    
+    #region Account Watches
+    
+    public async Task CreateAccountWatch(AccountWatch accountWatch)
+    {
+        await dataAccess.CreateAccountWatch(accountWatch.Id, accountWatch.AccountId, accountWatch.WatchDate,
+            accountWatch.WatchStatus, accountWatch.Reason, accountWatch.ActionPlan);
+    }
+    public async Task UpdateAccountWatch(AccountWatch accountWatch)
+    {
+        await dataAccess.UpdateAccountWatch(accountWatch.Id, accountWatch.WatchStatus, accountWatch.Reason,
+            accountWatch.ActionPlan);
+    }
+    public async Task DeleteAccountWatch(Guid accountWatchId)
+    {
+        await dataAccess.DeleteAccountWatch(accountWatchId);
+    }
+    
+    #endregion
 }

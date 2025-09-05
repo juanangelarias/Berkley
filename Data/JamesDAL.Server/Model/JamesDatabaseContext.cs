@@ -456,9 +456,6 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.TaxBasis)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.WatchStatus)
-                .HasMaxLength(8)
-                .IsUnicode(false);
             entity.Property(e => e.YearOpened)
                 .HasMaxLength(4)
                 .IsUnicode(false);
@@ -530,11 +527,6 @@ public partial class JamesDatabaseContext : DbContext
             entity.HasOne(d => d.Underwriter).WithMany(p => p.Accounts)
                 .HasForeignKey(d => d.UnderwriterId)
                 .HasConstraintName("FK_Account_UnderWriter");
-
-            entity.HasOne(d => d.WatchStatusNavigation).WithMany(p => p.Accounts)
-                .HasForeignKey(d => d.WatchStatus)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Account_WatchStatusDM");
         });
 
         modelBuilder.Entity<AccountClassDm>(entity =>
@@ -829,31 +821,22 @@ public partial class JamesDatabaseContext : DbContext
             entity.ToTable("AccountWatch");
 			entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.HasIndex(e => new { e.AccountId, e.WatchDate, e.WatchStatusId }, "IX_AccountWatch")
-                .IsUnique()
-                .IsDescending(false, true, false);
-
             entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.ActionPlan).HasMaxLength(500);
             entity.Property(e => e.Created).HasColumnType("datetime");
             entity.Property(e => e.Modified).HasColumnType("datetime");
             entity.Property(e => e.Reason).HasMaxLength(500);
             entity.Property(e => e.WatchDate).HasColumnType("datetime");
+            entity.Property(e => e.WatchStatus).HasMaxLength(8).IsUnicode(false);
 
-            entity.HasOne(d => d.Account).WithMany()
+            entity.HasOne(d => d.Account).WithMany(p => p.AccountWatches)
                 .HasPrincipalKey(p => p.Id)
                 .HasForeignKey(d => d.AccountId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AccountWatch_Account");
 
-            entity.HasOne(d => d.OldWatchStatus).WithMany()
-                .HasPrincipalKey(p => p.Id)
-                .HasForeignKey(d => d.OldWatchStatusId)
-                .HasConstraintName("FK_AccountWatch_WatchStatusDM1");
-
-            entity.HasOne(d => d.WatchStatus).WithMany()
-                .HasPrincipalKey(p => p.Id)
-                .HasForeignKey(d => d.WatchStatusId)
+            entity.HasOne(d => d.WatchStatusNavigation).WithMany(p => p.AccountWatches)
+                .HasForeignKey(d => d.WatchStatus)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AccountWatch_WatchStatusDM");
         });
@@ -5500,19 +5483,10 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.HasIndex(e => e.Id, "UQ_WatchStatusDM_Id").IsUnique();
 
-            entity.Property(e => e.WatchStatus)
-                .HasMaxLength(8)
-                .IsUnicode(false);
-            entity.Property(e => e.BackgroundColor)
-                .HasMaxLength(10)
-                .IsUnicode(false);
-            entity.Property(e => e.Created)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+            entity.Property(e => e.WatchStatus).HasMaxLength(8).IsUnicode(false);
+            entity.Property(e => e.Created).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Modified)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+            entity.Property(e => e.Modified).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
         });
 
         modelBuilder.Entity<WorkInProgressJob>(entity =>

@@ -1,17 +1,20 @@
 ﻿@using JamesWebUI.Client.Pages
+@using JamesWebUI.Client.Pages.Controls
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using ThemeService = JamesWebUI.Client.Services.ThemeService
+
 @inherits JamesLayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JS
+
 @attribute [Authorize]
 
-<RadzenComponents />
-<RadzenContextMenu />
+<RadzenComponents/>
+<RadzenContextMenu/>
 
-<Theme />
+<Theme/>
 
 <PageTitle>BasisTNG</PageTitle>
+
 <style>
     .rz-sidebar {
         background: #FCFCFC !important;
@@ -28,41 +31,56 @@
         border-color: #F1F1F1 !important;
     }
 </style>
-<RadzenLayout Style="width:100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
+
+<RadzenLayout
+    Style="width:100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader class="rz-shadow-0">
         <ChildContent>
-            <RadzenRow>
+            <RadzenRow Gap="0.5rem" Style="height: 1.5rem; padding: 0.5rem">
                 <RadzenColumn Size="5">
-                    <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040" />
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
+                        <RadzenButton Icon="menu" Visible="true" Click="@(() => _sidebarExpanded = !_sidebarExpanded)"
+                                      Variant="Variant.Text" Size="ButtonSize.Large"/>
+                        <RadzenText Text="Berkley Advanced Surety Information System"
+                                    Style="margin-left: 0.5rem; color: #404040"
+                                    TextStyle="TextStyle.DisplayH5"/>
+                    </RadzenStack>
                 </RadzenColumn>
                 <RadzenColumn Size="7">
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-                        <RadzenButton Icon="Search" Variant="Variant.Outlined" Click="SuperSearchClicked" />
+                        <RadzenButton Icon="Search" Variant="Variant.Outlined" Click="SuperSearchClicked"/>
                         <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;"
-                                        TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes"
+                                        TValue="string" TextProperty="Text" ValueProperty="Value"
+                                        Data="@ThemeService.Themes"
                                         Value="@JamesThemeService.CurrentTheme" Change="@ChangeTheme">
                             <ValueTemplate>
                                 @context.Text Theme
                             </ValueTemplate>
                             <Template>
-                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
+                                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                                             Gap="1rem">
                                     @*Theme example graphic*@
-                                    <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; outline: var(--rz-input-border); min-width: 80px;">
-                                        <rect width="80" height="60" fill="@context.Base" />
-                                        <rect x="0" y="4" width="16" height="56" fill="@context.Sidebar" />
-                                        <rect x="24" y="17" width="48" height="32" rx="2" fill="@context.Content" />
-                                        <rect x="43" y="41" width="12" height="4" rx="1" fill="@context.Secondary" />
-                                        <rect x="28" y="21" width="16" height="2" rx="1" fill="@context.TitleText" />
-                                        <rect x="28" y="27" width="40" height="2" rx="1" fill="@context.ContentText" />
-                                        <rect x="28" y="31" width="40" height="2" rx="1" fill="@context.ContentText" />
-                                        <rect x="28" y="35" width="16" height="2" rx="1" fill="@context.ContentText" />
-                                        <rect x="28" y="41" width="12" height="4" rx="1" fill="@context.Primary" />
-                                        <rect width="80" height="6" fill="@context.Header" />
+                                    <svg width="80" height="60" viewBox="0 0 80 60" fill="none"
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         style="border-radius: 4px; outline: var(--rz-input-border); min-width: 80px;">
+                                        <rect width="80" height="60" fill="@context.Base"/>
+                                        <rect x="0" y="4" width="16" height="56" fill="@context.Sidebar"/>
+                                        <rect x="24" y="17" width="48" height="32" rx="2" fill="@context.Content"/>
+                                        <rect x="43" y="41" width="12" height="4" rx="1" fill="@context.Secondary"/>
+                                        <rect x="28" y="21" width="16" height="2" rx="1" fill="@context.TitleText"/>
+                                        <rect x="28" y="27" width="40" height="2" rx="1" fill="@context.ContentText"/>
+                                        <rect x="28" y="31" width="40" height="2" rx="1" fill="@context.ContentText"/>
+                                        <rect x="28" y="35" width="16" height="2" rx="1" fill="@context.ContentText"/>
+                                        <rect x="28" y="41" width="12" height="4" rx="1" fill="@context.Primary"/>
+                                        <rect width="80" height="6" fill="@context.Header"/>
                                     </svg>
                                     @context.Text
                                     @if (context.Premium)
                                     {
-                                        <RadzenBadge title="To use it in your application you need an active Radzen Professional or Enterprise subscription.">PRO</RadzenBadge>
+                                        <RadzenBadge
+                                            title="To use it in your application you need an active Radzen Professional or Enterprise subscription.">
+                                            PRO
+                                        </RadzenBadge>
                                     }
                                 </RadzenStack>
                             </Template>
@@ -72,46 +90,48 @@
             </RadzenRow>
         </ChildContent>
     </RadzenHeader>
-    <RadzenSidebar Style="width: max-content" Responsive="false">
+    <RadzenSidebar Style="width: max-content" Responsive="false" Visible="@(_sidebarExpanded)">
         <RadzenRow>
-            <AccessControl />
-        </RadzenRow>
-        <RadzenRow AlignItems="AlignItems.End">
-            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            <AccessControl/>
         </RadzenRow>
         <RadzenRow>
-
-            <RadzenStack Orientation="@(sidebarExpanded? Orientation.Horizontal: Orientation.Vertical)" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
-                <RadzenButton Variant="Variant.Text" Icon="note" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)" />
-                <RadzenButton Variant="Variant.Text" Icon="notifications" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)">
-                    <RadzenBadge Variant="Variant.Outlined" BadgeStyle="BadgeStyle.Secondary" Text="15" title="You have new notifications." />
+            <RadzenStack Orientation="@(_sidebarExpanded ? Orientation.Horizontal : Orientation.Vertical)"
+                         AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
+                <RadzenButton Variant="Variant.Text" Icon="note" Size="ButtonSize.Small"
+                              Click="@(() => notebookExpanded = !notebookExpanded)"/>
+                <RadzenButton Variant="Variant.Text" Icon="notifications" Size="ButtonSize.Small"
+                              Click="@(() => notebookExpanded = !notebookExpanded)">
+                    <RadzenBadge Variant="Variant.Outlined" BadgeStyle="BadgeStyle.Secondary" Text="15"
+                                 title="You have new notifications."/>
                 </RadzenButton>
-                <RadzenButton Variant="Variant.Text" Icon="mail" Size="ButtonSize.Small" />
+                <RadzenButton Variant="Variant.Text" Icon="mail" Size="ButtonSize.Small"/>
             </RadzenStack>
         </RadzenRow>
         <RadzenRow>
-            <RadzenButton Icon="logout" Text="Logout" Click="BeginSignOut" Variant="Variant.Text" Size="ButtonSize.Small" />
+            <RadzenButton Icon="logout" Text="Logout" Click="BeginSignOut" Variant="Variant.Text"
+                          Size="ButtonSize.Small"/>
         </RadzenRow>
         <RadzenRow>
-            <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
-                             Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
-                <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard" />
-                <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds" />
-                <RadzenPanelMenuItem Text="Accounts" Icon="account_balance" Path="Account" />
-                <RadzenPanelMenuItem Text="Agencies" Icon="store" Path="Agency" />
-                <RadzenPanelMenuItem Text="Agents" Icon="person" Path="Agents" />
-                <RadzenPanelMenuItem Text="Obligees" Icon="person" Path="Obligee" />
-                <RadzenPanelMenuItem Text="Finances" Icon="request_quote" Path="Finances" />
+            <RadzenPanelMenu
+                DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
+                Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
+                <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard"/>
+                <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds"/>
+                <RadzenPanelMenuItem Text="Accounts" Icon="account_balance" Path="Account"/>
+                <RadzenPanelMenuItem Text="Agencies" Icon="store" Path="Agency"/>
+                <RadzenPanelMenuItem Text="Agents" Icon="person" Path="Agents"/>
+                <RadzenPanelMenuItem Text="Obligees" Icon="person" Path="Obligee"/>
+                <RadzenPanelMenuItem Text="Finances" Icon="request_quote" Path="Finances"/>
                 @if (Environment.MachineName.Equals("localhost", StringComparison.InvariantCultureIgnoreCase) ||
-                                Environment.MachineName.StartsWith("USUBL", StringComparison.InvariantCultureIgnoreCase))
+                     Environment.MachineName.StartsWith("USUBL", StringComparison.InvariantCultureIgnoreCase))
                 {
                     //Show up only on developer machines
-                    <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl" />
+                    <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl"/>
                 }
                 else
                 {
                     //TODO: Remove this when confirmed that it doesn't show up on servers.
-                    <RadzenPanelMenuItem Text="@Environment.MachineName" Icon="build" Path="GraphQl" />
+                    <RadzenPanelMenuItem Text="@Environment.MachineName" Icon="build" Path="GraphQl"/>
                 }
 
             </RadzenPanelMenu>
@@ -119,13 +139,14 @@
         <AuthorizeView Policy="InRoleChangePermissions">
             <RadzenRow>&nbsp;</RadzenRow>
             <RadzenRow>
-                <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
-                                 Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
+                <RadzenPanelMenu
+                    DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
+                    Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
                     <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="Admin">
-                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Users" />
-                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles" />
-                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions" />
-                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings" />
+                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Users"/>
+                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles"/>
+                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions"/>
+                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings"/>
                     </RadzenPanelMenuItem>
                 </RadzenPanelMenu>
             </RadzenRow>
@@ -133,10 +154,11 @@
     </RadzenSidebar>
     <RadzenBody>
         <ErrorBoundary>
-            <RadzenSidebar @bind-Expanded="@notebookExpanded" Responsive="false" Style="position: absolute; width:325px;">
+            <RadzenSidebar @bind-Expanded="@notebookExpanded" Responsive="false"
+                           Style="position: absolute; width:325px;">
                 <RadzenDataList Data="notifications" TItem="Notification">
                     <Template Context="notification">
-                        <NotificationCard NotificationToDisplay="notification" />
+                        <NotificationCard NotificationToDisplay="notification"/>
                     </Template>
                 </RadzenDataList>
             </RadzenSidebar>@*
@@ -154,21 +176,21 @@
 </script>
 
 @code {
-    private bool sidebarExpanded = true;
-    private bool notebookExpanded = false;
-    public Notification[] notifications;
+    private bool _sidebarExpanded = true;
+    public bool notebookExpanded = false;
+    public Notification[]? notifications;
 
     protected override void OnInitialized()
     {
         JamesThemeService.Initialize(NavigationManager);
 
-        notifications = new Notification[]{
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
-        };
-
+        notifications =
+        [
+            new() { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567" },
+            new(title: "Renew Bond", createdDate: DateTime.Today, content: "Please renew bond 2345678"),
+            new() { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789" },
+            new() { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890" }
+        ];
     }
 
     void ChangeTheme(object value)
@@ -178,12 +200,12 @@
         NavigationManager.NavigateTo(url, true);
     }
 
-    private async Task BeginSignOut(MouseEventArgs args)
+    private void BeginSignOut(MouseEventArgs args)
     {
         NavigationManager.NavigateToLogout("authentication/logout");
     }
 
-    private DialogOptions _superSearchDialogOptions = new()
+    private readonly DialogOptions _superSearchDialogOptions = new()
     {
         AutoFocusFirstElement = true,
         CloseDialogOnOverlayClick = true,

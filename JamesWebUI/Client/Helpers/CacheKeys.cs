@@ -8,9 +8,12 @@ public static class CacheKeys
     public static string LegalEntityEmails(Guid id) => $"LegalEntityPhoneEmails-{id}";
     
     public const string AddressTypes = "AddressTypes";
+    public const string Branches = "Branches";
     public const string Countries = "Countries";
+    public const string Divisions = "Divisions";
     public const string EmailTypes = "EmailTypes";
     public const string PhoneTypes = "PhoneTypes";
     public const string States = "States";
+    public const string Underwriters = "Underwriters";
     public const string WatchStatuses = "WatchStatuses";
 }

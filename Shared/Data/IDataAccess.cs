@@ -23,6 +23,8 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Insurer>>> GetAllInsurers();
         public Task<IDataAccessResult<List<State>>> GetAllStates();
         public Task<IDataAccessResult<List<Branch>>> GetAllBranches();
+        public Task<IDataAccessResult<List<DivisionDm>>> GetDivisions();
+        public Task<IDataAccessResult<List<Underwriter>>> GetUnderwriters();
         public Task<IDataAccessResult<Address>> GetAddress(Guid addressId);
         public Task<IDataAccessResult<PhoneNumber>> GetPhoneNumber(Guid phoneId);
         public Task<IDataAccessResult<List<PhoneTypeDm>>> GetPhoneTypes();
@@ -31,7 +33,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId);
         public Task<IDataAccessResult<List<LegalEntityEmail>>> GetAllLegalEntityEmails(Guid legalEntityId);
         public Task<IDataAccessResult<List<EmailTypeDm>>> GetAllEmailTypes();
-        public Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatusDms();
+        public Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatuses();
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
@@ -165,8 +167,13 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
             DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
         
-        public Task<IDataAccessResult<AccountWatch>> SetAccountWatch(Guid id, Guid accountId, DateTime watchDate,
-            Guid watchStatusId, Guid? oldWatchStatusId, string reason, string actionPlan);
+        public Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, Guid accountId, DateTime watchDate,
+            string watchStatus, string reason, string actionPlan);
+        public Task<IDataAccessResult<AccountWatch>> UpdateAccountWatch(Guid id, string watchStatus, string reason,
+            string actionPlan);
+        public Task<ISaveDataResult> SetAccountCommercialInfo(Guid accountId, string fullName, Guid underwriterId,
+            string branchKey, string divisionCode, Guid sicCodeId, Guid hoLead);
+        public Task<ISaveDataResult> DeleteAccountWatch(Guid id );
         
         public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId);
     }

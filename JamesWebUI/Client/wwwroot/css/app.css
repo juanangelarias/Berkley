@@ -120,3 +120,7 @@ a, .btn-link {
 div:has(button.sidebar-expander){
     overflow-x:visible;
 }
+
+.filled-icon {
+    font-variation-settings: 'FILL' 1;
+}

@@ -3,7 +3,6 @@ using James.Data.Imaging;
 using James.Data.Server.Exceptions;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
-using James.Data.Server.GraphQL.Types;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Imaging;
@@ -90,6 +89,14 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllBranches(contextFactory));
         }
+        public async Task<IDataAccessResult<List<DivisionDm>>> GetDivisions()
+        {
+            return await ExecuteGet(async () => await query.GetDivisions(contextFactory));
+        }
+        public async Task<IDataAccessResult<List<Underwriter>>> GetUnderwriters()
+        {
+            return await ExecuteGet(async () => await query.GetUnderwriters(contextFactory));
+        }
         public async Task<IDataAccessResult<List<State>>> GetAllStates()
         {
             return await ExecuteGet(async () => await query.GetAllStates(contextFactory));
@@ -98,7 +105,7 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllInventoryDocTypes(contextFactory));
         }
-        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatusDms()
+        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatuses()
         {
             return await ExecuteGet(async () => await query.GetAllWatchStatuses(contextFactory));
         }
@@ -603,11 +610,47 @@ namespace James.Data.Server
                 received, documentTypeId, comments, eventSender, contextFactory));
         }
         
-        public async Task<IDataAccessResult<AccountWatch>> SetAccountWatch(Guid id, Guid accountId, DateTime watchDate,
-            Guid watchStatusId, Guid? oldWatchStatusId, string reason, string actionPlan)
+        public async Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, Guid accountId, DateTime watchDate,
+            string watchStatus, string reason, string actionPlan)
         {
-            return await ExecuteGet(async () => await accountMutation.SetAccountWatch(id, accountId, watchDate,
-                watchStatusId, oldWatchStatusId, reason, actionPlan, contextFactory));
+            return await ExecuteGet(async () => await accountMutation.CreateAccountWatch(id, accountId, watchDate,
+                watchStatus, reason, actionPlan, contextFactory));
+        }
+        
+        public async Task<IDataAccessResult<AccountWatch>> UpdateAccountWatch(Guid id, string watchStatus,
+            string reason, string actionPlan)
+        {
+            var response = await ExecuteGet(async () => await accountMutation.UpdateAccountWatch(id, watchStatus, reason, actionPlan, contextFactory));
+
+            return response.Data != null
+                ? response
+                : new DataAccessResult<AccountWatch>
+                {
+                    Data = null, 
+                    Errors = ["Account Watch not found"]
+                };
+        }
+
+        public async Task<ISaveDataResult> SetAccountCommercialInfo(Guid accountId, string fullName, Guid underwriterId,
+            string branchKey, string divisionCode, Guid sicCodeId, Guid hoLead)
+        {
+            var response = await ExecuteSave(async () => await accountMutation.SetAccountCommercialInfo(accountId,
+                fullName, underwriterId, branchKey, divisionCode, sicCodeId, hoLead, contextFactory));
+
+            return response;
+        }
+
+        public async Task<ISaveDataResult> DeleteAccountWatch(Guid id)
+        {
+            var response = await ExecuteGet(async () => await accountMutation.DeleteAccountWatch(id, contextFactory));
+
+            return !response.Data
+                ? response
+                : new DataAccessResult<bool>
+                {
+                    Data = false,
+                    Errors = ["Account Watch not found"]
+                };
         }
         public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId)
         {

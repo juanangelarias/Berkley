@@ -13,7 +13,6 @@ public partial class WatchStatusDm
     public DateTime Modified { get; set; }
 
     public string WatchStatus { get; set; } = null!;
-    public string BackgroundColor { get; set; } = "";
 
-    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
+    public virtual ICollection<AccountWatch> AccountWatches { get; set; } = new List<AccountWatch>();
 }

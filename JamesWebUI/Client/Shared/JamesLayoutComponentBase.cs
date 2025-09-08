@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
-using JamesWebUI.Client.Components.GeneralUse;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;

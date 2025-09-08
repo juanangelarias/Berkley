@@ -1,6 +1,4 @@
-﻿@using ClientBusinessLogic
-
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
 <Theme/>
 <RenderModeBackground/>
@@ -12,10 +10,10 @@
                          JustifyContent="JustifyContent.Center"
                          AlignItems="AlignItems.Center"
                          Gap="1rem" class="rz-p-sm-2">
-                <RadzenLabel Text="Commission Period"/>
+                <RadzenLabel Text="@_dateLabel"/>
                 <RadzenDropDown @bind-Value="_selectedPeriod" Data="_periods"
                                 TextProperty="Label" Change="@PeriodChanged"/>
-                <RadzenButton Text="Add New Commission Period" Icon="calendar_month" Click="@AddPeriod"
+                <RadzenButton Text="@($"Add New {_dateLabel}")" Icon="calendar_month" Click="@AddPeriod"
                               Style="margin-left: 2rem" Variant="Variant.Text"/>
             </RadzenStack>
         </RadzenRow>
@@ -23,10 +21,9 @@
             <RadzenColumn Size="8">
                 <RadzenDataGrid TItem="AgencyCommissionRateRange" Data="_ranges" @ref="RangeGrid"
                                 AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 300px"
-                                AllowGrouping="false" Density="Density.Compact"
-                                RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate"
-                                EditMode="DataGridEditMode.Single" IsLoading="@IsLoading">
-                                @*Filter="@ShowLoading">*@
+                                AllowGrouping="false" Density="Density.Compact" GridLines="DataGridGridLines.Vertical"
+                                RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate" EditMode="DataGridEditMode.Single" 
+                                IsLoading="@IsLoading" Filter="@ShowLoading">
                     <HeaderTemplate>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                             <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
@@ -82,20 +79,28 @@
                                               TItem="AgencyCommissionRateRange" Filterable="false"
                                               Sortable="false" TextAlign="TextAlign.Right" Width="100px">
                             <Template Context="rate">
-                                <RadzenButton Variant="Variant.Flat"
-                                              Icon="edit"
-                                              ButtonStyle="ButtonStyle.Light"
-                                              Size="ButtonSize.Small"
-                                              Click="@(_ => EditRate(rate))"
-                                              @onclick:stopPropagation="true"/>
-                                <RadzenButton ButtonStyle="ButtonStyle.Danger"
-                                              Icon="delete"
-                                              Variant="Variant.Flat"
-                                              Shade="Shade.Lighter"
-                                              Size="ButtonSize.Small"
-                                              class="my-1 ms-1"
-                                              Click="@(_ => DeleteRate(rate))"
-                                              @onclick:stopPropagation="true"/>
+                                <RadzenRow>
+                                    <RadzenColumn Size="1"></RadzenColumn>
+                                    <RadzenColumn Size="5">
+                                        <RadzenButton Variant="Variant.Flat"
+                                                      Icon="edit"
+                                                      ButtonStyle="ButtonStyle.Light"
+                                                      Size="ButtonSize.Small"
+                                                      Click="@(_ => EditRate(rate))"
+                                                      @onclick:stopPropagation="true"/>
+                                    </RadzenColumn>
+                                    <RadzenColumn Size="5">
+                                        <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                                      Icon="delete"
+                                                      Variant="Variant.Flat"
+                                                      Shade="Shade.Lighter"
+                                                      Size="ButtonSize.Small"
+                                                      class="my-1 ms-1"
+                                                      Visible="@(CanDelete(rate))"
+                                                      Click="@(_ => DeleteRate(rate))"
+                                                      @onclick:stopPropagation="true"/>
+                                    </RadzenColumn>
+                                </RadzenRow>
                             </Template>
                             <EditTemplate Context="rate">
                                 <RadzenButton Icon="check"
@@ -121,7 +126,7 @@
                             <RadzenText Text="Messages" TextAlign="TextAlign.Start"/>
                             @foreach (var error in _errorMessages)
                             {
-                                <RadzenLabel Text="@error.Key" Style="@(GetMessageStyle(error.Value))"/>
+                                <RadzenLabel Text="@error.Key" Style="color: red"/>
                             }
                         </RadzenStack>
                     </RadzenCard>
@@ -147,7 +152,8 @@
     private Dictionary<string, bool> _errorMessages = [];
     private bool _aGapExist;
     private bool APeridosIsSelected => _selectedPeriod != null;
-    
+    private string _dateLabel = "";
+
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -161,12 +167,18 @@
             .ToList();
 
         if (CommissionType == CommissionType.Current)
+        {
+            _dateLabel = "Effective date";
             _selectedPeriod = _periods.FirstOrDefault(f => f.Start <= DateTime.Today);
+        }
         else
+        {
+            _dateLabel = "Commission Period";
             _selectedPeriod = _periods.Any()
                 ? _periods.FirstOrDefault(f => f.Start <= DateTime.Today &&
                                                f.End >= DateTime.Today) ?? _periods.Last()
                 : null;
+        }
 
         if (_selectedPeriod != null)
             PeriodChanged(_selectedPeriod);
@@ -186,7 +198,7 @@
 
         CheckForGaps();
     }
-    
+
     private async Task OnRowCreate(AgencyCommissionRateRange range)
     {
         await ShowLoading();
@@ -200,7 +212,7 @@
             CheckForGaps();
     }
 
-    private async Task OnRowUpdate(AgencyCommissionRateRange row)
+    private async Task OnRowUpdate()
     {
         await ShowLoading();
 
@@ -242,7 +254,7 @@
 
         await RangeGrid.InsertRow(newRange);
     }
-    
+
     private void ReSortRanges()
     {
         var id = 1;
@@ -260,7 +272,7 @@
     {
         await ShowLoading();
 
-        var response =await OnDelete.Invoke(rate.RecordId);
+        var response = await OnDelete.Invoke(rate.RecordId);
 
         if (response.Count > 0)
         {
@@ -268,7 +280,7 @@
             {
                 _errorMessages.Add(text, true);
             }
-             
+
             return;
         }
 
@@ -316,6 +328,7 @@
             {
                 _errorMessages.Add(error.Key, error.Value);
             }
+
             return;
         }
 
@@ -334,18 +347,19 @@
         });
 
         _errorMessages = [];
-        
+
         if (response.Count > 0)
         {
             foreach (var text in response)
             {
                 _errorMessages.Add(text, true);
             }
+
             return;
         }
 
         await RangeGrid.UpdateRow(range);
-        
+
         ReSortRanges();
         CheckForGaps();
     }
@@ -373,8 +387,10 @@
         _aGapExist = _errorMessages.Any();
     }
 
-    private string GetMessageStyle(bool isError)
+    private bool CanDelete(AgencyCommissionRateRange rate)
     {
-        return isError ? "color: red" : "color: blue";
+        var max = _ranges.Max(m => m.To);
+
+        return rate.To == max;
     }
 }

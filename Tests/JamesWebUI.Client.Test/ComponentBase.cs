@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using James.Shared.Model;
-using JamesWebUI.Client.Components;
+﻿using James.Shared.Model;
 using JamesWebUI.Client.Components.AgencyComponents;
-using Microsoft.AspNetCore.Components;
-using Radzen;
 using Radzen.Blazor;
 
 namespace JamesWebUI.Client.Test
@@ -26,6 +18,7 @@ namespace JamesWebUI.Client.Test
                 NotificationService = null,
                 DataCache = null
             };
+            
             var AgencyId = 131;
             var url = testComponent.ExportDataGridUrl(testDataGrid,
                 $"/export/AgencyContacts/{AgencyId}", format);

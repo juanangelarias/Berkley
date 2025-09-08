@@ -7,7 +7,7 @@
 <AuthorizeView>
     <Authorized>
         <RadzenDataGrid @ref="StatusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
-                        Style="border-radius: 20px;"
+                        Style="border-radius: 20px;" GridLines="DataGridGridLines.Vertical"
                         RowCreate="@OnStatusCreate">
             <HeaderTemplate>
                 <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertStatusRow" />

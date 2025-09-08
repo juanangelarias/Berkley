@@ -8,9 +8,10 @@
 <RadzenDataGrid TItem="Account" @ref="@_agencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true" AllowSorting="true"
                 Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true" Density="Density.Compact"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                IsLoading="@IsLoading">@* Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">*@
+                GridLines="DataGridGridLines.Vertical" IsLoading="@IsLoading">@* Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">*@
     <Template Context="account">
-        <RadzenDataGrid Data="account.Bonds" TItem="Bond" Style="height: 400px; border-radius: 10px;">
+        <RadzenDataGrid Data="account.Bonds" TItem="Bond" Style="height: 400px; border-radius: 10px;"
+                        GridLines="DataGridGridLines.Vertical">
             <Columns>
                 <RadzenDataGridColumn TItem="Bond" Title="Bond #" Property="BondNumber" />
                 <RadzenDataGridColumn TItem="Bond" Title="Type" Property="BondType.BondType" />

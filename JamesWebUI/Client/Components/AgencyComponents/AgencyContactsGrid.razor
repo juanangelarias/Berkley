@@ -7,7 +7,7 @@
 <RenderModeBackground />
 
 <RadzenDataGrid TItem="Agent" Data="@Agents" @ref="@AgentsGrid" Density="Density.Compact"
-                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" GridLines="DataGridGridLines.Vertical"
                 SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
                 AllowPaging="true" PageSize="10" AllowSorting="true">
     <HeaderTemplate>
@@ -17,7 +17,7 @@
     </HeaderTemplate>
     <Template Context="agent">
         <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense"
-                        Style="height:300px;" AllowVirtualization="true"
+                        Style="height:300px;" AllowVirtualization="true" GridLines="DataGridGridLines.Vertical"
                         AllowFiltering="true">
             <HeaderTemplate>
                 <RadzenPanel Style="width: 100%">

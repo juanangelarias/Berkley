@@ -6,7 +6,7 @@
 
 <RadzenDataGrid TItem="Bond" @ref="@_agencyBondGrid" Data="@_agencyBonds"
                 AllowGrouping="true" AllowSorting="true" AllowColumnResize="true" AllowColumnPicking="true"
-                Density="Density.Compact" Style="height: 400px; border-radius: 10px;"
+                Density="Density.Compact" Style="height: 400px; border-radius: 10px;" GridLines="DataGridGridLines.Vertical"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced"
                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                 IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"

@@ -5,6 +5,7 @@ using James.Shared.Data;
 using James.Shared.Model;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using Radzen;
 using Radzen.Blazor;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;
@@ -73,7 +74,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     #region Fields & Properties
 
     protected bool IsLoading;
-    
+
     #endregion
 
     protected virtual async Task ShowLoading()
@@ -84,7 +85,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
 
         IsLoading = false;
     }
-    
+
     protected virtual async Task ShowLoading(Task toExecute)
     {
         IsLoading = true;
@@ -93,7 +94,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
 
         IsLoading = false;
     }
-    
+
     #region Common Client Actions
 
     /// <summary>

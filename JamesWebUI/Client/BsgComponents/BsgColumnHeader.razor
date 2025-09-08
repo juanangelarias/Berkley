@@ -1,0 +1,12 @@
+﻿<RadzenColumn Size="12">
+    <RadzenStack Orientation="Orientation.Vertical" JustifyContent="@JustifyContent" AlignItems="AlignItems.End">
+        <RadzenRow JustifyContent="@JustifyContent" AlignItems="AlignItems.End">
+            <RadzenText Text="@Title"/>
+        </RadzenRow>
+    </RadzenStack>
+</RadzenColumn>
+
+@code {
+    [Parameter, EditorRequired] public required string Title { get; set; }
+    [Parameter, EditorRequired] public required JustifyContent JustifyContent { get; set; }
+}

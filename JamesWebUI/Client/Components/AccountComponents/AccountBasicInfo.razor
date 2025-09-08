@@ -40,7 +40,7 @@
                 <RadzenColumn Size="6">
                     <RadzenButton Text="Reason/Action Plan" ButtonStyle="@(GetButtonStyle())"
                                   Click="@ShowReasonAndActionPlan" Style="width: 100%"
-                                  Disabled="@(!_isEditMode)"/>
+                                  Disabled="@(_isEditMode)"/>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">

@@ -8,7 +8,7 @@ namespace James.Shared.Data
         #region Data Caching functionality from BaseDataAccess
 
         public IBrowserStorageCache BrowserStorageCache { get; }
-        public Task GetCacheOrLoadDataAsync(LoadItem loadItem, ILoggingService logger);
+        //public Task GetCacheOrLoadDataAsync(LoadItem loadItem, ILoggingService logger);
         public Task GetCacheOrLoadDataAsync(LoadItem loadItem);
 
         /// <summary>

@@ -85,7 +85,7 @@
     private IDataAccessResult<List<AgencyStatusLog>> _statusLogs = null!;
 
     private LoadItem AgencyStatusLogLoad =>
-        AddEventNotify(new LoadItem
+        AddEventNotify(new LoadItem<List<AgencyStatusLog>>
             {
                 Key = $"AgencyStatusLog{AgencyNumber}",
                 AsyncLoadTask = async () => _statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
@@ -103,7 +103,7 @@
     
     private IDataAccessResult<List<AgencyStatusDm>> _statuses = null!;
 
-    private LoadItem StatusesLoad => AddEventNotify(new LoadItem
+    private LoadItem StatusesLoad => AddEventNotify(new LoadItem<List<AgencyStatusDm>>
     {
         Key = "AgencyStatuses",
         AsyncLoadTask = async () => _statuses = await DataAccess.GetAgencyStatuses(),
@@ -134,12 +134,12 @@
             AgencyStatusLogLoad
         ];
 
-        await DataCache.ParallelGetCacheOrDataAsync(loadItems);
+        await DataAccess.ParallelGetCacheOrDataAsync(loadItems);
     }
 
     private async Task LoadAgencyStatusLog()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AgencyStatusLogLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyStatusLogLoad);
     }
 
     private void Reset()

@@ -163,7 +163,7 @@
 
     private IDataAccessResult<List<PowerOfAttorney>> _poas = null!;
 
-    private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem
+    private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem<List<PowerOfAttorney>>
     {
         Key = AgencyPOAKey,
         AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id),
@@ -193,7 +193,7 @@
 
     private IDataAccessResult<List<Insurer>> _insurers = null!;
 
-    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = "Insurers",
         AsyncLoadTask = async () => _insurers = await DataAccess.GetAllInsurers(),
@@ -211,7 +211,7 @@
 
     private IDataAccessResult<List<PowerOfAttorneyStatusDm>> _statuses = null!;
 
-    private LoadItem StatusesLoad => AddEventNotify(new LoadItem
+    private LoadItem StatusesLoad => AddEventNotify(new LoadItem<List<PowerOfAttorneyStatusDm>>
     {
         Key = "Statuses",
         AsyncLoadTask = async () => _statuses = await DataAccess.GetAllPoaStatuses(),
@@ -243,12 +243,12 @@
         if (Agency.Id == Guid.Empty)
             return;
 
-        await DataCache.ParallelGetCacheOrDataAsync(AgencyPoasLoad, InsurersLoad, StatusesLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(AgencyPoasLoad, InsurersLoad, StatusesLoad);
     }
 
     private async Task LoadPOAs()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AgencyPoasLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyPoasLoad);
     }
 
     private async Task SavePoaRow(PowerOfAttorney powerOfAttorney)
@@ -327,7 +327,7 @@
             LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
         }
 
-        DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+        DataAccess.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
     }
 
     private async Task OnPoaCreate(PowerOfAttorney powerOfAttorney)
@@ -349,7 +349,7 @@
         {
             powerOfAttorney.InsurerId = powerOfAttorney.Insurer.Id;
             PowerOfAttorneys.Add(powerOfAttorney);
-            DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+            DataAccess.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
         }
         else
             NotifySaveError(result.Errors, "Agency POA");
@@ -388,7 +388,7 @@
             if (toDelete != null)
             {
                 PowerOfAttorneys.Remove(toDelete);
-                DataCache.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+                DataAccess.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
             }
 
             NotifySuccessfulSave("agency POA deleted");

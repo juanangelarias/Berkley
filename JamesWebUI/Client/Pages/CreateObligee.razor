@@ -178,7 +178,7 @@
 
     private IDataAccessResult<List<State>> _statesResult = null!;
 
-    private LoadItem StatesLoad => AddEventNotify(new LoadItem
+    private LoadItem StatesLoad => AddEventNotify(new LoadItem<List<State>>
     {
         Key = "States",
         AsyncLoadTask = async () => _statesResult = await DataAccess.GetAllStates(),
@@ -203,7 +203,7 @@
     
     private async Task LoadStates()
     {
-        await DataCache.GetCacheOrLoadDataAsync(StatesLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(StatesLoad);
 
         AllStates = _statesResult.Data!;
     }

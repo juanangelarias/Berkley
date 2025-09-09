@@ -55,7 +55,7 @@
     private List<Insurer> _insurers = [];
     
     private IDataAccessResult<Agent> _agent = null!;
-    private LoadItem AgentLoad => AddEventNotify(new LoadItem
+    private LoadItem AgentLoad => AddEventNotify(new LoadItem<Agent>
         {
             Key = $"Agent{AgentId}",
             AsyncLoadTask = async () => _agent = await DataAccess.GetAgent(Guid.Parse(AgentId)),
@@ -72,7 +72,7 @@
         }, $"agent");
 
     private IDataAccessResult<List<Insurer>> _insurersResult = null!;
-    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = "Insurers",
         AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
@@ -103,7 +103,7 @@
             InsurersLoad
         ];
 
-        await DataCache.ParallelGetCacheOrDataAsync(items);
+        await DataAccess.ParallelGetCacheOrDataAsync(items);
     }
 
     async Task EditAll()

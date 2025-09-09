@@ -1,9 +1,7 @@
 ﻿@using System.Diagnostics
-@using System.Runtime.InteropServices.Marshalling
 @using JamesWebUI.Client.Pages.Controls
-@inject Blazored.LocalStorage.ILocalStorageService LocalStorage;
+@inject ILocalStorageService LocalStorage;
 @inject IDataAccess DataAccess;
-@inject LocalStorageKeyListingService LocalStorageKeyListingService;
 @inherits JamesLayoutComponentBase
 @implements IDisposable
 
@@ -188,7 +186,7 @@
                 if (!forceNewSearch)
                     try
                     {
-                        var allSrchKeys = (await LocalStorageKeyListingService.GetAllLocalStorageKeys("Srch_"))
+                        var allSrchKeys = (await DataAccess.BrowserStorageCache.GetAllLocalStorageKeys("Srch_"))
                             .Where(kn => kn[5..].Contains(newSearchTerm))
                             .OrderByDescending(k => k.Length);
                         foreach (var srchKey in allSrchKeys)

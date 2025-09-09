@@ -69,7 +69,7 @@
     
     private IDataAccessResult<List<Bond>> _bondResult = null!;
 
-    private LoadItem BondLoad => AddEventNotify(new LoadItem
+    private LoadItem BondLoad => AddEventNotify(new LoadItem<List<Bond>>
         {
             Key = $"ObligeeBonds{ObligeeId}",
             AsyncLoadTask = BondTypesToDisplay == ObligeeBondTypes.Primary
@@ -93,7 +93,7 @@
 
     private async Task LoadObligeeBonds()
     {
-        await DataCache.GetCacheOrLoadDataAsync(BondLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(BondLoad);
     }
 
     protected async Task ShowLoading()

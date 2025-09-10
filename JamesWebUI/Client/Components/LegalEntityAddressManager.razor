@@ -59,13 +59,13 @@
 
     private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
     private LoadItem AddressesLoadItem => AddEventNotify(
-        new LoadItem
+        new LoadItem<List<Address>>
         {
             Key = $"Adds{LegalEntityId}",
             AsyncLoadTask = async () => _addressesLoadResult = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId),
             CacheLoadTask = cache => _addressesLoadResult = new DataAccessResult<List<Address>> { Data = (List<Address>)cache! },
             ResultVariable = () => _addressesLoadResult,
-            AfterLoad = async void () =>
+            AfterLoad = void () =>
             {
                 Debug.Assert(_addressesLoadResult.Data != null);
                 AllAddresses = _addressesLoadResult.Data;
@@ -76,7 +76,7 @@
                 //NOTE: Subscriptions for the address editors are added via the AddressDisplay AddSubscription function
                 li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async void (_) =>
                 {
-                    DataCache.Clear("addresses");
+                    DataAccess.Clear("addresses");
                     await LoadAddresses();
                 });
             }
@@ -84,7 +84,7 @@
 
     private async Task LoadAddresses()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AddressesLoadItem);
+        await DataAccess.GetCacheOrLoadDataAsync(AddressesLoadItem);
     }
     
     private async Task AddressCreated(Guid addressToSelect)

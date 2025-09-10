@@ -133,7 +133,7 @@
 
     private IDataAccessResult<Address> _addressResult = null!;
 
-    private LoadItem AddressLoad => AddEventNotify(new LoadItem
+    private LoadItem AddressLoad => AddEventNotify(new LoadItem<Address>
     {
         Key = $"Address{AddressId}",
         AsyncLoadTask = async () => _addressResult = await DataAccess.GetAddress(AddressId),
@@ -159,7 +159,7 @@
         if (Guid.Empty == AddressId)
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(AddressLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AddressLoad);
     }
 
     /// <summary>

@@ -73,7 +73,7 @@
     
     private IDataAccessResult<List<Account>> _accountResult = null!;
 
-    private LoadItem AccountLoad => AddEventNotify(new LoadItem
+    private LoadItem AccountLoad => AddEventNotify(new LoadItem<List<Account>>
         {
             Key = $"Accounts{AgencyNumber}",
             AsyncLoadTask = async () => _accountResult = await DataAccess.GetAgencyAccounts(AgencyNumber),
@@ -108,6 +108,6 @@
         if (string.IsNullOrEmpty(AgencyNumber))
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(AccountLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AccountLoad);
     }
 }

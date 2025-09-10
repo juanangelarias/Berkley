@@ -15,8 +15,7 @@ namespace JamesWebUI.Client.Test
                 JamesThemeService = null,
                 LoggingService = null,
                 DialogService = null,
-                NotificationService = null,
-                DataCache = null
+                NotificationService = null
             };
             
             var AgencyId = 131;
@@ -36,8 +35,7 @@ namespace JamesWebUI.Client.Test
                 JamesThemeService = null,
                 LoggingService = null,
                 DialogService = null,
-                NotificationService = null,
-                DataCache = null
+                NotificationService = null
             };
             var AgencyId = 131;
             var substitutions = new ExportColumnSubstitutions();
@@ -61,8 +59,7 @@ namespace JamesWebUI.Client.Test
                 JamesThemeService = null,
                 LoggingService = null,
                 DialogService = null,
-                NotificationService = null,
-                DataCache = null
+                NotificationService = null
             };
             var AgencyId = 131;
             var substitutions = new ExportColumnSubstitutions();
@@ -86,8 +83,7 @@ namespace JamesWebUI.Client.Test
                 JamesThemeService = null,
                 LoggingService = null,
                 DialogService = null,
-                NotificationService = null,
-                DataCache = null
+                NotificationService = null
             };
             var AgencyId = 131;
             var substitutions = new ExportColumnSubstitutions();

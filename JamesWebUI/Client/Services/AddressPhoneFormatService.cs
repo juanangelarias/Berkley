@@ -10,8 +10,7 @@ namespace JamesWebUI.Client.Services
 {
     public partial class AddressPhoneFormatService(
         IDataAccess dataAccess,
-        ILocalStorageService localStorageService,
-        IDataCache dataCache)
+        ILocalStorageService localStorageService)
     {
 
         private IDataAccess DataAccess { get; init; } = dataAccess;
@@ -25,7 +24,7 @@ namespace JamesWebUI.Client.Services
         {
             {
                 if (_countries == null!)
-                    await (_countryLoadTask ??= dataCache.GetCacheOrLoadDataAsync(CountriesLoadItem()));
+                    await (_countryLoadTask ??= DataAccess.GetCacheOrLoadDataAsync(CountriesLoadItem()));
                 return _countries!;
             }
         }
@@ -39,14 +38,13 @@ namespace JamesWebUI.Client.Services
                 CacheDuration = TimeSpan.FromDays(1),
                 AfterLoad = () =>
                 {
-                    Debug.Assert(_loadResult.Data != null, "_loadResult.Data != null");
+                    Debug.Assert(_loadResult.Data != null);
                     //Add after load code here
                     _countries = _loadResult.Data;
                     //Save to local storage asynchronously and don't wait for the save to finish
                     Task.Factory.StartNew(data =>
                         LocalStorageService.SetItemAsyncWithExpiry("Countries", TimeSpan.FromDays(1), data), _countries);
-                },
-                LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<CountryDm>>("Countries")
+                }
             };
 
         public async ValueTask<string> FormatPhoneNumberForCountryAsync(PhoneNumber phoneNumber)
@@ -90,6 +88,7 @@ namespace JamesWebUI.Client.Services
         /// <returns>Properly formatted postal code</returns>
         public async ValueTask<string> FormatPostalCodeForCountryAsync(Address address)
         {
+            // ReSharper disable once ConditionalAccessQualifierIsNonNullableAccordingToAPIContract
             if (null == address?.PostalCode) return string.Empty;
             var countryList = await GetCountryList();
             var country = countryList.FirstOrDefault(c => c.Code == address.StateCodeNavigation?.CountryCode)

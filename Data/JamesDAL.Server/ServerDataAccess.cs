@@ -3,7 +3,6 @@ using James.Data.Imaging;
 using James.Data.Server.Exceptions;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
-using James.Data.Server.GraphQL.Types;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Imaging;
@@ -12,7 +11,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server
 {
-    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, GeneralMutation generalMutation, ServerImagingAccess imagingAccess, ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService, IHttpContextAccessor contextAccessor, IUserShared userShared) : IDataAccess
+    public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, 
+        AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, 
+        GeneralMutation generalMutation, ServerImagingAccess imagingAccess, 
+        ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService, 
+        IHttpContextAccessor contextAccessor, IUserShared userShared, IBrowserStorageCache browserStorageCache) 
+        : BaseDataAccess(browserStorageCache, loggingService), IDataAccess
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     {
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
@@ -259,7 +263,7 @@ namespace James.Data.Server
             try
             {
                 var result = await agencyMutation.SetAgencyGeneralInfo(agencyId, agencyName, parentId, taxId, npn, w9, need1099, nasbp, branchKey, contextFactory);
-                return new SaveDataResult();
+                return new SaveDataResult{Errors = result ? [] : ["SetAgencyGeneralInfo failed."] };
             }
             catch (AggregateException ae)
             {
@@ -313,7 +317,7 @@ namespace James.Data.Server
             try
             {
                 var result = await agencyMutation.CreateAgencyStatusLog(id, agencyNumber, effective, oldStatus, newStatus, changedBy, comments, eventSender, contextFactory);
-                return new SaveDataResult();
+                return new SaveDataResult { Errors = result ? [] : ["CreateAgencyStatusLog failed."] };
             }
             catch (AggregateException ae)
             {
@@ -329,7 +333,7 @@ namespace James.Data.Server
             try
             {
                 var result = await agencyMutation.CreateAgencyPOA(poaId, insurerId, agencyId, limit, referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory);
-                return new SaveDataResult();
+                return new SaveDataResult{Errors = result ? [] : ["CreateAgencyPOA failed."] };
             }
             catch (AggregateException ae)
             {
@@ -410,15 +414,15 @@ namespace James.Data.Server
             {
                 var result = await agencyMutation.CreateAgencyInventory(inventoryId, agencyId, dateSent, quantity, documentType, addressee,
                     address1, address2, address3, city, stateCode, postalCode, approverId, eventSender, contextFactory);
-                return new DataAccessResult<bool>(); /*{  DataObject = result };*/
+                return new SaveDataResult { Errors = result ? [] : ["CreateAgencyInventory failed."] };
             }
             catch (AggregateException ae)
             {
-                return new DataAccessResult<bool> { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+                return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
             }
             catch (Exception ex)
             {
-                return new DataAccessResult<bool> { Errors = [ex.Message] };
+                return new SaveDataResult { Errors = [ex.Message] };
             }
         }
 
@@ -561,7 +565,7 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> AddSecurityRole(SecurityRole role)
         {
-            return await ExecuteSave(async()=> await generalMutation.AddSecurityRole(role.Role, role.Description, role.Ord, contextFactory, loggingService));
+            return await ExecuteSave(async()=> await generalMutation.AddSecurityRole(role.Role, role.Description!, role.Ord, contextFactory, loggingService));
         }
 
         public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
@@ -581,7 +585,6 @@ namespace James.Data.Server
                 received, documentTypeId, comments, eventSender, contextFactory));
         }
 
-        //UNDONE:  Refactor to DRY out the code
         private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<T>> dataFunc)
         {
             try
@@ -684,7 +687,7 @@ namespace James.Data.Server
                     var bidBondType = (await GetBondRequestNumberType(id)).Data;
                     //TODO: Handle errors above
                     criteria.WhereClause =
-                        $"({criteria.WhereClause} OR {(string.Equals(bidBondType?.Type, "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ImagingAccessBase.ContBidId : ImagingAccessBase.CommBidId)} = '{bidBondType.BondRequestNumber}')";
+                        $"({criteria.WhereClause} OR {(string.Equals(bidBondType?.Type, "CONTRACT", StringComparison.InvariantCultureIgnoreCase) ? ImagingAccessBase.ContBidId : ImagingAccessBase.CommBidId)} = '{bidBondType?.BondRequestNumber}')";
                     break;
                 case ImagingDocumentCategory.Agency: //3
                     criteria.WhereClause = $"{ImagingAccessBase.AgencyNo} = '{id}'";

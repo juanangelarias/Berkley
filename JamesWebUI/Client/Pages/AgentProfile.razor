@@ -148,7 +148,7 @@
     private IDataAccessResult<Agent> _agentResult = null!;
     private IDataAccessResult<List<Insurer>> _insurerResult = null!;
 
-    private LoadItem AgentLoad => AddEventNotify(new LoadItem
+    private LoadItem AgentLoad => AddEventNotify(new LoadItem<Agent>
         {
             Key = $"Agent{AgentId}",
             AsyncLoadTask = async () => _agentResult = await DataAccess.GetAgent(AgentId),
@@ -157,7 +157,7 @@
             AfterLoad = () => { AgentToDisplay = _agentResult.Data!; }
         }, "agent");
 
-    private LoadItem InsurerLoad => AddEventNotify(new LoadItem
+    private LoadItem InsurerLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = "Insurers",
         AsyncLoadTask = async () => _insurerResult = await DataAccess.GetAllInsurers(),
@@ -187,14 +187,14 @@
         
         BusyDialog();
 
-        await DataCache.GetCacheOrLoadDataAsync(AgentLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgentLoad);
 
         DialogService.Close();
     }
     
     private async Task LoadSelectInsurerDropDown()
     {
-        await DataCache.GetCacheOrLoadDataAsync(InsurerLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(InsurerLoad);
     }
 
     private void BusyDialog()

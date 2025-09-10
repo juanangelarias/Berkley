@@ -55,7 +55,7 @@
     
     private IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>> _PoADocumentsResult = null!;
 
-    private LoadItem PoADocumentsLoad => AddEventNotify(new LoadItem
+    private LoadItem PoADocumentsLoad => AddEventNotify(new LoadItem<List<PowerOfAttorneyDocumentNameDm>>
     {
         Key = "POADocumentName",
         AsyncLoadTask = async () => _PoADocumentsResult = await DataAccess.GetPoaDocumentNames(),
@@ -82,7 +82,7 @@
     {
         if (null == DocTypes || DocTypes.Count==0)
         {
-            await DataCache.GetCacheOrLoadDataAsync(PoADocumentsLoad);
+            await DataAccess.GetCacheOrLoadDataAsync(PoADocumentsLoad);
         }
     }
     

@@ -18,7 +18,6 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     [Inject] public required ILoggingService LoggingService { get; set; }
     [Inject] public required DialogService DialogService { get; set; }
     [Inject] public required NotificationService NotificationService { get; set; }
-    [Inject] public required IDataCache DataCache { get; set; }
 
     #region Authentication Code
 
@@ -139,19 +138,19 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     /// Generates non-standard notification that a save event failed.
     /// </summary>
     /// <param name="errors">Errors that were returned.</param>
-    /// <param name="itemSaved">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
+    /// <param name="notificationText">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
     /// <param name="logError">If true will log the error using the LoggingService</param>
     /// <remarks>Use only when the standard message is not sufficient.  Text should be brief and details should be logged in the errors.</remarks>
-    protected void NotifySaveIssue(string[] errors, string notficationText, bool logError = true)
+    protected void NotifySaveIssue(string[] errors, string notificationText, bool logError = true)
     {
         if (logError)
-            LoggingService.LogError(notficationText, errors);
+            LoggingService.LogError(notificationText, errors);
 
         NotificationService.Notify(new NotificationMessage
         {
             Severity = NotificationSeverity.Error,
-            Summary = notficationText,
-            Duration = 300000 // Treat as fatal 5 minutes
+            Summary = notificationText,
+            Duration = 300000   // Treat as fatal 5 minutes
         });
     }
 

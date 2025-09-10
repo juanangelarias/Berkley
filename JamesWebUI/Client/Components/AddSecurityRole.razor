@@ -51,8 +51,7 @@
                 //Save to local storage asynchronously and don't wait for the save to finish
                 Task.Factory.StartNew(data =>
                     LocalStorageService.SetItemAsyncWithExpiry("SecRoles", TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
-            },
-            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRole>>("SecRoles")
+            }
         }, "security roles");
 
     private readonly TooltipOptions _tooltipOptions = new()

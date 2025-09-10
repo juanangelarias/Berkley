@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebUI", "WebUI", "{A6DECE62
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E263081F-5060-47AA-A8E0-CCB9ADC36FBD}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		Auth0Setup.txt = Auth0Setup.txt
 		DeployDev.cmd = DeployDev.cmd
 		DeployInt.cmd = DeployInt.cmd

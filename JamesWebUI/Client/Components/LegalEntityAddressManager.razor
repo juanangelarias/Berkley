@@ -12,13 +12,8 @@
                 foreach (var a in AllAddresses)
                 {
                     <RadzenTabsItem Text="@(a.LegalEntityAddress!.Type)">
-                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" AddressId="a.Id"
-                                        StateChanged="@(() => LoadAddresses())"
-                                        AddSubscription="@(() => DataAccess.AddressModified(a.Id, async void (sra) =>
-                                                         {
-                                                             if (_addressDisplays[a.LegalEntityAddress.Type].EditorIdentifier == sra.Identifier) return;
-                                                             await _addressDisplays[a.LegalEntityAddress.Type].SubscriptionUpdate(sra.Result);
-                                                         }))"/>
+                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" Address="a"
+                                        AddressEdited="UpdateAddresses" AddressDeleted="DeleteAddress"/>
                     </RadzenTabsItem>
                     //NOTE: The redundant specification of the AddressCreate below is needed to prevent the AddressCreate from being selected initially
                     if (a == AllAddresses.Last())
@@ -43,8 +38,7 @@
 
 @code {
 
-    [Parameter]
-    public Guid LegalEntityId { get; set; }
+    [Parameter, EditorRequired] public required Guid LegalEntityId { get; set; }
 
     private List<Address> AllAddresses { get; set; } = [];
     private readonly Dictionary<string, AddressDisplay> _addressDisplays = [];
@@ -59,13 +53,13 @@
 
     private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
     private LoadItem AddressesLoadItem => AddEventNotify(
-        new LoadItem
+        new LoadItem<List<Address>>
         {
             Key = $"Adds{LegalEntityId}",
             AsyncLoadTask = async () => _addressesLoadResult = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId),
             CacheLoadTask = cache => _addressesLoadResult = new DataAccessResult<List<Address>> { Data = (List<Address>)cache! },
             ResultVariable = () => _addressesLoadResult,
-            AfterLoad = async void () =>
+            AfterLoad = void () =>
             {
                 Debug.Assert(_addressesLoadResult.Data != null);
                 AllAddresses = _addressesLoadResult.Data;
@@ -76,15 +70,43 @@
                 //NOTE: Subscriptions for the address editors are added via the AddressDisplay AddSubscription function
                 li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async void (_) =>
                 {
-                    DataCache.Clear("addresses");
+                    DataAccess.Clear("addresses");
                     await LoadAddresses();
                 });
             }
         }, "addresses");
 
+    private void UpdateAddresses(Address address)
+    {
+        var actual = AllAddresses.FirstOrDefault(f => f.Id == address.Id);
+        
+        if(actual == null)
+        {
+            AllAddresses.Add(address);
+        }
+        else
+        {
+            actual.Address1 = address.Address1;
+            actual.Address2 = address.Address2;
+            actual.Address3 = address.Address3;
+            actual.City = address.City;
+            actual.StateCode = address.StateCode;
+            actual.PostalCode = address.PostalCode;
+        }
+    }
+
+    private void DeleteAddress(Guid id)
+    {
+        var toDelete = AllAddresses
+            .FirstOrDefault(f => f.Id == id);
+
+        if (toDelete != null)
+            AllAddresses.Remove(toDelete);
+    }
+
     private async Task LoadAddresses()
     {
-        await DataCache.GetCacheOrLoadDataAsync(AddressesLoadItem);
+        await DataAccess.GetCacheOrLoadDataAsync(AddressesLoadItem);
     }
     
     private async Task AddressCreated(Guid addressToSelect)

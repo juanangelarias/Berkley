@@ -100,7 +100,7 @@
     private IDataAccessResult<List<Agent>> _agentsResult = null!;
     private IDataAccessResult<List<Insurer>> _insurersResult = null!;
 
-    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem
+    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<Agent>>
     {
         Key = $"AgencyContacts{AgencyId}",
         AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(AgencyId),
@@ -117,7 +117,7 @@
     }, "agency contacts");
 
 
-    private LoadItem InsurersLoad => AddEventNotify(new LoadItem
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = "Insurers",
         AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
@@ -151,7 +151,7 @@
         if(AgencyId == Guid.Empty)
             return;
 
-        await DataCache.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
     }
 
     private void ExportGrid(ExportFormat format)

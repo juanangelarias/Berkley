@@ -105,8 +105,7 @@
                 //Save to local storage asynchronously and don't wait for the save to finish
                 Task.Factory.StartNew(data =>
                     LocalStorageService.SetItemAsyncWithExpiry(RolesLoadKey, TimeSpan.FromMinutes(5), data), _loadSecurityRolesResult.Data);
-            },
-            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRole>>(RolesLoadKey)
+            }
         }, "security roles");
 
     List<SecurityRoleMember> _securityRoleMembers = null!;
@@ -131,14 +130,13 @@
                 //Save to local storage asynchronously and don't wait for the save to finish
                 Task.Factory.StartNew(data =>
                     LocalStorageService.SetItemAsyncWithExpiry($"RlMbr{role}", TimeSpan.FromMinutes(2), data), _loadMembersResult.Data);
-            },
-            LocalStorageCacheLoadTask = async () => await LocalStorageService.GetItemAsyncWithExpiry<List<SecurityRoleMember>>(MembersLoadKey(role))
+            }
         }, "role members");
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await DataCache.GetCacheOrLoadDataAsync(RolesLoadItem);
+        await DataAccess.GetCacheOrLoadDataAsync(RolesLoadItem);
     }
 
     private async Task SelectedRoleChanged(IList<SecurityRole> selectedRoles)
@@ -149,7 +147,7 @@
         _securityRoleMembers?.Clear();
         if (null == _currentSecurityRole)
             return;
-        await DataCache.GetCacheOrLoadDataAsync(MembersLoadItem(_currentSecurityRole.Role));
+        await DataAccess.GetCacheOrLoadDataAsync(MembersLoadItem(_currentSecurityRole.Role));
     }
 
     private async Task AddMembersToRole()
@@ -165,18 +163,18 @@
         var result = await DialogService.OpenAsync<AddSecurityRole>("Add security role");
         if (true == result)
         {
-            DataCache.Clear(RolesLoadKey);
+            DataAccess.Clear(RolesLoadKey);
             await LocalStorageService.RemoveItemAsync(RolesLoadKey);
-            await DataCache.GetCacheOrLoadDataAsync(RolesLoadItem);
+            await DataAccess.GetCacheOrLoadDataAsync(RolesLoadItem);
         }
     }
 
     private async Task ReloadRoleMembers()
     {
         if (null == _currentSecurityRole) return;
-        DataCache.Clear(MembersLoadKey(_currentSecurityRole.Role));
+        DataAccess.Clear(MembersLoadKey(_currentSecurityRole.Role));
         await LocalStorageService.RemoveItemAsync(MembersLoadKey(_currentSecurityRole.Role));
-        await DataCache.GetCacheOrLoadDataAsync(MembersLoadItem(_currentSecurityRole.Role));
+        await DataAccess.GetCacheOrLoadDataAsync(MembersLoadItem(_currentSecurityRole.Role));
     }
 
     private async Task RemovePrincipal(SecurityRoleMember principal)

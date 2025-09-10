@@ -82,7 +82,7 @@
     
     private IDataAccessResult<List<Agency>> _relatedPartiesResult = null!;
 
-    private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem
+    private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem<List<Agency>>
         {
             Key = $"RelatedParties{AgencyId}",
             AsyncLoadTask = async () => _relatedPartiesResult = await DataAccess.GetAgencyRelatedParties(AgencyId),
@@ -113,7 +113,7 @@
         
         await ShowLoading();
 
-        await DataCache.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
     }
     
     protected async Task ShowLoading()

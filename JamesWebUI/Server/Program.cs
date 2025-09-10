@@ -124,7 +124,7 @@ try
                     .AddScoped<ImagingKong0Helper>()
                     .AddScoped<ServerImagingAccess>()
                     .AddScoped<IDataAccess, ServerDataAccess>()
-                    .AddSingleton<IDataCache, DataCache>()
+                    .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
                     .AddScoped<IUserSettingService, UserSettingService>()
                     .AddScoped<IAuthorizationHandler, RoleRequirementHandler>()
                     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
@@ -148,7 +148,6 @@ try
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents()
          .AddAuthenticationStateSerialization();
-    builder.Services.AddScoped<LocalStorageKeyListingService>();
     builder.Services.AddScoped<AddressPhoneFormatService>();
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {

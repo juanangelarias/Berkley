@@ -19,7 +19,7 @@ namespace JamesWebUI.Client.Shared
             IDataAccessResult<List<VImagingCategoryTabDivisionType>> docCategoryTabDivisionTypeResult = null!;
             IDataAccessResult<List<ImagingType>> docTypesResult = null!;
             IDataAccessResult<List<ImagingDocument>> docsResult = null!;
-            var loadDocCategoryTabDivisionType = new LoadItem()
+            var loadDocCategoryTabDivisionType = new LoadItem<List<VImagingCategoryTabDivisionType>>
             {
                 Key = "GetAllImagingCategoryTabDivisionTypes",
                 AsyncLoadTask = (async () =>
@@ -32,7 +32,7 @@ namespace JamesWebUI.Client.Shared
                     //Use business logic to determine which tabs and types are relevant to the page
                     docCategoryTabDivisionTypeResult.Data!.GetRelevantTabsAndTypes(DocumentCategory, DivisionCode)
             };
-            var loadDocTypes = new LoadItem()
+            var loadDocTypes = new LoadItem<List<ImagingType>>
             {
                 Key = "GetAllImagingTypes",
                 AsyncLoadTask = async () => { docTypesResult = await DataAccess.GetAllImagingTypes(); },
@@ -41,7 +41,7 @@ namespace JamesWebUI.Client.Shared
                 ResultVariable = () => docTypesResult,
                 AfterLoad = () => _imagingTypes = docTypesResult.Data!
             };
-            var loadDocs = new LoadItem()
+            var loadDocs = new LoadItem<List<ImagingDocument>>
             {
                 Key = $"SearchDocuments{ImagingId}{DocumentCategory.DocumentCategory()}",
                 AsyncLoadTask = async () =>
@@ -53,7 +53,7 @@ namespace JamesWebUI.Client.Shared
                 ResultVariable = () => docsResult
             };
 
-            await DataCache.ParallelGetCacheOrDataAsync(() =>
+            await DataAccess.ParallelGetCacheOrDataAsync(() =>
                 PopulateDocuments(docsResult), 
                 AddEventNotify(loadDocCategoryTabDivisionType, "imaging categories, types and divisions"),
                 AddEventNotify(loadDocTypes, "imaging document types"),

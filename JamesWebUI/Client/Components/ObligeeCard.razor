@@ -16,7 +16,7 @@
     private Obligee ObligeeToDisplay { get; set; } = null!;
     private IDataAccessResult<Obligee?> _obligeeResult = null!;
     
-    private LoadItem ObligeeLoad => AddEventNotify(new LoadItem
+    private LoadItem ObligeeLoad => AddEventNotify(new LoadItem<Obligee?>
         {
             Key = $"Obligee{ObligeeId}",
             AsyncLoadTask = async () => _obligeeResult = await DataAccess.GetObligeeById(ObligeeId),
@@ -34,6 +34,6 @@
     
     private async Task LoadObligee()
     {
-        await DataCache.GetCacheOrLoadDataAsync(ObligeeLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(ObligeeLoad);
     }
 }

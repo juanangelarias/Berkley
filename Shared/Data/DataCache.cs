@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 
 namespace James.Shared.Data;
 
+[Obsolete]
 public interface IDataCache
 {
     Task GetCacheOrLoadDataAsync(LoadItem loadItem, ILoggingService logger);
@@ -42,7 +43,7 @@ public interface IDataCache
     /// <param name="cacheDuration">Optional cache duration. If not specified, a default duration may be applied.</param>
     void UpdateCache(string key, object data, TimeSpan? cacheDuration = null);
 }
-
+[Obsolete]
 public class DataCache : IDataCache
 {
     private readonly ConcurrentDictionary<string, CachedResult> _cachedResults = new();

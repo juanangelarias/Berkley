@@ -7,6 +7,7 @@ namespace JamesWebUI.Client.Services
     /// </summary>
     /// <param name="js">JavaScript runtime reference</param>
     /// <remarks>If they ever implement this functionality, get rid of this and use that</remarks>
+    [Obsolete]
     public class LocalStorageKeyListingService(IJSRuntime js)
     {
         public async Task<string[]> GetAllLocalStorageKeys(string startsWith = "")

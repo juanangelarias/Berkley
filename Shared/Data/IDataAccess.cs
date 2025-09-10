@@ -5,6 +5,54 @@ namespace James.Shared.Data
 {
     public interface IDataAccess
     {
+        #region Data Caching functionality from BaseDataAccess
+
+        public IBrowserStorageCache BrowserStorageCache { get; }
+        public Task GetCacheOrLoadDataAsync(LoadItem loadItem);
+
+        /// <summary>
+        /// Load multiple items in parallel and then run the afterAllLoaded when loading complete
+        /// </summary>
+        /// <param name="afterAllLoaded">Action to execute after all items have been loaded.</param>
+        /// <param name="loadItems">The LoadItem to load</param>
+        /// <remarks>Use this is you need multiple data sets before contracting a final output.</remarks>
+        public Task ParallelGetCacheOrDataAsync(Action? afterAllLoaded, params LoadItem[] loadItems);
+
+        /// <summary>
+        /// Load multiple items in parallel
+        /// </summary>
+        /// <param name="loadItems">The LoadItem to load</param>
+        public Task ParallelGetCacheOrDataAsync(params LoadItem[] loadItems);
+
+        /// <summary>
+        /// Clears cache
+        /// </summary>
+        /// <remarks>Use cautiously as this clears the cache for the entire server if it is called server-side</remarks>
+        public void Clear();
+
+        /// <summary>
+        /// Clears cache for one cache key
+        /// </summary>
+        /// <param name="key">Cache key to clear</param>
+        public void Clear(string key);
+
+        /// <summary>
+        /// Updates or adds an item to the cache with an optional cache duration.
+        /// </summary>
+        /// <param name="key">The unique identifier for the cached item.</param>
+        /// <param name="data">The data object to be cached.</param>
+        /// <param name="cacheDuration">
+        /// Optional duration for which the item should remain in the cache. 
+        /// Defaults to 1 hour if not specified.
+        /// </param>
+        /// <remarks>
+        /// If the key already exists in the cache, the existing entry is updated.
+        /// If the key does not exist, a new cache entry is created.
+        /// </remarks>
+        public void UpdateCache(string key, object data, TimeSpan? cacheDuration = null);
+        #endregion
+
+        //DataAccess
         public Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber);
         public Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber);
         public Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber);
@@ -41,7 +89,6 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);
-        //public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id, DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
         public Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString);
         public Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId);
@@ -58,6 +105,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId, string emailAddress, string type);
         public Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id);
         public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
+        public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expriration, int single, int aggregate,
             string? comments, Guid statusId);
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
             DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);

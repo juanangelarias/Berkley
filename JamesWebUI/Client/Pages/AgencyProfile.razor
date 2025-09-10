@@ -75,7 +75,7 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
-                    <RadzenFieldset Text="Agency Info">
+                    <RadzenFieldset Text="Agency Info" Style="height: 100%;">
                         <RadzenPanel class="rz-shade-6">
                             <RadzenRow>
                                 <RadzenColumn Size="12">
@@ -161,7 +161,7 @@
                     </RadzenFieldset>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
-                    <RadzenFieldset Text="Addresses">
+                    <RadzenFieldset Text="Addresses" Style="height: 100%;">
                         <LegalEntityAddressManager LegalEntityId="@_agencyToDisplay.Id" />
                     </RadzenFieldset>
                 </RadzenColumn>
@@ -218,7 +218,7 @@
 
     private IDataAccessResult<Agency> _agencyResult = null!;
     private LoadItem AgencyByAgencyNumberLoadItem(string agencyNumber) =>
-        AddEventNotify(new LoadItem
+        AddEventNotify(new LoadItem<Agency>
             {
                 Key = $"Agency{agencyNumber}",
                 AsyncLoadTask = async () => _agencyResult = (await DataAccess.GetAgencyByAgencyNumber(agencyNumber))!,
@@ -237,7 +237,7 @@
 
     private IDataAccessResult<List<Branch>> _branchesResult = null!;
     private LoadItem BranchesLoadItem() =>
-        AddEventNotify(new LoadItem
+        AddEventNotify(new LoadItem<List<Branch>>
         {
             Key = "branches",
             AsyncLoadTask = async () => _branchesResult = await DataAccess.GetAllBranches(),
@@ -258,12 +258,12 @@
         if (null != Id)
             loadItems.Add(AgencyByAgencyNumberLoadItem(Id));
         
-        await DataCache.ParallelGetCacheOrDataAsync(loadItems.ToArray());
+        await DataAccess.ParallelGetCacheOrDataAsync(loadItems.ToArray());
     }
     
     private async Task LoadBranches()
     {
-        await DataCache.GetCacheOrLoadDataAsync(BranchesLoadItem());        
+        await DataAccess.GetCacheOrLoadDataAsync(BranchesLoadItem());        
     }
     
     private async Task SaveAgencyChanges()

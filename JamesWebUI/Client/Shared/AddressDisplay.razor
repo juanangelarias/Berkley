@@ -1,8 +1,4 @@
-﻿@using James.Shared
-@inherits JamesLayoutComponentBase
-@implements IDisposable
-@inject NavigationManager NavigationManager
-
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
@@ -20,38 +16,38 @@
     <RadzenRow>
         <RadzenColumn>
             <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.Address1" Name="Address1" ReadOnly="true" AutoComplete="false" />
+                <RadzenTextBox @bind-Value="@_addressToDisplay.Address1" Name="Address1" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow>
         <RadzenColumn>
             <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.Address2" Name="Address2" ReadOnly="true" AutoComplete="false" />
+                <RadzenTextBox @bind-Value="@_addressToDisplay.Address2" Name="Address2" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow>
         <RadzenColumn>
             <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false" Visible="DetailedMode">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.Address3" Name="Address3" ReadOnly="true" AutoComplete="false" />
+                <RadzenTextBox @bind-Value="@_addressToDisplay.Address3" Name="Address3" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow>
         <RadzenColumn Size="4">
             <RadzenFormField Variant="Variant.Text" Text="City" AllowFloatingLabel="false" Style="width:90%">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.City" Name="City" ReadOnly="true" AutoComplete="false" />
+                <RadzenTextBox @bind-Value="@_addressToDisplay.City" Name="City" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
         <RadzenColumn Size="3">
             <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
-                <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@AddressToDisplay.StateCode" Disabled="true" />
+                <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@_addressToDisplay.StateCode" Disabled="true" />
             </RadzenFormField>
         </RadzenColumn>
         <RadzenColumn Size="3">
             <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
-                <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" ReadOnly="true" AutoComplete="false" />
+                <RadzenTextBox @bind-Value="@_addressToDisplay.PostalCode" Name="PostalCode" ReadOnly="true" AutoComplete="false" />
             </RadzenFormField>
         </RadzenColumn>
         <RadzenColumn>
@@ -60,7 +56,7 @@
     </RadzenRow>
 </RadzenPanel>
 <RadzenPanel Visible="EditMode" Name="@(Name+"Edit")">
-    <RadzenTemplateForm TItem="Address" Data="@AddressToDisplay"
+    <RadzenTemplateForm TItem="Address" Data="@_addressToDisplay"
                         Submit="@SubmitAddressChange">
         <RadzenRow>
             <RadzenColumn>
@@ -73,38 +69,38 @@
         <RadzenRow>
             <RadzenColumn>
                 <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address1" Name="Address1" AutoComplete="false" />
+                    <RadzenTextBox @bind-Value="@_addressToDisplay.Address1" Name="Address1" AutoComplete="false" />
                 </RadzenFormField>
             </RadzenColumn>
         </RadzenRow>
         <RadzenRow>
             <RadzenColumn>
                 <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address2" Name="Address2" AutoComplete="false" />
+                    <RadzenTextBox @bind-Value="@_addressToDisplay.Address2" Name="Address2" AutoComplete="false" />
                 </RadzenFormField>
             </RadzenColumn>
         </RadzenRow>
         <RadzenRow>
             <RadzenColumn>
                 <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false" Visible="DetailedMode">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.Address3" Name="Address3" AutoComplete="false" />
+                    <RadzenTextBox @bind-Value="@_addressToDisplay.Address3" Name="Address3" AutoComplete="false" />
                 </RadzenFormField>
             </RadzenColumn>
         </RadzenRow>
         <RadzenRow>
             <RadzenColumn Size="4">
                 <RadzenFormField Variant="Variant.Text" Text="City" AllowFloatingLabel="false" Style="width:90%">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.City" Name="City" />
+                    <RadzenTextBox @bind-Value="@_addressToDisplay.City" Name="City" />
                 </RadzenFormField>
             </RadzenColumn>
             <RadzenColumn Size="3">
                 <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
-                    <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@AddressToDisplay.StateCode" />
+                    <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@_addressToDisplay.StateCode" />
                 </RadzenFormField>
             </RadzenColumn>
             <RadzenColumn Size="3">
                 <RadzenFormField Variant="Variant.Text" Text="Postal Code" AllowFloatingLabel="false" Style="width:90%">
-                    <RadzenTextBox @bind-Value="@AddressToDisplay.PostalCode" Name="PostalCode" AutoComplete="false" />
+                    <RadzenTextBox @bind-Value="@_addressToDisplay.PostalCode" Name="PostalCode" AutoComplete="false" />
                 </RadzenFormField>
             </RadzenColumn>
             <RadzenColumn>
@@ -118,117 +114,31 @@
 </RadzenPanel>
 
 @code {
-    [Parameter] public Guid AddressId { get; set; }
-    [Parameter] public string Name { get; set; } = "Address";
-    [Parameter] public string EditorIdentifier { get; set; } = Guid.NewGuid().ToString();
-    [Parameter] public EventCallback<Guid> StateChanged { get; set; }
-    [Parameter] public Func<IDisposable>? AddSubscription { get; set; }
+    [Parameter, EditorRequired] public Address Address { get; set; }
+    [Parameter] public string Name { get; set; } = "Address";    
+    [Parameter, EditorRequired] public required EventCallback<Address> AddressEdited { get; set; }
+    [Parameter, EditorRequired] public required EventCallback<Guid> AddressDeleted { get; set; }
 
-
-    public Address AddressToDisplay { get; set; } = new();
-    private Address? _loadedAddress;
-    private IDisposable? _subscription;
+    
     public bool DetailedMode { get; private set; }
     public bool EditMode { get; private set; }
-
-    private IDataAccessResult<Address> _addressResult = null!;
-
-    private LoadItem AddressLoad => AddEventNotify(new LoadItem
-    {
-        Key = $"Address{AddressId}",
-        AsyncLoadTask = async () => _addressResult = await DataAccess.GetAddress(AddressId),
-        CacheLoadTask = cache => _addressResult = new DataAccessResult<Address>
-        {
-            Data = (Address)cache!
-        },
-        ResultVariable = () => _addressResult,
-        AfterLoad = () => { AddressToDisplay = _loadedAddress ?? new Address(); }
-    }, "address");
-
+    private Address _addressToDisplay = null!;
+    private readonly Guid _editorIdentifier = Guid.NewGuid();
+    
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        await LoadAddress();
-        if (null != AddSubscription)
-            _subscription = AddSubscription();
-
-    }
-
-    private async Task LoadAddress()
-    {
-        if (Guid.Empty == AddressId)
-            return;
-
-        await DataCache.GetCacheOrLoadDataAsync(AddressLoad);
-    }
-
-    /// <summary>
-    /// Handles the logic of updating if a subscription returns a new value.  Should not have UI duties beyond launching the ConflictingChangeDialog
-    /// </summary>
-    /// <param name="newAddress">The address returned from the subscription</param>
-    /// <returns>True if change is auto accepted and a notification is needed.  False if Dialog has already handled notifying user</returns>
-    public async Task<bool> SubscriptionUpdate(Address newAddress)
-    {
-        //TODO: Code review this to see how much of this we can condense into reusable code.
-
-        var compareWithLoaded = SameOrDifferent.Compare(newAddress, _loadedAddress);
-        if (compareWithLoaded.AreTheSame)
-            //If it is the same as what was loaded from the DB, ignore
-            return false;
-        if (!EditMode)
-        {
-            //If not in edit mode, replace
-            AddressToDisplay = _loadedAddress = newAddress;
-            return true;
-        }
-
-        if (null == _loadedAddress)
-            //HACK: Subscriptions fired before initial load are assumed to be
-            //      what will load during the initial load.  Not worrying about
-            //      the edge case of an update milliseconds after the initial load.
-            return false;
-
-        //Compare result to what is in editor, and to what has changed
-        var compareWithCurrent = SameOrDifferent.Compare(AddressToDisplay, newAddress);
-        var compareLoadedWithCurrent = SameOrDifferent.Compare(_loadedAddress, AddressToDisplay);
-        var autoChange = compareWithCurrent.DifferentProperties.Intersect(compareLoadedWithCurrent.SameProperties).ToList();
-        var askAboutChange = compareWithCurrent.DifferentProperties
-            .Intersect(compareLoadedWithCurrent.DifferentProperties)
-            .ToDictionary(propName => propName, propName => compareWithCurrent.Differences[propName]);
-        if (autoChange.Any())
-        {
-            SameOrDifferent.CopyTheseProperties(newAddress, AddressToDisplay, autoChange);
-            StateHasChanged();
-        }
-
-        if (askAboutChange.Any())
-        {
-            //Open side dialog to ask user which version to take
-            if (true == await DialogService.OpenSideAsync<ConflictResolverDialog>(
-                    "Conflicting edits", new Dictionary<string, object>()
-                    {
-                        { "DataFriendlyName", "Address" }, { "Conflicts", askAboutChange },
-                        { "OurData", AddressToDisplay }, { "TheirData", newAddress }
-                    }, new SideDialogOptions
-                    {
-                        ShowClose = false,
-                        CloseDialogOnOverlayClick = false,
-                        Position = DialogPosition.Right,
-                        ShowMask = true
-                    }))
-            {
-                StateHasChanged(); //Check value of AddressToDisplay
-                return false;
-            }
-        }
-
-        return true;
+        
+        _addressToDisplay = InitializeAddressToDisplay(Address);
     }
 
     private async Task SubmitAddressChange(Address newAddress)
     {
-        await DataAccess.SetAddress(newAddress, EditorIdentifier);
+        await DataAccess.SetAddress(newAddress, _editorIdentifier.ToString());
         EditMode = false;
+        await AddressEdited.InvokeAsync(newAddress);
+
+        Address = newAddress;
     }
 
     private void ToggleEditMode()
@@ -249,29 +159,30 @@
         );
         if (result)
         {
-            var deleteResult = await DataAccess.DeleteAddress(AddressId, EditorIdentifier);
-            //TODO: Error Handling
+            var deleteResult = await DataAccess.DeleteAddress(Address.Id, _editorIdentifier.ToString());
+            
             if (deleteResult.Errors.Any())
             {
                 LoggingService.LogError("DeleteAddress return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
                 ShowNotification(new NotificationMessage
                 {
                     Severity = NotificationSeverity.Error,
-                    Detail = "Error when deleting this address.",
+                    Detail = "Error while deleting this address.",
                     Duration = 4000
                 });
             }
             else
             {
-                await StateChanged.InvokeAsync(AddressId);
+                await AddressDeleted.InvokeAsync(Address.Id);
             }
         }
     }
 
-    private async Task Cancel()
+    private void Cancel()
     {
+        _addressToDisplay = InitializeAddressToDisplay(Address);
+        
         EditMode = false;
-        await LoadAddress();
     }
 
     private void ShowNotification(NotificationMessage message)
@@ -279,8 +190,17 @@
         NotificationService.Notify(message);
     }
 
-    public void Dispose()
+    private Address InitializeAddressToDisplay(Address source)
     {
-        _subscription?.Dispose();
+        return new Address
+        {
+            Id = source.Id,
+            Address1 = source.Address1,
+            Address2 = source.Address2,
+            Address3 = source.Address3,
+            City = source.City,
+            StateCode = source.StateCode,
+            PostalCode = source.PostalCode
+        };
     }
 }

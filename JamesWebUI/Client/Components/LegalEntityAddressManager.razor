@@ -12,13 +12,8 @@
                 foreach (var a in AllAddresses)
                 {
                     <RadzenTabsItem Text="@(a.LegalEntityAddress!.Type)">
-                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" AddressId="a.Id"
-                                        StateChanged="@(() => LoadAddresses())"
-                                        AddSubscription="@(() => DataAccess.AddressModified(a.Id, async void (sra) =>
-                                                         {
-                                                             if (_addressDisplays[a.LegalEntityAddress.Type].EditorIdentifier == sra.Identifier) return;
-                                                             await _addressDisplays[a.LegalEntityAddress.Type].SubscriptionUpdate(sra.Result);
-                                                         }))"/>
+                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" Address="a"
+                                        AddressEdited="UpdateAddresses" AddressDeleted="DeleteAddress"/>
                     </RadzenTabsItem>
                     //NOTE: The redundant specification of the AddressCreate below is needed to prevent the AddressCreate from being selected initially
                     if (a == AllAddresses.Last())
@@ -43,8 +38,7 @@
 
 @code {
 
-    [Parameter]
-    public Guid LegalEntityId { get; set; }
+    [Parameter, EditorRequired] public required Guid LegalEntityId { get; set; }
 
     private List<Address> AllAddresses { get; set; } = [];
     private readonly Dictionary<string, AddressDisplay> _addressDisplays = [];
@@ -81,6 +75,34 @@
                 });
             }
         }, "addresses");
+
+    private void UpdateAddresses(Address address)
+    {
+        var actual = AllAddresses.FirstOrDefault(f => f.Id == address.Id);
+        
+        if(actual == null)
+        {
+            AllAddresses.Add(address);
+        }
+        else
+        {
+            actual.Address1 = address.Address1;
+            actual.Address2 = address.Address2;
+            actual.Address3 = address.Address3;
+            actual.City = address.City;
+            actual.StateCode = address.StateCode;
+            actual.PostalCode = address.PostalCode;
+        }
+    }
+
+    private void DeleteAddress(Guid id)
+    {
+        var toDelete = AllAddresses
+            .FirstOrDefault(f => f.Id == id);
+
+        if (toDelete != null)
+            AllAddresses.Remove(toDelete);
+    }
 
     private async Task LoadAddresses()
     {

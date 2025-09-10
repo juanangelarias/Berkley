@@ -125,16 +125,7 @@
         if (AgencyId == Guid.Empty)
             return;
 
-        await DataCache.GetCacheOrLoadDataAsync(AgencyBondsLoad);
-    }
-
-    protected async Task ShowLoading()
-    {
-        IsLoading = true;
-
-        await Task.Yield();
-
-        IsLoading = false;
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyBondsLoad);
     }
 
     private async Task StatusFilterChange()

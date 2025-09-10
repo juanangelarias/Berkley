@@ -35,6 +35,9 @@ public interface IAccountState : IStateBase
     List<BsgLookup> BranchesLookup { get; set; }
     List<BsgLookup> DivisionsLookup { get; set; }
     List<BsgLookup> UnderwritersLookup { get; set; }
+    List<Agent> AgencyAgents { get; set; }
+    List<BsgLookup> AgencyAgentsLookup { get; set; }
+    
     Task CreateAccountWatch(AccountWatch accountWatch);
     Task UpdateAccountWatch(AccountWatch accountWatch);
     Task DeleteAccountWatch(Guid accountWatchId);
@@ -430,6 +433,38 @@ public class AccountState(
 
     #endregion
 
+    #region AgencyAgents
+
+    private List<Agent> _agencyAgents = [];
+
+    public List<Agent> AgencyAgents
+    {
+        get => _agencyAgents;
+        set
+        {
+            _agencyAgents = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region AgencyAgentsLookup
+
+    private List<BsgLookup> _agencyAgentsLookup = [];
+
+    public List<BsgLookup> AgencyAgentsLookup
+    {
+        get => _agencyAgentsLookup;
+        set
+        {
+            _agencyAgentsLookup = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
     private bool _isBranchesLoaded;
     private bool _isDivisionsLoaded;
     private bool _isUnderwritersLoaded;
@@ -662,7 +697,36 @@ public class AccountState(
     }, "underwriters");
 
     #endregion
+    
+    #region Agency Agents
+    
+    private IDataAccessResult<List<Agent>> _agencyAgentsResult = null!;
 
+    private LoadItem AgencyAgentsLoad => AddEventNotify(new()
+    {
+        Key = CacheKeys.AgencyAgents(Account!.AgentId!.Value),
+        AsyncLoadTask = async () => _agencyAgentsResult = await dataAccess.GetAgencyAgents(Account?.AgencyNumberNavigation?.Id ?? Guid.Empty),
+        CacheLoadTask = cache => _agencyAgentsResult = new DataAccessResult<List<Agent>>
+        {
+            Data = (List<Agent>)cache!
+        },
+        ResultVariable = () => _agencyAgentsResult,
+        AfterLoad = () =>
+        {
+            AgencyAgents = _agencyAgentsResult.Data!;
+            AgencyAgentsLookup = AgencyAgents
+                .Select(s => new BsgLookup
+                {
+                    Id = s.Id,
+                    Code = "",
+                    Name = s.IdNavigation.FullName
+                })
+                .ToList();
+        }
+    }, "agency agents");
+
+    #endregion
+    
     #endregion
 
     public async Task SetLayout()
@@ -847,6 +911,8 @@ public class AccountState(
         FirstIndemnityDate = firstIndemnity == null 
             ? "First indemnity: None"
             : $"First indemnity: {firstIndemnity:MM/dd/yyyy}";
+
+        await LoadAgencyAgents();
         
         IsAccountLoaded = true;
 
@@ -862,6 +928,13 @@ public class AccountState(
         var elapsed = DateTime.Now - start;
         var elapsedTxt = elapsed.ToString(@"mm\:ss\.fff");
         Console.WriteLine($"Load domain tables took {elapsedTxt} seconds");
+    }
+
+    private async Task LoadAgencyAgents()
+    {
+        Console.WriteLine($"Load agency agents - {Account?.AgencyNumberNavigation?.Id.ToString() ?? "NO AgencyId"}");
+        if(Account?.AgencyNumberNavigation?.Id != null && Account?.AgencyNumberNavigation?.Id != Guid.Empty)
+            await dataCache.GetCacheOrLoadDataAsync(AgencyAgentsLoad);
     }
 
     

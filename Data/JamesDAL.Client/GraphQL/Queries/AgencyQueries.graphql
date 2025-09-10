@@ -121,31 +121,36 @@ query GetAgencyBonds($agencyId: UUID!) {
 
 query GetAgencyAgents($agencyId: UUID!){
 	agencyAgents(agencyId: $agencyId){
-        id,
-        fullName,
-        givenName,
-        middleInitial,
-        familyName,
-        mainEmailAddress,
-        nationalProducerNumber,
+        id
+        fullName
+        givenName
+        middleInitial
+        familyName
+        mainEmailAddress
+        nationalProducerNumber
         idNavigation{
-            givenName,
-            middleInitial,
-            familyName,
+            givenName
+            middleInitial
+            familyName
             fullName
+            legalEntityEmails {
+                id
+                type
+                emailAddress
+            }
         }
         agencyLicenses{
-            id,
-            licenseNumber,
-            comments,
-            appointment,
-            termination,
-            appointingState,
-            state,
-            isActive,
-            created,
+            id
+            licenseNumber
+            comments
+            appointment
+            termination
+            appointingState
+            state
+            isActive
+            created
             insurer{
-                id,
+                id
                 idNavigation{
                     fullName
                 }

@@ -71,8 +71,8 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.Agencies.Where(a => a.Id == agencyId)
                 .Include(a => a.IdNavigation)
-
                 .FirstOrDefaultAsync();
+            
             return result ?? throw new GraphQLException($"No agency exists with Id {agencyId}.");
         }
 
@@ -155,6 +155,7 @@ namespace James.Data.Server.GraphQL.Queries
             return await ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.IdNavigation)
+                .ThenInclude(agi=>agi.LegalEntityEmails)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.AgencyLicenses)
                 .ThenInclude(ag => ag.Insurer)
@@ -165,9 +166,51 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
+        public async Task<List<AgencyDto>> GetAllActiveAgencies([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var agencies = await ctx.Agencies
+                .Include(i => i.IdNavigation)
+                .Include(i => i.IdNavigation)
+                .ThenInclude(t => t.LegalEntityAddresses)
+                .ThenInclude(t1 => t1.Address)
+                .Where(a => a.Status == "Active")
+                .Select(s => new AgencyDto
+                {
+                    Id = s.Id,
+                    FullName = s.IdNavigation.FullName,
+                    Addresses = s.IdNavigation.LegalEntityAddresses
+                        .Select(s => new AddressDto
+                        {
+                            Id = s.AddressId,
+                            Type = s.Type,
+                            Address1 = s.Address.Address1,
+                            Address2 = s.Address.Address2 ?? "",
+                            Address3 = s.Address.Address3 ?? "",
+                            City = s.Address.City,
+                            StateCode = s.Address.StateCode ?? "",
+                            PostalCode = s.Address.PostalCode ?? "",
+                            CountryCode = ""
+                        })
+                        .ToList(),
+                    Emails = s.IdNavigation.LegalEntityEmails
+                        .Select(s=> new EmailDto
+                        {
+                            Id = s.Id,
+                            Type = s.Type,
+                            EmailAddress = s.EmailAddress
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return agencies;
+        }
+
+        [Authorize]
         public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
+            var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
                 .Include(lic => lic.Agency)
                 .Include(lic => lic.Insurer)

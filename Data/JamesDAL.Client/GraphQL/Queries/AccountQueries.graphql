@@ -1,202 +1,221 @@
 ﻿query GetAccountByNumber($accountNumber: String) {
   accountByNumber(accountNumber: $accountNumber) {
-    id
-    idNavigation {
-      fullName
-      legalEntityAddresses {
-        type
-        address {
-          address1
-          address2
-          address3
-          city
-          stateCode
-          stateCodeNavigation {
-            countryCode
-            countryCodeNavigation {
-              name
-            }
-          }
-          postalCode
-        }
-      }
-      legalEntityPhones {
-        type
-        phoneNumber {
-          mainNumber
-          extension
-        }
-      }
-      legalEntityEmails {
-        type
-        emailAddress
-      }
-    }
-    bank
-    agent {
+      id
       idNavigation {
-        fullName
-      }
-    }
-    agencyNumberNavigation {
-      idNavigation {
-        fullName
-        legalEntityAddresses {
-          type
-          address {
-            city
-            stateCode
+          fullName
+          legalEntityAddresses {
+              type
+              address {
+                  address1
+                  address2
+                  address3
+                  city
+                  stateCode
+                  stateCodeNavigation {
+                      countryCode
+                      countryCodeNavigation {
+                          name
+                      }
+                  }
+                  postalCode
+              }
           }
-        }
+          legalEntityPhones {
+              type
+              phoneNumber {
+                  mainNumber
+                  extension
+              }
+          }
+          legalEntityEmails {
+              type
+              emailAddress
+          }
       }
-    }
+      bank
+      agent {
+          idNavigation {
+              fullName
+              legalEntityEmails {
+                  id
+                  type
+                  emailAddress
+              }
+          }
+          emailAddresses {
+              id
+              type
+              emailAddress
+          }
+          mainEmailAddress
+      }
+      agencyNumberNavigation {
+          idNavigation {
+              fullName
+              legalEntityAddresses {
+                  type
+                  address {
+                      city
+                      stateCode
+                      address1
+                      address2
+                      address3
+                      country
+                      countryCode
+                      id
+                      postalCode
+                      state
+                  }
+              }
+          }
+      }
       accountWatches {
-          id,
+          id
           actionPlan
-          reason,
+          reason
           watchDate
           watchStatus
       }
-    accountNum
-    division
-    homeOfficeReviewByNavigation {
-      fullName
-    }
-    homeOfficeReviewed
-    branchReviewByNavigation {
-      fullName
-    }
-    branchReviewed
-    attorney {
-      idNavigation {
-        fullName
+      accountNum
+      division
+      homeOfficeReviewByNavigation {
+          fullName
       }
-      martindaleHubbellRating
-    }
-    underwriterId
-    underwriter {
-      idNavigation {
-        fullName
-        initials
-        title
-        email
+      homeOfficeReviewed
+      branchReviewByNavigation {
+          fullName
       }
-      reportsTo
-    }
-    branch  
-    branchNavigation {
-      id
-      branchKey
-      name
-    }
-    divisionNavigation {
-      id
-      divisionCode
-      division  
-    }
-    accountStatusLogs {
-      accountStatus
-      effective
-      id
-    }
-    bankPhone {
-      countryCode
-      created
-      extension
-      id
-      mainNumber
-      modified
-    }
-    cpafirm {
-      created
-      entityType
-      familyName
-      fullName
-      givenName
-      id
-      isIndividual
-      middleInitial
-      modified
-      parent
-      taxIdEncrypted
-      website
-      legalEntityPhones {
-        legalEntityId
-        phoneNumberId
-        type
+      branchReviewed
+      attorney {
+          idNavigation {
+              fullName
+          }
+          martindaleHubbellRating
       }
-    }
-    cpacontact {
-      created
-      entityType
-      familyName
-      fullName
-      givenName
-      id
-      isIndividual
-      middleInitial
-      modified
-      parent
-      taxIdEncrypted
-      website
-    }
-    businessTypeNavigation {
+      underwriterId
+      underwriter {
+          idNavigation {
+              fullName
+              initials
+              title
+              email
+          }
+          reportsTo
+      }
+      branch
+      branchNavigation {
+          id
+          branchKey
+          name
+      }
+      divisionNavigation {
+          id
+          divisionCode
+          division
+      }
+      accountStatusLogs {
+          accountStatus
+          effective
+          id
+      }
+      bankPhone {
+          countryCode
+          created
+          extension
+          id
+          mainNumber
+          modified
+      }
+      cpafirm {
+          created
+          entityType
+          familyName
+          fullName
+          givenName
+          id
+          isIndividual
+          middleInitial
+          modified
+          parent
+          taxIdEncrypted
+          website
+          legalEntityPhones {
+              legalEntityId
+              phoneNumberId
+              type
+          }
+      }
+      cpacontact {
+          created
+          entityType
+          familyName
+          fullName
+          givenName
+          id
+          isIndividual
+          middleInitial
+          modified
+          parent
+          taxIdEncrypted
+          website
+      }
+      businessTypeNavigation {
+          businessType
+          created
+          id
+          modified
+      }
+      businessTypeClassNavigation {
+          businessType
+          classCode
+          created
+          id
+          isContract
+          modified
+      }
+      lawFirm {
+          comment
+          idNavigation {
+              fullName
+          }
+          martindaleHubbellRating
+      }
+      indemnitors {
+          id
+          agreementDate
+      }
+      yearOpened
+      currentManagementYear
+      creditReport
+      interimWips
+      indemnityPerson
+      indemnityFull
+      indemnityCorp
+      indemnityComments
+      priorSuretyCompany
+      subcontractPercent
+      subcontractProtection
+      taxBasis
+      continuityActiveMultipleOwners
+      continuityFundedBuySell
+      continuityKeyManagementLifeInsurance
+      continuityManagementIncentives
       businessType
-      created
-      id
-      modified
-    }
-    businessTypeClassNavigation {
-      businessType
-      classCode
-      created
-      id
-      isContract
-      modified
-    }
-    lawFirm {
-      comment
-      idNavigation {
-        fullName
-      }
-      martindaleHubbellRating
-    }
-    indemnitors {
-      id
-      agreementDate
-    }
-    yearOpened
-    currentManagementYear
-    creditReport
-    interimWips
-    indemnityPerson
-    indemnityFull
-    indemnityCorp
-    indemnityComments
-    priorSuretyCompany
-    subcontractPercent
-    subcontractProtection
-    taxBasis
-    continuityActiveMultipleOwners
-    continuityFundedBuySell
-    continuityKeyManagementLifeInsurance
-    continuityManagementIncentives
-    businessType
-    businessTypeClass
-    estimatingSignoff
-    estimatingSystem
-    accountingSystem
-    affiliateCompany
-    bankAverageBalance
-    bankLastContacted
-    bankLoc
-    bankLocexpires
-    bankLochigh
-    bankLochighDate
-    bankLocsecurity
-    bankLocused
-    bankReferenceName
-    berkleyAffiliate
+      businessTypeClass
+      estimatingSignoff
+      estimatingSystem
+      accountingSystem
+      affiliateCompany
+      bankAverageBalance
+      bankLastContacted
+      bankLoc
+      bankLocexpires
+      bankLochigh
+      bankLochighDate
+      bankLocsecurity
+      bankLocused
+      bankReferenceName
+      berkleyAffiliate
   }
 }
 

@@ -6,6 +6,7 @@ public static class CacheKeys
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";
     public static string LegalEntityPhoneNumbers(Guid id) => $"LegalEntityPhoneNumbers-{id}";
     public static string LegalEntityEmails(Guid id) => $"LegalEntityPhoneEmails-{id}";
+    public static string AgencyAgents(Guid id) => $"AgencyAgents-{id}";
     
     public const string AddressTypes = "AddressTypes";
     public const string Branches = "Branches";

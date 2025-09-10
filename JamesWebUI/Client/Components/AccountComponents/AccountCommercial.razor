@@ -7,9 +7,9 @@
 @if (AccountState.IsAccountLoaded && AccountState.Account != null)
 {
     <RadzenColumn Size="12">
-        <RadzenPanel Style="border-radius: 10px;" class="rz-shadow-7" Collapsed="@_summaryView">
+        <RadzenPanel Style="border-radius: 10px;" class="rz-shadow-7 rz-p-2" Collapsed="@_summaryView">
             <HeaderTemplate>
-                <RadzenCard Variant="Variant.Text" Style="width: 100%;">
+                <RadzenCard Variant="Variant.Text" Style="width: 100%;" class="rz-p-0">
                     <RadzenRow JustifyContent="JustifyContent.SpaceBetween" class="rz-text-align-center" Gap="1rem">
                         <RadzenColumn Size="4">
                             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center"
@@ -41,20 +41,20 @@
                 </RadzenCard>
             </HeaderTemplate>
             <ChildContent>
-                <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenRow JustifyContent="JustifyContent.End" Gap="0.5rem">
                     <RadzenColumn Size="@_columnSize">
-                        <RadzenCard Style="width: 100%; height: 500px;">
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
                             <AccountBasicInfo/>
                         </RadzenCard>
                     </RadzenColumn>
                     <RadzenColumn Size="@_columnSize">
-                        <RadzenCard Style="width: 100%; height: 500px;">
-
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
+                            <AccountAgencyAndAddresses/>
                         </RadzenCard>
                     </RadzenColumn>
                     <RadzenColumn Size="@_columnSize" Visible="@(_isNotificationVisible)">
-                        <RadzenCard Style="width: 100%; height: 500px;">
-
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
+                            <AccountNotificationCenter/>
                         </RadzenCard>
                     </RadzenColumn>
                 </RadzenRow>

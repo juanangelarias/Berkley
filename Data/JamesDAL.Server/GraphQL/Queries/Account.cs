@@ -25,6 +25,7 @@ namespace James.Data.Server.GraphQL.Queries
                        .ThenInclude(uw => uw!.IdNavigation)
                        .Include(a => a.Agent)
                        .ThenInclude(ag => ag!.IdNavigation)
+                       .ThenInclude(agi=> agi.LegalEntityAddresses)
                        .Include(a => a.HomeOfficeReviewByNavigation)
                        .Include(a => a.BranchReviewByNavigation)
                        .Include(a => a.BankPhone)

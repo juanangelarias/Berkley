@@ -36,6 +36,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<AccountStatusLog> AccountStatusLogs { get; set; }
 
+    public virtual DbSet<AccountWatch> AccountWatches { get; set; }
+
     public virtual DbSet<AdditionalObligee> AdditionalObligees { get; set; }
 
     public virtual DbSet<AdditionalRelatedParty> AdditionalRelatedParties { get; set; }
@@ -350,6 +352,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<VConfiguration> VConfigurations { get; set; }
 
+    public virtual DbSet<VEntityTopParent> VEntityTopParents { get; set; }
+
     public virtual DbSet<VImagingCategoryTabDivisionType> VImagingCategoryTabDivisionTypes { get; set; }
 
     public virtual DbSet<VSecurityPrincipal> VSecurityPrincipals { get; set; }
@@ -448,14 +452,11 @@ public partial class JamesDatabaseContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("NAICS");
             entity.Property(e => e.Pocinterims).HasColumnName("POCInterims");
-            entity.Property(e => e.PolutionLiabilityCarrier).HasMaxLength(100);
+            entity.Property(e => e.PollutionLiabilityCarrier).HasMaxLength(100);
             entity.Property(e => e.PriorSuretyCompany).HasMaxLength(50);
             entity.Property(e => e.SubcontractProtection).HasMaxLength(20);
             entity.Property(e => e.TaxBasis)
                 .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.WatchStatus)
-                .HasMaxLength(8)
                 .IsUnicode(false);
             entity.Property(e => e.YearOpened)
                 .HasMaxLength(4)
@@ -528,11 +529,6 @@ public partial class JamesDatabaseContext : DbContext
             entity.HasOne(d => d.Underwriter).WithMany(p => p.Accounts)
                 .HasForeignKey(d => d.UnderwriterId)
                 .HasConstraintName("FK_Account_UnderWriter");
-
-            entity.HasOne(d => d.WatchStatusNavigation).WithMany(p => p.Accounts)
-                .HasForeignKey(d => d.WatchStatus)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Account_WatchStatusDM");
         });
 
         modelBuilder.Entity<AccountClassDm>(entity =>
@@ -822,6 +818,32 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_AccountStatusLog_UserProfile");
         });
 
+        modelBuilder.Entity<AccountWatch>(entity =>
+        {
+            entity.ToTable("AccountWatch");
+
+            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.ActionPlan).HasMaxLength(500);
+            entity.Property(e => e.Created).HasColumnType("datetime");
+            entity.Property(e => e.Modified).HasColumnType("datetime");
+            entity.Property(e => e.Reason).HasMaxLength(500);
+            entity.Property(e => e.WatchDate).HasColumnType("datetime");
+            entity.Property(e => e.WatchStatus)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.Account).WithMany(p => p.AccountWatches)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccountWatch_Account");
+
+            entity.HasOne(d => d.WatchStatusNavigation).WithMany(p => p.AccountWatches)
+                .HasForeignKey(d => d.WatchStatus)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccountWatch_WatchStatusDM");
+        });
+
         modelBuilder.Entity<AdditionalObligee>(entity =>
         {
             entity.HasKey(e => e.Id).IsClustered(false);
@@ -981,23 +1003,26 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<AgencyCommission>(entity =>
         {
-            entity.HasKey(e => new { e.AgencyId, e.BondType, e.Minimum, e.Effective }).IsClustered(false);
+            entity.HasKey(e => e.Id).IsClustered(false);
 
             entity.ToTable("AgencyCommission", tb => tb.HasTrigger("trgAgencyCommissionModified"));
 
+            entity.HasIndex(e => new { e.AgencyId, e.BondType, e.Minimum, e.Effective, e.ExpireIncluded }, "UQ_AgencyCommission").IsUnique();
+
             entity.HasIndex(e => e.Id, "UQ_AgencyCommission_Id").IsUnique();
 
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.BondType)
                 .HasMaxLength(10)
                 .IsUnicode(false);
-            entity.Property(e => e.Effective)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Effective)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ExpireIncluded).HasComputedColumnSql("(case when [Expires] IS NULL then (0) else (1) end)", false);
             entity.Property(e => e.Expires).HasColumnType("datetime");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -2503,6 +2528,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.FlagImageBase64).IsUnicode(false);
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -5388,6 +5414,13 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Value)
                 .HasMaxLength(255)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<VEntityTopParent>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vEntityTopParent");
         });
 
         modelBuilder.Entity<VImagingCategoryTabDivisionType>(entity =>

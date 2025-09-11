@@ -26,6 +26,8 @@ public partial class CountryDm
 
     public string? AddressFinalLineFormat { get; set; }
 
+    public string? FlagImageBase64 { get; set; }
+
     public virtual ICollection<Insurer> Insurers { get; set; } = new List<Insurer>();
 
     public virtual ICollection<State> States { get; set; } = new List<State>();

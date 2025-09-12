@@ -14,5 +14,5 @@ public partial class WatchStatusDm
 
     public string WatchStatus { get; set; } = null!;
 
-    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
+    public virtual ICollection<AccountWatch> AccountWatches { get; set; } = new List<AccountWatch>();
 }

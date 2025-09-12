@@ -1,0 +1,81 @@
+﻿@using Newtonsoft.Json
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+<RadzenTemplateForm TItem="FormData" Text="New Agent Request"
+                    Data="_data" Submit="@OnSubmit" InvalidSubmit="@OnInvalidSubmit">
+    <RadzenColumn Size="12">
+        <RadzenRow JustifyContent="JustifyContent.Start" AlignItems="AlignItems.Center" class="rz-pt-4 rz-pb-2">
+            <p>A request for a new Agent email will be generated for the Agency <b>(@AgencyNumber) @AgencyName</b>.</p>
+            <p>Please add the new agent info and submit the form.</p>
+        </RadzenRow>
+        <RadzenRow>
+            <BsgFormField Text="Agent name">
+                <RadzenTextBox @bind-Value="@_data.AgentName" Name="AgentName"/>
+                <RadzenRequiredValidator Text="The agent name is required." Component="AgentName" 
+                                         Style="position: absolute"/>
+            </BsgFormField>
+        </RadzenRow>
+        <RadzenRow>
+            <BsgFormField Text="Agent email">
+                <RadzenTextBox @bind-Value="@_data.AgentEmail" Name="AgentEmail"/>
+                <RadzenRequiredValidator Text="The agent email is required." Component="AgentEmail" 
+                                         Style="position: absolute"/>
+                <RadzenEmailValidator Text="The field must be a valid email address" Component="AgentEmail" 
+                                      Style="position: absolute"/>
+            </BsgFormField>
+        </RadzenRow>
+        <RadzenRow JustifyContent="JustifyContent.End">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-pt-8">
+                <RadzenButton Text="Cancel" Icon="cancel" Click="Cancel" ButtonType="ButtonType.Reset"
+                              ButtonStyle="ButtonStyle.Secondary"/>
+                <RadzenButton Text="Submit" Icon="forward_to_inbox" ButtonType="ButtonType.Submit"
+                              ButtonStyle="ButtonStyle.Primary"/>
+            </RadzenStack>
+        </RadzenRow>
+    </RadzenColumn>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter, EditorRequired] public required string AgencyNumber { get; set; } = "";
+    [Parameter, EditorRequired] public required string AgencyName { get; set; } = "";
+
+    private readonly FormData _data = new();
+
+    private void Cancel(MouseEventArgs obj)
+    {
+        DialogService.Close();
+    }
+
+    private void OnSubmit(FormData data)
+    {
+        Console.WriteLine(JsonConvert.SerializeObject(data));
+        
+        // ToDo: Send email
+        NotificationService.Messages.Add(new()
+        {
+            Detail = $"The request for a new Agent ({data.AgentName}) for the Agency \"{AgencyName}\" has been sent.",
+            Severity = NotificationSeverity.Success,
+            Duration = 4000
+        });
+
+        DialogService.Close();
+    }
+
+    private void OnInvalidSubmit()
+    {
+        NotificationService.Messages.Add(new()
+        {
+            Detail = "There are errors or omissions in the form.",
+            Severity = NotificationSeverity.Error,
+            Duration = 4000
+        });
+    }
+
+    class FormData
+    {
+        public string AgentName { get; set; } = "";
+        public string AgentEmail { get; set; } = "";
+    }
+
+}

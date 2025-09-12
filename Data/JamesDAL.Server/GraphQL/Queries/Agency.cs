@@ -178,27 +178,28 @@ namespace James.Data.Server.GraphQL.Queries
                 .Select(s => new AgencyDto
                 {
                     Id = s.Id,
-                    FullName = s.IdNavigation.FullName,
+                    AgencyNumber = s.AgencyNumber,
+                    FullName = $"({s.AgencyNumber}) {s.IdNavigation.FullName}",
                     Addresses = s.IdNavigation.LegalEntityAddresses
-                        .Select(s => new AddressDto
+                        .Select(s1 => new AddressDto
                         {
-                            Id = s.AddressId,
-                            Type = s.Type,
-                            Address1 = s.Address.Address1,
-                            Address2 = s.Address.Address2 ?? "",
-                            Address3 = s.Address.Address3 ?? "",
-                            City = s.Address.City,
-                            StateCode = s.Address.StateCode ?? "",
-                            PostalCode = s.Address.PostalCode ?? "",
+                            Id = s1.AddressId,
+                            Type = s1.Type,
+                            Address1 = s1.Address.Address1,
+                            Address2 = s1.Address.Address2 ?? "",
+                            Address3 = s1.Address.Address3 ?? "",
+                            City = s1.Address.City,
+                            StateCode = s1.Address.StateCode ?? "",
+                            PostalCode = s1.Address.PostalCode ?? "",
                             CountryCode = ""
                         })
                         .ToList(),
                     Emails = s.IdNavigation.LegalEntityEmails
-                        .Select(s=> new EmailDto
+                        .Select(s2=> new EmailDto
                         {
-                            Id = s.Id,
-                            Type = s.Type,
-                            EmailAddress = s.EmailAddress
+                            Id = s2.Id,
+                            Type = s2.Type,
+                            EmailAddress = s2.EmailAddress
                         })
                         .ToList()
                 })

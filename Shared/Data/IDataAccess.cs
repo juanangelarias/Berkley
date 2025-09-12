@@ -104,7 +104,6 @@ namespace James.Shared.Data
             bool? trackCommAccount, bool? berkleyAffiliate, string? comments);
         public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId, string emailAddress, string type);
         public Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id);
-        public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation, int single, int aggregate,
         public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expriration, int single, int aggregate,
             string? comments, Guid statusId);
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
@@ -148,6 +147,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
         public Task<ISaveDataResult> SetAgencyCommissionRate(AgencyCommission rate);
         public Task<ISaveDataResult> DeleteAgencyCommissionRate(Guid commRateId);
+        public Task<IDataAccessResult<List<AgencyDto>>> GetAllActiveAgencies(); 
         public Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber);
         public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
         public Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes();

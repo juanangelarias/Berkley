@@ -484,6 +484,12 @@ namespace James.Data.Client
             
             return GraphQLSaveResult(result);
         }
+        public async Task<IDataAccessResult<List<AgencyDto>>> GetAllActiveAgencies()
+        {
+            var response = await ExecuteGet<List<AgencyDto>>(async () =>
+                await jamesClient.GetAllActiveAgencies.ExecuteAsync());
+            return response;
+        }
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
         {

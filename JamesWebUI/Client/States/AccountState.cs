@@ -1,8 +1,7 @@
 ﻿using James.Shared;
+using James.Shared.Constants;
 using James.Shared.Data;
 using James.Shared.Model;
-using JamesWebUI.Client.Components.GeneralUse;
-using JamesWebUI.Client.Helpers;
 using JamesWebUI.Client.Model;
 using Radzen;
 
@@ -18,6 +17,7 @@ public interface IAccountState : IStateBase
     Account? Account { get; set; }
     string AccountStatus { get; set; }
     bool IsAccountActive { get; set; }
+    Agency? Agency { get; set; }
     string FirstIndemnityDate { get; set; }
     IconStyle AccountStatusStyle { get; set; }
     List<BsgAddress> Addresses { get; set; }
@@ -31,13 +31,16 @@ public interface IAccountState : IStateBase
     bool IsAccountLoaded { get; set; }
     List<WatchStatusDm> WatchStatuses { get; set; }
     List<AccountWatch> AccountWatches { get; set; }
+    List<AgencyStatusDm> AgencyStatuses { get; set; }
     AccountWatch? ActiveWatch { get; set; }
     List<BsgLookup> BranchesLookup { get; set; }
     List<BsgLookup> DivisionsLookup { get; set; }
     List<BsgLookup> UnderwritersLookup { get; set; }
+    List<AgencyDto> AllAgencies { get; set; }
+    List<Address> AccountAddresses { get; set; }
     List<Agent> AgencyAgents { get; set; }
     List<BsgLookup> AgencyAgentsLookup { get; set; }
-    
+
     Task CreateAccountWatch(AccountWatch accountWatch);
     Task UpdateAccountWatch(AccountWatch accountWatch);
     Task DeleteAccountWatch(Guid accountWatchId);
@@ -45,6 +48,7 @@ public interface IAccountState : IStateBase
     Task SetLayout();
     Task<bool> Initialize();
     void ClearAccount();
+    IconStyle GetAgencyStatusStyle(string status);
     Task SaveAddress(BsgAddress address, bool isNew = false);
     Task DeleteAddress(Guid addressId);
     Task SavePhoneNumber(BsgPhoneNumber phoneNumber);
@@ -52,11 +56,12 @@ public interface IAccountState : IStateBase
     Task SaveEmail(BsgEmail email, bool isNew = false);
     Task DeleteEmail(Guid emailId);
     Task<SaveDataResult> SaveAccountBasicInfo();
+
+    Task<Agency?> AgencyChanged(string agencyNumber);
 }
 
 public class AccountState(
     IDataAccess dataAccess,
-    IDataCache dataCache,
     ILoggingService loggingService,
     NotificationService notificationService)
     : StateBase(loggingService, notificationService), IAccountState
@@ -70,9 +75,11 @@ public class AccountState(
     public Account? Account { get; set; }
     public string AccountStatus { get; set; } = "";
     public IconStyle AccountStatusStyle { get; set; }
+    public IconStyle AgencyStatusStyle { get; set; }
     public bool IsAccountActive { get; set; }
     public string FirstIndemnityDate { get; set; } = "";
     public AccountLayout? SelectedType { get; set; }
+    public List<AgencyStatusDm> AgencyStatuses { get; set; } = [];
 
     #region AddressTypes
 
@@ -298,6 +305,7 @@ public class AccountState(
 
                 Task.Delay(2000);
             }
+
             return _divisionsLookup;
         }
         set
@@ -326,6 +334,7 @@ public class AccountState(
 
                 Task.Delay(2000);
             }
+
             return _underwritersLookup;
         }
         set
@@ -465,6 +474,54 @@ public class AccountState(
 
     #endregion
 
+    #region AccountAddresses
+
+    private List<Address> _accountAddresses = [];
+
+    public List<Address> AccountAddresses
+    {
+        get => _accountAddresses;
+        set
+        {
+            _accountAddresses = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region AllAgencies
+
+    private List<AgencyDto> _allAgencies = [];
+
+    public List<AgencyDto> AllAgencies
+    {
+        get => _allAgencies;
+        set
+        {
+            _allAgencies = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
+    #region Agency
+
+    private Agency? _agency;
+
+    public Agency? Agency
+    {
+        get => _agency;
+        set
+        {
+            _agency = value;
+            OnPropertyChanged();
+        }
+    }
+
+    #endregion
+
     private bool _isBranchesLoaded;
     private bool _isDivisionsLoaded;
     private bool _isUnderwritersLoaded;
@@ -560,7 +617,7 @@ public class AccountState(
         ResultVariable = () => _phoneTypesResult,
         AfterLoad = () =>
         {
-            PhoneNumberTypes = _phoneTypesResult.Data!; 
+            PhoneNumberTypes = _phoneTypesResult.Data!;
             _isPhoneNumberTypesLoaded = true;
         }
     }, "phone types");
@@ -582,7 +639,7 @@ public class AccountState(
         ResultVariable = () => _statesResult,
         AfterLoad = () =>
         {
-            States = _statesResult.Data!; 
+            States = _statesResult.Data!;
             _isStatesLoaded = true;
         }
     }, "states");
@@ -605,7 +662,7 @@ public class AccountState(
         AfterLoad = () =>
         {
             WatchStatuses = _watchStatusesResult.Data!;
-            _isWatchStatusesLoaded = true;       
+            _isWatchStatusesLoaded = true;
         }
     }, "watch statuses");
 
@@ -663,7 +720,7 @@ public class AccountState(
                     Name = s.Division
                 })
                 .ToList();
-            _isDivisionsLoaded = true;       
+            _isDivisionsLoaded = true;
         }
     }, "divisions");
 
@@ -692,20 +749,21 @@ public class AccountState(
                     Name = s.IdNavigation.FullName,
                 })
                 .ToList();
-            _isUnderwritersLoaded = true;    
+            _isUnderwritersLoaded = true;
         }
     }, "underwriters");
 
     #endregion
-    
+
     #region Agency Agents
-    
+
     private IDataAccessResult<List<Agent>> _agencyAgentsResult = null!;
 
     private LoadItem AgencyAgentsLoad => AddEventNotify(new()
     {
         Key = CacheKeys.AgencyAgents(Account!.AgentId!.Value),
-        AsyncLoadTask = async () => _agencyAgentsResult = await dataAccess.GetAgencyAgents(Account?.AgencyNumberNavigation?.Id ?? Guid.Empty),
+        AsyncLoadTask = async () =>
+            _agencyAgentsResult = await dataAccess.GetAgencyAgents(Account?.AgencyNumberNavigation?.Id ?? Guid.Empty),
         CacheLoadTask = cache => _agencyAgentsResult = new DataAccessResult<List<Agent>>
         {
             Data = (List<Agent>)cache!
@@ -726,7 +784,43 @@ public class AccountState(
     }, "agency agents");
 
     #endregion
-    
+
+    #region Agencies
+
+    private IDataAccessResult<List<AgencyDto>> _agenciesResult = null!;
+
+    private LoadItem AgenciesLoad => AddEventNotify(new()
+    {
+        Key = CacheKeys.AgenciesDto,
+        AsyncLoadTask = async () => _agenciesResult = await dataAccess.GetAllActiveAgencies(),
+        CacheLoadTask = cache => _agenciesResult = new DataAccessResult<List<AgencyDto>>
+        {
+            Data = (List<AgencyDto>)cache!
+        },
+        ResultVariable = () => _agenciesResult,
+        AfterLoad = () => { AllAgencies = _agenciesResult.Data!; }
+    }, "agencies");
+
+    #endregion
+
+    #region Agency Statuses
+
+    private IDataAccessResult<List<AgencyStatusDm>> _agencyStatusesResult = null!;
+
+    private LoadItem AgencyStatusesLoad => AddEventNotify(new()
+    {
+        Key = CacheKeys.AgencyStatuses,
+        AsyncLoadTask = async () => _agencyStatusesResult = await dataAccess.GetAgencyStatuses(),
+        CacheLoadTask = cache => _agencyStatusesResult = new DataAccessResult<List<AgencyStatusDm>>
+        {
+            Data = (List<AgencyStatusDm>)cache!
+        },
+        ResultVariable = () => _agencyStatusesResult,
+        AfterLoad = () => { AgencyStatuses = _agencyStatusesResult.Data!; }
+    }, "agency statuses");
+
+    #endregion
+
     #endregion
 
     public async Task SetLayout()
@@ -744,7 +838,7 @@ public class AccountState(
             _ => throw new ArgumentOutOfRangeException()
         };
     }
-    
+
     public async Task<bool> Initialize()
     {
         if (string.IsNullOrEmpty(AccountNumber))
@@ -757,6 +851,7 @@ public class AccountState(
     public void ClearAccount()
     {
         Account = null;
+        Agency = null;
         Addresses = [];
         PhoneNumbers = [];
         Emails = [];
@@ -845,6 +940,46 @@ public class AccountState(
         return (SaveDataResult)response;
     }
     
+    public async Task<Agency?> AgencyChanged(string agencyNumber)
+    {
+        var agencyData = await dataAccess.GetAgencyByAgencyNumber(agencyNumber);
+        if (!agencyData.Success)
+        {
+            NotifyLoadError(agencyData.Errors, "agency", true);
+            return null;
+        }
+        
+        var agencyAgents = await dataAccess.GetAgencyAgents(agencyData.Data!.Id);
+        if (agencyAgents.Success)
+        {
+            AgencyAgents = agencyAgents.Data!;
+            AgencyAgentsLookup = AgencyAgents
+                .Select(s => new BsgLookup
+                {
+                    Id = s.Id,
+                    Code = "",
+                    Name = s.IdNavigation.FullName
+                })
+                .ToList();
+            
+            return agencyData.Data;
+        }
+
+        NotifyLoadError(agencyAgents.Errors, "agency agents", true);
+        return null;
+    }
+
+    public IconStyle GetAgencyStatusStyle(string status)
+    {
+        return status.ToLower() switch
+        {
+            "active" => IconStyle.Success,
+            "prospect" => IconStyle.Warning,
+            "terminated" => IconStyle.Danger,
+            _ => IconStyle.Base
+        };
+    }
+
     private async Task<bool> LoadAccount(bool isMain = false)
     {
         IsAccountLoaded = false;
@@ -858,6 +993,8 @@ public class AccountState(
         }
 
         Account = accountResult.Data;
+
+        Agency = Account?.AgencyNumberNavigation;
 
         Addresses = Account?.IdNavigation.LegalEntityAddresses
             .Select(s => new BsgAddress(s.Type, s.Address))
@@ -879,8 +1016,8 @@ public class AccountState(
             .OrderByDescending(o => o.Effective)
             .FirstOrDefault();
 
-        var status = statusLog?.AccountStatus ?? "";
-        AccountStatus = status.ToLower() switch
+        var accountStatus = statusLog?.AccountStatus ?? "";
+        AccountStatus = accountStatus.ToLower() switch
         {
             "active" => "Active",
             "term. agent" => "Terminated",
@@ -893,27 +1030,28 @@ public class AccountState(
             _ => "Not Defined"
         };
 
-        AccountStatusStyle = AccountStatus.ToLower() switch
+        var agencyStatus = Agency?.Status ?? "";
+        AgencyStatusStyle = agencyStatus.ToLower() switch
         {
             "active" => IconStyle.Success,
-            "prospect" => IconStyle.Warning,
-            "terminated" => IconStyle.Danger,
+            "pending" or "on hold" => IconStyle.Warning,
+            "lost" or "terminated" => IconStyle.Danger,
             _ => IconStyle.Base
         };
-        
+
         IsAccountActive = statusLog?.AccountStatusNavigation?.Active ?? false;
 
         var firstIndemnity = Account?.Indemnitors
             .OrderBy(o => o.AgreementDate)
             .FirstOrDefault()?
             .AgreementDate;
-        
-        FirstIndemnityDate = firstIndemnity == null 
+
+        FirstIndemnityDate = firstIndemnity == null
             ? "First indemnity: None"
             : $"First indemnity: {firstIndemnity:MM/dd/yyyy}";
 
         await LoadAgencyAgents();
-        
+
         IsAccountLoaded = true;
 
         return true;
@@ -922,9 +1060,10 @@ public class AccountState(
     private async Task LoadDomainTables()
     {
         var start = DateTime.Now;
-        await dataCache.ParallelGetCacheOrDataAsync(AddressTypesLoad, CountriesLoad, PhoneTypesLoad,
-            StatesLoad, WatchStatusesLoad, BranchesLoad, DivisionsLoad, UnderwritersLoad);
-        
+        await dataAccess.ParallelGetCacheOrDataAsync(AddressTypesLoad, CountriesLoad, PhoneTypesLoad,
+            StatesLoad, WatchStatusesLoad, BranchesLoad, DivisionsLoad, UnderwritersLoad, AgenciesLoad,
+            AgencyStatusesLoad);
+
         var elapsed = DateTime.Now - start;
         var elapsedTxt = elapsed.ToString(@"mm\:ss\.fff");
         Console.WriteLine($"Load domain tables took {elapsedTxt} seconds");
@@ -933,13 +1072,17 @@ public class AccountState(
     private async Task LoadAgencyAgents()
     {
         Console.WriteLine($"Load agency agents - {Account?.AgencyNumberNavigation?.Id.ToString() ?? "NO AgencyId"}");
-        if(Account?.AgencyNumberNavigation?.Id != null && Account?.AgencyNumberNavigation?.Id != Guid.Empty)
-            await dataCache.GetCacheOrLoadDataAsync(AgencyAgentsLoad);
+        if (Account?.AgencyNumberNavigation?.Id != null && Account?.AgencyNumberNavigation?.Id != Guid.Empty)
+            await dataAccess.GetCacheOrLoadDataAsync(AgencyAgentsLoad);
     }
 
-    
+    #region Agency
+
+    #endregion
+
+
     #region Account Watches
-    
+
     public async Task CreateAccountWatch(AccountWatch accountWatch)
     {
         await dataAccess.CreateAccountWatch(accountWatch.Id, accountWatch.AccountId, accountWatch.WatchDate,
@@ -954,6 +1097,6 @@ public class AccountState(
     {
         await dataAccess.DeleteAccountWatch(accountWatchId);
     }
-    
+
     #endregion
 }

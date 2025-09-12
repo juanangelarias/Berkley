@@ -120,9 +120,9 @@ public partial class Account
 
     public bool FundsControl { get; set; }
 
-    public string? PolutionLiabilityCarrier { get; set; }
+    public string? PollutionLiabilityCarrier { get; set; }
 
-    public DateOnly? PolutionLiabilityExpires { get; set; }
+    public DateOnly? PollutionLiabilityExpires { get; set; }
 
     public bool AffiliateCompany { get; set; }
 

@@ -488,7 +488,7 @@ type Query {
   agencyStatusLog(agencyNumber: String!): [AgencyStatusLog!]!
   agencyBonds(agencyId: UUID!): [Bond!]!
   agencyAgents(agencyId: UUID!): [Agent!]!
-  allActiveAgencies: [Agency!]!
+  allActiveAgencies: [AgencyDto!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
   agencyPOAs(agencyId: UUID!): [PowerOfAttorney!]!
@@ -1051,6 +1051,14 @@ type BondTypeDm {
 type SubscriptionResultOfGuid {
   identifier: String!
   result: UUID!
+}
+
+type AgencyDto {
+  id: UUID!
+  agencyNumber: String!
+  fullName: String!
+  emails: [EmailDto!]!
+  addresses: [AddressDto!]!
 }
 
 type StatementQualityDm {
@@ -1955,6 +1963,20 @@ type AdditionalRelatedParty {
   idNavigation: LegalEntity!
 }
 
+type AddressDto {
+  id: UUID!
+  type: String!
+  address1: String!
+  address2: String!
+  address3: String!
+  city: String!
+  state: String!
+  stateCode: String!
+  postalCode: String!
+  country: String!
+  countryCode: String!
+}
+
 input SetUserSettingInput {
   key: String!
   value: String
@@ -2141,6 +2163,12 @@ type SecurityRoleMember {
   id: UUID!
   name: String!
   isRole: Boolean!
+}
+
+type EmailDto {
+  id: UUID!
+  type: String!
+  emailAddress: String!
 }
 
 input CreateAgencyInventoryInput {
@@ -2482,8 +2510,8 @@ type Account {
   homeOfficeLock: Boolean!
   businessTypeClass: String
   fundsControl: Boolean!
-  polutionLiabilityCarrier: String
-  polutionLiabilityExpires: LocalDate
+  pollutionLiabilityCarrier: String
+  pollutionLiabilityExpires: LocalDate
   affiliateCompany: Boolean!
   creditReport: String
   estimatingSystem: String

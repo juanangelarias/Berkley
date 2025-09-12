@@ -3,6 +3,7 @@
 public class AgencyDto
 {
     public Guid Id { get; set; }
+    public string AgencyNumber { get; set; } = "";
     public string FullName { get; set; } = "";
     public List<EmailDto> Emails { get; set; } = [];
     public List<AddressDto> Addresses { get; set; } = [];

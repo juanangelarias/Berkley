@@ -518,6 +518,11 @@ namespace James.Data.Server
             return await ExecuteSave(async () =>
                 await agencyMutation.DeleteAgencyCommissionRate(commRateId, eventSender, contextFactory));
         }
+        public async Task<IDataAccessResult<List<AgencyDto>>> GetAllActiveAgencies()
+        {
+            var response = await ExecuteGet(async () => await query.GetAllActiveAgencies(contextFactory));
+            return response!;
+        }
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
         {

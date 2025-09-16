@@ -76,6 +76,8 @@
     
     private IDataAccessResult<List<AgencyAccountDto>> _accountResult = null!;
 
+    // ToDo: Once we resolve the problem of deserialization we need to remove the line
+    //       >> CacheDuration = new (0, 0, 0, 0) <<
     private LoadItem AccountLoad => AddEventNotify(new LoadItem<List<Account>>
     {
         Key = $"Accounts{AgencyNumber}",

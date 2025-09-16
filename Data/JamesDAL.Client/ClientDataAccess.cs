@@ -5,6 +5,7 @@ using James.Shared.Model;
 using StrawberryShake;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using James.Shared.Dto;
 using James.Shared.Imaging;
 using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory;
 using Severity = James.Shared.Model.Severity;
@@ -42,10 +43,18 @@ namespace James.Data.Client
             return await ExecuteGet<List<AdditionalRelatedParty>>(async () => await jamesClient.GetAdditionalRelatedParties.ExecuteAsync(accountNumber ?? ""),
                 "AdditionalRelatedParties");
         }
-        public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
+        public async Task<IDataAccessResult<List<AgencyAccountDto>>> GetAgencyAccounts(string agencyNumber)
         {
-            return await ExecuteGet<List<Account>>(async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),
+            return await ExecuteGet<List<AgencyAccountDto>>(
+                async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),
                 subProperty: "AgencyAccounts");
+        }
+        
+        public async Task<IDataAccessResult<List<AgencyAccountBondDto>>> GetAgencyAccountBonds(string accountNum)
+        {
+            return await ExecuteGet<List<AgencyAccountBondDto>>(
+                async () => await jamesClient.AgencyAccountBonds.ExecuteAsync(accountNum),
+                subProperty: "AgencyAccountBonds");
         }
 
         public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)

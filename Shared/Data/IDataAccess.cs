@@ -1,4 +1,5 @@
-﻿using James.Shared.Imaging;
+﻿using James.Shared.Dto;
+using James.Shared.Imaging;
 using James.Shared.Model;
 
 namespace James.Shared.Data
@@ -58,7 +59,8 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber);
         public Task<IDataAccessResult<List<Account>>> SearchAccounts(string searchString);
         public Task<IDataAccessResult<List<AdditionalRelatedParty>>> GetAdditionalRelatedParties(string? accountNumber);
-        public Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber);
+        public Task<IDataAccessResult<List<AgencyAccountDto>>> GetAgencyAccounts(string agencyNumber);
+        public Task<IDataAccessResult<List<AgencyAccountBondDto>>> GetAgencyAccountBonds(string accountNum);
         public Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber);
         public Task<IDataAccessResult<Agency?>> GetAgencyNameAndNumberById(Guid agencyId);
         public Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString);

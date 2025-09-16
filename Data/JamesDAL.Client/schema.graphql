@@ -362,6 +362,19 @@ input SaveCommissionRatesInput {
   rates: [AgencyCommissionInput!]!
 }
 
+type AccountWatch {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime
+  accountId: UUID!
+  watchDate: DateTime!
+  watchStatus: String!
+  reason: String!
+  actionPlan: String!
+  account: Account!
+  watchStatusNavigation: WatchStatusDm!
+}
+
 type Indemnitor {
   id: UUID!
   created: DateTime!
@@ -462,6 +475,7 @@ type AgencyCommission {
   rate: Float!
   effective: DateTime!
   expires: DateTime
+  expireIncluded: Int!
 }
 
 type SetDefaultUserSettingPayload {
@@ -1715,7 +1729,6 @@ type Account {
   cpafirmId: UUID
   cpacontactId: UUID
   underwriterId: UUID
-  watchStatus: String!
   naics: String
   homeOfficeReviewBy: UUID
   homeOfficeReviewed: DateTime
@@ -1724,8 +1737,8 @@ type Account {
   homeOfficeLock: Boolean!
   businessTypeClass: String
   fundsControl: Boolean!
-  polutionLiabilityCarrier: String
-  polutionLiabilityExpires: LocalDate
+  pollutionLiabilityCarrier: String
+  pollutionLiabilityExpires: LocalDate
   affiliateCompany: Boolean!
   creditReport: String
   estimatingSystem: String
@@ -1738,6 +1751,7 @@ type Account {
   businessTypeRiskCodeId: UUID
   accountPrograms: [AccountProgram!]!
   accountStatusLogs: [AccountStatusLog!]!
+  accountWatches: [AccountWatch!]!
   additionalRelatedParties: [AdditionalRelatedParty!]!
   agencyCompetitions: [AgencyCompetition!]!
   agencyNumberNavigation: Agency
@@ -1772,7 +1786,6 @@ type Account {
   taxBasisNavigation: TaxBasisDm
   underwriter: Underwriter
   underwriterRecommendations: [UnderwriterRecommendation!]!
-  watchStatusNavigation: WatchStatusDm!
   workInProgressJobs: [WorkInProgressJob!]!
   mainAddress: Address
   agency: Agency
@@ -2020,6 +2033,7 @@ input AgencyCommissionInput {
   rate: Float!
   effective: DateTime!
   expires: DateTime
+  expireIncluded: Int!
 }
 
 input KeyValuePairOfStringAndStringInput {
@@ -2054,7 +2068,7 @@ type WatchStatusDm {
   created: DateTime!
   modified: DateTime!
   watchStatus: String!
-  accounts: [Account!]!
+  accountWatches: [AccountWatch!]!
 }
 
 type AccountClassDm {
@@ -2475,6 +2489,7 @@ type CountryDm {
   phoneMask: String!
   postalCodeMask: String!
   addressFinalLineFormat: String
+  flagImageBase64: String
   insurers: [Insurer!]!
   states: [State!]!
 }

@@ -5250,7 +5250,7 @@ public partial class JamesDatabaseContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("NAICS");
             entity.Property(e => e.Pocinterims).HasColumnName("POCInterims");
-            entity.Property(e => e.PolutionLiabilityCarrier).HasMaxLength(100);
+            entity.Property(e => e.PollutionLiabilityCarrier).HasMaxLength(100);
             entity.Property(e => e.PostalCode)
                 .HasMaxLength(10)
                 .IsUnicode(false);

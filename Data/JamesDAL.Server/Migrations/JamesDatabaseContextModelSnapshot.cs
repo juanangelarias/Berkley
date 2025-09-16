@@ -239,11 +239,11 @@ namespace James.Data.Server.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("POCInterims");
 
-                    b.Property<string>("PolutionLiabilityCarrier")
+                    b.Property<string>("PollutionLiabilityCarrier")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<DateTime?>("PolutionLiabilityExpires")
+                    b.Property<DateTime?>("PollutionLiabilityExpires")
                         .HasColumnType("date");
 
                     b.Property<string>("PriorSuretyCompany")

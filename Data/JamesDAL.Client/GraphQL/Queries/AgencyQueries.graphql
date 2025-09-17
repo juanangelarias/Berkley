@@ -64,7 +64,7 @@ query agencyAccounts($agencyNumber: String!) {
           underwriterFullName
           obligeeId
           obligeeFullName
-          bondType
+          bondType 
           siccode
           municipality
           bondClass

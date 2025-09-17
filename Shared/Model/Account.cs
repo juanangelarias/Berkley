@@ -150,8 +150,6 @@ public partial class Account
     
     public virtual ICollection<AccountWatch> AccountWatches { get; set; } = new List<AccountWatch>();
 
-    public virtual ICollection<AccountWatch> AccountWatches { get; set; } = new List<AccountWatch>();
-
     public virtual ICollection<AdditionalRelatedParty> AdditionalRelatedParties { get; set; } = new List<AdditionalRelatedParty>();
 
     public virtual ICollection<AgencyCompetition> AgencyCompetitions { get; set; } = new List<AgencyCompetition>();

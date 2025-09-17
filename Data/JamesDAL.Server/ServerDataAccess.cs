@@ -5,6 +5,7 @@ using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.GraphQL.Queries;
 using James.Shared;
 using James.Shared.Data;
+using James.Shared.Dto;
 using James.Shared.Imaging;
 using James.Shared.Server;
 using Microsoft.AspNetCore.Http;
@@ -35,9 +36,13 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAdditionalRelatedParties(accountNumber, contextFactory));
         }
-        public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
+        public async Task<IDataAccessResult<List<AgencyAccountDto>>> GetAgencyAccounts(string agencyNumber)
         {
             return await ExecuteGet(async () => await query.GetAgencyAccounts(agencyNumber, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<AgencyAccountBondDto>>> GetAgencyAccountBonds(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyAccountBonds(accountNum, contextFactory));
         }
 
         public async Task<IDataAccessResult<Agency?>> GetAgencyByAgencyNumber(string agencyNumber)

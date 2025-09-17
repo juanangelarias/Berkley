@@ -1,8 +1,16 @@
-﻿namespace James.Shared.Model;
+﻿using System;
+using System.Collections.Generic;
+
+namespace James.Shared.Model;
+//Generated for DB
 
 public partial class AccountWatch
 {
     public Guid Id { get; set; }
+
+    public DateTime Created { get; set; }
+
+    public DateTime? Modified { get; set; }
 
     public Guid AccountId { get; set; }
 
@@ -13,10 +21,6 @@ public partial class AccountWatch
     public string Reason { get; set; } = null!;
 
     public string ActionPlan { get; set; } = null!;
-
-    public DateTime Created { get; set; }
-
-    public DateTime? Modified { get; set; }
 
     public virtual Account Account { get; set; } = null!;
 

@@ -36,8 +36,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<AccountStatusLog> AccountStatusLogs { get; set; }
 
-	public virtual DbSet<AccountWatch> AccountWatches { get; set; }
-	
+    public virtual DbSet<AccountWatch> AccountWatches { get; set; }
+
     public virtual DbSet<AdditionalObligee> AdditionalObligees { get; set; }
 
     public virtual DbSet<AdditionalRelatedParty> AdditionalRelatedParties { get; set; }
@@ -351,6 +351,8 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<VBond> VBonds { get; set; }
 
     public virtual DbSet<VConfiguration> VConfigurations { get; set; }
+
+    public virtual DbSet<VEntityTopParent> VEntityTopParents { get; set; }
 
     public virtual DbSet<VImagingCategoryTabDivisionType> VImagingCategoryTabDivisionTypes { get; set; }
 
@@ -1001,23 +1003,26 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<AgencyCommission>(entity =>
         {
-            entity.HasKey(e => new { e.AgencyId, e.BondType, e.Minimum, e.Effective }).IsClustered(false);
+            entity.HasKey(e => e.Id).IsClustered(false);
 
             entity.ToTable("AgencyCommission", tb => tb.HasTrigger("trgAgencyCommissionModified"));
 
+            entity.HasIndex(e => new { e.AgencyId, e.BondType, e.Minimum, e.Effective, e.ExpireIncluded }, "UQ_AgencyCommission").IsUnique();
+
             entity.HasIndex(e => e.Id, "UQ_AgencyCommission_Id").IsUnique();
 
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.BondType)
                 .HasMaxLength(10)
                 .IsUnicode(false);
-            entity.Property(e => e.Effective)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Effective)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ExpireIncluded).HasComputedColumnSql("(case when [Expires] IS NULL then (0) else (1) end)", false);
             entity.Property(e => e.Expires).HasColumnType("datetime");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -2523,6 +2528,7 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.FlagImageBase64).IsUnicode(false);
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -5163,7 +5169,7 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<VAccount>(entity =>
         {
-            //Needed edit to the generated code.  Do not replace it.
+            //Needed edit to the generated code.  Do not replace.
             entity
                 .HasKey(e => e.AccountNum);
             entity
@@ -5295,7 +5301,7 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<VAccountStatus>(entity =>
         {
-            //Needed edit to the generated code.  Do not replace it.
+            //Needed edit to the generated code.  Do not replace.
             entity
                 .HasKey(e=>e.AccountNum);
             entity
@@ -5410,6 +5416,13 @@ public partial class JamesDatabaseContext : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<VEntityTopParent>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vEntityTopParent");
+        });
+
         modelBuilder.Entity<VImagingCategoryTabDivisionType>(entity =>
         {
             entity
@@ -5483,10 +5496,16 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.HasIndex(e => e.Id, "UQ_WatchStatusDM_Id").IsUnique();
 
-            entity.Property(e => e.WatchStatus).HasMaxLength(8).IsUnicode(false);
-            entity.Property(e => e.Created).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+            entity.Property(e => e.WatchStatus)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
-            entity.Property(e => e.Modified).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<WorkInProgressJob>(entity =>

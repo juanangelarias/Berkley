@@ -1,57 +1,60 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@using James.Shared.Dto
+@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
 <Theme />
 
 
-<RadzenDataGrid TItem="Account" @ref="@_agencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true" AllowSorting="true"
+<RadzenDataGrid TItem="AgencyAccountDto" @ref="@_agencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true" AllowSorting="true"
                 Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true" Density="Density.Compact"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                GridLines="DataGridGridLines.Vertical" IsLoading="@IsLoading">@* Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">*@
+                RowExpand="RowExpand" GridLines="DataGridGridLines.Vertical" IsLoading="@IsLoading">
+                @* Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">*@
     <Template Context="account">
-        <RadzenDataGrid Data="account.Bonds" TItem="Bond" Style="height: 400px; border-radius: 10px;"
+        <RadzenDataGrid Data="account.Bonds" TItem="AgencyAccountBondDto"
+                        Style="height: 400px; border-radius: 10px;"
                         GridLines="DataGridGridLines.Vertical">
             <Columns>
-                <RadzenDataGridColumn TItem="Bond" Title="Bond #" Property="BondNumber" />
-                <RadzenDataGridColumn TItem="Bond" Title="Type" Property="BondType.BondType" />
-                <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" />
-                <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" />
-                <RadzenDataGridColumn TItem="Bond" Title="Amount" />
-                <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" />
-                <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" />
-                <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName" />
-                <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" />
-                <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass" />
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Bond #" Property="BondNumber"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Type" Property="BondType"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Begin Date" Property="Effective" FormatString="{0:dd/MM/yyyy}"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="End Date" Property="Expiration" FormatString="{0:dd/MM/yyyy}"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Amount" Property="Amount" FormatString="{0:C0}" TextAlign="TextAlign.Right"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="UW" Property="UnderwriterFullName"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="SIC" Property="Siccode"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Obligee" Property="ObligeeFullName"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Municipality" Property="Municipality"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Class" Property="BondClass"/>
             </Columns>
         </RadzenDataGrid>
     </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="Account" Title="Status" Frozen="true" Width="120px"/>
-        <RadzenDataGridColumn TItem="Account" Title="Account #" Property="AccountNum" Frozen="true" Width="150px"/>
-        <RadzenDataGridColumn TItem="Account" Title="Name" Property="IdNavigation.FullName" Frozen="true" MinWidth="200px" />
-        <RadzenDataGridColumn TItem="Account" Title="Address" Property="MainAddress.Address1" MinWidth="200px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Status" Property="Status" Frozen="true" Width="120px"/>
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Account #" Property="AccountNum" Frozen="true" Width="150px"/>
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Name" Property="Name" Frozen="true" MinWidth="200px"/>
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Address" Property="MainAddress.Address1" MinWidth="200px">
             <Template Context="account">
-                <RadzenText Text="@account.MainAddress?.Address1" />
+                <RadzenText Text="@account.MainAddress?.Address1"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Account" Title="City" Width="150px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="City" Width="150px">
             <Template Context="account">
-                <RadzenText Text="@account.MainAddress?.City" />
+                <RadzenText Text="@account.MainAddress?.City"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Account" Title="State" Width="120px" Property="MainAddress.StateCode">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="State" Width="120px" Property="MainAddress.StateCode">
             <Template Context="account">
-                <RadzenText Text="@account.MainAddress?.StateCode" />
+                <RadzenText Text="@account.MainAddress?.StateCode"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Account" Title="Postal Code" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Postal Code" Width="175px">
             <Template Context="account">
-                <RadzenText Text="@account.MainAddress?.PostalCode" />
+                <RadzenText Text="@account.MainAddress?.PostalCode"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Account" Title="Branch" Property="Branch" Width="125px" />
-        <RadzenDataGridColumn TItem="Account" Title="Bond Count" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Branch" Property="Branch" Width="125px"/>
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Bond Count" Width="175px">
             <Template Context="account">
                 <RadzenText Text="@account.Bonds.Count().ToString()"/>
             </Template>
@@ -61,29 +64,32 @@
         No Records to Display
     </EmptyTemplate>
     <LoadingTemplate>
-        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
     </LoadingTemplate>
 </RadzenDataGrid>
 
 @code {
     [Parameter] public required string AgencyNumber { get; set; }
 
-    private List<Account> _agencyAccounts = new();
-    private RadzenDataGrid<Account> _agencyAccountGrid = null!;
+    private List<AgencyAccountDto> _agencyAccounts = new();
+    private RadzenDataGrid<AgencyAccountDto> _agencyAccountGrid = null!;
     
-    private IDataAccessResult<List<Account>> _accountResult = null!;
+    private IDataAccessResult<List<AgencyAccountDto>> _accountResult = null!;
 
+    // ToDo: Once we resolve the problem of deserialization we need to remove the line
+    //       >> CacheDuration = new (0, 0, 0, 0) <<
     private LoadItem AccountLoad => AddEventNotify(new LoadItem<List<Account>>
+    {
+        Key = $"Accounts{AgencyNumber}",
+        AsyncLoadTask = async () => _accountResult = await DataAccess.GetAgencyAccounts(AgencyNumber),
+        CacheLoadTask = cache => _accountResult = new DataAccessResult<List<AgencyAccountDto>>
         {
-            Key = $"Accounts{AgencyNumber}",
-            AsyncLoadTask = async () => _accountResult = await DataAccess.GetAgencyAccounts(AgencyNumber),
-            CacheLoadTask = cache => _accountResult = new DataAccessResult<List<Account>>
-            {
-                Data = (List<Account>)cache!
-            },
-            ResultVariable = () => _accountResult,
-            AfterLoad = () => { _agencyAccounts = _accountResult.Data!; }
-        }, "accounts");
+            Data = (List<AgencyAccountDto>)cache!
+        },
+        ResultVariable = () => _accountResult,
+        AfterLoad = () => { _agencyAccounts = _accountResult.Data!; },
+        CacheDuration = new(0, 0, 0, 0)
+    }, "accounts");
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,5 +115,18 @@
             return;
 
         await DataAccess.GetCacheOrLoadDataAsync(AccountLoad);
+    }
+    
+    private async Task RowExpand(AgencyAccountDto arg)
+    {
+        if(arg.Bonds.Any())
+            return;
+        
+        var bondsResult = await DataAccess.GetAgencyAccountBonds(arg.AccountNum);
+        
+        if (bondsResult.Success)
+            arg.Bonds = bondsResult.Data!;
+        else
+            NotifyLoadError(bondsResult.Errors, "bonds", true);
     }
 }

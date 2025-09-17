@@ -51,42 +51,57 @@ query GetAgencyNameAndNumberById($agencyId: UUID!) {
 
 query agencyAccounts($agencyNumber: String!) {
   agencyAccounts(agencyNumber: $agencyNumber) {
-    accountNum
-    branch
-    idNavigation {
-      fullName
-    }
-    bonds {
-      bondNumber
       accountNum
-      effective
-      expiration
-      underWriter {
-        idNavigation{
-          fullName
-        }
-      }
-      obligee {
-        fullName
-      }
-      bondType {
-        bondType
-      }
-      siccode
-      municipality
-      bondClass
+      name
+      branch
+      branchFullName
       status
-    }
-    mainAddress {
-      id
-      address1
-      address2
-      address3
-      city
-      stateCode
-      postalCode
-    }
+      bonds {
+          bondNumber
+          effective
+          expiration
+          underwriterId
+          underwriterFullName
+          obligeeId
+          obligeeFullName
+          bondType
+          siccode
+          municipality
+          bondClass
+          status
+          amount
+      }
+      mainAddress {
+          id
+          address1
+          address2
+          address3
+          city
+          stateCode
+          postalCode
+          country
+          countryCode
+          state
+      }
   }
+}
+
+query agencyAccountBonds($accountNum: String!) {
+    agencyAccountBonds(accountNum: $accountNum) {
+        bondNumber
+        bondType
+        amount
+        bondClass
+        effective
+        expiration
+        municipality
+        obligeeId
+        obligeeFullName
+        siccode
+        status
+        underwriterId
+        underwriterFullName
+    }
 }
 
 query GetAgencyBonds($agencyId: UUID!) {

@@ -31,16 +31,13 @@
             }
             return bond.Agency;
         }
-        public async Task<LegalEntity?> GetObligee([Parent] Bond bond,
+        
+        public LegalEntity GetObligee([Parent] Bond bond,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            if (null == bond.Obligee)
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-                bond.Obligee = await ctx.LegalEntities.SingleAsync(agc => agc.Id == bond.ObligeeId);
-            }
-            return bond.Obligee;
+            return bond.Obligee ?? new LegalEntity{FullName = "No Obligee"};
         }
+        
         public async Task<LegalEntity?> GetResponsibleParty([Parent] Bond bond,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

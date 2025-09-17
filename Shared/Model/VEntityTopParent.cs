@@ -1,4 +1,8 @@
-﻿namespace James.Shared.Model;
+﻿using System;
+using System.Collections.Generic;
+
+namespace James.Shared.Model;
+//Generated for DB
 
 public partial class VEntityTopParent
 {

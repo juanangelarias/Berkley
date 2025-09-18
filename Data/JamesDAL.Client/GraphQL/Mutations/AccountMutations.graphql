@@ -84,3 +84,9 @@ mutation SetAccountCommercialInfo($input: SetAccountCommercialInfoInput!) {
         boolean
     }
 }
+
+mutation SetAccountAgencyAndAgent($input: SetAccountAgencyAndAgentInput!) {
+    setAccountAgencyAndAgent(input: $input) {
+        boolean
+    }
+}

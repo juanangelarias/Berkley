@@ -737,6 +737,19 @@ namespace James.Data.Client
 
             return GraphQLSaveResult(response);
         }
+        
+        public async Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid agentId)
+        {
+            var response = await jamesClient
+                .SetAccountAgencyAndAgent.ExecuteAsync(new()
+                {
+                    AccountId = accountId,
+                    AgencyNumber = agencyNumber,
+                    AgentId = agentId
+                });
+
+            return GraphQLSaveResult(response);
+        }
 
         public async Task<ISaveDataResult> DeleteAccountWatch(Guid id)
         {

@@ -253,5 +253,26 @@ public class AccountMutation
         return true;
     }
 
+    [Authorize]
+    public async Task<bool> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid agentId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var account = await ctx.Accounts
+            .Include(i=>i.IdNavigation)
+            .FirstOrDefaultAsync(a => a.Id == accountId);
+        
+        if(account == null)
+            return false;
+        
+        account.AgencyNumber = agencyNumber;
+        account.AgentId = agentId;
+        
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+
     #endregion
 }

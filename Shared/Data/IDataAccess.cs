@@ -223,6 +223,7 @@ namespace James.Shared.Data
             string actionPlan);
         public Task<ISaveDataResult> SetAccountCommercialInfo(Guid accountId, string fullName, Guid underwriterId,
             string branchKey, string divisionCode, Guid sicCodeId, Guid hoLead);
+        public Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid agentId);
         public Task<ISaveDataResult> DeleteAccountWatch(Guid id );
         
         public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId);

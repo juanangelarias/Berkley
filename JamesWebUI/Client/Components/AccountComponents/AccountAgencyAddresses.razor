@@ -1,0 +1,16 @@
+﻿@inject IAccountState AccountState
+
+@inherits JamesLayoutComponentBase
+
+@if(AccountState?.Agency?.Id != null)
+{
+    <LegalEntityAddressManager LegalEntityId="@(AccountState?.Agency?.Id ?? Guid.Empty)"/>
+}
+else
+{
+    <RadzenText Text="No Agency is selected" TextStyle="TextStyle.DisplayH6" TextAlign="TextAlign.Center"/>
+}
+
+@code {
+
+}

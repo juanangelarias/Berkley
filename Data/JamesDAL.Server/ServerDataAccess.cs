@@ -654,6 +654,12 @@ namespace James.Data.Server
 
             return response;
         }
+        public async Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid agentId)
+        {
+            var response = await ExecuteSave(async () => await accountMutation.SetAccountAgencyAndAgent(accountId, agencyNumber, agentId, contextFactory));
+
+            return response;
+        }
 
         public async Task<ISaveDataResult> DeleteAccountWatch(Guid id)
         {

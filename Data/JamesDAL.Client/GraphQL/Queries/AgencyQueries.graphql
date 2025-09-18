@@ -1,43 +1,51 @@
 ﻿query GetAgencyByAgencyNumber($agencyNumber: String!) {
-  agencyByAgencyNumber(agencyNumber: $agencyNumber) {
-    id
-    agencyNumber
-    branch
-    status
-    w9
-    nasbp
-    profitSharing
-    profitSharingMinimumPremium
-    nationalProducerNumber
-    idNavigation {
-      fullName
-      parentNavigation {
+    agencyByAgencyNumber(agencyNumber: $agencyNumber) {
         id
-        fullName
-        agencyIdNavigation {
-          agencyNumber
-        }
-      }
-      legalEntityAddresses {
-        type
-        address {
-          id
-          address1
-          address2
-          address3
-          city
-          stateCode
-          stateCodeNavigation {
-            countryCode
-            countryCodeNavigation {
-              name
+        agencyNumber
+        branch
+        status
+        w9
+        nasbp
+        profitSharing
+        profitSharingMinimumPremium
+        nationalProducerNumber
+        agentsInAgencies{
+            agentId
+            agent {
+                idNavigation {
+                    fullName
+                }
             }
-          }
-          postalCode
         }
-      }
+        idNavigation {
+            fullName
+            parentNavigation {
+                id
+                fullName
+                agencyIdNavigation {
+                    agencyNumber
+                }
+            }
+            legalEntityAddresses {
+                type
+                address {
+                    id
+                    address1
+                    address2
+                    address3
+                    city
+                    stateCode
+                    stateCodeNavigation {
+                        countryCode
+                        countryCodeNavigation {
+                            name
+                        }
+                    }
+                    postalCode
+                }
+            }
+        }
     }
-  }
 }
 
 query GetAgencyNameAndNumberById($agencyId: UUID!) {

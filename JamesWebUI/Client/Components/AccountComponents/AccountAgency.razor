@@ -31,9 +31,8 @@
             <RadzenRow JustifyContent="JustifyContent.Start" Visible="@(_isEditMode)">
                 <BsgFormField Text="Agency">
                     <RadzenDropDown Data="@AccountState.AllAgencies" AllowFiltering="true" AllowClear="true"
-                                    Multiple="false" Change="AgencyChanged"
-                                    TextProperty="@nameof(AgencyDto.FullName)"
-                                    @bind-Value="@_agency" Name="Agency"/>
+                                    Multiple="false" Change="AgencyChanged" TextProperty="@nameof(AgencyDto.FullNameDisplay)"
+                                    @bind-Value="@_agencyId" ValueProperty="@nameof(AgencyDto.Id)" Name="Agency"/>
                     <RadzenRequiredValidator Text="The agency is required." Component="Agency"/>
                 </BsgFormField>
             </RadzenRow>
@@ -52,7 +51,7 @@
                     <BsgFormField Text="Status">
                         <Start>
                             <RadzenIcon Icon="fiber_manual_record"
-                                        IconStyle="@AccountState.AccountStatusStyle"/>
+                                        IconStyle="@AccountState.AgencyStatusStyle"/>
                         </Start>
                         <ChildContent>
                             <RadzenTextBox @bind-Value="@_status" Disabled="true" Style="color: black;"/>
@@ -85,8 +84,8 @@
             <RadzenRow class="rz-mt-4" JustifyContent="JustifyContent.End" Visible="@(_isEditMode)">
                 <BsgFormField Text="Agent">
                     <RadzenDropDown Data="AccountState.AgencyAgentsLookup" AllowFiltering="true" AllowClear="true"
-                                    TextProperty="@nameof(BsgLookup.Name)"
-                                    ValueProperty="@nameof(BsgLookup.Id)" @bind-Value="@_agentId" Change="OnAgentChanged"/>
+                                    TextProperty="@nameof(BsgLookup.Name)" ValueProperty="@nameof(BsgLookup.Id)" 
+                                    @bind-Value="@_agentId"/>
                 </BsgFormField>
             </RadzenRow>
             <RadzenRow class="rz-mt-4" JustifyContent="JustifyContent.End" Visible="@(_isEditMode)">
@@ -137,9 +136,9 @@
                 AgencyNumber = AccountState.Account?.AgencyNumberNavigation?.AgencyNumber ?? "",
                 FullName = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.FullName ?? ""
             };
-        _agencyId = _agency?.Id;
+        _agencyId = AccountState.Account?.AgencyNumberNavigation?.Id ?? Guid.NewGuid();
         _agencyNumber = _agency?.AgencyNumber ?? "";
-        _agencyName = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.FullName ?? "";
+        _agencyName = _agency?.FullName ?? ""; 
         _agencyEmail = AccountState.Agency?.IdNavigation.LegalEntityEmails
             .FirstOrDefault(f => f.Type.ToLower() == "main")?
             .EmailAddress ?? "";
@@ -194,9 +193,16 @@
         await DialogService.OpenAsync<AccountNewAgent>("Request for a new Agent", dialogParameters, dialogOptions);
     }
 
-    private async Task AgencyChanged(object obj)
+    private async Task AgencyChanged(object? obj)
     {
-        var agency = (AgencyDto)obj;
+        if(obj == null)
+            return;
+        
+        var agencyId = (Guid)obj;
+        var agency = AccountState.AllAgencies
+            .FirstOrDefault(f => f.Id == agencyId);
+        if(agency == null)
+            return;
         
         var updatedAgency = await AccountState.AgencyChanged(agency.AgencyNumber);
         
@@ -208,15 +214,9 @@
         _status = updatedAgency?.Status ?? "";
         
         _agent = null;
+        _agentId = null;
         
         StateHasChanged();
-        
-        NotifySuccessfulSave("Agency Changed");
-    }
-    
-    private void OnAgentChanged(object obj)
-    {
-        NotifySuccessfulSave("Agent Changed");
     }
     
     private void CancelEdit()
@@ -227,8 +227,16 @@
 
     private async Task SaveEdit()
     {
-        // ToDo Proceed to Save
+        if(string.IsNullOrEmpty(_agencyNumber) || _agentId == null)
+            return;
         
-        NotifySuccessfulSave("Agency and Agent successfully updated");
+        var success = await AccountState.SaveAgencyAndAgent(_agencyNumber, _agentId.Value);
+        
+        SetDisplayFields();
+        
+        if(success)
+            NotifySuccessfulSave("Agency and Agent successfully updated");
+        
+        _isEditMode = false;
     }
 }

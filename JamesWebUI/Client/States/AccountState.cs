@@ -48,7 +48,8 @@ public interface IAccountState : IStateBase
     Task SetLayout();
     Task<bool> Initialize();
     void ClearAccount();
-    IconStyle GetAgencyStatusStyle(string status);
+    IconStyle AgencyStatusStyle { get; set; }
+    Task<bool> SaveAgencyAndAgent(string agencyNumber, Guid agentId);
     Task SaveAddress(BsgAddress address, bool isNew = false);
     Task DeleteAddress(Guid addressId);
     Task SavePhoneNumber(BsgPhoneNumber phoneNumber);
@@ -864,7 +865,7 @@ public class AccountState(
         AccountWatches = [];
         ActiveWatch = null;
     }
-
+    
     public async Task SaveAddress(BsgAddress address, bool isNew = false)
     {
         if (address.IsNew)
@@ -946,47 +947,7 @@ public class AccountState(
         return (SaveDataResult)response;
     }
     
-    public async Task<Agency?> AgencyChanged(string agencyNumber)
-    {
-        var agencyData = await dataAccess.GetAgencyByAgencyNumber(agencyNumber);
-        if (!agencyData.Success)
-        {
-            NotifyLoadError(agencyData.Errors, "agency", true);
-            return null;
-        }
-        
-        var agencyAgents = await dataAccess.GetAgencyAgents(agencyData.Data!.Id);
-        if (agencyAgents.Success)
-        {
-            AgencyAgents = agencyAgents.Data!;
-            AgencyAgentsLookup = AgencyAgents
-                .Select(s => new BsgLookup
-                {
-                    Id = s.Id,
-                    Code = "",
-                    Name = s.IdNavigation.FullName
-                })
-                .ToList();
-            
-            return agencyData.Data;
-        }
-
-        NotifyLoadError(agencyAgents.Errors, "agency agents", true);
-        return null;
-    }
-
-    public IconStyle GetAgencyStatusStyle(string status)
-    {
-        return status.ToLower() switch
-        {
-            "active" => IconStyle.Success,
-            "prospect" => IconStyle.Warning,
-            "terminated" => IconStyle.Danger,
-            _ => IconStyle.Base
-        };
-    }
-
-    private async Task LoadAccount(bool isMain = false)
+    private async Task LoadAccount()
     {
         IsAccountLoaded = false;
         if (string.IsNullOrEmpty(AccountNumber))
@@ -1051,6 +1012,7 @@ public class AccountState(
             .OrderByDescending(o => o.Effective)
             .FirstOrDefault()?
             .NewStatus ?? "";
+        
         AgencyStatusStyle = agencyStatus.ToLower() switch
         {
             "active" => IconStyle.Success,
@@ -1098,8 +1060,56 @@ public class AccountState(
 
     #region Agency
 
-    #endregion
+    public async Task<bool> SaveAgencyAndAgent(string agencyNumber, Guid agentId)
+    {
+        var response = await dataAccess.SetAccountAgencyAndAgent(Account!.Id, agencyNumber, agentId);
+        if (response.Success)
+        {
+            var agencyResponse = await dataAccess.GetAgencyByAgencyNumber(agencyNumber);
+            var agentResponse = await dataAccess.GetAgent(agentId);
 
+            Account.AgencyNumber = agencyNumber;
+            Account.AgencyNumberNavigation = agencyResponse.Data;
+            Account.AgentId = agentId;
+            Account.Agent = agentResponse.Data;
+            
+            return true;
+        }
+        
+        NotifyLoadError(response.Errors, "account", true);
+        return false;
+    }
+    
+    public async Task<Agency?> AgencyChanged(string agencyNumber)
+    {
+        var agencyData = await dataAccess.GetAgencyByAgencyNumber(agencyNumber);
+        if (!agencyData.Success)
+        {
+            NotifyLoadError(agencyData.Errors, "agency", true);
+            return null;
+        }
+        
+        var agencyAgents = await dataAccess.GetAgencyAgents(agencyData.Data!.Id);
+        if (agencyAgents.Success)
+        {
+            AgencyAgents = agencyAgents.Data!;
+            AgencyAgentsLookup = AgencyAgents
+                .Select(s => new BsgLookup
+                {
+                    Id = s.Id,
+                    Code = "",
+                    Name = s.IdNavigation.FullName
+                })
+                .ToList();
+            
+            return agencyData.Data;
+        }
+
+        NotifyLoadError(agencyAgents.Errors, "agency agents", true);
+        return null;
+    }
+    
+    #endregion
 
     #region Account Watches
 

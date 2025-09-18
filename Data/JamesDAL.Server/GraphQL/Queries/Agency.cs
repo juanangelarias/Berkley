@@ -53,8 +53,11 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
                 .Include(a => a.AgencyErrorAndOmissions)
-
+                .Include(i=>i.AgentsInAgencies)
+                .ThenInclude(i=>i.Agent)
+                .ThenInclude(i=>i.IdNavigation)
                 .FirstOrDefaultAsync();
+            
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
 
@@ -258,12 +261,19 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(t1 => t1.Address)
                 .ThenInclude(t2 => t2.StateCodeNavigation)
                 .ThenInclude(t3 => t3.CountryCodeNavigation)
+                .Include(i => i.IdNavigation.LegalEntityEmails)
+                .Include(i => i.AgencyStatusLogs)
                 .Where(a => a.Status == "Active")
                 .Select(s => new AgencyDto
                 {
                     Id = s.Id,
                     AgencyNumber = s.AgencyNumber,
-                    FullName = $"({s.AgencyNumber}) {s.IdNavigation.FullName}",
+                    FullName = s.IdNavigation.FullName,
+                    FullNameDisplay = $"({s.AgencyNumber}) {s.IdNavigation.FullName}",
+                    Status = s.AgencyStatusLogs
+                        .OrderByDescending(o => o.Effective)
+                        .FirstOrDefault()!
+                        .NewStatus ?? "",
                     Addresses = s.IdNavigation.LegalEntityAddresses
                         .Select(s1 => new AddressDto
                         {
@@ -290,7 +300,7 @@ namespace James.Data.Server.GraphQL.Queries
                         .ToList()
                 })
                 .ToListAsync();
-
+            
             return agencies;
         }
 

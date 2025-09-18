@@ -1076,6 +1076,8 @@ type AgencyDto {
   id: UUID!
   agencyNumber: String!
   fullName: String!
+  fullNameDisplay: String!
+  status: String!
   emails: [EmailDto!]!
   addresses: [AddressDto!]!
 }
@@ -1209,6 +1211,7 @@ type Mutation {
   updateAccountWatch(input: UpdateAccountWatchInput!): UpdateAccountWatchPayload!
   deleteAccountWatch(input: DeleteAccountWatchInput!): DeleteAccountWatchPayload!
   setAccountCommercialInfo(input: SetAccountCommercialInfoInput!): SetAccountCommercialInfoPayload!
+  setAccountAgencyAndAgent(input: SetAccountAgencyAndAgentInput!): SetAccountAgencyAndAgentPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
   setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
@@ -1641,6 +1644,12 @@ input AddSecurityRoleInput {
   role: String!
   description: String!
   ord: Int!
+}
+
+input SetAccountAgencyAndAgentInput {
+  accountId: UUID!
+  agencyNumber: String!
+  agentId: UUID!
 }
 
 type ImagingChoice {
@@ -2298,6 +2307,10 @@ type ImagingDocument {
   description: String!
   filename: String!
   documentType: String
+}
+
+type SetAccountAgencyAndAgentPayload {
+  boolean: Boolean
 }
 
 type DeleteLegalEntityEmailPayload {

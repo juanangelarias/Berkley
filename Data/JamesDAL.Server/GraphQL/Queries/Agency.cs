@@ -248,14 +248,16 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<List<AgencyDto>> GetAllActiveAgencies([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<AgencyDto>> GetAllActiveAgencies(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var agencies = await ctx.Agencies
                 .Include(i => i.IdNavigation)
-                .Include(i => i.IdNavigation)
-                .ThenInclude(t => t.LegalEntityAddresses)
+                .Include(i => i.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(t1 => t1.Address)
+                .ThenInclude(t2 => t2.StateCodeNavigation)
+                .ThenInclude(t3 => t3.CountryCodeNavigation)
                 .Where(a => a.Status == "Active")
                 .Select(s => new AgencyDto
                 {
@@ -272,12 +274,14 @@ namespace James.Data.Server.GraphQL.Queries
                             Address3 = s1.Address.Address3 ?? "",
                             City = s1.Address.City,
                             StateCode = s1.Address.StateCode ?? "",
+                            State = s1.Address.StateCodeNavigation!.Name,
                             PostalCode = s1.Address.PostalCode ?? "",
-                            CountryCode = ""
+                            CountryCode = s1.Address.StateCodeNavigation!.CountryCode!,
+                            Country = s1.Address.StateCodeNavigation!.CountryCodeNavigation!.Name
                         })
                         .ToList(),
                     Emails = s.IdNavigation.LegalEntityEmails
-                        .Select(s2=> new EmailDto
+                        .Select(s2 => new EmailDto
                         {
                             Id = s2.Id,
                             Type = s2.Type,

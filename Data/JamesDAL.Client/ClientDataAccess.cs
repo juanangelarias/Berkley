@@ -496,7 +496,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<AgencyDto>>> GetAllActiveAgencies()
         {
             var response = await ExecuteGet<List<AgencyDto>>(async () =>
-                await jamesClient.GetAllActiveAgencies.ExecuteAsync());
+                await jamesClient.GetAllActiveAgencies.ExecuteAsync(), subProperty:"AllActiveAgencies");
             return response;
         }
 

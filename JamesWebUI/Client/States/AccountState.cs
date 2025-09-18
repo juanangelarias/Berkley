@@ -81,6 +81,8 @@ public class AccountState(
     public AccountLayout? SelectedType { get; set; }
     public List<AgencyStatusDm> AgencyStatuses { get; set; } = [];
 
+    private bool _accountLoadResult;
+
     #region AddressTypes
 
     private List<AddressTypeDm> _addressTypes = [];
@@ -798,7 +800,10 @@ public class AccountState(
             Data = (List<AgencyDto>)cache!
         },
         ResultVariable = () => _agenciesResult,
-        AfterLoad = () => { AllAgencies = _agenciesResult.Data!; }
+        AfterLoad = () =>
+        {
+            AllAgencies = _agenciesResult.Data!;
+        }
     }, "agencies");
 
     #endregion
@@ -844,8 +849,9 @@ public class AccountState(
         if (string.IsNullOrEmpty(AccountNumber))
             return false;
 
-        await LoadDomainTables();
-        return await LoadAccount(true);
+        await Task.WhenAll(LoadDomainTables(), LoadAccount());
+        
+        return _accountLoadResult;
     }
 
     public void ClearAccount()
@@ -980,11 +986,14 @@ public class AccountState(
         };
     }
 
-    private async Task<bool> LoadAccount(bool isMain = false)
+    private async Task LoadAccount(bool isMain = false)
     {
         IsAccountLoaded = false;
         if (string.IsNullOrEmpty(AccountNumber))
-            return false;
+        {
+            _accountLoadResult = false;
+            return;
+        }
 
         var accountResult = await dataAccess.GetAccountByNumber(AccountNumber!);
         if (!accountResult.Success)
@@ -1015,7 +1024,7 @@ public class AccountState(
         var statusLog = Account?.AccountStatusLogs
             .OrderByDescending(o => o.Effective)
             .FirstOrDefault();
-
+        
         var accountStatus = statusLog?.AccountStatus ?? "";
         AccountStatus = accountStatus.ToLower() switch
         {
@@ -1030,7 +1039,18 @@ public class AccountState(
             _ => "Not Defined"
         };
 
-        var agencyStatus = Agency?.Status ?? "";
+        AccountStatusStyle = AccountStatus switch
+        {
+            "Active" => IconStyle.Success,
+            "Prospect" => IconStyle.Warning,
+            "Terminated" => IconStyle.Danger,
+            _ => IconStyle.Base
+        };
+
+        var agencyStatus = Agency?.AgencyStatusLogs
+            .OrderByDescending(o => o.Effective)
+            .FirstOrDefault()?
+            .NewStatus ?? "";
         AgencyStatusStyle = agencyStatus.ToLower() switch
         {
             "active" => IconStyle.Success,
@@ -1054,7 +1074,7 @@ public class AccountState(
 
         IsAccountLoaded = true;
 
-        return true;
+        _accountLoadResult = true;
     }
 
     private async Task LoadDomainTables()

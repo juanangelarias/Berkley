@@ -33,7 +33,9 @@
           }
       }
       bank
+      agentId
       agent {
+          id
           idNavigation {
               fullName
               legalEntityEmails {
@@ -42,14 +44,11 @@
                   emailAddress
               }
           }
-          emailAddresses {
-              id
-              type
-              emailAddress
-          }
-          mainEmailAddress
       }
+      agencyNumber
       agencyNumberNavigation {
+          id
+          agencyNumber
           idNavigation {
               fullName
               legalEntityAddresses {
@@ -67,6 +66,12 @@
                       state
                   }
               }
+          }
+          agencyStatusLogs {
+              id
+              effective
+              newStatus
+              oldStatus
           }
       }
       accountWatches {

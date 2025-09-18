@@ -52,7 +52,7 @@
                     <BsgFormField Text="Status">
                         <Start>
                             <RadzenIcon Icon="fiber_manual_record"
-                                        IconStyle="@AccountState.GetAgencyStatusStyle(_status)"/>
+                                        IconStyle="@AccountState.AccountStatusStyle"/>
                         </Start>
                         <ChildContent>
                             <RadzenTextBox @bind-Value="@_status" Disabled="true" Style="color: black;"/>
@@ -92,7 +92,7 @@
             <RadzenRow class="rz-mt-4" JustifyContent="JustifyContent.End" Visible="@(_isEditMode)">
                 <RadzenStack Orientation="Orientation.Horizontal">
                     <RadzenButton Text="Cancel" Icon="cancel" Click="@CancelEdit" ButtonType="ButtonType.Reset"
-                                  ButtonStyle="ButtonStyle.Secondary" Disabled="@(!Changed)"/>
+                                  ButtonStyle="ButtonStyle.Secondary"/>
                     <RadzenButton Text="Save" Icon="save" Click="@SaveEdit" ButtonType="ButtonType.Submit"
                                   ButtonStyle="ButtonStyle.Primary" Disabled="@(!Changed)"/>
                 </RadzenStack>
@@ -121,11 +121,14 @@
 
     protected override void OnParametersSet()
     {
-        _agencyEmail = AccountState.Agency?.IdNavigation.LegalEntityEmails
-            .FirstOrDefault(f => f.Type.ToLower() == "main")?
-            .EmailAddress ?? "";
-
-        _agent = AccountState.Account?.Agent;
+        if(AccountState.Account == null || string.IsNullOrEmpty(AccountState.Account.AccountNum))
+            return;
+        
+        SetDisplayFields();
+    }
+    
+    private void SetDisplayFields()
+    {
         _agency = AccountState.Account?.AgencyNumberNavigation == null
             ? null
             : new AgencyDto
@@ -134,21 +137,25 @@
                 AgencyNumber = AccountState.Account?.AgencyNumberNavigation?.AgencyNumber ?? "",
                 FullName = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.FullName ?? ""
             };
-        
-        SetDisplayFields();
-    }
-    
-    private void SetDisplayFields()
-    {
         _agencyId = _agency?.Id;
         _agencyNumber = _agency?.AgencyNumber ?? "";
         _agencyName = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.FullName ?? "";
+        _agencyEmail = AccountState.Agency?.IdNavigation.LegalEntityEmails
+            .FirstOrDefault(f => f.Type.ToLower() == "main")?
+            .EmailAddress ?? "";
         _city = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.GetMainAddress()?.City ?? "";
         _stateCode = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.GetMainAddress()?.StateCode ?? "";
-        _status = AccountState.Account?.AgencyNumberNavigation?.Status ?? "";
+        _status = AccountState.Account?.AgencyNumberNavigation?.AgencyStatusLogs
+            .OrderByDescending(o => o.Effective)
+            .FirstOrDefault()?
+            .NewStatus ?? "";
+        
+        _agent = AccountState.Account?.Agent;
         _agentId = _agent?.Id;
         _agentName = _agent?.IdNavigation.FullName ?? "";
-        _agentEmail = _agent?.IdNavigation.GetMainEmail() ?? "";
+        _agentEmail = _agent?.IdNavigation.LegalEntityEmails
+            .FirstOrDefault(f => f.Type.ToLower() == "main")?
+            .EmailAddress ?? "";
     }
 
     private void ToggleEditMode()

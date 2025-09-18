@@ -30,7 +30,9 @@ namespace James.Shared
                 return null!;
             if (destinationType.GetInterfaces().Contains(typeof(IEnumerable)))
             {
-                return CopyIEnumerable((IEnumerable)source, destinationType);
+                return source is not IEnumerable enumerable 
+                    ? throw new Exception("Source type is not IEnumerable, perhaps your subproperty is wrong or missing. Check your 'ExecuteGet'") 
+                    : CopyIEnumerable(enumerable, destinationType);
             }
 
             var dConstructor = destinationType.GetConstructor([]) ??

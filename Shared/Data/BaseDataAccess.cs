@@ -72,7 +72,7 @@ namespace James.Shared.Data
                     }
                     catch (Exception ex)
                     {
-                        logger.LogException(ex, "Exception trying to load from LocalStorage",
+                       logger.LogException(ex, "Exception trying to load from LocalStorage",
                             category: StandardLoggingCategories.BrowserFeatures,
                             data: new Dictionary<string, string> { { "Key", loadItem.Key } });
                         BrowserStorageCache.ClearAsync(); //Make sure that the local cache doesn't have a poison pill

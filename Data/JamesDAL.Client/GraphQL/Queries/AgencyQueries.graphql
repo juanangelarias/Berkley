@@ -339,13 +339,9 @@ query GetIdAgencyNumbers {
 
 query GetAllActiveAgencies {
     allActiveAgencies {
-        fullName
         id
-            emails {
-            id
-            type
-            emailAddress
-        }
+        agencyNumber
+        fullName
         addresses {
             id
             type
@@ -353,9 +349,16 @@ query GetAllActiveAgencies {
             address2
             address3
             city
-            postalCode
             stateCode
+            state
+            postalCode
             countryCode
+            country
         }
+        emails {
+            id
+            type
+            emailAddress
+        }    
     }
 }

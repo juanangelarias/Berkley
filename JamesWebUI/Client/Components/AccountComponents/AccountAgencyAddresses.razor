@@ -4,7 +4,8 @@
 
 @if(AccountState?.Agency?.Id != null)
 {
-    <LegalEntityAddressManager LegalEntityId="@(AccountState?.Agency?.Id ?? Guid.Empty)"/>
+    <LegalEntityAddressManager LegalEntityId="@(AccountState?.Agency?.Id ?? Guid.Empty)"
+                               OnAddressChanged="OnAddressChanged"/>
 }
 else
 {
@@ -13,4 +14,12 @@ else
 
 @code {
 
+    private void OnAddressChanged(List<Address> addresses)
+    {
+        if (AccountState.Agency != null)
+        {
+            AccountState.Agency.MainAddress =
+                addresses.FirstOrDefault(f => f.LegalEntityAddress?.Type.ToLower() == "main");
+        }
+    }
 }

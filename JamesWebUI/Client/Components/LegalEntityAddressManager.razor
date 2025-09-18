@@ -39,6 +39,7 @@
 @code {
 
     [Parameter, EditorRequired] public required Guid LegalEntityId { get; set; }
+    [Parameter] public EventCallback<List<Address>> OnAddressChanged { get; set; }
 
     private List<Address> AllAddresses { get; set; } = [];
     private readonly Dictionary<string, AddressDisplay> _addressDisplays = [];
@@ -76,7 +77,7 @@
             }
         }, "addresses");
 
-    private void UpdateAddresses(Address address)
+    private async Task UpdateAddresses(Address address)
     {
         var actual = AllAddresses.FirstOrDefault(f => f.Id == address.Id);
         
@@ -93,15 +94,19 @@
             actual.StateCode = address.StateCode;
             actual.PostalCode = address.PostalCode;
         }
+
+        await OnAddressChanged.InvokeAsync(AllAddresses);
     }
 
-    private void DeleteAddress(Guid id)
+    private async Task DeleteAddress(Guid id)
     {
         var toDelete = AllAddresses
             .FirstOrDefault(f => f.Id == id);
 
         if (toDelete != null)
             AllAddresses.Remove(toDelete);
+        
+        await OnAddressChanged.InvokeAsync(AllAddresses);
     }
 
     private async Task LoadAddresses()
@@ -120,5 +125,7 @@
                 ? AllAddresses.IndexOf(selected)
                 : 0;
         }
+
+        await OnAddressChanged.InvokeAsync(AllAddresses);
     }
 }

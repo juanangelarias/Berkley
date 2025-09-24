@@ -1,6 +1,7 @@
 ﻿using James.Shared.Dto;
 using James.Shared.Imaging;
 using James.Shared.Model;
+using James.Shared.Notification;
 
 namespace James.Shared.Data
 {
@@ -227,6 +228,24 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteAccountWatch(Guid id );
         
         public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId);
+
+        #region Notifications
+
+        // Queries
+        public Task<IDataAccessResult<List<Notification.Notification>>> GetAllNotifications();
+        public Task<IDataAccessResult<List<Notification.Notification>>> GetAllNotificationsByUser(string userEmail, Guid accountId, Guid agencyId);
+        public Task<IDataAccessResult<List<NotificationProperty>>> GetAllNotificationProperties();
+
+        // Mutations
+        public Task<ISaveDataResult> UpdateNotificationProperty(Guid id, string name, string type);
+        public Task<ISaveDataResult> UpdateNotification(Guid id, Guid accountId, Guid agencyId, string body, 
+            DateTime followUpDate, List<NotificationPropertyValue> properties, List<NotificationRecipient> recipients, 
+            bool sendEmail, bool sendSms, string status, string title, string senderUserEmail, Guid? senderUserId);
+        public Task<ISaveDataResult> DeleteNotification(Guid id);
+        public Task<ISaveDataResult> DeleteNotificationProperty(Guid id);
+
+        #endregion
+
     }
 
     public interface ISaveDataResult

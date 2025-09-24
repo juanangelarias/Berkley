@@ -144,6 +144,7 @@ try
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
     builder.Services.AddScoped<GeneralMutation>();
+    builder.Services.AddScoped<NotificationMutations>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents()
@@ -178,7 +179,9 @@ try
 
     builder.Services
         // A
-        .AddScoped<IAccountState, AccountState>();
+        .AddScoped<IAccountState, AccountState>()
+        // N
+        .AddScoped<INotificationGeneralState, NotificationGeneralState>();
 
     #endregion
 

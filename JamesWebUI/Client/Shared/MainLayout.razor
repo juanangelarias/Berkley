@@ -127,6 +127,7 @@
                 {
                     //Show up only on developer machines
                     <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl"/>
+                    <RadzenPanelMenuItem Text="Notifications" Icon="notifications" Path="NotificationAdmin"/>
                 }
                 else
                 {
@@ -175,7 +176,8 @@
     window.getAllLocalStorageKeys = () => Object.keys(localStorage);
 </script>
 
-@code {
+@code 
+{
     private bool _sidebarExpanded = true;
     public bool notebookExpanded = false;
     public Notification[]? notifications;

@@ -1,0 +1,26 @@
+﻿@page "/NotificationAdmin"
+
+@inherits JamesLayoutComponentBase
+
+<Theme/>
+<RenderModeBackground></RenderModeBackground>
+<PageTitle>BasisTNG - Agency Profile</PageTitle>
+
+<RadzenColumn Size="12" Style="height: 100%;">
+    <RadzenPanel Style="border-radius: 20px; height: 100%;">
+        <RadzenTabs TabPosition="TabPosition.Top">
+            <Tabs>
+                <RadzenTabsItem Text="Notifications">
+                    
+                </RadzenTabsItem>
+                <RadzenTabsItem Text="Properties">
+                    <NotificationPropertiesGrid/>
+                </RadzenTabsItem>
+            </Tabs>
+        </RadzenTabs>
+    </RadzenPanel>
+</RadzenColumn>
+
+@code {
+
+}

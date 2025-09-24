@@ -6,9 +6,9 @@ namespace JamesWebUI.Client.States;
 
 public interface IStateBase
 {
-    void LogGraphQlLoadError(string[] errors, string message, string loadItem = "data", bool fatal = true);
-    LoadItem AddEventNotify(LoadItem loadItem, string loadItemName = "data");
-    void NotifyLoadError(string[] errors, string itemSaved = "data", bool fatal = false);
+    public void LogGraphQlLoadError(string[] errors, string message, string loadItem = "data", bool fatal = true);
+    public LoadItem AddEventNotify(LoadItem loadItem, string loadItemName = "data");
+    public void NotifyLoadError(string[] errors, string itemSaved = "data", bool fatal = false);
 }
 
 public class StateBase(ILoggingService loggingService,

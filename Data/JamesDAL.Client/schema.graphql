@@ -428,6 +428,23 @@ type PersonalFinancialHeader {
   typeNavigation: PersonalFinancialStatementTypeDm
 }
 
+type Notification {
+  id: UUID!
+  senderUserId: UUID
+  senderUserEmail: String!
+  sendEmail: Boolean!
+  sendSms: Boolean!
+  accountId: UUID
+  agencyId: UUID
+  title: String!
+  body: String!
+  severity: String!
+  followUpDate: DateTime
+  status: String!
+  recipients: [NotificationRecipient!]!
+  properties: [NotificationPropertyValue!]!
+}
+
 type BondTransactionPurpose {
   id: UUID!
   created: DateTime!
@@ -526,6 +543,9 @@ type Query {
   allImagingTypes: [ImagingType!]!
   allImagingCategoryTabDivisionType: [VImagingCategoryTabDivisionType!]!
   allInsurers: [Insurer!]!
+  notificationProperties: [NotificationProperty!]!
+  notifications: [Notification!]!
+  notificationsByUser(userEmail: String! accountId: UUID agencyId: UUID): [Notification!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -577,6 +597,12 @@ type UpdateAccountWatchPayload {
 
 type CreateAgencyStatusLogPayload {
   boolean: Boolean
+}
+
+type NotificationProperty {
+  id: UUID!
+  name: String!
+  type: String!
 }
 
 type AgencyLicense {
@@ -904,6 +930,16 @@ type SecurityRole {
   securities: [Security!]!
 }
 
+type DeleteNotificationPayload {
+  boolean: Boolean
+}
+
+input UpdateNotificationPropertyInput {
+  id: UUID!
+  name: String!
+  type: String!
+}
+
 type PhoneTypeDm {
   id: UUID!
   created: DateTime!
@@ -979,6 +1015,15 @@ type PowerOfAttorney {
   onlineBondSystems: [OnlineBondSystem!]!
   powerOfAttorneyDocumentStatuses: [PowerOfAttorneyDocumentStatus!]!
   statusNavigation: PowerOfAttorneyStatusDm!
+}
+
+input NotificationRecipientInput {
+  id: UUID!
+  notificationId: UUID!
+  name: String!
+  recipientEmail: String!
+  recipientPhoneNumber: String!
+  notification: NotificationInput!
 }
 
 type PowerOfAttorneyDocumentNameDm {
@@ -1248,6 +1293,10 @@ type Mutation {
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
+  updateNotificationProperty(input: UpdateNotificationPropertyInput!): UpdateNotificationPropertyPayload!
+  deleteNotificationProperty(input: DeleteNotificationPropertyInput!): DeleteNotificationPropertyPayload!
+  updateNotification(input: UpdateNotificationInput!): UpdateNotificationPayload!
+  deleteNotification(input: DeleteNotificationInput!): DeleteNotificationPayload!
   createObligee(input: CreateObligeeInput!): CreateObligeePayload!
 }
 
@@ -1423,6 +1472,23 @@ input DeletePhoneNumberInput {
 
 type CreateAgencyPOAPayload {
   boolean: Boolean
+}
+
+input NotificationInput {
+  id: UUID!
+  senderUserId: UUID
+  senderUserEmail: String!
+  sendEmail: Boolean!
+  sendSms: Boolean!
+  accountId: UUID
+  agencyId: UUID
+  title: String!
+  body: String!
+  severity: String!
+  followUpDate: DateTime
+  status: String!
+  recipients: [NotificationRecipientInput!]!
+  properties: [NotificationPropertyValueInput!]!
 }
 
 type BondRequestNumberType {
@@ -1764,6 +1830,10 @@ type Security {
 
 scalar UUID
 
+input DeleteNotificationInput {
+  id: UUID!
+}
+
 type AgencyStatusDm {
   id: UUID!
   created: DateTime!
@@ -1840,6 +1910,10 @@ scalar LocalDate
 
 type SetAgencyInventoryPayload {
   agencyInventory: AgencyInventory
+}
+
+input DeleteNotificationPropertyInput {
+  id: UUID!
 }
 
 input AgencyLicenseBulkInput {
@@ -1924,6 +1998,17 @@ type BondRequest {
   otherBids: [OtherBid!]!
   statusNavigation: BidStatusDm!
   underWriter: Underwriter
+}
+
+type NotificationPropertyValue {
+  id: UUID!
+  notificationId: UUID!
+  notificationPropertyId: UUID!
+  notificationProperty: NotificationProperty!
+  type: String!
+  stringTxt: String!
+  notification: Notification!
+  property: NotificationProperty!
 }
 
 type Branch {
@@ -2015,6 +2100,22 @@ input SetAgencyProfitSharingInfoInput {
   agencyId: UUID!
   profitSharing: Boolean!
   profitSharingMinimumPremium: Int
+}
+
+input UpdateNotificationInput {
+  id: UUID!
+  senderUserId: UUID
+  senderUserEmail: String!
+  sendEmail: Boolean!
+  sendSms: Boolean!
+  accountId: UUID
+  agencyId: UUID
+  title: String!
+  body: String!
+  followUpDate: DateTime
+  status: String!
+  properties: [NotificationPropertyValueInput!]!
+  recipients: [NotificationRecipientInput!]!
 }
 
 enum ImagingDocumentCategory {
@@ -2119,6 +2220,10 @@ type OtherBid {
   bidder: String!
   amount: Int!
   bidNumberNavigation: BondRequest!
+}
+
+type DeleteNotificationPropertyPayload {
+  boolean: Boolean
 }
 
 type ImagingTab {
@@ -2240,6 +2345,15 @@ type Agent {
 
 type SetPowerOfAttorneyPayload {
   powerOfAttorney: PowerOfAttorney
+}
+
+type NotificationRecipient {
+  id: UUID!
+  notificationId: UUID!
+  name: String!
+  recipientEmail: String!
+  recipientPhoneNumber: String!
+  notification: Notification!
 }
 
 type ImagingContent {
@@ -2603,6 +2717,17 @@ type Account {
   emailAddresses: [LegalEntityEmail!]!
 }
 
+input NotificationPropertyValueInput {
+  id: UUID!
+  notificationId: UUID!
+  notificationPropertyId: UUID!
+  notificationProperty: NotificationPropertyInput!
+  type: String!
+  stringTxt: String!
+  notification: NotificationInput!
+  property: NotificationPropertyInput!
+}
+
 type DivisionDm {
   id: UUID!
   created: DateTime!
@@ -2795,6 +2920,12 @@ input AgencyLicenseBulkDeleteInput {
   licenseIds: [UUID!]!
 }
 
+input NotificationPropertyInput {
+  id: UUID!
+  name: String!
+  type: String!
+}
+
 type CreateObligeePayload {
   obligee: Obligee
 }
@@ -2860,6 +2991,10 @@ type PowerOfAttorneyDocumentStatus {
   poa: PowerOfAttorney!
 }
 
+type UpdateNotificationPropertyPayload {
+  boolean: Boolean
+}
+
 type LawEntity {
   id: UUID!
   created: DateTime!
@@ -2891,6 +3026,10 @@ type AccountProgramStatusDm {
   accountProgramStatusHistoryNewStatusNavigations: [AccountProgramStatusHistory!]!
   accountProgramStatusHistoryOldStatusNavigations: [AccountProgramStatusHistory!]!
   accountPrograms: [AccountProgram!]!
+}
+
+type UpdateNotificationPayload {
+  boolean: Boolean
 }
 
 type CreateAgencyPOADocumentLinkPayload {

@@ -55,7 +55,9 @@ builder.Services
 
 builder.Services
     // A
-    .AddScoped<IAccountState, AccountState>();
+    .AddScoped<IAccountState, AccountState>()
+    // N
+    .AddScoped<INotificationGeneralState, NotificationGeneralState>();
 
 #endregion
 

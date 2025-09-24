@@ -1,0 +1,78 @@
+﻿query GetAllNotifications {
+    notifications {
+        accountId
+        agencyId
+        body
+        followUpDate
+        id
+        sendEmail
+        senderUserEmail
+        senderUserId
+        sendSms
+        status
+        title
+        properties {
+            id
+            notificationId
+            notificationPropertyId
+            stringTxt
+            type
+            notificationProperty {
+                id
+                name
+                type
+            }
+        }
+        recipients {
+            id
+            name
+            notificationId
+            recipientEmail
+            recipientPhoneNumber
+        }
+    }
+}
+
+query GetAllNotificationsByUser($userEmail: String!, $accountId: UUID, $agencyId: UUID) {
+    notificationsByUser(userEmail: $userEmail, accountId: $accountId, agencyId: $agencyId) {
+        accountId
+        agencyId
+        body
+        followUpDate
+        id
+        sendEmail
+        senderUserEmail
+        senderUserId
+        sendSms
+        status
+        title
+        properties {
+            id
+            notificationId
+            notificationPropertyId
+            stringTxt
+            type
+            notificationProperty {
+                id
+                name
+                type
+            }
+        }
+        recipients {
+            id
+            name
+            notificationId
+            recipientEmail
+            recipientPhoneNumber
+        }
+    }
+}
+
+query GetAllNotificationProperties {
+    notificationProperties {
+        id
+        name
+        type
+    }
+}
+

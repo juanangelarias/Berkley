@@ -7,14 +7,16 @@ using James.Shared;
 using James.Shared.Data;
 using James.Shared.Dto;
 using James.Shared.Imaging;
+using James.Shared.Notification;
 using James.Shared.Server;
 using Microsoft.AspNetCore.Http;
+using Notification = James.Shared.Notification.Notification;
 
 namespace James.Data.Server
 {
     public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, 
         AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, 
-        GeneralMutation generalMutation, ServerImagingAccess imagingAccess, 
+        GeneralMutation generalMutation, ServerImagingAccess imagingAccess, NotificationMutations notificationMutation,
         ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService, 
         IHttpContextAccessor contextAccessor, IUserShared userShared, IBrowserStorageCache browserStorageCache) 
         : BaseDataAccess(browserStorageCache, loggingService), IDataAccess
@@ -677,6 +679,49 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllAccountWatches(accountId, contextFactory));
         }
+
+        #region Notifications
+        
+        public async Task<IDataAccessResult<List<Notification>>> GetAllNotifications()
+        {
+            return await ExecuteGet(async () => query.GetNotifications());
+        }
+        
+        public async Task<IDataAccessResult<List<Notification>>> GetAllNotificationsByUser(string userEmail, Guid accountId, Guid agencyId)
+        {
+            return await ExecuteGet(async () => query.GetNotificationsByUser(userEmail, accountId, agencyId));
+        }
+        
+        public async Task<IDataAccessResult<List<NotificationProperty>>> GetAllNotificationProperties()
+        {
+            return await ExecuteGet(async () => query.GetNotificationProperties());
+        }
+        
+        public async Task<ISaveDataResult> UpdateNotificationProperty(Guid id, string name, string type)
+        {
+            return await ExecuteSave(async () => notificationMutation.UpdateNotificationProperty(id, name, type));
+        }
+
+        public async Task<ISaveDataResult> UpdateNotification(Guid id, Guid accountId, Guid agencyId, string body,
+            DateTime followUpDate, List<NotificationPropertyValue> properties, List<NotificationRecipient> recipients, 
+            bool sendEmail, bool sendSms, string status, string title, string senderUserEmail, Guid? senderUserId)
+        {
+            return await ExecuteSave(async () => notificationMutation.UpdateNotification(id, senderUserId,
+                senderUserEmail, sendEmail, sendSms, accountId, agencyId, title, body, followUpDate, status, properties,
+                recipients));
+        }
+
+        public async Task<ISaveDataResult> DeleteNotification(Guid id)
+        {
+            return await ExecuteSave(async () => notificationMutation.DeleteNotification(id));
+        }
+        
+        public async Task<ISaveDataResult> DeleteNotificationProperty(Guid id)
+        {
+            return await ExecuteSave(async () => notificationMutation.DeleteNotificationProperty(id));
+        }
+        
+        #endregion
 
         private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<T>> dataFunc)
         {

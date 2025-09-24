@@ -24,6 +24,9 @@ public static class CacheKeys
     public const string Divisions = "Divisions";
     // E
     public const string EmailTypes = "EmailTypes";
+    // N
+    public const string Notifications = "Notifications";
+    public const string NotificationPriorities = "NotificationPriorities";
     // P
     public const string PhoneTypes = "PhoneTypes";
     // S

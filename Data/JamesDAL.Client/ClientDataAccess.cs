@@ -7,7 +7,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using James.Shared.Dto;
 using James.Shared.Imaging;
+using James.Shared.Notification;
 using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory;
+using Notification = James.Shared.Notification.Notification;
 using Severity = James.Shared.Model.Severity;
 #pragma warning disable CA1305
 
@@ -763,6 +765,90 @@ namespace James.Data.Client
 
             return response;
         }
+
+        #region Notifications
+
+        public async Task<IDataAccessResult<List<Notification>>> GetAllNotifications()
+        {
+            var response = await ExecuteGet<List<Notification>>(
+                async () => await jamesClient.GetAllNotifications.ExecuteAsync(), "notifications");
+            
+            return response;
+        }
+
+        public async Task<IDataAccessResult<List<Notification>>> GetAllNotificationsByUser(string userEmail,
+            Guid accountId, Guid agencyId)
+        {
+            var response = await ExecuteGet<List<Notification>>(
+                async () => await jamesClient.GetAllNotificationsByUser.ExecuteAsync(userEmail, accountId, agencyId),
+                "notificationsByUser");
+            
+            return response;
+        }
+
+        public async Task<IDataAccessResult<List<NotificationProperty>>> GetAllNotificationProperties()
+        {
+            try
+            {
+                var response =  await ExecuteGet<List<NotificationProperty>>(
+                    async () => await jamesClient.GetAllNotificationProperties.ExecuteAsync(),
+                    "notificationProperties");
+
+                return response;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return new DataAccessResult<List<NotificationProperty>> { Errors = [e.Message], Data = null };
+            }
+        }
+
+        public async Task<ISaveDataResult> UpdateNotificationProperty(Guid id, string name, string type)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.UpdateNotificationProperty.ExecuteAsync(id, name, type));
+        }
+
+        public async Task<ISaveDataResult> UpdateNotification(Guid id, Guid accountId, Guid agencyId, string body,
+            DateTime followUpDate, List<NotificationPropertyValue> properties, List<NotificationRecipient> recipients,
+            bool sendEmail, bool sendSms, string status, string title, string senderUserEmail, Guid? senderUserId)
+        {
+            var propertiesInput = properties
+                .Select(prop => new NotificationPropertyValueInput()
+                {
+                    Id = prop.Id,
+                    NotificationId = id,
+                    Type = prop.Type,
+                    StringTxt = prop.StringTxt
+                })
+                .ToList();
+            var recipientsInput = recipients
+                .Select(s => new NotificationRecipientInput
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    NotificationId = s.NotificationId,
+                    RecipientEmail = s.RecipientEmail,
+                    RecipientPhoneNumber = s.RecipientPhoneNumber
+                })
+                .ToList();
+            return await ExecuteSave(async () => await jamesClient.UpdateNotification.ExecuteAsync(id: id,
+                accountId: accountId, agencyId: agencyId, body: body, followUpDate: followUpDate,
+                properties: propertiesInput, recipients: recipientsInput, sendEmail: sendEmail, sendSms: sendSms, 
+                status: status, title: title, senderUserEmail: senderUserEmail, senderUserId: senderUserId));
+        }
+
+        public async Task<ISaveDataResult> DeleteNotification(Guid id)
+        {
+            return await ExecuteSave(async () => await jamesClient.DeleteNotification.ExecuteAsync(id));
+        }
+        
+        public async Task<ISaveDataResult> DeleteNotificationProperty(Guid id)
+        {
+            return await ExecuteSave(async () => await jamesClient.DeleteNotificationProperty.ExecuteAsync(id));
+        }
+
+        #endregion
 
         private sealed class AddressModifiedWatchClass(IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription) :
              //IObservable<SubscriptionResult<Address>>,

@@ -136,9 +136,6 @@
     private List<AgencyLicense> _licensesToInsert = [];
     private List<AgencyLicense> _licensesToUpdate = [];
 
-    //private RadzenDropDown<Insurer> DropSelectInsurer { get; set; } = null!;
-    //private RadzenDropDown<string> StateDropDown { get; set; } = null!;
-
     private List<Insurer> AllInsurers { get; set; } = [];
     private List<State> AllStates { get; set; } = [];
 
@@ -337,14 +334,5 @@
             _stateFilter = null;
         }
         await LicenseGrid.Reload();
-    }
-    
-    protected async Task ShowLoading()
-    {
-        IsLoading = true;
-
-        await Task.Yield();
-
-        IsLoading = false;
     }
 }

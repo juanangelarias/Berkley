@@ -13,7 +13,7 @@
                 <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertStatusRow" />
             </HeaderTemplate>
             <Columns>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Effective" Property="Effective">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Effective" Property="Effective" Width="120px">
                     <Template Context="statusLog">
                         <RadzenText Text="@statusLog.Effective.ToShortDateString()" Style="width: 95%"/>
                     </Template>
@@ -21,7 +21,7 @@
                         <RadzenDatePicker TValue="DateTime" ShowTime="false" @bind-Value="@statusLog.Effective" Style="width: 95%" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Old Status" Property="OldStatus">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Old Status" Property="OldStatus" Width="120px">
                     <Template Context="statusLog">
                         <RadzenText Text="@statusLog.OldStatus" Style="width: 95%" />
                     </Template>
@@ -29,7 +29,7 @@
                         <RadzenText Text="@CurrentStatus" Style="width: 95%" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="New Status" Property="NewStatus">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="New Status" Property="NewStatus" Width="120px">
                     <Template Context="statusLog">
                         <RadzenText Text="@statusLog.NewStatus" Style="width: 95%" />
                     </Template>
@@ -38,7 +38,7 @@
                             @bind-Value="@statusLog.NewStatus" TextProperty="Status" ValueProperty="Status" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Created By" Property="ChangedByNavigation.Initials">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Created By" Property="ChangedByNavigation.Initials" Width="175px">
                     <Template Context="statusLog">
                         <RadzenText Text="@statusLog.ChangedByNavigation?.FullName" Style="width: 95%" />
                     </Template>
@@ -46,7 +46,7 @@
                         <RadzenText @ref="TxtUserName" Text="@(context.User.Identity?.Name)" Style="width: 95%" />
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments" Width="100%">
                     <Template Context="statusLog">
                         <RadzenText Text="@statusLog.Comments" Style="width: 95%" />
                     </Template>

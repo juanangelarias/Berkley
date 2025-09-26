@@ -21,7 +21,7 @@
                                       Style="height: 30px;"/>
                         <RadzenFormField Text="Minimum Premium Threshold" Variant="Variant.Text" class="rz-ml-12">
                             <RadzenNumeric TValue="int?" @bind-Value="@Agency.ProfitSharingMinimumPremium" Format="c0"
-                                           Disabled="@(_isProfitSharingDisabled)" Name="numMinimumPremiumThreshold"
+                                           Disabled="@(_isProfitSharingEnabled)" Name="numMinimumPremiumThreshold"
                                            TextAlign="TextAlign.Right"/>
                         </RadzenFormField>
                     </RadzenStack>
@@ -40,21 +40,13 @@
                 </RadzenRow>
             </RadzenCard>
         </RadzenColumn>
-        <RadzenColumn Size="6" Visible="@(!_isProfitSharingDisabled)">
-            <Animate Animation="Animations.FadeIn" Duration="TimeSpan.FromSeconds(0.5)">
-                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5">
-                    <RadzenLabel Text="Related Parties"/>
-                    <AgencyRelatedPartiesGrid AgencyId="Agency.Id" NotResumed="false"/>
-                </RadzenStack>
-            </Animate>
-        </RadzenColumn>
     </RadzenRow>
 </RadzenColumn>
 
 @code {
     [Parameter, EditorRequired] public required Agency Agency { get; set; }
 
-    private bool _isProfitSharingDisabled;
+    private bool _isProfitSharingEnabled;
     private bool _originalProfitSharing;
     private int? _originalMinimumPremium;
 
@@ -66,7 +58,7 @@
     {
         base.OnParametersSet();
 
-        _isProfitSharingDisabled = !Agency.ProfitSharing;
+        _isProfitSharingEnabled = Agency.ProfitSharing;
         _originalProfitSharing = Agency.ProfitSharing;
         _originalMinimumPremium = Agency.ProfitSharingMinimumPremium;
     }
@@ -89,7 +81,7 @@
 
     private void ToggleProfitSharing(bool isProfitSharing)
     {
-        _isProfitSharingDisabled = !isProfitSharing;
+        _isProfitSharingEnabled = isProfitSharing;
 
         if (!isProfitSharing)
             Agency.ProfitSharingMinimumPremium = 0;

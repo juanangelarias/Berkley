@@ -67,6 +67,11 @@ public class AgencyCommissionRateRange : NotifyPropertyChanged
 
     #endregion
 
+    public AgencyCommissionRateRange()
+    {
+        
+    }
+    
     public AgencyCommissionRateRange(Guid recordId, int id, int from, int? to, double rate, bool isNew = true)
     {
         RecordId = recordId;
@@ -87,6 +92,8 @@ public class AgencyCommissionRateRange : NotifyPropertyChanged
             _originalTo = to;
             _originalRate = rate;
         }
+
+        IsChanged = false;
     }
 
     public override void Reset()

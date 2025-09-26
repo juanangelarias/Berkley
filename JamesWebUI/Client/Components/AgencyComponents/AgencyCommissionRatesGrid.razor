@@ -46,9 +46,6 @@
                                     <RadzenLabel Text="From"/>
                                 </RadzenStack>
                             </HeaderTemplate>
-                            <EditTemplate Context="rate">
-                                <RadzenNumeric @bind-Value="@rate.From" Decimals="0" Min="1" ReadOnly="true"/>
-                            </EditTemplate>
                             <Template Context="rate">
                                 <RadzenLabel Text="@rate.FromTxt"/>
                             </Template>
@@ -58,7 +55,14 @@
                                               FilterProperty="To" FormatString="#,0" TextAlign="TextAlign.End"
                                               FilterOperator="FilterOperator.LessThanOrEquals">
                             <EditTemplate Context="rate">
-                                <RadzenNumeric @bind-Value="@rate.To" Decimals="0" Min="1"/>
+                                @if(CanEditDelete(rate))
+                                {
+                                    <RadzenNumeric @bind-Value="@rate.To" Decimals="0" Min="1"/>
+                                }
+                                else
+                                {
+                                    <RadzenLabel Text="@rate.ToTxt"/>
+                                }
                             </EditTemplate>
                             <Template Context="rate">
                                 <RadzenLabel Text="@rate.ToTxt"/>
@@ -96,7 +100,7 @@
                                                       Shade="Shade.Lighter"
                                                       Size="ButtonSize.Small"
                                                       class="my-1 ms-1"
-                                                      Visible="@(CanDelete(rate))"
+                                                      Visible="@(CanEditDelete(rate))"
                                                       Click="@(_ => DeleteRate(rate))"
                                                       @onclick:stopPropagation="true"/>
                                     </RadzenColumn>
@@ -387,10 +391,10 @@
         _aGapExist = _errorMessages.Any();
     }
 
-    private bool CanDelete(AgencyCommissionRateRange rate)
+    private bool CanEditDelete(AgencyCommissionRateRange rate)
     {
         var max = _ranges.Max(m => m.To);
-
-        return rate.To == max;
+        
+        return rate.To == null || rate.Id == 0 || rate.To == max;
     }
 }

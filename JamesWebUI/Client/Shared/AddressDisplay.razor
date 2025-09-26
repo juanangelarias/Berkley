@@ -1,7 +1,5 @@
 ﻿@inherits JamesLayoutComponentBase
 
-@inject IDataAccess DataAccess
-
 <RadzenPanel Visible="!EditMode" Name="@(Name+"Display")">
     <RadzenRow>
         <RadzenColumn>
@@ -115,7 +113,8 @@
 
 @code {
     [Parameter, EditorRequired] public Address Address { get; set; }
-    [Parameter] public string Name { get; set; } = "Address";    
+    [Parameter] public string Name { get; set; } = "Address"; 
+    [Parameter] public EventCallback<Guid> StateChanged { get; set; }
     [Parameter, EditorRequired] public required EventCallback<Address> AddressEdited { get; set; }
     [Parameter, EditorRequired] public required EventCallback<Guid> AddressDeleted { get; set; }
 
@@ -134,7 +133,6 @@
 
     private async Task SubmitAddressChange(Address newAddress)
     {
-        await DataAccess.SetAddress(newAddress, _editorIdentifier.ToString());
         EditMode = false;
         await AddressEdited.InvokeAsync(newAddress);
 
@@ -159,22 +157,7 @@
         );
         if (result)
         {
-            var deleteResult = await DataAccess.DeleteAddress(Address.Id, _editorIdentifier.ToString());
-            
-            if (deleteResult.Errors.Any())
-            {
-                LoggingService.LogError("DeleteAddress return error(s)", string.Join("\r\n", result.Errors), "GraphQL");
-                ShowNotification(new NotificationMessage
-                {
-                    Severity = NotificationSeverity.Error,
-                    Detail = "Error while deleting this address.",
-                    Duration = 4000
-                });
-            }
-            else
-            {
-                await AddressDeleted.InvokeAsync(Address.Id);
-            }
+            await AddressDeleted.InvokeAsync(Address.Id);
         }
     }
 
@@ -183,11 +166,6 @@
         _addressToDisplay = InitializeAddressToDisplay(Address);
         
         EditMode = false;
-    }
-
-    private void ShowNotification(NotificationMessage message)
-    {
-        NotificationService.Notify(message);
     }
 
     private Address InitializeAddressToDisplay(Address source)

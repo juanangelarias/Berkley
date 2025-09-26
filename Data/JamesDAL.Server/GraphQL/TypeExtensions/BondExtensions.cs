@@ -35,7 +35,7 @@
         public LegalEntity GetObligee([Parent] Bond bond,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            return bond.Obligee ?? new LegalEntity{FullName = "No Obligee"};
+            return bond.Obligee;
         }
         
         public async Task<LegalEntity?> GetResponsibleParty([Parent] Bond bond,

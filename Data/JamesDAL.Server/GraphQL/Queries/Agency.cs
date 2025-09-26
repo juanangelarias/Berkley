@@ -77,58 +77,37 @@ namespace James.Data.Server.GraphQL.Queries
             return result ?? throw new GraphQLException($"No agency exists with Id {agencyId}.");
         }
 
+        /// <summary>
+        /// Retrieves a list of agency accounts based on the specified agency number.
+        /// </summary>
+        /// <param name="agencyNumber">The unique identifier of the agency to retrieve accounts for.</param>
+        /// <param name="contextFactory">A factory for creating database context instances.</param>
+        /// <returns>A list of agency account details.</returns>
         [Authorize]
         public async Task<List<AgencyAccountDto>> GetAgencyAccounts(string agencyNumber,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.Accounts.Where(a => a.AgencyNumber == agencyNumber)
-                .Include(a => a.IdNavigation)
-                .Include(a => a.Bonds)
-                .ThenInclude(a => a.UnderWriter)
-                .ThenInclude(a => a.IdNavigation)
-                .Include(i => i.BranchNavigation)
+            var view = await ctx.VAccounts
+                .Where(a => a.AgencyNumber == agencyNumber)
                 .ToListAsync();
 
-            var accountNums = result.Select(a => a.AccountNum).ToList();
-            var accountIds = result.Select(a => a.Id).ToList();
-
-            var statusLog = await ctx.AccountStatusLogs
-                .Where(r => accountNums.Contains(r.AccountNum))
-                .ToListAsync();
-
-            var addresses = await ctx.LegalEntityAddresses
-                .Include(i => i.Address)
-                .Where(r => accountIds.Contains(r.LegalEntityId) &&
-                            r.Type.ToLower() == "main")
-                .Select(s => new
+            var response = view.Select(account => new AgencyAccountDto
                 {
-                    s.LegalEntityId,
-                    Address = new Address
-                    {
-                        Address1 = s.Address.Address1,
-                        Address2 = s.Address.Address2,
-                        Address3 = s.Address.Address3,
-                        City = s.Address.City,
-                        StateCode = s.Address.StateCode,
-                        PostalCode = s.Address.PostalCode,
-                    }
-                })
-                .ToListAsync();
-
-            var response = result.Select(account => new AgencyAccountDto
-                {
-                    Status = statusLog.OrderBy(o => o.AccountNum)
-                        .ThenByDescending(t => t.Effective)
-                        .FirstOrDefault(r => r.AccountNum == account.AccountNum)?
-                        .AccountStatus ?? "",
+                    Status = account.AccountStatus,
                     AccountNum = account.AccountNum,
-                    Name = account.IdNavigation.FullName,
+                    Name = account.FullName,
                     Branch = account.Branch,
-                    BranchFullName = account.BranchNavigation.Name,
-                    MainAddress = addresses
-                        .FirstOrDefault(f => f.LegalEntityId == account.Id)?
-                        .Address,
+                    BranchFullName = account.BranchName,
+                    MainAddress = new Address
+                    {
+                        Address1 = account.Address1 ?? "",
+                        Address2 = account.Address2,
+                        Address3 = account.Address3,
+                        City = account.City ?? "",
+                        StateCode = account.StateCode,
+                        PostalCode = account.PostalCode,
+                    },
                     Bonds = []
                 })
                 .ToList();

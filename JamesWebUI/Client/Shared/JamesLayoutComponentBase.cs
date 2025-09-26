@@ -5,7 +5,6 @@ using James.Shared.Data;
 using James.Shared.Model;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.JSInterop;
 using Radzen;
 using Radzen.Blazor;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;

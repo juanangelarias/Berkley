@@ -17,7 +17,6 @@
     <EmbeddedResource Remove="GraphQL\**" />
     <GraphQL Remove="GraphQL\**" />
     <None Remove="GraphQL\**" />
-    <None Include="wwwroot\js\app.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +39,11 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\img\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="BsgComponents\BsgColumnHeader.razor" />
+    <_ContentIncludedByDefault Remove="Components\BsgComponents\JamesColumnHeader.razor" />
   </ItemGroup>
 
 </Project>

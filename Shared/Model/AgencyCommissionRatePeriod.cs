@@ -78,6 +78,7 @@ public class AgencyCommissionRatePeriod : NotifyPropertyChanged
         Ranges = ranges;
 
         _originalRanges = Ranges;
+        IsChanged = false;
     }
 
     public override void ResetAll()

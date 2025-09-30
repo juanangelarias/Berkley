@@ -22,12 +22,13 @@
                 <RadzenDataGrid TItem="AgencyCommissionRateRange" Data="_ranges" @ref="RangeGrid"
                                 AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 300px"
                                 AllowGrouping="false" Density="Density.Compact" GridLines="DataGridGridLines.Vertical"
-                                RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate" EditMode="DataGridEditMode.Single" 
+                                RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate" EditMode="DataGridEditMode.Single"
                                 IsLoading="@IsLoading" Filter="@ShowLoading">
                     <HeaderTemplate>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-                            <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
-                                          Variant="Variant.Text" Disabled="@(!APeridosIsSelected)"/>
+                            <AuthorizeView Policy="InRoleCanAddCommissionRates">
+                                <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
+                                              Variant="Variant.Text" Disabled="@(!APeridosIsSelected)"/></AuthorizeView>
                         </RadzenStack>
                     </HeaderTemplate>
                     <Columns>
@@ -55,7 +56,7 @@
                                               FilterProperty="To" FormatString="#,0" TextAlign="TextAlign.End"
                                               FilterOperator="FilterOperator.LessThanOrEquals">
                             <EditTemplate Context="rate">
-                                @if(CanEditDelete(rate))
+                                @if (CanEditDelete(rate))
                                 {
                                     <RadzenNumeric @bind-Value="@rate.To" Decimals="0" Min="1"/>
                                 }
@@ -86,23 +87,26 @@
                                 <RadzenRow>
                                     <RadzenColumn Size="1"></RadzenColumn>
                                     <RadzenColumn Size="5">
-                                        <RadzenButton Variant="Variant.Flat"
-                                                      Icon="edit"
-                                                      ButtonStyle="ButtonStyle.Light"
-                                                      Size="ButtonSize.Small"
-                                                      Click="@(_ => EditRate(rate))"
-                                                      @onclick:stopPropagation="true"/>
+                                        <AuthorizeView Policy="InRoleCanEditCommissionRates">
+                                            <RadzenButton Variant="Variant.Flat"
+                                                          Icon="edit"
+                                                          ButtonStyle="ButtonStyle.Light"
+                                                          Size="ButtonSize.Small"
+                                                          Click="@(_ => EditRate(rate))"
+                                                          @onclick:stopPropagation="true"/>
+                                        </AuthorizeView>
                                     </RadzenColumn>
                                     <RadzenColumn Size="5">
-                                        <RadzenButton ButtonStyle="ButtonStyle.Danger"
-                                                      Icon="delete"
-                                                      Variant="Variant.Flat"
-                                                      Shade="Shade.Lighter"
-                                                      Size="ButtonSize.Small"
-                                                      class="my-1 ms-1"
-                                                      Visible="@(CanEditDelete(rate))"
-                                                      Click="@(_ => DeleteRate(rate))"
-                                                      @onclick:stopPropagation="true"/>
+                                        <AuthorizeView Policy="InRoleCanDeleteCommissionRates">
+                                            <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                                          Icon="delete"
+                                                          Variant="Variant.Flat"
+                                                          Shade="Shade.Lighter"
+                                                          Size="ButtonSize.Small"
+                                                          class="my-1 ms-1"
+                                                          Visible="@(CanEditDelete(rate))"
+                                                          Click="@(_ => DeleteRate(rate))"
+                                                          @onclick:stopPropagation="true"/></AuthorizeView>
                                     </RadzenColumn>
                                 </RadzenRow>
                             </Template>
@@ -394,7 +398,8 @@
     private bool CanEditDelete(AgencyCommissionRateRange rate)
     {
         var max = _ranges.Max(m => m.To);
-        
+
         return rate.To == null || rate.Id == 0 || rate.To == max;
     }
+
 }

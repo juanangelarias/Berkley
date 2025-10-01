@@ -148,7 +148,11 @@ namespace James.Data.Server.GraphQL.Queries
                     Siccode = r.Siccode,
                     Municipality = r.Municipality,
                     BondClass = r.BondClass,
-                    Status = r.Status
+                    Status = r.Status,
+                    Appointment = r.BondTransactions.FirstOrDefault(f => f.Type == "Initial Premium")?
+                        .BillDate ?? DateTime.MinValue,
+                    Termination = r.BondTransactions.FirstOrDefault(f => f.Type == "Closing")?
+                        .BillDate ?? DateTime.MinValue,
                 })
                 .ToList();
 

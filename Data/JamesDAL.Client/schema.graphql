@@ -708,6 +708,8 @@ type AgencyAccountBondDto {
   municipality: String
   bondClass: String!
   status: String!
+  appointment: DateTime!
+  termination: DateTime!
 }
 
 type LineOfAuthorityLog {
@@ -2546,7 +2548,7 @@ type AgencyAccountDto {
   branch: String!
   branchFullName: String!
   mainAddress: Address
-  bonds: [AgencyAccountBondDto!]
+  bonds: [AgencyAccountBondDto!]!
   status: String!
 }
 

@@ -82,6 +82,8 @@ query agencyAccountBonds($accountNum: String!) {
         status
         underwriterId
         underwriterFullName
+        appointment
+        termination
     }
 }
 

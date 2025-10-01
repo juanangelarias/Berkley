@@ -28,4 +28,6 @@ public class AgencyAccountBondDto
     public string? Municipality { get; set; }
     public string BondClass { get; set; } = null!;
     public string Status { get; set; } = null!;
+    public DateTime Appointment { get; set; }
+    public DateTime Termination { get; set; }
 }

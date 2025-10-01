@@ -31,9 +31,9 @@
 <RadzenLayout Style="width:100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader class="rz-shadow-0">
         <ChildContent>
-            <RadzenRow>
+            <RadzenRow Style="@_headerStyle">
                 <RadzenColumn Size="5">
-                    <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040" />
+                    <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040; margin-left: 7px; margin-top: 7px;" />
                 </RadzenColumn>
                 <RadzenColumn Size="7">
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
@@ -157,10 +157,15 @@
     private bool sidebarExpanded = true;
     private bool notebookExpanded = false;
     public Notification[] notifications;
+    private string _headerStyle = "";
 
     protected override void OnInitialized()
     {
         JamesThemeService.Initialize(NavigationManager);
+
+        _headerStyle = OperatingSystem.IsBrowser()
+            ? "background-color: #fd7e14;"
+            : "background-color: white;";
 
         notifications = new Notification[]{
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},

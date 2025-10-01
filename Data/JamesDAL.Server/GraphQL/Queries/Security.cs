@@ -24,11 +24,42 @@ namespace James.Data.Server.GraphQL.Queries
         [Authorize]
         public async Task<List<SecurityRole>>  GetSecurityRolesByUser(Guid principalId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
+            // ToDo: We need to figure out how to avoid infinite recursion. in the UI before add recursion in this method
+            //       In this moment we are gathering only the first level of recursion.
+            
             var ctx = await contextFactory.CreateDbContextAsync();
+            var securities = await ctx.Securities
+                .Include(i=>i.RoleNavigation)
+                .ToListAsync();
+
+            var baseRoles = securities
+                .Where(x => x.PrincipalId == principalId)
+                .Select(x => x.RoleNavigation)
+                .ToList();
+            
+            var userRoles = securities
+                .Where(x => x.PrincipalId == principalId)
+                .Select(x => x.Role)
+                .ToList();
+
+            var principalIds = securities
+                .Where(r => userRoles.Contains(r.Role))
+                .Select(s => s.PrincipalId)
+                .ToList();
+
+            var response = await ctx.SecurityRoles
+                .Where(r => principalIds.Contains(r.Id))
+                .ToListAsync();
+
+            response.AddRange(baseRoles);
+            response = response.OrderBy(o => o.Id).Distinct().ToList();
+            
+            return response.OrderBy(o=>o.Ord).ToList();
+            
             //NOTE: Entity Framework makes the format string below safe from SQL injection attacks.
-            var result = await ctx.SecurityRoles.FromSqlInterpolated($"EXEC dbo.GetSecurityRolesByUserId {principalId}")
+            /*var result = await ctx.SecurityRoles.FromSqlInterpolated($"EXEC dbo.GetSecurityRolesByUserId {principalId}")
                                                                 .ToListAsync();
-            return result.OrderBy(r => r.Ord).ToList(); ;
+            return result.OrderBy(r => r.Ord).ToList(); ;*/
         }
 
         [Authorize]

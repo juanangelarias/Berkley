@@ -26,7 +26,7 @@
                                 IsLoading="@IsLoading" Filter="@ShowLoading">
                     <HeaderTemplate>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-                            <AuthorizeView Policy="InRoleCanAddCommissionRates">
+                            <AuthorizeView Policy="InRoleCanAddAgencyCommissionRates">
                                 <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
                                               Variant="Variant.Text" Disabled="@(!APeridosIsSelected)"/></AuthorizeView>
                         </RadzenStack>
@@ -87,7 +87,7 @@
                                 <RadzenRow>
                                     <RadzenColumn Size="1"></RadzenColumn>
                                     <RadzenColumn Size="5">
-                                        <AuthorizeView Policy="InRoleCanEditCommissionRates">
+                                        <AuthorizeView Policy="InRoleCanEditAgencyCommissionRates">
                                             <RadzenButton Variant="Variant.Flat"
                                                           Icon="edit"
                                                           ButtonStyle="ButtonStyle.Light"
@@ -97,7 +97,7 @@
                                         </AuthorizeView>
                                     </RadzenColumn>
                                     <RadzenColumn Size="5">
-                                        <AuthorizeView Policy="InRoleCanDeleteCommissionRates">
+                                        <AuthorizeView Policy="InRoleCanDeleteAgencyCommissionRates">
                                             <RadzenButton ButtonStyle="ButtonStyle.Danger"
                                                           Icon="delete"
                                                           Variant="Variant.Flat"
@@ -134,7 +134,7 @@
                             <RadzenText Text="Messages" TextAlign="TextAlign.Start"/>
                             @foreach (var error in _errorMessages)
                             {
-                                <RadzenLabel Text="@error.Key" Style="color: red"/>
+                                <RadzenLabel Text="@(error.Key??"Error")" Style="color: red"/>
                             }
                         </RadzenStack>
                     </RadzenCard>

@@ -1,6 +1,6 @@
 ﻿namespace James.Shared.Model;
 
-public class AgencyCommissionRatePeriod : NotifyPropertyChanged
+public class AgencyCommissionRatePeriod : NotifyPropertyChangedBase
 {
     #region Fields & Properties
 

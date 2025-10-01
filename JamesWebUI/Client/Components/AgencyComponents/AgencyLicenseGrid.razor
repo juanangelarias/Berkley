@@ -11,7 +11,8 @@
 <RenderModeBackground/>
 
 <RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@AgencyLicenses"
-                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" GridLines="DataGridGridLines.Vertical"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
+                GridLines="DataGridGridLines.Vertical"
                 AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced"
                 AllowColumnPicking="true" AllowGrouping="true"
@@ -20,13 +21,17 @@
                 Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow"/>
+            <AuthorizeView Policy="InRoleCanAddAgencyLicense">
+                <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow"/>
+            </AuthorizeView>
             <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End"
                          Style="margin-left: 10rem">
-                <RadzenButton Visible="!_bulkMode" Text="Bulk Edit" Icon="edit"
-                              Size="ButtonSize.ExtraSmall" Disabled="IsLoading"
-                              Click="@(_ => SetBulkEdit())"/>
+                <AuthorizeView Policy="InRoleAgencyLicenseWorkInBulkMode">
+                    <RadzenButton Visible="!_bulkMode" Text="Bulk Edit" Icon="edit"
+                                  Size="ButtonSize.ExtraSmall" Disabled="IsLoading"
+                                  Click="@(_ => SetBulkEdit())"/>
+                </AuthorizeView>
                 <RadzenButton Visible="_bulkMode" Text="Save" Icon="check"
                               ButtonStyle="ButtonStyle.Primary"
                               Variant="Variant.Flat"
@@ -127,34 +132,40 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Certificate" Width="60px" Visible="!_bulkMode">
             <Template Context="lic">
-                <InlineImagingDocument DocumentShortName="License Certificate"
-                                       DocumentCategory="ImagingDocumentCategory.Agency"
-                                       DocumentId="@lic.ImagingId"
-                                       DocumentType="AGALIC"
-                                       ImagingId="@lic.Agency.AgencyNumber"
-                                       UploadAction=@(async void (guid) => await CertificateUploaded(guid, lic.Id))
-                                       UploadErrorAction=@(msg => LogUploadError(msg, lic))/>
+                <AuthorizeView Policy="InRoleCanUploadLicenseCertificate">
+                    <InlineImagingDocument DocumentShortName="License Certificate"
+                                           DocumentCategory="ImagingDocumentCategory.Agency"
+                                           DocumentId="@lic.ImagingId"
+                                           DocumentType="AGALIC"
+                                           ImagingId="@lic.Agency.AgencyNumber"
+                                           UploadAction=@(async void (guid) => await CertificateUploaded(guid, lic.Id))
+                                           UploadErrorAction=@(msg => LogUploadError(msg, lic))/>
+                </AuthorizeView>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false"
                               TextAlign="TextAlign.Right"
                               Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="license">
-                <RadzenButton Icon="edit"
-                              ButtonStyle="ButtonStyle.Light"
-                              Variant="Variant.Flat"
-                              Size="ButtonSize.Small"
-                              Click="@(_ => EditLicenseRow(license))"
-                              @onclick:stopPropagation="true"/>
-                <RadzenButton ButtonStyle="ButtonStyle.Danger"
-                              Icon="delete"
-                              Variant="Variant.Flat"
-                              Shade="Shade.Lighter"
-                              Size="ButtonSize.Small"
-                              class="my-1 ms-1"
-                              Click="@(_ => DeleteLicenseRow(license))"
-                              @onclick:stopPropagation="true">
-                </RadzenButton>
+                <AuthorizeView Policy="InRoleCanEditAgencyLicense">
+                    <RadzenButton Icon="edit"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  Click="@(_ => EditLicenseRow(license))"
+                                  @onclick:stopPropagation="true"/>
+                </AuthorizeView>
+                <AuthorizeView Policy="InRoleCanDeleteAgencyLicense">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                  Icon="delete"
+                                  Variant="Variant.Flat"
+                                  Shade="Shade.Lighter"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => DeleteLicenseRow(license))"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </AuthorizeView>
             </Template>
             <EditTemplate Context="license">
                 @if (!_bulkMode)
@@ -178,7 +189,7 @@
                                   class="my-1 ms-1"
                                   Click="@(_ => DeleteLicenseRow(license))"/>
                 }
-                @if(license.Id == Guid.Empty)
+                @if (license.Id == Guid.Empty)
                 {
                     <RadzenButton Icon="close"
                                   ButtonStyle="ButtonStyle.Light"
@@ -401,7 +412,7 @@
     private async Task OnLicenseCreate(AgencyLicense license)
     {
         license.Id = Guid.NewGuid();
-        
+
         //This is where we handle row inserts.
 
         var result = await DataAccess.CreateLicense(
@@ -426,7 +437,7 @@
         {
             license.InsurerId = license.Insurer.Id;
             AgencyLicenses.Add(license);
-            
+
             DataAccess.UpdateCache(LicensesKey, AgencyLicenses);
         }
     }
@@ -556,7 +567,7 @@
         await ShowLoading();
 
         IsLoading = true;
-        
+
         LicenseGrid.CancelEditRows(AgencyLicenses);
 
         AgencyLicenses = _agencyLicensesBeforeBulkEdit
@@ -586,7 +597,7 @@
             .ToList();
 
         _agencyLicensesBeforeBulkEdit = [];
-        
+
         await LicenseGrid.Reload();
         _bulkMode = false;
         IsLoading = false;

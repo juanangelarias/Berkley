@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace James.Shared;
 
-public abstract class NotifyPropertyChanged: INotifyPropertyChanged
+public abstract class NotifyPropertyChangedBase: INotifyPropertyChanged
 {
     public bool IsChanged { get; set; }
     

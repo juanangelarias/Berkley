@@ -563,7 +563,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId)
         {
             var result = await ExecuteGet<List<SecurityRole>>(
-            async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            async () => await jamesClient.GetSecurityRolesByUser.ExecuteAsync(userId), "SecurityRolesByUser");
             return result;
         }
 

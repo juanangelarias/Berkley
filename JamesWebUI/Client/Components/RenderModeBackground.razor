@@ -12,6 +12,7 @@
     ElementReference _baseDiv;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        return;
         await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
             _module = await JS.InvokeAsync<IJSObjectReference>(

@@ -5,7 +5,7 @@
 <Theme/>
 <RenderModeBackground/>
 <AuthorizeView>
-    <Authorized>
+    <Authorized Context="authCtx">
         <RadzenDataGrid @ref="StatusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
                         Style="border-radius: 20px;" GridLines="DataGridGridLines.Vertical"
                         RowCreate="@OnStatusCreate">
@@ -48,7 +48,7 @@
                         <RadzenText Text="@statusLog.ChangedByNavigation?.FullName" Style="width: 95%"/>
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenText @ref="TxtUserName" Text="@(context.User.Identity?.Name)" Style="width: 95%"/>
+                        <RadzenText @ref="TxtUserName" Text="@(authCtx.User.Identity?.Name)" Style="width: 95%"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments" Width="100%">

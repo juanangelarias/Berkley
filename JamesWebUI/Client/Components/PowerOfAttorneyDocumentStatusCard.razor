@@ -18,7 +18,9 @@
             <RadzenText Text="Date Received" />
         </RadzenColumn>
         <RadzenColumn Size="1">
-            <RadzenButton Variant="Variant.Text" Icon="edit" Click="ToggleEditMode" Size="ButtonSize.ExtraSmall" Visible="!EditMode" />
+            <AuthorizeView Policy="InRoleCanEditPOADocumentStatus">
+                 <RadzenButton Variant="Variant.Text" Icon="edit" Click="ToggleEditMode" Size="ButtonSize.ExtraSmall" Visible="!EditMode"/>
+            </AuthorizeView>
             <RadzenButton Variant="Variant.Text" Icon="save" Click="SaveChanges" Size="ButtonSize.ExtraSmall" Visible="EditMode" />
         </RadzenColumn>
     </RadzenRow>

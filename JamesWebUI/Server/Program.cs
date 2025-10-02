@@ -125,7 +125,8 @@ try
                     .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
                     .AddScoped<IUserSettingService, UserSettingService>()
                     .AddScoped<IAuthorizationHandler, RoleRequirementHandler>()
-                    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
+                    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>()
+                    .AddSingleton<IAppEnvironment, ServerAppEnvironment>();
 
     if (OperatingSystem.IsWindows())
     {

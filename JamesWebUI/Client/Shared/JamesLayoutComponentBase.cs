@@ -69,6 +69,30 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
             });
     }
 
+    #region Fields & Properties
+
+    protected bool IsLoading;
+
+    #endregion
+
+    protected virtual async Task ShowLoading()
+    {
+        IsLoading = true;
+
+        await Task.Yield();
+
+        IsLoading = false;
+    }
+
+    protected virtual async Task ShowLoading(Task toExecute)
+    {
+        IsLoading = true;
+
+        await toExecute;
+
+        IsLoading = false;
+    }
+
     #region Common Client Actions
 
     /// <summary>

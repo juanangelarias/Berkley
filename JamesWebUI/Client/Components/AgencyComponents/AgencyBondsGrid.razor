@@ -1,0 +1,160 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<Theme/>
+
+<RadzenDataGrid TItem="Bond" @ref="@_agencyBondGrid" Data="@_agencyBonds"
+                AllowGrouping="true" AllowSorting="true" AllowColumnResize="true" AllowColumnPicking="true"
+                Density="Density.Compact" Style="height: 400px; border-radius: 10px;" GridLines="DataGridGridLines.Vertical"
+                AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
+                Filter="@ShowLoading">
+    <Columns>
+        <RadzenDataGridColumn TItem="Bond" Filterable="true" FilterValue="@_statusFilter" FilterProperty="Status"
+                              FilterOperator="FilterOperator.Contains"
+                              Title="Status" Property="Status" Width="125px" Type="typeof(List<string>)">
+            <Template Context="bond">
+                @{
+                    if (bond.Status.Trim() == "Open")
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success"/>
+                            <RadzenText Text="@bond.Status"/>
+                        </RadzenStack>
+                    }
+                    else
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal">
+                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger"/>
+                            <RadzenText Text="@bond.Status"/>
+                        </RadzenStack>
+                    }
+                }
+            </Template>
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@_statusFilter" @ref="StatusFilterDropDown" Change="StatusFilterChange"
+                                TValue="List<string>" Multiple="true" AllowClear="true"
+                                Data="@_agencyBonds.Select(b => b.Status).Distinct().ToList()"/>
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Bond" Title="Bond No." Property="BondNumber" Width="125px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Account No." Property="AccountNumNavigation.AccountNum"
+                              Width="140px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Account Name" Property="AccountNumNavigation.IdNavigation.FullName"
+                              Width="150px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Bond Type" Property="BondType.BondType" Width="130px"
+                              FilterValue="_bondTypeFilter" FilterProperty="BondType.BondType"
+                              FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)">
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@_bondTypeFilter" @ref="BondTypeFilterDropDown"
+                                Change="BondTypeFilterChange"
+                                TValue="List<string>" Multiple="true" AllowClear="true"
+                                Data="@_agencyBonds.Select(b => b.BondType?.BondType).Distinct().ToList()"/>
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" Width="150px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" Width="150px"
+                              SortOrder="SortOrder.Descending"/>
+        <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" Width="175px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="100px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName" Width="200px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" FormatString="{0:d}"
+                              Width="175px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass"
+                              Filterable="true" FilterValue="@_classFilter" FilterProperty="BondClass"
+                              FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)"
+                              FormatString="{0:d}" Width="180px">
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@_classFilter" @ref="ClassFilterDropDown" Change="ClassFilterChange"
+                                TValue="List<string>" Multiple="true" AllowClear="true"
+                                Data="@_agencyBonds.OrderBy(b => b.BondClass).Select(b => b.BondClass).Distinct().ToList()">
+
+                </RadzenDropDown>
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+    <EmptyTemplate>
+        No Records to Display
+    </EmptyTemplate>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
+</RadzenDataGrid>
+
+
+@code {
+    [Parameter] public Guid AgencyId { get; set; }
+
+    private List<Bond> _agencyBonds = [];
+    private RadzenDataGrid<Bond> _agencyBondGrid = null!;
+    private List<string>? _statusFilter;
+    private List<string>? _classFilter;
+    private List<string>? _bondTypeFilter;
+
+    private RadzenDropDown<List<string>> StatusFilterDropDown { get; set; } = null!;
+    private RadzenDropDown<List<string>> ClassFilterDropDown { get; set; } = null!;
+    private RadzenDropDown<List<string>> BondTypeFilterDropDown { get; set; } = null!;
+
+    private IDataAccessResult<List<Bond>> _agencyBondsResult = null!;
+
+    private LoadItem AgencyBondsLoad => AddEventNotify(new LoadItem
+    {
+        Key = $"AgencyBondGrid{AgencyId}",
+        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId),
+        CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<Bond>>
+        {
+            Data = (List<Bond>)cache!
+        },
+        ResultVariable = () => _agencyBondsResult,
+        AfterLoad = () => { _agencyBonds = _agencyBondsResult.Data!; }
+    }, "agency bond grid");
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+
+        await LoadAgencyBonds();
+    }
+
+    private async Task LoadAgencyBonds()
+    {
+        if (AgencyId == Guid.Empty)
+            return;
+
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyBondsLoad);
+    }
+
+    private async Task StatusFilterChange()
+    {
+        if (_statusFilter != null && !_statusFilter.Any())
+        {
+            _statusFilter = null;
+        }
+
+        await _agencyBondGrid.Reload();
+    }
+
+    private async Task ClassFilterChange()
+    {
+        if (_classFilter != null && !_classFilter.Any())
+        {
+            _classFilter = null;
+        }
+
+        await _agencyBondGrid.Reload();
+    }
+
+    private async Task BondTypeFilterChange()
+    {
+        if (_bondTypeFilter != null && !_bondTypeFilter.Any())
+        {
+            _bondTypeFilter = null;
+        }
+
+        await _agencyBondGrid.Reload();
+    }
+}

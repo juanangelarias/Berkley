@@ -4,27 +4,25 @@
 
 <Theme />
 
-<RenderModeBackground/>
-
-<RadzenTabs Change="@HandleChangeDirection" TabPosition="TabPosition.Left" >
+<PositionSavingTabs Change="@HandleChangeDirection" TabControlName="AgGenInfoGrids" TabPosition="TabPosition.Left" >
     <Tabs>
-        <RadzenTabsItem Text="Licenses">
+        <PositionSavingTabsItem Text="Licenses" TabName="Licenses">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
                 <AgencyLicenseGrid Agency="Agency" />
             </Animate>
-        </RadzenTabsItem>
-        <RadzenTabsItem Text="POAs">
+        </PositionSavingTabsItem>
+        <PositionSavingTabsItem Text="POAs" TabName="POAs">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
                 <AgencyPOAGrid Agency="Agency" />
             </Animate>
-        </RadzenTabsItem>
-        <RadzenTabsItem Text="Related Parties">
+        </PositionSavingTabsItem>
+        <PositionSavingTabsItem Text="Related Parties" TabName="RelatedParties">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyRelatedPartiesGrid AgencyId="Agency.Id"/>
+                <AgencyRelatedPartiesGrid AgencyId="Agency.Id" NotResumed="true"/>
             </Animate>
-        </RadzenTabsItem>
+        </PositionSavingTabsItem>
     </Tabs>
-</RadzenTabs>
+</PositionSavingTabs>
 
 @code {
     [Parameter, EditorRequired] public required Agency Agency { get; set; }

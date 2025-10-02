@@ -5,6 +5,7 @@ using James.Shared.Model;
 using StrawberryShake;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using James.Shared.Dto;
 using James.Shared.Imaging;
 using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory;
 using Severity = James.Shared.Model.Severity;
@@ -42,10 +43,18 @@ namespace James.Data.Client
             return await ExecuteGet<List<AdditionalRelatedParty>>(async () => await jamesClient.GetAdditionalRelatedParties.ExecuteAsync(accountNumber ?? ""),
                 "AdditionalRelatedParties");
         }
-        public async Task<IDataAccessResult<List<Account>>> GetAgencyAccounts(string agencyNumber)
+        public async Task<IDataAccessResult<List<AgencyAccountDto>>> GetAgencyAccounts(string agencyNumber)
         {
-            return await ExecuteGet<List<Account>>(async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),
+            return await ExecuteGet<List<AgencyAccountDto>>(
+                async () => await jamesClient.AgencyAccounts.ExecuteAsync(agencyNumber),
                 subProperty: "AgencyAccounts");
+        }
+        
+        public async Task<IDataAccessResult<List<AgencyAccountBondDto>>> GetAgencyAccountBonds(string accountNum)
+        {
+            return await ExecuteGet<List<AgencyAccountBondDto>>(
+                async () => await jamesClient.AgencyAccountBonds.ExecuteAsync(accountNum),
+                subProperty: "AgencyAccountBonds");
         }
 
         public async Task<IDataAccessResult<List<Obligee>>> SearchObligees(string searchString)
@@ -402,25 +411,34 @@ namespace James.Data.Client
             var result = await jamesClient.DeleteAgencyInventory.ExecuteAsync(new DeleteAgencyInventoryInput { InventoryId = inventoryId });
             return GraphQLSaveResult(result);
         }
-        public async Task<ISaveDataResult> SetAgencyCommissionRates(Guid agencyId, AgencyCommission[] rates)
+        public async Task<ISaveDataResult> SetAgencyCommissionRate(AgencyCommission rate)
         {
             var saveResult = await jamesClient.SaveAgencyCommissionRates.ExecuteAsync(new SaveCommissionRatesInput
             {
-                AgencyId = agencyId,
-                Rates = rates.Select(r => new AgencyCommissionInput
+                Rate = new AgencyCommissionInput
                 {
-                    Id = r.Id,
-                    AgencyId = agencyId,
-                    Created = DateTimeOffset.Now,//Created is a required field but not used by the save
-                    Modified = DateTimeOffset.Now,//Modified is a required field but not used by the save
-                    BondType = r.BondType,
-                    Minimum = r.Minimum,
-                    Maximum = r.Maximum,
-                    Rate = r.Rate
-                }).ToList()
-
+                    Id = rate.Id,
+                    AgencyId = rate.AgencyId,
+                    Created = DateTimeOffset.Now, //Created is a required field but not used by the save
+                    Modified = DateTimeOffset.Now, //Modified is a required field but not used by the save
+                    BondType = rate.BondType,
+                    Minimum = rate.Minimum,
+                    Maximum = rate.Maximum,
+                    Effective = rate.Effective,
+                    Expires = rate.Expires,
+                    Rate = rate.Rate
+                }
             });
+
             return GraphQLSaveResult(saveResult);
+        }
+
+        public async Task<ISaveDataResult> DeleteAgencyCommissionRate(Guid commRateId)
+        {
+            var result = await jamesClient.DeleteAgencyCommissionRate
+                .ExecuteAsync(new DeleteAgencyCommissionRateInput{ CommRateId = commRateId });
+            
+            return GraphQLSaveResult(result);
         }
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
@@ -545,7 +563,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId)
         {
             var result = await ExecuteGet<List<SecurityRole>>(
-            async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            async () => await jamesClient.GetSecurityRolesByUser.ExecuteAsync(userId), "SecurityRolesByUser");
             return result;
         }
 
@@ -910,6 +928,20 @@ namespace James.Data.Client
             });
             return GraphQLSaveResult(saveResult);
         }
+
+        public async Task<ISaveDataResult> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing,
+            int? profitSharingMinimumPremium)
+        {
+            var result = await jamesClient.SetAgencyProfitSharing.ExecuteAsync(new SetAgencyProfitSharingInfoInput
+            {
+                AgencyId = agencyId,
+                ProfitSharing = profitSharing,
+                ProfitSharingMinimumPremium = profitSharingMinimumPremium
+            });
+
+            return GraphQLSaveResult(result);
+        }
+        
         public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId,
             Guid? agentId, bool appointingState, string? comments,
             DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,

@@ -22,6 +22,8 @@ public partial class VAccount
 
     public string Branch { get; set; } = null!;
 
+    public string BranchName { get; set; } = null!;
+
     public string? AgencyNumber { get; set; }
 
     public string? DunBradstreetRate { get; set; }
@@ -93,8 +95,6 @@ public partial class VAccount
     public string Division { get; set; } = null!;
 
     public double RateModifier { get; set; }
-
-    public string WatchStatus { get; set; } = null!;
 
     public string? Naics { get; set; }
 

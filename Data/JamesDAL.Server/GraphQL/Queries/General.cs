@@ -1,5 +1,4 @@
 ﻿using HotChocolate.Authorization;
-using James.Shared.Server;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries
@@ -69,9 +68,9 @@ namespace James.Data.Server.GraphQL.Queries
                 var ctx = await contextFactory.CreateDbContextAsync();
                 var result = await ctx.Addresses
                     .Include(a => a.LegalEntityAddress)
-                    .ThenInclude(a => a.TypeNavigation)
-                    .Where(a => a.LegalEntityAddress.LegalEntityId == legalEntityId)
-                    .OrderBy(a => a.LegalEntityAddress.TypeNavigation.Order)
+                    .ThenInclude(a => a!.TypeNavigation)
+                    .Where(a => a.LegalEntityAddress!.LegalEntityId == legalEntityId)
+                    .OrderBy(a => a.LegalEntityAddress!.TypeNavigation.Order)
                     .ToListAsync();
 
                 return result;

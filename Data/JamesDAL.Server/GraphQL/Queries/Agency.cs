@@ -1,5 +1,6 @@
 ﻿using HotChocolate.Authorization;
 using James.Shared;
+using James.Shared.Dto;
 
 namespace James.Data.Server.GraphQL.Queries
 {
@@ -76,22 +77,86 @@ namespace James.Data.Server.GraphQL.Queries
             return result ?? throw new GraphQLException($"No agency exists with Id {agencyId}.");
         }
 
+        /// <summary>
+        /// Retrieves a list of agency accounts based on the provided agency number.
+        /// </summary>
+        /// <param name="agencyNumber">The unique Agency Number for the agency to fetch accounts for.</param>
+        /// <param name="contextFactory">The database context factory to access the data store.</param>
+        /// <returns>A list of agency accounts matching the given agency number.</returns>
         [Authorize]
-        public async Task<List<Account>> GetAgencyAccounts(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<AgencyAccountDto>> GetAgencyAccounts(string agencyNumber,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.Accounts.Where(a => a.AgencyNumber == agencyNumber)
-                .Include(a => a.IdNavigation)
-                .ThenInclude(a => a.LegalEntityAddresses.Where(lea => lea.Type == "Main"))
-                .ThenInclude(a => a.Address)
-                .Include(a => a.Bonds)
-                .ThenInclude(a => a.UnderWriter)
-                .ThenInclude(a => a.IdNavigation)
-                .Include(a => a.Bonds)
-                .ThenInclude(a => a.Obligee)
+            var view = await ctx.VAccounts
+                .Where(a => a.AgencyNumber == agencyNumber)
                 .ToListAsync();
-            return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
 
+            var response = view.Select(account => new AgencyAccountDto
+                {
+                    Status = account.AccountStatus,
+                    AccountNum = account.AccountNum,
+                    Name = account.FullName,
+                    Branch = account.Branch,
+                    BranchFullName = account.BranchName,
+                    MainAddress = new Address
+                    {
+                        Address1 = account.Address1 ?? "",
+                        Address2 = account.Address2,
+                        Address3 = account.Address3,
+                        City = account.City ?? "",
+                        StateCode = account.StateCode,
+                        PostalCode = account.PostalCode,
+                    },
+                    Bonds = []
+                })
+                .ToList();
+
+            return response ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
+        }
+
+        [Authorize]
+        public async Task<List<AgencyAccountBondDto>> GetAgencyAccountBonds(string accountNum,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var bonds = await ctx.Bonds
+                .Include(i => i.UnderWriter)
+                .ThenInclude(t => t.IdNavigation)
+                .Include(i => i.Obligee)
+                .Include(i => i.BondType)
+                .Include(i => i.BondTransactions)
+                .Where(r => r.AccountNum == accountNum)
+                .ToListAsync();
+
+            var response = bonds
+                .Select(r => new AgencyAccountBondDto
+                {
+                    BondNumber = r.BondNumber,
+                    Amount = r.BondTransactions
+                        .OrderByDescending(o => o.BondMod)
+                        .ThenByDescending(t => t.GroupNumber)
+                        .FirstOrDefault()?
+                        .BondAmount ?? 0,
+                    Effective = r.Effective,
+                    Expiration = r.Expiration,
+                    UnderwriterId = r.UnderWriterId,
+                    UnderwriterFullName = r.UnderWriter.IdNavigation.FullName,
+                    ObligeeId = r.ObligeeId,
+                    ObligeeFullName = r.Obligee?.FullName,
+                    BondType = r.BondType?.BondType,
+                    Siccode = r.Siccode,
+                    Municipality = r.Municipality,
+                    BondClass = r.BondClass,
+                    Status = r.Status,
+                    Appointment = r.BondTransactions.FirstOrDefault(f => f.Type == "Initial Premium")?
+                        .BillDate ?? DateTime.MinValue,
+                    Termination = r.BondTransactions.FirstOrDefault(f => f.Type == "Closing")?
+                        .BillDate ?? DateTime.MaxValue,
+                })
+                .ToList();
+
+            return response ?? throw new GraphQLException($"No Account exists with accountNum {accountNum}.");
         }
 
         [Authorize]
@@ -136,16 +201,16 @@ namespace James.Data.Server.GraphQL.Queries
         public async Task<List<Bond>> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.Bonds.Where(a => a.AgencyId == agencyId)
-                .Include(b => b.UnderWriter)
-                .ThenInclude(b => b.IdNavigation)
-                .Include(b => b.Obligee)
-                .Include(b => b.AccountNumNavigation)
-                .ThenInclude(b => b.IdNavigation)
-                .Include(b => b.BondType)
-                .ToListAsync();
+                var result = await ctx.Bonds.Where(a => a.AgencyId == agencyId)
+                    .Include(b => b.UnderWriter)
+                    .ThenInclude(b => b.IdNavigation)
+                    .Include(b => b.Obligee)
+                    .Include(b => b.AccountNumNavigation)
+                    .ThenInclude(b => b.IdNavigation)
+                    .Include(b => b.BondType)
+                    .ToListAsync();
 
-            return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
+                return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
         }
 
         [Authorize]

@@ -1,0 +1,71 @@
+﻿@inject DialogService DialogService;
+
+<RadzenColumn Size="12">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+        <RadzenFieldset Style="width: 100%; margin: 20px auto;">
+            <HeaderTemplate>
+                <RadzenText Text="Define a commission period"/>
+            </HeaderTemplate>
+            <ChildContent>
+                <RadzenFormField Text="Effective">
+                    <RadzenDatePicker TValue="DateTime" @bind-Value="@_effectiveDate" Name="Effective" DateFormat="d"
+                                       AllowInput="@_isEffectiveDateReadOnly" InitialViewDate="@_minimumEffectiveDate"/>
+                </RadzenFormField>
+                <RadzenFormField Text="Expire" Visible="@(CommissionType == CommissionType.Scheduled)" DateFormat="d">
+                    <RadzenDatePicker TValue="DateTime?" @bind-Value="@_expireDate" Name="Expire"/>
+                </RadzenFormField>
+            </ChildContent>
+        </RadzenFieldset>
+        <RadzenCard Visible="@(_errors.Any())">
+            <RadzenText Text="Errors"/>
+            <RadzenTextArea @bind-Value="_errorsText" Style="width: 100%; color: red" aria-label="Errors"
+                            ReadOnly="true"/>
+        </RadzenCard>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <RadzenButton Text="Save" Click="@Save"/>
+            <RadzenButton Text="Cancel" Click="@Cancel"/>
+        </RadzenStack>
+    </RadzenStack>
+</RadzenColumn>
+
+@code {
+    [Parameter, EditorRequired] public required List<DateRange> Periods { get; set; } = [];
+    [Parameter, EditorRequired] public required CommissionType CommissionType { get; set; }
+
+    private DateTime _effectiveDate;
+    private DateTime? _expireDate;
+    private readonly DateTime _minimumEffectiveDate = DateTime.Today;
+    private List<string> _errors = [];
+    private string _errorsText = "";
+    private bool _isEffectiveDateReadOnly;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (CommissionType == CommissionType.Scheduled)
+            _effectiveDate = Periods.Any()
+                ? Periods.Max(a => a.End)!.Value.AddDays(1)
+                : DateTime.Today;
+
+        _isEffectiveDateReadOnly = CommissionType == CommissionType.Scheduled;
+    }
+
+    private void Save()
+    {
+        _errors = Validators.ValidatePeriodForAgencyCommissions(_effectiveDate, _expireDate, Periods, CommissionType);
+        _errorsText = string.Join("\r\n", _errors);
+        
+        if (_errors.Any())
+        {
+            StateHasChanged();
+            return;
+        }
+
+        DialogService.Close(result: new DateRange { Start = _effectiveDate, End = _expireDate });
+    }
+
+    private void Cancel()
+    {
+        DialogService.Close(result: null);
+    }
+}

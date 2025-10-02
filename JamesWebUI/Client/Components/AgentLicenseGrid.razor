@@ -10,7 +10,7 @@
                 AllowFiltering="true" FilterMode="FilterMode.Simple"
                 AllowColumnPicking="true" AllowGrouping="true"
                 RowUpdate="UpdateLicenseRow" EditMode="DataGridEditMode.Single" RowCreate="@OnLicenseCreate"
-                IsLoading="@_isLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow" />
@@ -61,7 +61,7 @@
                 <RadzenCheckBox @bind-Value="license.AppointingState" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Property="LicenseNumber" Width="100px">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Property="LicenseNumber" Width="100px">
             <Template Context="license">
                 <RadzenText Text="@license.LicenseNumber" />
             </Template>
@@ -136,15 +136,10 @@
     private List<AgencyLicense> _licensesToInsert = [];
     private List<AgencyLicense> _licensesToUpdate = [];
 
-    //private RadzenDropDown<Insurer> DropSelectInsurer { get; set; } = null!;
-    //private RadzenDropDown<string> StateDropDown { get; set; } = null!;
-
     private List<Insurer> AllInsurers { get; set; } = [];
     private List<State> AllStates { get; set; } = [];
 
     private List<string>? _stateFilter;
-
-    private bool _isLoading;
     
     private IDataAccessResult<Agent> _agentResult = null!;
     private LoadItem LicencesLoad => AddEventNotify(new LoadItem<Agent>
@@ -339,14 +334,5 @@
             _stateFilter = null;
         }
         await LicenseGrid.Reload();
-    }
-    
-    protected async Task ShowLoading()
-    {
-        _isLoading = true;
-
-        await Task.Yield();
-
-        _isLoading = false;
     }
 }

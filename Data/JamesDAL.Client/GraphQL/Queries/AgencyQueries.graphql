@@ -6,6 +6,8 @@
     status
     w9
     nasbp
+    profitSharing
+    profitSharingMinimumPremium
     nationalProducerNumber
     idNavigation {
       fullName
@@ -49,42 +51,40 @@ query GetAgencyNameAndNumberById($agencyId: UUID!) {
 
 query agencyAccounts($agencyNumber: String!) {
   agencyAccounts(agencyNumber: $agencyNumber) {
-    accountNum
-    branch
-    idNavigation {
-      fullName
-    }
-    bonds {
-      bondNumber
       accountNum
-      effective
-      expiration
-      underWriter {
-        idNavigation{
-          fullName
-        }
-      }
-      obligee {
-        fullName
-      }
-      bondType {
-        bondType
-      }
-      siccode
-      municipality
-      bondClass
+      branch
+      name
+      branchFullName
       status
-    }
-    mainAddress {
-      id
-      address1
-      address2
-      address3
-      city
-      stateCode
-      postalCode
-    }
+      mainAddress {
+          address1
+          address2
+          address3
+          city
+          postalCode
+          stateCode
+      }  
   }
+}
+
+query agencyAccountBonds($accountNum: String!) {
+    agencyAccountBonds(accountNum: $accountNum) {
+        bondNumber
+        bondType
+        amount
+        bondClass
+        effective
+        expiration
+        municipality
+        obligeeId
+        obligeeFullName
+        siccode
+        status
+        underwriterId
+        underwriterFullName
+        appointment
+        termination
+    }
 }
 
 query GetAgencyBonds($agencyId: UUID!) {
@@ -154,10 +154,13 @@ query GetAgencyAgents($agencyId: UUID!){
 
 query GetAgencyCommissionRates($agencyId: UUID!){
     agencyCommissionRates(agencyId: $agencyId){
-        id,
-        bondType,
-        minimum,
-        maximum,
+        agencyId
+        bondType
+        effective
+        expires
+        id
+        maximum
+        minimum
         rate
     }
 }

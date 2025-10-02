@@ -78,11 +78,11 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         /// <summary>
-        /// Retrieves a list of agency accounts based on the specified agency number.
+        /// Retrieves a list of agency accounts based on the provided agency number.
         /// </summary>
-        /// <param name="agencyNumber">The unique identifier of the agency to retrieve accounts for.</param>
-        /// <param name="contextFactory">A factory for creating database context instances.</param>
-        /// <returns>A list of agency account details.</returns>
+        /// <param name="agencyNumber">The unique Agency Number for the agency to fetch accounts for.</param>
+        /// <param name="contextFactory">The database context factory to access the data store.</param>
+        /// <returns>A list of agency accounts matching the given agency number.</returns>
         [Authorize]
         public async Task<List<AgencyAccountDto>> GetAgencyAccounts(string agencyNumber,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

@@ -19,7 +19,7 @@
                                       Style="height: 30px;"/>
                         <RadzenFormField Text="Minimum Premium Threshold" Variant="Variant.Text" class="rz-ml-12">
                             <RadzenNumeric TValue="int?" @bind-Value="@Agency.ProfitSharingMinimumPremium" Format="c0"
-                                           Disabled="@(_isProfitSharingEnabled)" Name="numMinimumPremiumThreshold"
+                                           Disabled="@(!_isProfitSharingEnabled)" Name="numMinimumPremiumThreshold"
                                            TextAlign="TextAlign.Right"/>
                         </RadzenFormField>
                     </RadzenStack>

@@ -31,13 +31,13 @@
             }
             return bond.Agency;
         }
-        
+
         public LegalEntity GetObligee([Parent] Bond bond,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            return bond.Obligee;
+            return bond.Obligee ?? new LegalEntity { FullName = "Unknown" };
         }
-        
+
         public async Task<LegalEntity?> GetResponsibleParty([Parent] Bond bond,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

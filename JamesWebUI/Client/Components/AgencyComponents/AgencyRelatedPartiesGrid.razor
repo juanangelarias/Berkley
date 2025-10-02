@@ -6,7 +6,7 @@
 <Theme />
 
 <RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency" GridLines="DataGridGridLines.Vertical"
-                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed"
+                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed" Density="Density.Compact"
                 Style="@style"  IsLoading="@IsLoading" FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Visible="@NotResumed">

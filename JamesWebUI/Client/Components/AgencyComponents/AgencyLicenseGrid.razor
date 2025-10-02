@@ -83,7 +83,7 @@
                 <RadzenCheckBox @bind-Value="license.AppointingState"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Property="LicenseNumber" Width="100px">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Property="LicenseNumber" Width="100px">
             <Template Context="license">
                 <RadzenText Text="@license.LicenseNumber"/>
             </Template>
@@ -130,15 +130,14 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Certificate" Width="60px" Visible="!_bulkMode">
             <Template Context="lic">
-                <AuthorizeView Policy="InRoleCanUploadLicenseCertificate">
-                    <InlineImagingDocument DocumentShortName="License Certificate"
-                                           DocumentCategory="ImagingDocumentCategory.Agency"
-                                           DocumentId="@lic.ImagingId"
-                                           DocumentType="AGALIC"
-                                           ImagingId="@lic.Agency.AgencyNumber"
-                                           UploadAction=@(async void (guid) => await CertificateUploaded(guid, lic.Id))
-                                           UploadErrorAction=@(msg => LogUploadError(msg, lic))/>
-                </AuthorizeView>
+                @*ToDo: Add Security in InlineImagingDocument to only allow uploading/viewing of documents that the user has access to*@
+                <InlineImagingDocument DocumentShortName="License Certificate"
+                                       DocumentCategory="ImagingDocumentCategory.Agency"
+                                       DocumentId="@lic.ImagingId"
+                                       DocumentType="AGALIC"
+                                       ImagingId="@lic.Agency.AgencyNumber"
+                                       UploadAction=@(async void (guid) => await CertificateUploaded(guid, lic.Id))
+                                       UploadErrorAction=@(msg => LogUploadError(msg, lic))/>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false"

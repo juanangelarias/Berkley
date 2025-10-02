@@ -61,7 +61,7 @@
                 <RadzenCheckBox @bind-Value="license.AppointingState" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Property="LicenseNumber" Width="100px">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Property="LicenseNumber" Width="100px">
             <Template Context="license">
                 <RadzenText Text="@license.LicenseNumber" />
             </Template>

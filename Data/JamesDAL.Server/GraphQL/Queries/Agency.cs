@@ -152,7 +152,7 @@ namespace James.Data.Server.GraphQL.Queries
                     Appointment = r.BondTransactions.FirstOrDefault(f => f.Type == "Initial Premium")?
                         .BillDate ?? DateTime.MinValue,
                     Termination = r.BondTransactions.FirstOrDefault(f => f.Type == "Closing")?
-                        .BillDate ?? DateTime.MinValue,
+                        .BillDate ?? DateTime.MaxValue,
                 })
                 .ToList();
 

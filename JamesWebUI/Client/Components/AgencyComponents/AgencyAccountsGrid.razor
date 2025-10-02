@@ -26,7 +26,7 @@
                         }
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Bond #" Property="BondNumber" MinWidth="100px"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Bond No." Property="BondNumber" MinWidth="100px"/>
                 <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Account Name" Width="300px">
                     <Template>
                         <RadzenText Text="@account.Name"/>
@@ -47,7 +47,7 @@
     </Template>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Status" Property="Status" Frozen="true" Width="120px"/>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Acc. #" Property="AccountNum" Frozen="true" Width="130px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Property="AccountNum" Frozen="true" Width="130px">
             <HeaderTemplate>
                 <RadzenStack Orientation="Orientation.Vertical" Gap="0.1rem">
                     <RadzenText Text="Account" TextStyle="TextStyle.Body2"/>

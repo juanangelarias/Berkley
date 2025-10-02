@@ -84,7 +84,7 @@
                                               Sortable="false" TextAlign="TextAlign.Right" Width="100px">
                             <Template Context="rate">
                                 <RadzenRow>
-                                    <RadzenColumn Size="1"></RadzenColumn>
+                                    <RadzenColumn Size="1"/>
                                     <RadzenColumn Size="5">
                                         <AuthorizeView Policy="InRoleCanEditAgencyCommissionRates">
                                             <RadzenButton Variant="Variant.Flat"
@@ -92,6 +92,7 @@
                                                           ButtonStyle="ButtonStyle.Light"
                                                           Size="ButtonSize.Small"
                                                           Click="@(_ => EditRate(rate))"
+                                                          Visible="@(CanEditDelete(rate))"
                                                           @onclick:stopPropagation="true"/>
                                         </AuthorizeView>
                                     </RadzenColumn>

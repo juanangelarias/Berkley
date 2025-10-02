@@ -1,9 +1,13 @@
 ﻿@using JamesWebUI.Client.Pages
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using ThemeService = JamesWebUI.Client.Services.ThemeService
+
 @inherits JamesLayoutComponentBase
+
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
+@inject IAppEnvironment Env
+
 @attribute [Authorize]
 
 <RadzenComponents />
@@ -163,9 +167,11 @@
     {
         JamesThemeService.Initialize(NavigationManager);
 
-        _headerStyle = OperatingSystem.IsBrowser()
-            ? "background-color: cornsilk;"
-            : "background-color: #e0e0e0;";
+        _headerStyle = Env.IsDevelopment()
+            ? OperatingSystem.IsBrowser()
+                ? "background-color: cornsilk;"
+                : "background-color: #e0e0e0;"
+            : "";
 
         notifications = new Notification[]{
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},

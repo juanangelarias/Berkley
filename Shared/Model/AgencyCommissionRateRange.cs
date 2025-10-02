@@ -62,7 +62,7 @@ public class AgencyCommissionRateRange : NotifyPropertyChangedBase
     #endregion
     
     public string FromText => From.ToString("C0");
-    public string ToText => To?.ToString("C0") ?? int.MaxValue.ToString("C0");
+    public string ToText => To?.ToString("C0") ?? "Unlimited";
     public string RateText => Rate.ToString("P2");
 
     #endregion

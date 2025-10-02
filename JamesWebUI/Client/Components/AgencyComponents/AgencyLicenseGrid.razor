@@ -518,6 +518,11 @@
         substitutions.AddSubstitution("IsActive", "IsActive", "Is_Active");
         substitutions.AddSubstitution("IsResident", "IsResident", "Is_Resident");
         substitutions.AddSubstitution("AppointingState", "AppointingState", "Appointing_State");
+        substitutions.AddSubstitution("State", "State", "State");
+        substitutions.AddSubstitution("LicenseNumber", "LicenseNumber", "License_Number");
+        substitutions.AddSubstitution("Appointment", "Appointment", "Appointment");
+        substitutions.AddSubstitution("Termination", "Termination", "Termination");
+        
         NavigationManager.NavigateTo(ExportDataGridUrl(LicenseGrid,
                 $"/export/AgencyLicenses/{Agency.Id}", format, substitutions),
             true);

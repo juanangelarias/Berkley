@@ -80,7 +80,7 @@
     [Parameter, EditorRequired] public string AgencyNumber { get; set; } = null!;
     [Parameter, EditorRequired] public string CurrentStatus { get; set; } = null!;
 
-    private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
+    private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new();
     private bool IsLoading { get; set; }
     private RadzenDataGrid<AgencyStatusLog> StatusLogGrid { get; set; } = null!;
     private List<AgencyStatusLog> StatusLogsToInsert { get; set; } = [];
@@ -91,22 +91,21 @@
 
     private IDataAccessResult<List<AgencyStatusLog>> _statusLogs = null!;
 
-    private LoadItem AgencyStatusLogLoad =>
-        AddEventNotify(new LoadItem<List<AgencyStatusLog>>
+    private LoadItem AgencyStatusLogLoad => AddEventNotify(new LoadItem<List<AgencyStatusLog>>
+    {
+        Key = $"AgencyStatusLog{AgencyNumber}",
+        AsyncLoadTask = async () => _statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
+        CacheLoadTask = cache => _statusLogs = new DataAccessResult<List<AgencyStatusLog>>
         {
-            Key = $"AgencyStatusLog{AgencyNumber}",
-            AsyncLoadTask = async () => _statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
-            CacheLoadTask = cache => _statusLogs = new DataAccessResult<List<AgencyStatusLog>>
-            {
-                Data = (List<AgencyStatusLog>)cache!
-            },
-            ResultVariable = () => _statusLogs,
-            AfterLoad = () =>
-            {
-                if (_statusLogs.Success)
-                    AgencyStatusLogs = _statusLogs.Data!;
-            }
-        }, "agency status log");
+            Data = (List<AgencyStatusLog>)cache!
+        },
+        ResultVariable = () => _statusLogs,
+        AfterLoad = () =>
+        {
+            if (_statusLogs.Success)
+                AgencyStatusLogs = _statusLogs.Data!;
+        }
+    }, "agency status log");
 
     private IDataAccessResult<List<AgencyStatusDm>> _statuses = null!;
 

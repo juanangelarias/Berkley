@@ -1,5 +1,4 @@
 ﻿using HotChocolate.Authorization;
-using James.Shared.Server;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries

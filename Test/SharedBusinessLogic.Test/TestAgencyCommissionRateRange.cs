@@ -159,7 +159,7 @@ public class TestAgencyCommissionRateRange
 
         // Act & Assert
         Assert.Equal(1234.ToString("C0"), range.FromText);
-        Assert.Equal("0", range.ToText); // null -> "0"
+        Assert.Equal("$2,147,483,647", range.ToText); // null -> "0"
         Assert.Equal(0.2567.ToString("P2"), range.RateText);
 
         // Also verify ToTxt when not null

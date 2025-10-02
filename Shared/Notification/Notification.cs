@@ -10,11 +10,7 @@ public class Notification
     
     public bool SendEmail { get; set; }
     public bool SendSms { get; set; }
-    
-    // Associated to...
-    public Guid? AccountId { get; set; }
-    public Guid? AgencyId { get; set; }
-
+    public string? AccountNumber { get; set; }
     public string Title { get; set; } = null!;
     public string Body { get; set; } = null!;
     public string Severity { get; set; } = null!;
@@ -23,7 +19,4 @@ public class Notification
 
     public List<NotificationRecipient> Recipients { get; set; } = [];
     public List<NotificationPropertyValue> Properties { get; set; } = [];
-    
-    /*public Account? Account { get; set; }
-    public Agency? Agency { get; set; }*/
 }

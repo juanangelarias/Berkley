@@ -33,8 +33,8 @@
     }
 }
 
-query GetAllNotificationsByUser($userEmail: String!, $accountId: UUID, $agencyId: UUID) {
-    notificationsByUser(userEmail: $userEmail, accountId: $accountId, agencyId: $agencyId) {
+query GetAllNotificationsByUser($userEmail: String!, $accountNumber: String) {
+    notificationsByUser(userEmail: $userEmail, accountId: $accountNumber) {
         accountId
         agencyId
         body

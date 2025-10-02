@@ -24,7 +24,7 @@ public partial class Query
     }
 
     [Authorize]
-    public List<Notification> GetNotificationsByUser(string userEmail, Guid? accountId = null, Guid? agencyId = null)
+    public List<Notification> GetNotificationsByUser(string userEmail, string? accountNumber = null)
     {
         var json = File.ReadAllText(@"C:\temp\BsgNotifications\Notifications.json");
         var notifications = JsonConvert.DeserializeObject<List<Notification>>(json) ?? [];
@@ -32,8 +32,7 @@ public partial class Query
         var data = notifications
             .Where(r => r.SenderUserEmail == userEmail ||
                         r.Recipients.Any(a => a.RecipientEmail == userEmail)
-                        || (agencyId != null && r.AgencyId == agencyId) ||
-                        (accountId != null && r.AccountId == accountId))
+                        || (accountNumber != null && r.AccountNumber == accountNumber))
             .ToList();
 
         return data;

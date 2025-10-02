@@ -687,9 +687,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => query.GetNotifications());
         }
         
-        public async Task<IDataAccessResult<List<Notification>>> GetAllNotificationsByUser(string userEmail, Guid accountId, Guid agencyId)
+        public async Task<IDataAccessResult<List<Notification>>> GetAllNotificationsByUser(string userEmail, string? accountId)
         {
-            return await ExecuteGet(async () => query.GetNotificationsByUser(userEmail, accountId, agencyId));
+            return await ExecuteGet(async () => query.GetNotificationsByUser(userEmail, accountId));
         }
         
         public async Task<IDataAccessResult<List<NotificationProperty>>> GetAllNotificationProperties()

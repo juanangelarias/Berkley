@@ -233,7 +233,7 @@ namespace James.Shared.Data
 
         // Queries
         public Task<IDataAccessResult<List<Notification.Notification>>> GetAllNotifications();
-        public Task<IDataAccessResult<List<Notification.Notification>>> GetAllNotificationsByUser(string userEmail, Guid accountId, Guid agencyId);
+        public Task<IDataAccessResult<List<Notification.Notification>>> GetAllNotificationsByUser(string userEmail, string accountNumber);
         public Task<IDataAccessResult<List<NotificationProperty>>> GetAllNotificationProperties();
 
         // Mutations

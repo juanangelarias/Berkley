@@ -777,10 +777,10 @@ namespace James.Data.Client
         }
 
         public async Task<IDataAccessResult<List<Notification>>> GetAllNotificationsByUser(string userEmail,
-            Guid accountId, Guid agencyId)
+            Guid accountId)
         {
             var response = await ExecuteGet<List<Notification>>(
-                async () => await jamesClient.GetAllNotificationsByUser.ExecuteAsync(userEmail, accountId, agencyId),
+                async () => await jamesClient.GetAllNotificationsByUser.ExecuteAsync(userEmail, accountId),
                 "notificationsByUser");
             
             return response;

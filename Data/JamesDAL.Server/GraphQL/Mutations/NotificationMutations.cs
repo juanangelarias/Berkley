@@ -61,7 +61,7 @@ public class NotificationMutations
     // Notifications
     [Authorize]
     public bool UpdateNotification(Guid id, Guid? senderUserId, string senderUserEmail, bool sendEmail, bool sendSms,
-        Guid? accountId, Guid? agencyId, string title, string body, DateTime? followUpDate, string status,
+        string? accountNumber, string title, string body, DateTime? followUpDate, string status,
         List<NotificationPropertyValue> properties, List<NotificationRecipient> recipients)
     {
         var dbNotifications = GetNotifications();
@@ -82,8 +82,7 @@ public class NotificationMutations
             notification.SenderUserId = senderUserId;
             notification.SendEmail = sendEmail;
             notification.SendSms = sendSms;
-            notification.AccountId = accountId;
-            notification.AgencyId = agencyId;
+            notification.AccountNumber = accountNumber;
             notification.Title = title;
             notification.Body = body;
             notification.FollowUpDate = followUpDate;
@@ -100,8 +99,7 @@ public class NotificationMutations
                 SenderUserId = senderUserId,
                 SendEmail = sendEmail,
                 SendSms = sendSms,
-                AccountId = accountId,
-                AgencyId = agencyId,
+                AccountNumber = accountNumber,
                 Title = title,
                 Body = body,
                 FollowUpDate = followUpDate,

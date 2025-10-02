@@ -5,7 +5,8 @@
 @if(AccountState?.Agency?.Id != null)
 {
     <LegalEntityAddressManager LegalEntityId="@(AccountState?.Agency?.Id ?? Guid.Empty)"
-                               OnAddressChanged="OnAddressChanged"/>
+                               OnAddressChanged="OnAddressChanged"
+                               TabPosition="TabPosition.Top"/>
 }
 else
 {

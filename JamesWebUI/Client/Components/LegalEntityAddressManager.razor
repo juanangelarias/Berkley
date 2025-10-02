@@ -4,7 +4,7 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenTabs TabPosition="TabPosition.Left" @bind-SelectedIndex="@SelectedTab">
+<RadzenTabs TabPosition="@TabPosition" @bind-SelectedIndex="@SelectedTab">
     <Tabs>
         @{
             if (AllAddresses.Any())
@@ -40,6 +40,7 @@
 
     [Parameter, EditorRequired] public required Guid LegalEntityId { get; set; }
     [Parameter] public EventCallback<List<Address>> OnAddressChanged { get; set; }
+    [Parameter] public TabPosition TabPosition { get; set; } = TabPosition.Left;
 
     private List<Address> AllAddresses { get; set; } = [];
     private readonly Dictionary<string, AddressDisplay> _addressDisplays = [];

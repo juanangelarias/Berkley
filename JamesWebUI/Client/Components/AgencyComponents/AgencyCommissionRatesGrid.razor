@@ -47,7 +47,7 @@
                                 </RadzenStack>
                             </HeaderTemplate>
                             <Template Context="rate">
-                                <RadzenLabel Text="@rate.FromTxt"/>
+                                <RadzenLabel Text="@rate.FromText"/>
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Title="To" Property="To" Type="typeof(int)"
@@ -61,11 +61,11 @@
                                 }
                                 else
                                 {
-                                    <RadzenLabel Text="@rate.ToTxt"/>
+                                    <RadzenLabel Text="@rate.ToText"/>
                                 }
                             </EditTemplate>
                             <Template Context="rate">
-                                <RadzenLabel Text="@rate.ToTxt"/>
+                                <RadzenLabel Text="@rate.ToText"/>
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Title="Rate" Property="Rate" Type="typeof(double)"
@@ -76,7 +76,7 @@
                                                Format="#0.00%" Step="0.01"/>
                             </EditTemplate>
                             <Template Context="rate">
-                                <RadzenLabel Text="@rate.RateTxt"/>
+                                <RadzenLabel Text="@rate.RateText"/>
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right"

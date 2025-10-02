@@ -158,13 +158,13 @@ public class TestAgencyCommissionRateRange
         var range = new AgencyCommissionRateRange(Guid.NewGuid(), 8, 1234, null, 0.2567, isNew: false);
 
         // Act & Assert
-        Assert.Equal(1234.ToString("C0"), range.FromTxt);
-        Assert.Equal("0", range.ToTxt); // null -> "0"
-        Assert.Equal(0.2567.ToString("P2"), range.RateTxt);
+        Assert.Equal(1234.ToString("C0"), range.FromText);
+        Assert.Equal("0", range.ToText); // null -> "0"
+        Assert.Equal(0.2567.ToString("P2"), range.RateText);
 
         // Also verify ToTxt when not null
         range.To = 9876;
-        Assert.Equal(9876.ToString("C0"), range.ToTxt);
+        Assert.Equal(9876.ToString("C0"), range.ToText);
     }
 
     [Fact]

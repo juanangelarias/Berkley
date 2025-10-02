@@ -73,7 +73,7 @@
                                               FilterProperty="Rate" FormatString="#.00%" TextAlign="TextAlign.End">
                             <EditTemplate Context="rate">
                                 <RadzenNumeric @bind-Value="@rate.Rate" Decimals="2" Min="0" Max="100"
-                                               Format="#0.00%" Step="0.01"/>
+                                               Format="#0.00'%'" Step="0.01"/>
                             </EditTemplate>
                             <Template Context="rate">
                                 <RadzenLabel Text="@rate.RateText"/>
@@ -401,5 +401,4 @@
 
         return rate.To == null || rate.Id == 0 || rate.To == max;
     }
-
 }

@@ -270,7 +270,7 @@ public static class Validators
             case < 0:
                 errors.Add("The rate must be greater than or equal to 0.", true);
                 break;
-            case > 1:
+            case > 100:
                 errors.Add("The rate must be less than or equal to 100%.", true);
                 break;
         }

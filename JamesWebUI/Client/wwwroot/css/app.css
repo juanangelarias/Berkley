@@ -121,6 +121,8 @@ div:has(button.sidebar-expander){
     overflow-x:visible;
 }
 
+/*ToDo: Stefany should review the following class*/
+
 .rz-header-right {
     flex: 1; /* Allows the header content to take available space */
     display: flex;
@@ -128,4 +130,9 @@ div:has(button.sidebar-expander){
     padding-right: 1rem; /* Adds some padding on the right */
     font-weight: bold;
     font-size: 2rem;
+}
+
+:root {
+    --rz-grid-header-color: white;
+    --rz-grid-header-background-color: red;
 }

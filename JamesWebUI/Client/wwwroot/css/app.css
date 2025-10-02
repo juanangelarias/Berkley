@@ -131,8 +131,3 @@ div:has(button.sidebar-expander){
     font-weight: bold;
     font-size: 2rem;
 }
-
-:root {
-    --rz-grid-header-color: white;
-    --rz-grid-header-background-color: red;
-}

@@ -166,6 +166,8 @@
         substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
         substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
         substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
+        substitutions.AddSubstitution("NationalProducerNumber", "NationalProducerNumber", "NationalProducerNumber");
+        
         NavigationManager.NavigateTo(ExportDataGridUrl(AgentsGrid,
                 $"/export/AgencyContacts/{AgencyId}", format, substitutions),
             true);

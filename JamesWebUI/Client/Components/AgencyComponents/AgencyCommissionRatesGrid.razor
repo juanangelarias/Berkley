@@ -22,7 +22,7 @@
                                 AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 300px"
                                 AllowGrouping="false" Density="Density.Compact" GridLines="DataGridGridLines.Vertical"
                                 RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate" EditMode="DataGridEditMode.Single"
-                                IsLoading="@IsLoading" Filter="@ShowLoading">
+                                IsLoading="@IsLoading" Filter="@ShowLoading" AllowColumnResize="true">
                     <HeaderTemplate>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                             <AuthorizeView Policy="InRoleCanAddAgencyCommissionRates">

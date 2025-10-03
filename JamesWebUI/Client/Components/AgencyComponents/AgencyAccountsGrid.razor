@@ -9,12 +9,13 @@
 <RadzenDataGrid TItem="AgencyAccountDto" @ref="@_agencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true" AllowSorting="true"
                 Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true" Density="Density.Compact"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                RowExpand="RowExpand" IsLoading="@IsLoading">
+                RowExpand="RowExpand" IsLoading="@IsLoading" AllowColumnReorder="true">
     <Template Context="account">
         <RadzenDataGrid Data="account.Bonds" TItem="AgencyAccountBondDto" Density="Density.Compact"
                         Style="height: 400px; border-radius: 10px;" >
             <Columns>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Status" Property="Status" MinWidth="80px" TextAlign="TextAlign.Center">
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Status" Property="Status" MinWidth="80px" 
+                                      TextAlign="TextAlign.Center" Resizable="true">
                     <Template Context="bond">
                         @if (bond.Status == "Active")
                         {
@@ -26,28 +27,35 @@
                         }
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Bond No." Property="BondNumber" MinWidth="100px"/>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Account Name" Width="300px">
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Bond No." Property="BondNumber" 
+                                      MinWidth="100px" Resizable="true"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Account Name" Width="300px" Resizable="true">
                     <Template>
                         <RadzenText Text="@account.Name"/>
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Branch" MinWidth="90px">
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Branch" MinWidth="90px" Resizable="true">
                     <Template>
                         <RadzenText Text="@account.Branch"/>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Type" Property="BondType" MinWidth="110px"/>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Begin Date" Property="Effective" FormatString="{0:dd/MM/yyyy}" MinWidth="120px"/>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="End Date" Property="Expiration" FormatString="{0:dd/MM/yyyy}" MinWidth="120px"/>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Appointment" Property="Appointment" FormatString="{0:dd/MM/yyyy}" MinWidth="120px"/>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Termination" Property="Termination" FormatString="{0:dd/MM/yyyy}" MinWidth="120px"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Begin Date" Property="Effective" 
+                                      FormatString="{0:dd/MM/yyyy}" MinWidth="120px" Resizable="true"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="End Date" Property="Expiration" 
+                                      FormatString="{0:dd/MM/yyyy}" MinWidth="120px" Resizable="true"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Appointment" Property="Appointment" 
+                                      FormatString="{0:dd/MM/yyyy}" MinWidth="120px" Resizable="true"/>
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Termination" Property="Termination" 
+                                      FormatString="{0:dd/MM/yyyy}" MinWidth="120px" Resizable="true"/>
             </Columns>
         </RadzenDataGrid>
     </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Status" Property="Status" Frozen="true" Width="120px"/>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Property="AccountNum" Frozen="true" Width="130px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Status" Property="Status" Frozen="true" Width="120px"
+                              Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Property="AccountNum" Frozen="true" Width="130px"
+                              Resizable="true">
             <HeaderTemplate>
                 <RadzenStack Orientation="Orientation.Vertical" Gap="0.1rem">
                     <RadzenText Text="Account" TextStyle="TextStyle.Body2"/>
@@ -55,23 +63,26 @@
                 </RadzenStack>
             </HeaderTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Name" Property="Name" Frozen="true" MinWidth="250px"/>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Address" Property="MainAddress.Address1" MinWidth="200px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Name" Property="Name" Frozen="true" MinWidth="250px"
+                              Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Address" Property="MainAddress.Address1" MinWidth="200px"
+                              Resizable="true">
             <Template Context="account">
                 <RadzenText Text="@account.MainAddress?.Address1"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="City" Width="150px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="City" Width="150px" Resizable="true">
             <Template Context="account">
                 <RadzenText Text="@account.MainAddress?.City"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="State" Width="120px" Property="MainAddress.StateCode">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="State" Width="120px" Property="MainAddress.StateCode"
+                              Resizable="true">
             <Template Context="account">
                 <RadzenText Text="@account.MainAddress?.StateCode"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Postal Code" Width="150px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Postal Code" Width="150px" Resizable="true">
             <HeaderTemplate>
                 <RadzenStack Orientation="Orientation.Vertical" Gap="0.1rem">
                     <RadzenText Text="Postal" TextStyle="TextStyle.Body2"/>
@@ -82,8 +93,8 @@
                 <RadzenText Text="@account.MainAddress?.PostalCode"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Branch" Property="Branch" Width="130px"/>
-        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Bond Count" Width="125px">
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Branch" Property="Branch" Width="130px" Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Bond Count" Width="125px" Resizable="true">
             <HeaderTemplate>
                 <RadzenStack Orientation="Orientation.Vertical" Gap="0.1rem">
                     <RadzenText Text="Bond" TextStyle="TextStyle.Body2"/>

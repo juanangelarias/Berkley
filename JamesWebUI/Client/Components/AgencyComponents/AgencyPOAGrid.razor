@@ -10,7 +10,7 @@
 <Theme/>
 
 <RadzenDataGrid @ref="POAGrid" TItem="PowerOfAttorney" Data="PowerOfAttorneys" GridLines="DataGridGridLines.Vertical"
-                AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 400px; border-radius: 10px;"
+                AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
                 AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true" Density="Density.Compact"
                 RowCreate="@OnPoaCreate" RowUpdate="@UpdatePoaRow" EditMode="DataGridEditMode.Single"
                 IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"

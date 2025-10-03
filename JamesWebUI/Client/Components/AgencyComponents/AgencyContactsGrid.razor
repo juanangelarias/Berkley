@@ -9,14 +9,14 @@
 <RadzenDataGrid TItem="Agent" Data="@Agents" @ref="@AgentsGrid" Density="Density.Compact"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" GridLines="DataGridGridLines.Vertical"
                 SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
-                AllowPaging="true" PageSize="10" AllowSorting="true">
+                AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
-        <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense"
+        <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense" AllowColumnResize="true"
                         Style="height:300px;" AllowVirtualization="true" GridLines="DataGridGridLines.Vertical"
                         AllowFiltering="true">
             <HeaderTemplate>

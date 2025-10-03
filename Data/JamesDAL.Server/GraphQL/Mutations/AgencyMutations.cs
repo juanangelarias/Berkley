@@ -466,6 +466,8 @@ namespace James.Data.Server.GraphQL.Mutations
             if (rate.AgencyId == Guid.Empty)
                 return false;
 
+            rate.ExpireIncluded = rate.Expires == null ? 0 : 1;
+            
             //Get existing rate id
             var existingRate = await ctx.AgencyCommissions
                 .FirstOrDefaultAsync(ac => ac.Id == rate.Id);

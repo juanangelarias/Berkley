@@ -430,6 +430,7 @@
         substitutions.AddSubstitution("ReferenceNumber", "ReferenceNumber", "Reference Number");
         substitutions.AddSubstitution("FirstIssued", "FirstIssued", "First Issued");
         substitutions.AddSubstitution("CurrentIssued", "CurrentIssued", "Current Issued");
+        substitutions.AddSubstitution("Limit", "Limit", "Limit");
         NavigationManager.NavigateTo(ExportDataGridUrl(POAGrid,
                 $"/export/AgencyPOAs/{Agency.Id}", format, substitutions),
             true);

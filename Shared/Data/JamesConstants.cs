@@ -24,6 +24,7 @@ namespace James.Shared.Data
         public const string Obligee = "Obligee";
         public const string Bond = "Bond";
         public const string DataAccess = "Data Access";
+        public const string Security = "Security";
         public const string BrowserFeatures = "Browser Features";//For issues with browser features like LocalStorage, etc.
     }
 

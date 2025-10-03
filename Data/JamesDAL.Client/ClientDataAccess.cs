@@ -426,6 +426,7 @@ namespace James.Data.Client
                     Maximum = rate.Maximum,
                     Effective = rate.Effective,
                     Expires = rate.Expires,
+                    ExpireIncluded = rate.Expires == null ? 0 : 1,
                     Rate = rate.Rate
                 }
             });

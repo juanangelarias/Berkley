@@ -7,7 +7,7 @@
 <AuthorizeView>
     <Authorized Context="authCtx">
         <RadzenDataGrid @ref="StatusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
-                        Style="border-radius: 20px;" GridLines="DataGridGridLines.Vertical"
+                        Style="border-radius: 20px;" GridLines="DataGridGridLines.Vertical" AllowColumnResize="true"
                         RowCreate="@OnStatusCreate">
             <HeaderTemplate>
                 <AuthorizeView Policy="InRoleCanAddAgencyStatus">

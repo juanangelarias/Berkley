@@ -9,7 +9,7 @@
 <Theme/>
 
 <RadzenDataGrid TItem="AgencyInventory" @ref="@InventoryGrid" Data="@AgencyInventories"
-                Style="border-radius: 10px; height: 400px;" Density="Density.Compact" EmptyText="No records to display"
+                Style="border-radius: 10px; height: 400px;" Density="Density.Compact" EmptyText="No records to display" AllowColumnResize="true"
                 AllowSorting="true" AllowGrouping="true" EditMode="DataGridEditMode.Single" AllowColumnPicking="true"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" SelectionMode="DataGridSelectionMode.Single"
                 RowUpdate="UpdateInventoryRow" RowCreate="CreateInventoryRow" GridLines="DataGridGridLines.Vertical"

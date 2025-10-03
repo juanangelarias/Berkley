@@ -13,7 +13,7 @@
                 Filter="@ShowLoading">
     <Columns>
         <RadzenDataGridColumn TItem="Bond" Filterable="true" FilterValue="@_statusFilter" FilterProperty="Status"
-                              FilterOperator="FilterOperator.Contains"
+                              FilterOperator="FilterOperator.Contains" Resizable="true"
                               Title="Status" Property="Status" Width="125px" Type="typeof(List<string>)">
             <Template Context="bond">
                 @{
@@ -39,13 +39,13 @@
                                 Data="@_agencyBonds.Select(b => b.Status).Distinct().ToList()"/>
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Bond" Title="Bond No." Property="BondNumber" Width="125px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Bond No." Property="BondNumber" Width="125px" Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="Account No." Property="AccountNumNavigation.AccountNum"
-                              Width="140px"/>
+                              Width="140px" Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="Account Name" Property="AccountNumNavigation.IdNavigation.FullName"
-                              Width="150px"/>
+                              Width="150px" Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="Bond Type" Property="BondType.BondType" Width="130px"
-                              FilterValue="_bondTypeFilter" FilterProperty="BondType.BondType"
+                              FilterValue="_bondTypeFilter" FilterProperty="BondType.BondType" Resizable="true"
                               FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@_bondTypeFilter" @ref="BondTypeFilterDropDown"
@@ -54,15 +54,18 @@
                                 Data="@_agencyBonds.Select(b => b.BondType?.BondType).Distinct().ToList()"/>
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" Width="150px"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" Width="150px"
+                              Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" Width="150px"
-                              SortOrder="SortOrder.Descending"/>
-        <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" Width="175px"/>
-        <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="100px"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName" Width="200px"/>
+                              SortOrder="SortOrder.Descending" Resizable="true"/>
+        <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" Width="175px"
+                              Resizable="true"/>
+        <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="100px"
+                              Resizable="true"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName" Width="200px" Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" FormatString="{0:d}"
-                              Width="175px"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass"
+                              Width="175px" Resizable="true"/>
+        <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass" Resizable="true"
                               Filterable="true" FilterValue="@_classFilter" FilterProperty="BondClass"
                               FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)"
                               FormatString="{0:d}" Width="180px">

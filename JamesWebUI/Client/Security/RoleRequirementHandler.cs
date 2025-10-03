@@ -12,29 +12,42 @@ namespace JamesWebUI.Client.Security
         //TODO: Discuss if it would make sense to make a simile of AddEventNotify functionality to log errors if they occur.  
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, RoleRequirement requirement)
         {
-            if (context.User.Identity?.IsAuthenticated != true)
+            try
             {
-                //User is not authenticated, so role cannot be verified.
-                context.Fail(new AuthorizationFailureReason(this, "User is not authenticated."));
-                return;
+                if (context.User.Identity?.IsAuthenticated != true)
+                {
+                    //User is not authenticated, so role cannot be verified.
+                    context.Fail(new AuthorizationFailureReason(this, "User is not authenticated."));
+                    return;
+                }
+
+                await GetEmployeeList();
+                if (_employees.Count == 0)
+                    loggingService.LogWarning("No employees were returned in the employee list");
+                var username = GetUsername(context);
+                if (string.IsNullOrWhiteSpace(username))
+                    //User is not authenticated, so role cannot be verified.
+                    return;
+                var employee = _employees.FirstOrDefault(e =>
+                    string.Equals(e.ActiveDirectoryAccount, username, StringComparison.OrdinalIgnoreCase));
+                if (employee == null)
+                {
+                    //TODO:Update this to allow non-AD users
+                    FailSecurityAttempt(context, requirement, "User is not an employee.",
+                        $"RoleRequirementHandler is returning Fail because user is not one of {_employees.Count} employee.");
+                    return;
+                }
+
+                await DataAccess.GetCacheOrLoadDataAsync(UserRoleLoadItem(employee.Id));
+                if (_userRoles.Any(sr =>
+                        string.Equals(sr.Role, requirement.Role, StringComparison.InvariantCultureIgnoreCase)))
+                    context.Succeed(requirement);
+                FailSecurityAttempt(context, requirement, "User was not in role");
             }
-            await GetEmployeeList();
-            var username = GetUsername(context);
-            if (string.IsNullOrWhiteSpace(username))
-                //User is not authenticated, so role cannot be verified.
-                return;
-            var employee = _employees.FirstOrDefault(e => string.Equals(e.ActiveDirectoryAccount, username, StringComparison.OrdinalIgnoreCase));
-            if (employee == null)
+            catch (Exception ex)
             {
-                //TODO:Update this to allow non-AD users
-                FailSecurityAttempt(context, requirement, "User is not an employee.", "RoleRequirementHandler is returning Fail because .");
-                return;
+                loggingService.LogException(ex, "Exception in HandleRequirementAsync");
             }
-            await DataAccess.GetCacheOrLoadDataAsync(UserRoleLoadItem(employee.Id));
-            if (_userRoles.Any(sr =>
-                string.Equals(sr.Role, requirement.Role, StringComparison.InvariantCultureIgnoreCase)))
-                context.Succeed(requirement);
-            FailSecurityAttempt(context, requirement, "User was not in role");
         }
 
         private string? GetUsername(AuthorizationHandlerContext context)

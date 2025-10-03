@@ -42,7 +42,8 @@ namespace JamesWebUI.Client.Security
                 if (_userRoles.Any(sr =>
                         string.Equals(sr.Role, requirement.Role, StringComparison.InvariantCultureIgnoreCase)))
                     context.Succeed(requirement);
-                FailSecurityAttempt(context, requirement, "User was not in role");
+                else
+                    FailSecurityAttempt(context, requirement, "User was not in role");
             }
             catch (Exception ex)
             {
@@ -60,8 +61,8 @@ namespace JamesWebUI.Client.Security
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(message, "Message must be non-null and non-empty");
             details = details ?? message;
-            var username = GetUsername(context)??"null user";
-            loggingService.LogInformation(message, details, StandardLoggingCategories.Security, new Dictionary<string, string> { {"Username", username}, {"role", requirement.Role} });
+            var username = GetUsername(context) ?? "null user";
+            loggingService.LogInformation(message, details, StandardLoggingCategories.Security, new Dictionary<string, string> { { "Username", username }, { "role", requirement.Role } });
             context.Fail(new AuthorizationFailureReason(this, message));
         }
 

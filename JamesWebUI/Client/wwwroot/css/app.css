@@ -121,9 +121,7 @@ div:has(button.sidebar-expander){
     overflow-x:visible;
 }
 
-.filled-icon {
-    font-variation-settings: 'FILL' 1;
-}
+/*ToDo: Stefany should review the following class*/
 
 .rz-header-right {
     flex: 1; /* Allows the header content to take available space */

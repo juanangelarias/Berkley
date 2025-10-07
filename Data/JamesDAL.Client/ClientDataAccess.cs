@@ -481,6 +481,7 @@ namespace James.Data.Client
                     Maximum = rate.Maximum,
                     Effective = rate.Effective,
                     Expires = rate.Expires,
+                    ExpireIncluded = rate.Expires == null ? 0 : 1,
                     Rate = rate.Rate
                 }
             });
@@ -624,7 +625,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<SecurityRole>>> GetSecurityRolesByUserId(Guid userId)
         {
             var result = await ExecuteGet<List<SecurityRole>>(
-            async () => await jamesClient.GetAllSecurityRoles.ExecuteAsync(), "AllSecurityRoles");
+            async () => await jamesClient.GetSecurityRolesByUser.ExecuteAsync(userId), "SecurityRolesByUser");
             return result;
         }
 

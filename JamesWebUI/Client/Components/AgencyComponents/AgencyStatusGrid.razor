@@ -2,65 +2,71 @@
 
 @inject IDataAccess DataAccess
 
-<Theme />
-<RenderModeBackground />
+<Theme/>
+
 <AuthorizeView>
-    <Authorized>
+    <Authorized Context="authCtx">
         <RadzenDataGrid @ref="StatusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
-                        Style="border-radius: 20px;" GridLines="DataGridGridLines.Vertical"
+                        Style="border-radius: 20px;" GridLines="DataGridGridLines.Vertical" AllowColumnResize="true"
                         RowCreate="@OnStatusCreate">
             <HeaderTemplate>
-                <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertStatusRow" />
+                <AuthorizeView Policy="InRoleCanAddAgencyStatus">
+                    <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertStatusRow"/>
+                </AuthorizeView>
             </HeaderTemplate>
             <Columns>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Effective" Property="Effective">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Effective" Property="Effective" Width="120px">
                     <Template Context="statusLog">
                         <RadzenText Text="@statusLog.Effective.ToShortDateString()" Style="width: 95%"/>
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenDatePicker TValue="DateTime" ShowTime="false" @bind-Value="@statusLog.Effective" Style="width: 95%" />
+                        <RadzenDatePicker TValue="DateTime" ShowTime="false" @bind-Value="@statusLog.Effective"
+                                          Style="width: 95%"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Old Status" Property="OldStatus">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Old Status" Property="OldStatus" Width="120px">
                     <Template Context="statusLog">
-                        <RadzenText Text="@statusLog.OldStatus" Style="width: 95%" />
+                        <RadzenText Text="@statusLog.OldStatus" Style="width: 95%"/>
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenText Text="@CurrentStatus" Style="width: 95%" />
+                        <RadzenText Text="@CurrentStatus" Style="width: 95%"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="New Status" Property="NewStatus">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="New Status" Property="NewStatus" Width="120px">
                     <Template Context="statusLog">
-                        <RadzenText Text="@statusLog.NewStatus" Style="width: 95%" />
+                        <RadzenText Text="@statusLog.NewStatus" Style="width: 95%"/>
                     </Template>
                     <EditTemplate Context="statusLog">
                         <RadzenDropDown TValue="string" Data="AllStatuses" Style="width: 95%"
-                            @bind-Value="@statusLog.NewStatus" TextProperty="Status" ValueProperty="Status" />
+                                        @bind-Value="@statusLog.NewStatus" TextProperty="Status"
+                                        ValueProperty="Status"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Created By" Property="ChangedByNavigation.Initials">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Created By" Property="ChangedByNavigation.Initials"
+                                      Width="175px">
                     <Template Context="statusLog">
-                        <RadzenText Text="@statusLog.ChangedByNavigation?.FullName" Style="width: 95%" />
+                        <RadzenText Text="@statusLog.ChangedByNavigation?.FullName" Style="width: 95%"/>
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenText @ref="TxtUserName" Text="@(context.User.Identity?.Name)" Style="width: 95%" />
+                        <RadzenText @ref="TxtUserName" Text="@(authCtx.User.Identity?.Name)" Style="width: 95%"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments">
+                <RadzenDataGridColumn TItem="AgencyStatusLog" Title="Comments" Property="Comments" Width="100%">
                     <Template Context="statusLog">
-                        <RadzenText Text="@statusLog.Comments" Style="width: 95%" />
+                        <RadzenText Text="@statusLog.Comments" Style="width: 95%"/>
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenTextBox @bind-Value="@statusLog.Comments" Style="width: 95%" />
+                        <RadzenTextBox @bind-Value="@statusLog.Comments" Style="width: 95%"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
-                @*TODO: Add save/cancel button column*@
+                @*TODO: Add save/cancel button column -- Roles for edit and delete CanEditAgencyStatus and CanDeleteAgencyStatus*@
                 <RadzenDataGridColumn TItem="AgencyStatusLog">
                     <Template Context="statusLog">
 
                     </Template>
                     <EditTemplate Context="statusLog">
-                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(_ => SaveStatusLogRow(statusLog))">
+                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                      Size="ButtonSize.Small" Click="@(_ => SaveStatusLogRow(statusLog))">
                         </RadzenButton>
                     </EditTemplate>
                 </RadzenDataGridColumn>
@@ -69,38 +75,38 @@
         </RadzenDataGrid>
     </Authorized>
 </AuthorizeView>
+
 @code {
     [Parameter, EditorRequired] public string AgencyNumber { get; set; } = null!;
     [Parameter, EditorRequired] public string CurrentStatus { get; set; } = null!;
-    
-    private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
+
+    private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new();
     private bool IsLoading { get; set; }
     private RadzenDataGrid<AgencyStatusLog> StatusLogGrid { get; set; } = null!;
     private List<AgencyStatusLog> StatusLogsToInsert { get; set; } = [];
-    private RadzenText TxtUserName { get; set; } = null!; 
+    private RadzenText TxtUserName { get; set; } = null!;
 
     //TODO: Remove this once we implement caching
     private List<AgencyStatusDm> AllStatuses { get; set; } = new List<AgencyStatusDm>();
-    
+
     private IDataAccessResult<List<AgencyStatusLog>> _statusLogs = null!;
 
-    private LoadItem AgencyStatusLogLoad =>
-        AddEventNotify(new LoadItem<List<AgencyStatusLog>>
-            {
-                Key = $"AgencyStatusLog{AgencyNumber}",
-                AsyncLoadTask = async () => _statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
-                CacheLoadTask = cache => _statusLogs = new DataAccessResult<List<AgencyStatusLog>>
-                {
-                    Data = (List<AgencyStatusLog>)cache!
-                },
-                ResultVariable = () => _statusLogs,
-                AfterLoad = () =>
-                {
-                    if (_statusLogs.Success)
-                        AgencyStatusLogs = _statusLogs.Data!;
-                }
-            }, "agency status log");
-    
+    private LoadItem AgencyStatusLogLoad => AddEventNotify(new LoadItem<List<AgencyStatusLog>>
+    {
+        Key = $"AgencyStatusLog{AgencyNumber}",
+        AsyncLoadTask = async () => _statusLogs = await DataAccess.GetAgencyStatusLog(AgencyNumber),
+        CacheLoadTask = cache => _statusLogs = new DataAccessResult<List<AgencyStatusLog>>
+        {
+            Data = (List<AgencyStatusLog>)cache!
+        },
+        ResultVariable = () => _statusLogs,
+        AfterLoad = () =>
+        {
+            if (_statusLogs.Success)
+                AgencyStatusLogs = _statusLogs.Data!;
+        }
+    }, "agency status log");
+
     private IDataAccessResult<List<AgencyStatusDm>> _statuses = null!;
 
     private LoadItem StatusesLoad => AddEventNotify(new LoadItem<List<AgencyStatusDm>>
@@ -147,13 +153,13 @@
         StatusLogsToInsert.Clear();
         StatusLogsToInsert.Clear();
     }
-    
+
     private void Reset(AgencyStatusLog statusLog)
     {
         StatusLogsToInsert.Remove(statusLog);
         StatusLogsToInsert.Remove(statusLog);
     }
-    
+
     private async Task SaveStatusLogRow(AgencyStatusLog statusLog)
     {
         await ShowLoading();
@@ -162,20 +168,20 @@
         await StatusLogGrid.UpdateRow(statusLog);
         await LoadAgencyStatusLog();
     }
-    
+
     private async Task InsertStatusRow()
     {
         await ShowLoading();
         var newStatusLog = new AgencyStatusLog()
-            {
-                Id = Guid.NewGuid(),
-                OldStatus = CurrentStatus,
-                Effective = DateTime.Today
-            };
+        {
+            Id = Guid.NewGuid(),
+            OldStatus = CurrentStatus,
+            Effective = DateTime.Today
+        };
         StatusLogsToInsert.Add(newStatusLog);
         await StatusLogGrid.InsertRow(newStatusLog);
     }
-    
+
     private async Task OnStatusCreate(AgencyStatusLog statusLog)
     {
         //TODO: Get UserID
@@ -194,10 +200,10 @@
 
         if (!result.Success)
             NotifySaveError(result.Errors, "agency status log");
-        
+
         StatusLogsToInsert.Remove(statusLog);
     }
-    
+
     protected async Task ShowLoading()
     {
         IsLoading = true;
@@ -206,4 +212,5 @@
 
         IsLoading = false;
     }
+
 }

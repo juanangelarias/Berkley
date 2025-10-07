@@ -13,6 +13,7 @@
                 {
                     <RadzenTabsItem Text="@(a.LegalEntityAddress!.Type)">
                         <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" Address="a"
+                                        StateChanged="@LoadAddresses"
                                         AddressEdited="UpdateAddresses" AddressDeleted="DeleteAddress"/>
                     </RadzenTabsItem>
                     //NOTE: The redundant specification of the AddressCreate below is needed to prevent the AddressCreate from being selected initially
@@ -41,16 +42,24 @@
     [Parameter, EditorRequired] public required Guid LegalEntityId { get; set; }
     [Parameter] public EventCallback<List<Address>> OnAddressChanged { get; set; }
     [Parameter] public TabPosition TabPosition { get; set; } = TabPosition.Left;
+    [Parameter] public Func<IDisposable>? AddSubscription { get; set; }
 
     private List<Address> AllAddresses { get; set; } = [];
     private readonly Dictionary<string, AddressDisplay> _addressDisplays = [];
     private int SelectedTab { get; set; }
+    private IDisposable? _subscription;
+
+    private readonly Guid _editorIdentifier = Guid.NewGuid();
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         if (LegalEntityId != Guid.Empty)
+        {
             await LoadAddresses();
+            if (null != AddSubscription)
+                _subscription = AddSubscription();
+        }
     }
 
     private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
@@ -80,9 +89,10 @@
 
     private async Task UpdateAddresses(Address address)
     {
+        await DataAccess.SetAddress(address, _editorIdentifier.ToString());
         var actual = AllAddresses.FirstOrDefault(f => f.Id == address.Id);
-        
-        if(actual == null)
+
+        if (actual == null)
         {
             AllAddresses.Add(address);
         }
@@ -114,7 +124,7 @@
     {
         await DataAccess.GetCacheOrLoadDataAsync(AddressesLoadItem);
     }
-    
+
     private async Task AddressCreated(Guid addressToSelect)
     {
         await LoadAddresses();

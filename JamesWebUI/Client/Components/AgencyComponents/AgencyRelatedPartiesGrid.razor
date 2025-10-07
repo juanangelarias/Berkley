@@ -6,8 +6,8 @@
 <Theme />
 
 <RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency" GridLines="DataGridGridLines.Vertical"
-                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed"
-                Style="@style"  IsLoading="@IsLoading" FilterMode="FilterMode.Advanced">
+                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed" Density="Density.Compact"
+                Style="@style"  IsLoading="@IsLoading" FilterMode="FilterMode.Advanced" AllowColumnResize="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Visible="@NotResumed">
             <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
@@ -54,7 +54,7 @@
                 @relatedParty.MainAddress?.City
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="State" Width="80px" TextAlign="TextAlign.Center"
+        <RadzenDataGridColumn TItem="Agency" Title="State" Width="100px" TextAlign="TextAlign.Center"
                               Property="IdNavigation.MainAddress.State">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.StateCode
@@ -91,7 +91,10 @@
                 Data = (List<Agency>)cache!
             },
             ResultVariable = () => _relatedPartiesResult,
-            AfterLoad = () => { RelatedParties = _relatedPartiesResult.Data!; }
+            AfterLoad = () =>
+            {
+                RelatedParties = _relatedPartiesResult.Data!;
+            }
         }, "agency related parties");
 
     protected override async Task OnParametersSetAsync()
@@ -127,17 +130,10 @@
 
     private void ExportGrid(ExportFormat format)
     {
-        var substitutions = new ExportColumnSubstitutions();
-        substitutions.AddSubstitution("AgencyNumber", "AgencyNumber", "Number");
-        substitutions.AddSubstitution("IdNavigation.FullName", "IdNavigation.FullName", "Agency");
-        substitutions.AddSubstitution("MainAddress.Address1", "MainAddress.Address1", "Address");
-        substitutions.AddSubstitution("MainAddress.Address2", "MainAddress.Address2", "Address2");
-        substitutions.AddSubstitution("MainAddress.Address3", "MainAddress.Address3", "Address3");
-        substitutions.AddSubstitution("MainAddress.City", "MainAddress.City", "City");
-        substitutions.AddSubstitution("MainAddress.State", "MainAddress.StateCode", "State");
-        substitutions.AddSubstitution("MainAddress.PostalCode", "MainAddress.PostalCode", "Zip");
-        NavigationManager.NavigateTo(ExportDataGridUrl(RelatedPartiesGrid,
-                $"/export/AgencyRelatedParties/{AgencyId}", format, substitutions),
-            true);
+        var url = format == ExportFormat.Excel
+            ? $"/exportToExcel/agencyRelatedParties/{AgencyId}"
+            : $"/exportToCsv/agencyRelatedParties/{AgencyId}";
+        
+        NavigationManager.NavigateTo(url, true);
     }
 }

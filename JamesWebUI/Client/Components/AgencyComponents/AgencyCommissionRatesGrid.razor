@@ -1,7 +1,6 @@
 ﻿@inherits JamesLayoutComponentBase
 
 <Theme/>
-<RenderModeBackground/>
 
 <RadzenColumn>
     <RadzenStack Orientation="Orientation.Vertical" Size="12">
@@ -22,12 +21,13 @@
                 <RadzenDataGrid TItem="AgencyCommissionRateRange" Data="_ranges" @ref="RangeGrid"
                                 AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 300px"
                                 AllowGrouping="false" Density="Density.Compact" GridLines="DataGridGridLines.Vertical"
-                                RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate" EditMode="DataGridEditMode.Single" 
-                                IsLoading="@IsLoading" Filter="@ShowLoading">
+                                RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate" EditMode="DataGridEditMode.Single"
+                                IsLoading="@IsLoading" Filter="@ShowLoading" AllowColumnResize="true">
                     <HeaderTemplate>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-                            <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
-                                          Variant="Variant.Text" Disabled="@(!APeridosIsSelected)"/>
+                            <AuthorizeView Policy="InRoleCanAddAgencyCommissionRates">
+                                <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
+                                              Variant="Variant.Text" Disabled="@(!APeridosIsSelected)"/></AuthorizeView>
                         </RadzenStack>
                     </HeaderTemplate>
                     <Columns>
@@ -46,11 +46,8 @@
                                     <RadzenLabel Text="From"/>
                                 </RadzenStack>
                             </HeaderTemplate>
-                            <EditTemplate Context="rate">
-                                <RadzenNumeric @bind-Value="@rate.From" Decimals="0" Min="1" ReadOnly="true"/>
-                            </EditTemplate>
                             <Template Context="rate">
-                                <RadzenLabel Text="@rate.FromTxt"/>
+                                <RadzenLabel Text="@rate.FromText"/>
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Title="To" Property="To" Type="typeof(int)"
@@ -58,10 +55,17 @@
                                               FilterProperty="To" FormatString="#,0" TextAlign="TextAlign.End"
                                               FilterOperator="FilterOperator.LessThanOrEquals">
                             <EditTemplate Context="rate">
-                                <RadzenNumeric @bind-Value="@rate.To" Decimals="0" Min="1"/>
+                                @if (CanEditDelete(rate))
+                                {
+                                    <RadzenNumeric @bind-Value="@rate.To" Decimals="0" Min="1"/>
+                                }
+                                else
+                                {
+                                    <RadzenLabel Text="@rate.ToText"/>
+                                }
                             </EditTemplate>
                             <Template Context="rate">
-                                <RadzenLabel Text="@rate.ToTxt"/>
+                                <RadzenLabel Text="@rate.ToText"/>
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Title="Rate" Property="Rate" Type="typeof(double)"
@@ -69,10 +73,10 @@
                                               FilterProperty="Rate" FormatString="#.00%" TextAlign="TextAlign.End">
                             <EditTemplate Context="rate">
                                 <RadzenNumeric @bind-Value="@rate.Rate" Decimals="2" Min="0" Max="100"
-                                               Format="#0.00%" Step="0.01"/>
+                                               Format="#0.00'%'" Step="0.01"/>
                             </EditTemplate>
                             <Template Context="rate">
-                                <RadzenLabel Text="@rate.RateTxt"/>
+                                <RadzenLabel Text="@rate.RateText"/>
                             </Template>
                         </RadzenDataGridColumn>
                         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right"
@@ -80,25 +84,29 @@
                                               Sortable="false" TextAlign="TextAlign.Right" Width="100px">
                             <Template Context="rate">
                                 <RadzenRow>
-                                    <RadzenColumn Size="1"></RadzenColumn>
+                                    <RadzenColumn Size="1"/>
                                     <RadzenColumn Size="5">
-                                        <RadzenButton Variant="Variant.Flat"
-                                                      Icon="edit"
-                                                      ButtonStyle="ButtonStyle.Light"
-                                                      Size="ButtonSize.Small"
-                                                      Click="@(_ => EditRate(rate))"
-                                                      @onclick:stopPropagation="true"/>
+                                        <AuthorizeView Policy="InRoleCanEditAgencyCommissionRates">
+                                            <RadzenButton Variant="Variant.Flat"
+                                                          Icon="edit"
+                                                          ButtonStyle="ButtonStyle.Light"
+                                                          Size="ButtonSize.Small"
+                                                          Click="@(_ => EditRate(rate))"
+                                                          Visible="@(CanEditDelete(rate))"
+                                                          @onclick:stopPropagation="true"/>
+                                        </AuthorizeView>
                                     </RadzenColumn>
                                     <RadzenColumn Size="5">
-                                        <RadzenButton ButtonStyle="ButtonStyle.Danger"
-                                                      Icon="delete"
-                                                      Variant="Variant.Flat"
-                                                      Shade="Shade.Lighter"
-                                                      Size="ButtonSize.Small"
-                                                      class="my-1 ms-1"
-                                                      Visible="@(CanDelete(rate))"
-                                                      Click="@(_ => DeleteRate(rate))"
-                                                      @onclick:stopPropagation="true"/>
+                                        <AuthorizeView Policy="InRoleCanDeleteAgencyCommissionRates">
+                                            <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                                          Icon="delete"
+                                                          Variant="Variant.Flat"
+                                                          Shade="Shade.Lighter"
+                                                          Size="ButtonSize.Small"
+                                                          class="my-1 ms-1"
+                                                          Visible="@(CanEditDelete(rate))"
+                                                          Click="@(_ => DeleteRate(rate))"
+                                                          @onclick:stopPropagation="true"/></AuthorizeView>
                                     </RadzenColumn>
                                 </RadzenRow>
                             </Template>
@@ -126,7 +134,7 @@
                             <RadzenText Text="Messages" TextAlign="TextAlign.Start"/>
                             @foreach (var error in _errorMessages)
                             {
-                                <RadzenLabel Text="@error.Key" Style="color: red"/>
+                                <RadzenLabel Text="@(error.Key??"Error")" Style="color: red"/>
                             }
                         </RadzenStack>
                     </RadzenCard>
@@ -387,10 +395,15 @@
         _aGapExist = _errorMessages.Any();
     }
 
-    private bool CanDelete(AgencyCommissionRateRange rate)
+    private bool CanEditDelete(AgencyCommissionRateRange rate)
     {
+        if (rate.To == null || rate.Id == 0)
+            return true;
+        
+        var nullExist = _ranges.Any(a=>a.To == null);
+        
         var max = _ranges.Max(m => m.To);
-
-        return rate.To == max;
+        
+        return !nullExist && rate.To == max;
     }
 }

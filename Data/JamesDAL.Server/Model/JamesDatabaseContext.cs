@@ -5268,9 +5268,7 @@ public partial class JamesDatabaseContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.UnderWriter).HasMaxLength(46);
             entity.Property(e => e.UnderwriterInitials).HasMaxLength(4);
-            entity.Property(e => e.WatchStatus)
-                .HasMaxLength(8)
-                .IsUnicode(false);
+            
             entity.Property(e => e.YearOpened)
                 .HasMaxLength(4)
                 .IsUnicode(false);

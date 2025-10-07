@@ -24,6 +24,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using JamesWebUI.Client.Helpers;
+using James.Shared.Export;
 using JamesWebUI.Client.Security;
 using JamesWebUI.Client.States;
 using JamesWebUI.Server.AuthenticationStateSyncer;
@@ -127,7 +128,8 @@ try
                     .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
                     .AddScoped<IUserSettingService, UserSettingService>()
                     .AddScoped<IAuthorizationHandler, RoleRequirementHandler>()
-                    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
+                    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>()
+                    .AddSingleton<IAppEnvironment, ServerAppEnvironment>();
 
     if (OperatingSystem.IsWindows())
     {
@@ -176,6 +178,9 @@ try
     });
     
     #region States
+
+    builder.Services
+        .AddScoped<IExportToExcelService, ExportToExcelService>();
 
     builder.Services
         // A

@@ -10,7 +10,7 @@ using Radzen;
 using StrawberryShake;
 using System.Text.Json.Serialization;
 using JamesWebUI.Client.AuthenticationStateSyncer;
-using JamesWebUI.Client.Helpers;
+using JamesWebUI.Client.Classes;
 using JamesWebUI.Client.Security;
 using JamesWebUI.Client.States;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -49,7 +49,8 @@ builder.Services
     .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
     .AddScoped<IUserSettingService, UserSettingService>()
     .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
-    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>();
+    .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>()
+    .AddSingleton<IAppEnvironment, ClientAppEnvironment>();
 
 #region States
 

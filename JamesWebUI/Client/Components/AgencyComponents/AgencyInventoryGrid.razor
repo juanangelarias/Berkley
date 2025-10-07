@@ -6,18 +6,20 @@
 
 @inject IDataAccess DataAccess
 
-<Theme />
-<RenderModeBackground />
+<Theme/>
 
 <RadzenDataGrid TItem="AgencyInventory" @ref="@InventoryGrid" Data="@AgencyInventories"
-                Style="border-radius: 10px; height: 400px;" Density="Density.Compact" EmptyText="No records to display"
+                Style="border-radius: 10px; height: 400px;" Density="Density.Compact" EmptyText="No records to display" AllowColumnResize="true"
                 AllowSorting="true" AllowGrouping="true" EditMode="DataGridEditMode.Single" AllowColumnPicking="true"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" SelectionMode="DataGridSelectionMode.Single"
                 RowUpdate="UpdateInventoryRow" RowCreate="CreateInventoryRow" GridLines="DataGridGridLines.Vertical"
-                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
+                Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow" />
+            <AuthorizeView Policy="InRoleCanAddAgencyInventory">
+                <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow"/>
+            </AuthorizeView>
             <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
@@ -25,111 +27,126 @@
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Date Sent" Property="Sent" FormatString="{0:d}"
                               Filterable="false" SortOrder="SortOrder.Descending" Width="200px">
             <Template Context="inventory">
-                <RadzenText Text="@(inventory.Sent?.ToShortDateString())" />
+                <RadzenText Text="@(inventory.Sent?.ToShortDateString())"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenDatePicker TValue="DateTime?" ShowTime="false" @bind-Value="@inventory.Sent" />
+                <RadzenDatePicker TValue="DateTime?" ShowTime="false" @bind-Value="@inventory.Sent"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Doc Type" Property="DocumentType">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.DocumentType" />
+                <RadzenText Text="@inventory.DocumentType"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenDropDown TValue="string" TextProperty="DocumentType" ValueProperty="DocumentType" @bind-Value="@inventory.DocumentType" Data="AllDocTypes" />
+                <RadzenDropDown TValue="string" TextProperty="DocumentType" ValueProperty="DocumentType"
+                                @bind-Value="@inventory.DocumentType" Data="AllDocTypes"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Quantity" Property="Quantity"
                               Filterable="false" Width="125px">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Quantity.ToString()" />
+                <RadzenText Text="@inventory.Quantity.ToString()"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenNumeric @bind-Value="@inventory.Quantity" />
+                <RadzenNumeric @bind-Value="@inventory.Quantity"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Sent To" Property="Addressee">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Addressee" />
+                <RadzenText Text="@inventory.Addressee"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Addressee" />
+                <RadzenTextBox @bind-Value="@inventory.Addressee"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Address" Property="Address.Address1">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address?.Address1" />
+                <RadzenText Text="@inventory.Address?.Address1"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address!.Address1" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.Address1"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Address2" Property="Address.Address2"
                               Visible="false">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address?.Address2" />
+                <RadzenText Text="@inventory.Address?.Address2"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address!.Address2" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.Address2"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Address3" Property="Address.Address3"
                               Visible="false">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address?.Address3" />
+                <RadzenText Text="@inventory.Address?.Address3"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address!.Address3" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.Address3"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="City" Property="Address.City"
                               Width="150px">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address?.City" />
+                <RadzenText Text="@inventory.Address?.City"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address!.City" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.City"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="State" Property="Address.StateCode"
                               Width="150px">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address?.StateCode" />
+                <RadzenText Text="@inventory.Address?.StateCode"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenDropDown TValue="string" @ref="StateDropDown" Data="AllStates" @bind-Value="@inventory.Address!.StateCode"
-                                TextProperty="Name" ValueProperty="Code" Style="width:95%" />
+                <RadzenDropDown TValue="string" @ref="StateDropDown" Data="AllStates"
+                                @bind-Value="@inventory.Address!.StateCode"
+                                TextProperty="Name" ValueProperty="Code" Style="width:95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Zip Code" Property="Address.PostalCode"
                               Visible="false">
             <Template Context="inventory">
-                <RadzenText Text="@inventory.Address?.PostalCode" />
+                <RadzenText Text="@inventory.Address?.PostalCode"/>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenTextBox @bind-Value="@inventory.Address!.PostalCode" />
+                <RadzenTextBox @bind-Value="@inventory.Address!.PostalCode"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Width="75px" TItem="AgencyInventory" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+        <RadzenDataGridColumn Width="75px" TItem="AgencyInventory" Filterable="false" Sortable="false"
+                              TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="inventory">
-                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(_ => EditInventoryRow(inventory))" @onclick:stopPropagation="true">
-                </RadzenButton>
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => DeleteInventoryRow(inventory))" @onclick:stopPropagation="true">
-                </RadzenButton>
+                <AuthorizeView Policy="InRoleCanEditAgencyInventory">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  Click="@(_ => EditInventoryRow(inventory))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </AuthorizeView>
+                <AuthorizeView Policy="InRoleCanDeleteAgencyInventory">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
+                                  Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1"
+                                  Click="@(_ => DeleteInventoryRow(inventory))" @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </AuthorizeView>
             </Template>
             <EditTemplate Context="inventory">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Small" Click="@(_ => SaveInventoryRow(inventory))">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" Click="@(_ => SaveInventoryRow(inventory))">
                 </RadzenButton>
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelInventoryEdit(inventory))">
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelInventoryEdit(inventory))">
                 </RadzenButton>
-                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat" Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => DeleteInventoryRow(inventory))">
+                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
+                              Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1"
+                              Click="@(_ => DeleteInventoryRow(inventory))">
                 </RadzenButton>
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
-   
+
     <LoadingTemplate>
-        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
     </LoadingTemplate>
 </RadzenDataGrid>
 
@@ -146,7 +163,7 @@
     private List<State> AllStates { get; set; } = [];
     private List<InventoryDocumentDm> AllDocTypes { get; set; } = [];
     private RadzenDropDown<string> StateDropDown { get; set; } = null!;
-    
+
     private IDataAccessResult<List<AgencyInventory>> _inventoryResult = null!;
     private IDataAccessResult<List<State>> _states = null!;
     private IDataAccessResult<List<InventoryDocumentDm>> _docTypes = null!;
@@ -172,10 +189,7 @@
             Data = (List<State>)cache!
         },
         ResultVariable = () => _states,
-        AfterLoad = () =>
-        {
-            AllStates = _states.Data!;
-        }
+        AfterLoad = () => { AllStates = _states.Data!; }
     }, "states");
 
     private LoadItem DocumentsLoad => AddEventNotify(new LoadItem<List<InventoryDocumentDm>>
@@ -187,10 +201,7 @@
             Data = (List<InventoryDocumentDm>)cache!
         },
         ResultVariable = () => _docTypes,
-        AfterLoad = () =>
-        {
-            AllDocTypes = _docTypes.Data!;
-        }
+        AfterLoad = () => { AllDocTypes = _docTypes.Data!; }
     }, "document types");
 
     protected override async Task OnParametersSetAsync()
@@ -244,11 +255,11 @@
         if (result.Success)
         {
             var toRemove = AgencyInventories.FirstOrDefault(f => f.Id == inventory.Id);
-            if(toRemove != null)
+            if (toRemove != null)
                 AgencyInventories.Remove(toRemove);
-            
+
             DataAccess.UpdateCache($"Inventory{AgencyId}", AgencyInventories);
-            
+
             NotifySuccessfulSave("agency inventory deleted");
             await InventoryGrid.Reload();
         }
@@ -360,4 +371,5 @@
                 $"/export/AgencyInventory/{AgencyId}", format, substitutions),
             true);
     }
+
 }

@@ -46,9 +46,9 @@ namespace JamesWebUI.Client.Test
             var url = testComponent.ExportDataGridUrl(testDataGrid,
                 $"/export/AgencyContacts/{AgencyId}", format, substitutions);
             Assert.StartsWith("/export/AgencyContacts", url);
-            Assert.Contains("IdNavigation.GivenName as Given你Name", url);
-            Assert.Contains("IdNavigation.MiddleInitial as Middle你Initial", url);
-            Assert.Contains("IdNavigation.FamilyName as Family你Name", url);
+            Assert.Contains("IdNavigation.GivenName as Given_Name", url);
+            Assert.Contains("IdNavigation.MiddleInitial as Middle_Initial", url);
+            Assert.Contains("IdNavigation.FamilyName as Family_Name", url);
 		}
         [Fact]
         public void PropertyChangeSubstitutionsGridUrl()
@@ -94,9 +94,9 @@ namespace JamesWebUI.Client.Test
             var url = testComponent.ExportDataGridUrl(testDataGrid,
                 $"/export/AgencyContacts/{AgencyId}", format, substitutions);
             Assert.StartsWith("/export/AgencyContacts", url);
-            Assert.Contains("Asparagus as Grilled你Asparagus", url);
-            Assert.Contains("Banana as Fried你Banana", url);
-            Assert.Contains("DragonFruit as Pureed你DragonFruit", url);
+            Assert.Contains("Asparagus as Grilled_Asparagus", url);
+            Assert.Contains("Banana as Fried_Banana", url);
+            Assert.Contains("DragonFruit as Pureed_DragonFruit", url);
         }
 
 		private RadzenDataGrid<Agent> testDataGrid = new RadzenDataGrid<Agent>

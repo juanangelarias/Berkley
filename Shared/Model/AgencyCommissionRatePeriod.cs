@@ -1,6 +1,6 @@
 ﻿namespace James.Shared.Model;
 
-public class AgencyCommissionRatePeriod : NotifyPropertyChanged
+public class AgencyCommissionRatePeriod : NotifyPropertyChangedBase
 {
     #region Fields & Properties
 
@@ -78,6 +78,7 @@ public class AgencyCommissionRatePeriod : NotifyPropertyChanged
         Ranges = ranges;
 
         _originalRanges = Ranges;
+        IsChanged = false;
     }
 
     public override void ResetAll()

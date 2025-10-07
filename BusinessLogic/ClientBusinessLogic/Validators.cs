@@ -246,7 +246,7 @@ public static class Validators
             .Where(r=>r.From < editedRange.From)
             .FirstOrDefault(f => f.To < editedRange.From);
         var next = existingRanges
-            .OrderBy(o => o.Id)
+            .OrderByDescending(o => o.Id)
             .Where(r=>r.To > editedRange.To)
             .FirstOrDefault(f => f.Id > editedRange.Id);
 
@@ -270,7 +270,7 @@ public static class Validators
             case < 0:
                 errors.Add("The rate must be greater than or equal to 0.", true);
                 break;
-            case > 1:
+            case > 100:
                 errors.Add("The rate must be less than or equal to 100%.", true);
                 break;
         }

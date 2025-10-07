@@ -17,7 +17,6 @@
     <EmbeddedResource Remove="GraphQL\**" />
     <GraphQL Remove="GraphQL\**" />
     <None Remove="GraphQL\**" />
-    <None Include="wwwroot\js\app.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,6 +39,20 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\img\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="BsgComponents\BsgColumnHeader.razor" />
+    <_ContentIncludedByDefault Remove="Components\BsgComponents\JamesColumnHeader.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions">
+      <HintPath>..\..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\9.0.9\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+      <HintPath>..\..\..\..\..\..\Program Files\dotnet\shared\Microsoft.AspNetCore.App\9.0.9\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

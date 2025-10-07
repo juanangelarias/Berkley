@@ -1,6 +1,6 @@
 ﻿namespace James.Shared.Model;
 
-public class AgencyCommissionRateRange : NotifyPropertyChanged
+public class AgencyCommissionRateRange : NotifyPropertyChangedBase
 {
     #region Fields & Properties
 
@@ -61,12 +61,17 @@ public class AgencyCommissionRateRange : NotifyPropertyChanged
 
     #endregion
     
-    public string FromTxt => From.ToString("C0");
-    public string ToTxt => To?.ToString("C0") ?? "0";
-    public string RateTxt => Rate.ToString("P2");
+    public string FromText => From.ToString("C0");
+    public string ToText => To?.ToString("C0") ?? "Unlimited";
+    public string RateText => Rate.ToString("##.#0'%'");
 
     #endregion
 
+    public AgencyCommissionRateRange()
+    {
+        
+    }
+    
     public AgencyCommissionRateRange(Guid recordId, int id, int from, int? to, double rate, bool isNew = true)
     {
         RecordId = recordId;
@@ -87,6 +92,8 @@ public class AgencyCommissionRateRange : NotifyPropertyChanged
             _originalTo = to;
             _originalRate = rate;
         }
+
+        IsChanged = false;
     }
 
     public override void Reset()

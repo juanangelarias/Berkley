@@ -23,6 +23,7 @@ using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using James.Shared.Export;
 using JamesWebUI.Client.Security;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using Microsoft.AspNetCore.Authorization;
@@ -172,6 +173,9 @@ try
                 .AllowAnyMethod();
         });
     });
+
+    builder.Services
+        .AddScoped<IExportToExcelService, ExportToExcelService>();
 
     //Set up logging
     ConfirmAppSettingsEntry("ApplicationId");

@@ -542,9 +542,9 @@ namespace James.Data.Server
             return await ExecuteSave(async()=> await generalMutation.AddSecurityRole(role.Role, role.Description!, role.Ord, contextFactory, loggingService));
         }
 
-        public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
+        public async Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true)
         {
-            return await ExecuteGet(async()=> await query.GetAllEmployees(contextFactory));
+            return await ExecuteGet(async()=> await query.GetEmployees(activeOnly, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()

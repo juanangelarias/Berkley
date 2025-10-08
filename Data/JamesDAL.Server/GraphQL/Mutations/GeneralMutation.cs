@@ -235,8 +235,7 @@ namespace James.Data.Server.GraphQL.Mutations
             }
         }
 
-        //TODO: Restrict to people in the change permissions role
-        [Authorize]
+        [Authorize (Policy = "InRoleChangePermissions")]
         public async Task<bool> AddPrincipalToSecurityRole(Guid principalId, string role,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
@@ -259,8 +258,7 @@ namespace James.Data.Server.GraphQL.Mutations
             }
         }
 
-        //TODO: Restrict to people in the change permissions role
-        [Authorize]
+        [Authorize(Policy = "InRoleChangePermissions")]
         public async Task<bool> RemovePrincipalFromSecurityRole(Guid principalId, string role,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
@@ -281,8 +279,7 @@ namespace James.Data.Server.GraphQL.Mutations
             }
         }
 
-        //TODO: Restrict to people in the change permissions role
-        [Authorize]
+        [Authorize (Policy = "InRoleChangePermissions")]
         public async Task<bool> AddSecurityRole(string role, string description, int ord,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
@@ -293,7 +290,10 @@ namespace James.Data.Server.GraphQL.Mutations
                     throw new ArgumentException("role.Role cannot be null or whitespace.");
                 var newRole = new SecurityRole
                 {
-                    Id = Guid.NewGuid(), Role = role, Description = description, Ord = ord
+                    Id = Guid.NewGuid(),
+                    Role = role,
+                    Description = description,
+                    Ord = ord
                 };
                 var ctx = await contextFactory.CreateDbContextAsync();
                 var existing =
@@ -314,6 +314,29 @@ namespace James.Data.Server.GraphQL.Mutations
             catch (Exception ex)
             {
                 loggingService.LogException(ex, "Exception adding security role", category: StandardLoggingCategories.DataAccess);
+                return false;
+            }
+        }
+
+        [Authorize(Policy = "InRoleChangePermissions")]
+        public async Task<bool> SetEmployeeIsActive(Guid employeeId, bool isActive,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var existing =
+                    await ctx.Employees.FirstOrDefaultAsync(e =>e.Id == employeeId);
+                if (null == existing)
+                    return false;
+                existing.Active = isActive;
+                ctx.Employees.Update(existing);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                loggingService.LogException(ex, "Exception changing employee active flag", category: StandardLoggingCategories.DataAccess);
                 return false;
             }
         }

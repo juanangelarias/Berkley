@@ -590,10 +590,15 @@ namespace James.Data.Client
             return result;
         }
 
-        public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
+        public async Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true)
         {
+            //throw new NotImplementedException();
+            //return new DataAccessResult<List<Employee>>()
+            //{
+            //    Data = [new Employee(){FullName = "Test Employee", Title = "Tester", Active = true}]
+            //};
             var result = await ExecuteGet<List<Employee>>(
-                async () => await jamesClient.GetAllEmployees.ExecuteAsync(), "AllEmployees");
+                async () => await jamesClient.GetEmployees.ExecuteAsync(activeOnly), "Employees");
             return result;
         }
 

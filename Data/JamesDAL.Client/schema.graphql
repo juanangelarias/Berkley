@@ -653,7 +653,7 @@ type Query {
   allSecurityRoles: [SecurityRole!]!
   securityRolesByUser(principalId: UUID!): [SecurityRole!]!
   securityRoleMembers(role: String!): [SecurityRoleMember!]!
-  allEmployees: [Employee!]!
+  employees(activeOnly: Boolean!): [Employee!]!
   allStates: [State!]!
 }
 

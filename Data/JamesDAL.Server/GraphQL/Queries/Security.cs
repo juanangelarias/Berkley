@@ -41,11 +41,12 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<List<Employee>> GetAllEmployees([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<Employee>> GetEmployees(bool activeOnly, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.Employees
-                .Where(e => e.Active)
+                .Include(e=>e.UnderwriterIdNavigation)
+                .Where(e => !activeOnly || e.Active)
                 .OrderBy(e => e.FullName)
                 .ToListAsync();
             return result;

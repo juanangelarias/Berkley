@@ -15,12 +15,25 @@ query GetSecurityRoleMembers($role: String!) {
   }
 }
 
-query GetAllEmployees {
-  allEmployees {
+query GetEmployees($activeOnly: Boolean!) {
+  employees(activeOnly: $activeOnly) {
     id
+    active
     activeDirectoryAccount
     fullName
     title
+    primaryBranchId
+    initials
+    email
+    homeOfficeApprover
+    underwriterIdNavigation {
+      dropDownList
+      notificationSendTo
+      reportsToNavigation {
+        id
+        fullName
+      }
+    }
   }
 }
 

@@ -3,7 +3,6 @@
 @using ThemeService = JamesWebUI.Client.Services.ThemeService
 @inherits JamesLayoutComponentBase
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JS
 @attribute [Authorize]
 
 <RadzenComponents />
@@ -121,8 +120,8 @@
             <RadzenRow>
                 <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
                                  Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
-                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="Admin">
-                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Users" />
+                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true">
+                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Employees" />
                         <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles" />
                         <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions" />
                         <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings" />
@@ -136,7 +135,7 @@
             <RadzenSidebar @bind-Expanded="@notebookExpanded" Responsive="false" Style="position: absolute; width:325px;">
                 <RadzenDataList Data="notifications" TItem="Notification">
                     <Template Context="notification">
-                        <NotificationCard NotificationToDisplay="notification" />
+                        @*<NotificationCard NotificationToDisplay="notification" />*@
                     </Template>
                 </RadzenDataList>
             </RadzenSidebar>@*

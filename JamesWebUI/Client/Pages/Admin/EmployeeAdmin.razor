@@ -1,0 +1,239 @@
+﻿@page "/Employees"
+@page "/Admin/Employees"
+@using System.Diagnostics
+
+@inherits JamesLayoutComponentBase
+@attribute [Authorize]
+
+@inject IDataAccess DataAccess
+@inject TooltipService TooltipService
+<RadzenText TextStyle="TextStyle.DisplayH3">Employee</RadzenText>
+<RadzenRow>
+    <RadzenColumn Size="4">
+        <RadzenDataGrid @ref=@_employeeGrid TItem="Employee" GridLines="DataGridGridLines.Vertical"
+                        SelectionMode="DataGridSelectionMode.Single" Density="Density.Compact"
+                        @bind-Value=@_selectedEmployees
+                        PageSize="15" AllowPaging="true"
+                        Data="@_employees">
+            <HeaderTemplate>
+                <RadzenRow>
+                    <AuthorizeView Policy="InRoleAddEmployee">
+                        <RadzenColumn Size="6">
+                            <RadzenButton Icon="add" Text="Add Employee" Variant="Variant.Text" Size="ButtonSize.Small"
+                                          Click="@AddEmployee" />
+                        </RadzenColumn>
+                    </AuthorizeView>
+                    <RadzenColumn Size="6">
+                        <RadzenToggleButton Text="Active Only" ButtonStyle="ButtonStyle.Base" Size="ButtonSize.Small"
+                                            @bind-Value="_activeOnly" Change="ToggleActiveOnly" />
+                    </RadzenColumn>
+                </RadzenRow>
+            </HeaderTemplate>
+            <Columns>
+                @RenderColumns()
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenColumn>
+    <RadzenColumn>
+        <RadzenCard Style="height:100%">
+            <RadzenStack Gap=".3em">
+                <RadzenCard Variant="Variant.Text" class="rz-background-color-primary-lighter rz-color-on-primary-lighter">
+                    Selected Employee: <b>@_selectedEmployees?[0].FullName</b>
+                </RadzenCard>
+                @if (null != _selectedEmployees?[0])
+                {
+                    <RadzenTabs>
+                        <Tabs>
+                            <RadzenTabsItem Text="Employee">
+                                <RadzenStack>
+                                    <RadzenFormField Text="Active Directory Account" Variant="Variant.Text">
+                                        <ChildContent>
+                                            <RadzenText Text="@_selectedEmployees[0].ActiveDirectoryAccount" />
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                    <RadzenFormField Text="Initials" Variant="Variant.Text">
+                                        <ChildContent><RadzenText Text="@_selectedEmployees[0].Initials" /></ChildContent>
+                                    </RadzenFormField>
+                                    <RadzenFormField Text="Email" Variant="Variant.Text">
+                                        <ChildContent>
+                                            <RadzenDropDown @bind-Value=@_selectedEmployees[0].Email Data=@SelectedEmployeeEmailOptions />
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                    <RadzenFormField Text="Primary Branch" Variant="Variant.Text">
+                                        <ChildContent>
+                                            <RadzenDropDown TValue="Branch" bind-Value=@_selectedEmployees[0].PrimaryBranchId
+                                                            Data=@AllBranches TextProperty="@nameof(Branch.Name)"
+                                                            ValueProperty="@nameof(Branch.Id)" />
+                                        </ChildContent>
+                                    </RadzenFormField>
+                                    <RadzenToggleButton @bind-Value=@_selectedEmployees[0].HomeOfficeApprover
+                                                        ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Dark"
+                                                        Text="Home Office Approver" />
+                                    <RadzenToggleButton @bind-Value=@_selectedEmployees[0].Active
+                                                        ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Dark"
+                                                        Text="Is Active" />
+                                    @if (_selectedEmployees[0].UnderwriterIdNavigation == null)
+                                    {
+                                        <RadzenButton Text="Make this employee an underwriter" Click="ConvertToUnderwriter"></RadzenButton>
+                                    }
+                                    else
+                                    {
+                                        <text> </text>
+                                        <br />
+                                        <hr />
+                                        <RadzenText TextStyle="TextStyle.H6" Text="Underwriter Info"/>
+                                        <RadzenToggleButton @bind-Value=@_selectedEmployees[0].UnderwriterIdNavigation!.DropDownList
+                                                            ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Dark"
+                                                            Text="Active as underwriter" MouseEnter="@(er=>ShowActiveUnderwriterTooltip(er))" />
+                                        <RadzenText>Placeholder for setting notification group</RadzenText>
+
+                                    }
+                                </RadzenStack>
+                            </RadzenTabsItem>
+                            <RadzenTabsItem Text="Lines of Authority">
+                                Placeholder for authority stuff
+                            </RadzenTabsItem>
+                        </Tabs>
+                    </RadzenTabs>
+                }
+            </RadzenStack>
+        </RadzenCard>
+    </RadzenColumn>
+</RadzenRow>
+
+@code {
+    RadzenDataGrid<Employee> _employeeGrid = null!;
+    bool _refresh;
+    private bool _activeOnly = true; //Should this be a user preference that persists?
+    private async Task AddEmployee()
+    {
+        throw new NotImplementedException();
+    }
+
+    List<Employee> _employees = [];
+    IList<Employee> _selectedEmployees = null!;
+
+    private IDataAccessResult<List<Employee>> _loadEmployeesResult = null!;
+    private LoadItem<List<Employee>> EmployeesLoadItem(bool activeOnly) =>
+        new()
+        {
+            Key = $"emp{(_activeOnly ? "" : "All")}",
+            AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetEmployees(activeOnly),
+            CacheLoadTask = cache => _loadEmployeesResult = new DataAccessResult<List<Employee>> { Data = (List<Employee>)cache! },
+            ResultVariable = () => _loadEmployeesResult,
+            AfterLoad = () =>
+            {
+                Debug.Assert(_loadEmployeesResult.Data != null);
+                //Add after load code here
+                _employees = _loadEmployeesResult.Data.OrderBy(e => e.FullName).ToList();
+                _employeeGrid.Reload();
+            }
+        };
+
+    private List<Branch> AllBranches { get; set; } = [];
+    private IDataAccessResult<List<Branch>> _branchesResult = null!;
+    private LoadItem BranchesLoadItem() =>
+        AddEventNotify(new LoadItem<List<Branch>>
+        {
+            Key = "branches",
+            AsyncLoadTask = async () => _branchesResult = await DataAccess.GetAllBranches(),
+            CacheLoadTask = cache => _branchesResult = new DataAccessResult<List<Branch>> { Data = (List<Branch>)cache! },
+            ResultVariable = () => _branchesResult,
+            AfterLoad = () =>
+            {
+                Debug.Assert(_branchesResult.Data != null);
+                AllBranches = new List<Branch>(_branchesResult.Data.Count + 1) { new() {BranchKey = "None", Name = "No primary branch" } };
+                AllBranches.AddRange(_branchesResult.Data.OrderBy(b => b.Name).ToList());
+            }
+        }, "branches");
+
+    //TODO:Pull all options from active directory
+    private List<string> SelectedEmployeeEmailOptions => [_selectedEmployees[0].Email ?? ""];
+    private string _selectedEmployeeEmail = "";
+
+    private string SelectedEmployeeEmail
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_selectedEmployeeEmail))
+                _selectedEmployeeEmail = _selectedEmployees[0].Email ?? "";
+            return _selectedEmployeeEmail;
+        }
+        set
+        {
+            if (value != _selectedEmployeeEmail)
+            {
+                //TODO:Save new email here
+                _selectedEmployeeEmail = value;
+            }
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DataAccess.ParallelGetCacheOrDataAsync(EmployeesLoadItem(_activeOnly), BranchesLoadItem());
+        await base.OnInitializedAsync();
+    }
+
+    private async Task ToggleActiveOnly()
+    {
+        //Reload Employees
+        await DataAccess.GetCacheOrLoadDataAsync(EmployeesLoadItem(_activeOnly));
+        _refresh = true;
+    }
+
+    RenderFragment RenderColumns()
+    {
+        return __builder =>
+        {
+            if (_refresh)
+            {
+                _refresh = false;
+                <text>
+                </text>
+            }
+            else
+            {
+                <text>
+                    <RadzenDataGridColumn TItem="Employee" Property="FullName" Title="Name">
+                        <Template Context="emp">
+                            <RadzenText Text="@emp.FullName" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="Employee" Property="Title" Title="Title">
+                        <Template Context="emp">
+                            <RadzenText Text="@emp.Title" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    @if (_activeOnly == false)
+                    {
+                        <RadzenDataGridColumn TItem="Employee" Title="Active" Sortable="true" Filterable="false"
+                                              TextAlign="TextAlign.Center" Width="4em">
+                            <Template Context="emp">
+                                <RadzenCheckBox TValue="bool" Value="@emp.Active" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                    }
+                </text>
+            }
+        };
+    }
+
+    private void ConvertToUnderwriter()
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task ShowActiveUnderwriterTooltip(ElementReference er)
+    {
+        // TooltipService.Open(er, "Active Underwriters show up in drop down lists when selecting an underwriter.  Setting inactive does not remove the underwriter from any items they are associate with.");
+        TooltipService.Open(er, ds=> 
+            @<div style="max-width:700px;">
+                Active Underwriters show up in drop down lists when selecting an underwriter.
+                <br/>
+                Setting inactive does not remove the underwriter from any items they are associate with.
+            </div>);
+    }
+
+}

@@ -7,7 +7,6 @@
 
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JS
-@inject IAppEnvironment Env
 
 
 @attribute [Authorize]
@@ -40,7 +39,7 @@
     Style="width:100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader class="rz-shadow-0">
         <ChildContent>
-            <RadzenRow Gap="0.5rem" Style="height: 1.5rem; padding: 0.5rem" Style="@_headerStyle">
+            <RadzenRow Gap="0.5rem" Style="@_headerStyle">
                 <RadzenColumn Size="5">
                     <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center">
                         <RadzenButton Icon="menu" Visible="true" Click="@(() => _sidebarExpanded = !_sidebarExpanded)"
@@ -185,17 +184,19 @@
     private bool _sidebarExpanded = true;
     public bool notebookExpanded = false;
     public Notification[]? notifications;
-    private string _headerStyle = "";
+    private string _headerStyle = "height: 3.5rem; padding: 0.5rem;";
 
     protected override void OnInitialized()
     {
         JamesThemeService.Initialize(NavigationManager);
 
-        _headerStyle = Env.IsDevelopment()
+        var isDevelopment = NavigationManager.Uri.Contains("localhost");
+        
+        _headerStyle = isDevelopment
             ? OperatingSystem.IsBrowser()
-                ? "background-color: cornsilk;"
-                : "background-color: #e0e0e0;"
-            : "";
+                ? "height: 3.5rem; padding: 0.5rem; background-color: cornsilk;"
+                : "height: 3.5rem; padding: 0.5rem; background-color: #e0e0e0;"
+            : "height: 3.5rem; padding: 0.5rem;";
 
         notifications = new Notification[]{
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},

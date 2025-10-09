@@ -60,17 +60,8 @@
 @code {
     private RadzenDataGrid<NotificationProperty> _notificationGrid = null!;
 
-    private List<string> _types =
-    [
-        "String",
-        "Int",
-        "Decimal",
-        "Date",
-        "Guid",
-        "Email",
-        "PhoneNumber",
-        "Boolean"
-    ];
+    private readonly List<string> _types = NotificationType.GetNotificationTypes();
+    
 
     private List<NotificationProperty> _notificationToInsert = [];
     private List<NotificationProperty> _notificationToUpdate = [];
@@ -79,12 +70,15 @@
     {
         await base.OnParametersSetAsync();
 
-        await NotificationState.LoadProperties();
+        //await NotificationState.LoadProperties();
         await _notificationGrid.Reload();
     }
 
     private async Task OnRowUpdate(NotificationProperty prop)
     {
+        if(prop == null)
+            return;
+        
         await ShowLoading();
 
         Reset(prop);

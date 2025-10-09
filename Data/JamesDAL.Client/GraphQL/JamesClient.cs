@@ -1,4 +1,4 @@
-﻿namespace JamesWebUI.Client.GraphQL
+﻿namespace James.Data.Client.GraphQL
 {
     public partial class JamesClient
     {

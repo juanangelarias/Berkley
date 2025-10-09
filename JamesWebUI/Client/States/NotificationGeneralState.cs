@@ -1,5 +1,4 @@
 ﻿using James.Shared;
-using James.Shared.Constants;
 using James.Shared.Data;
 using James.Shared.Notification;
 using Radzen;
@@ -9,7 +8,7 @@ namespace JamesWebUI.Client.States;
 public interface INotificationGeneralState
 {
     List<NotificationProperty> NotificationPropertyList { get; set; }
-    Task LoadProperties();
+    //Task LoadProperties();
     Task<SaveDataResult> SetNotificationProperty(NotificationProperty notificationProperty);
     Task<SaveDataResult> DeleteNotificationProperty(Guid id);
 }
@@ -40,7 +39,7 @@ public class NotificationGeneralState(
 
     #endregion
 
-    #region Loaders
+    /*#region Loaders
 
     private IDataAccessResult<List<NotificationProperty>> _notificationResult = null!;
 
@@ -69,19 +68,21 @@ public class NotificationGeneralState(
         }
         
         NotificationPropertyList = response.Data!;
-    }
+    }*/
 
     public async Task<SaveDataResult> SetNotificationProperty(NotificationProperty notificationProperty)
     {
-        var response = await dataAccess.UpdateNotificationProperty(notificationProperty.Id, notificationProperty.Name,
+        throw new NotImplementedException();
+        /*var response = await dataAccess.UpdateNotificationProperty(notificationProperty.Id, notificationProperty.Name,
             notificationProperty.Type);
         
-        return (SaveDataResult)response;
+        return (SaveDataResult)response;*/
     }
 
     public async Task<SaveDataResult> DeleteNotificationProperty(Guid id)
     {
-        var response = await dataAccess.DeleteNotificationProperty(id);
-        return (SaveDataResult)response;
+        throw new NotImplementedException();
+        /*var response = await dataAccess.DeleteNotificationProperty(id);
+        return (SaveDataResult)response;*/
     }
 }

@@ -62,6 +62,7 @@ builder.Services
 
 #endregion
 
+
 builder.Services.AddOidcAuthentication(options =>
 {
     builder.Configuration.Bind("Auth0", options.ProviderOptions);

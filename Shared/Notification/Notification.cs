@@ -5,9 +5,9 @@ namespace James.Shared.Notification;
 public class Notification
 {
     public Guid Id { get; set; }
+    public DateTime Time { get; set; }
     public Guid? SenderUserId { get; set; }
     public string SenderUserEmail { get; set; } = null!;
-    
     public bool SendEmail { get; set; }
     public bool SendSms { get; set; }
     public string? AccountNumber { get; set; }

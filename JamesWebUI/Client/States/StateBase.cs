@@ -12,7 +12,7 @@ public interface IStateBase
 }
 
 public class StateBase(ILoggingService loggingService,
-    NotificationService notificationService): NotifyPropertyChanged, IStateBase
+    NotificationService notificationService): NotifyPropertyChangedBase, IStateBase
 {
     private readonly ILoggingService _loggingService = loggingService;
     private readonly NotificationService _notificationService = notificationService;

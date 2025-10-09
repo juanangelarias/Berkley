@@ -104,6 +104,7 @@ namespace James.Data.Server.GraphQL.Queries
                     BranchFullName = account.BranchName,
                     MainAddress = new Address
                     {
+                        Id = Guid.NewGuid(),
                         Address1 = account.Address1 ?? "",
                         Address2 = account.Address2,
                         Address3 = account.Address3,

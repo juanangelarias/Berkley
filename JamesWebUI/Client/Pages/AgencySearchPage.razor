@@ -1,5 +1,6 @@
 ﻿@page "/AgencySearch"
 
+@*
 @using James.Data.Client.GraphQL;
 @using James.Data.Client.GraphQL.Components;
 @using James.Shared
@@ -13,7 +14,7 @@
 @inject IDataAccess DataAccess
 @inject ILoggingService _logging;
 @inject AuthenticationStateProvider _context;
-@* @attribute [Authorize] *@
+$1$ @attribute [Authorize] #1#
 
 <Theme />
 
@@ -34,7 +35,7 @@
             </RadzenColumn>
             <RadzenColumn Size="4">
                 <RadzenTextBox Placeholder="Name" Style="width: 100%" @ref="@_txtAgencyNameSearch" Change="@OnAgencySearchChange" />
-                @* <RadzenAutoComplete @ref="@txtAgencyNameSearch" Placeholder="Name" Style="width: 100%;" ValueChanged="@OnAgencySearchChange" FilterDelay="200" /> *@
+                $1$ <RadzenAutoComplete @ref="@txtAgencyNameSearch" Placeholder="Name" Style="width: 100%;" ValueChanged="@OnAgencySearchChange" FilterDelay="200" /> #1#
             </RadzenColumn>
             <RadzenColumn Style="vertical-align: middle">
                 <RadzenButton Icon="search" Size="ButtonSize.Small" Click="SearchAgencies" />
@@ -181,4 +182,5 @@
         await AgencyResultsGrid.Reload();
     }
 }
+*@
 

@@ -23,8 +23,6 @@ using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
-using James.Shared.Export;
-using James.Shared.Model;
 using JamesWebUI.Client.Security;
 using JamesWebUI.Client.States;
 using JamesWebUI.Server.AuthenticationStateSyncer;
@@ -177,9 +175,6 @@ try
     });
     
     #region States
-
-    builder.Services
-        .AddScoped<IExportToExcelService, ExportToExcelService>();
 
     builder.Services
         // A

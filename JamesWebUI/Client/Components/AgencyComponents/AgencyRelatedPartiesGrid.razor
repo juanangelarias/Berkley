@@ -130,10 +130,6 @@
 
     private void ExportGrid(ExportFormat format)
     {
-        var url = format == ExportFormat.Excel
-            ? $"/exportToExcel/agencyRelatedParties/{AgencyId}"
-            : $"/exportToCsv/agencyRelatedParties/{AgencyId}";
-        
-        NavigationManager.NavigateTo(url, true);
+        // ToDo: JAA revert
     }
 }

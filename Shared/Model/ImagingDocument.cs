@@ -1,120 +1,114 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using James.Shared.Imaging;
+﻿using James.Shared.Imaging;
 
-namespace James.Shared.Model
+namespace James.Shared.Model;
+
+public class ImagingDocument
 {
-    public class ImagingDocument
-    {
-        public string Guid { get; set; } = string.Empty;
-        public string DocumentClass { get; set; } = string.Empty;
-        public string? FolderPath { get; set; }
-        public DateTime EntryDate { get; set; }
-        public List<ImagingProperty>? Properties { get; set; }
-        public List<ImagingContent>? ContentList { get; set; }
+    public string Guid { get; set; } = string.Empty;
+    public string DocumentClass { get; set; } = string.Empty;
+    public string? FolderPath { get; set; }
+    public DateTime EntryDate { get; set; }
+    public List<ImagingProperty>? Properties { get; set; }
+    public List<ImagingContent>? ContentList { get; set; }
 
-        public string Description
+    public string Description
+    {
+        get
         {
-            get
+            var baseFilename = Properties?.SingleOrDefault(p => p.Name == "DocRemarks")?.Value ??
+                               (null == ContentList || ContentList.Count == 0
+                                   ? "Unknown"
+                                   : ContentList[0].Filename);
+            return baseFilename;
+        }
+    }
+    public string Filename
+    {
+        get
+        {
+            try
             {
-                var baseFilename = Properties?.SingleOrDefault(p => p.Name == "DocRemarks")?.Value ??
-                                   (null == ContentList || ContentList.Count == 0
-                                       ? "Unknown"
-                                       : ContentList[0].Filename);
+                var baseFilename = Properties?.FirstOrDefault(p => p.Name == ImagingAccessBase.Filename)?.Value ??
+                                   (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
+                var fileType = Path.GetExtension(baseFilename);
+                if (string.Empty == fileType)
+                {
+                    var mimeType = Properties?.SingleOrDefault(p => p.Name == ImagingAccessBase.MimeType)?.Value ??
+                                   (null == ContentList || ContentList.Count == 0 ? "" : ContentList[0].MimeType);
+                    if (!string.IsNullOrWhiteSpace(mimeType))
+                        baseFilename = Path.ChangeExtension(baseFilename, MimeTypes.ExtensionFromMimeType(mimeType));
+                }
+
                 return baseFilename;
             }
-        }
-        public string Filename
-        {
-            get
+            catch (Exception e)
             {
-                try
-                {
-                    var baseFilename = Properties?.FirstOrDefault(p => p.Name == ImagingAccessBase.Filename)?.Value ??
-                                       (null == ContentList || ContentList.Count == 0 ? "Unknown" : ContentList[0].Filename);
-                    var fileType = Path.GetExtension(baseFilename);
-                    if (string.Empty == fileType)
-                    {
-                        var mimeType = Properties?.SingleOrDefault(p => p.Name == ImagingAccessBase.MimeType)?.Value ??
-                                       (null == ContentList || ContentList.Count == 0 ? "" : ContentList[0].MimeType);
-                        if (!string.IsNullOrWhiteSpace(mimeType))
-                            baseFilename = Path.ChangeExtension(baseFilename, MimeTypes.ExtensionFromMimeType(mimeType));
-                    }
-
-                    return baseFilename;
-                }
-                catch (Exception e)
-                {
-                    return e.ToString();
-                }
+                return e.ToString();
             }
         }
+    }
 
-        public string? DocumentType
+    public string? DocumentType
+    {
+        get => Properties?.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType)?.Value;
+        set
         {
-            get => Properties?.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType)?.Value;
-            set
-            {
-                Properties ??= new List<ImagingProperty>(1);
-                if (null == Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType))
-                    Properties.Add(new ImagingProperty { Name = ImagingAccessBase.DocType, DisplayName = "Document Type" });
-                Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType)!.Value = value;
-            }
-        }
-
-        public override string ToString()
-        {
-            return $"Doc Class: {DocumentClass}\\r\\nGuid = {Guid}";
+            Properties ??= new List<ImagingProperty>(1);
+            if (null == Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType))
+                Properties.Add(new ImagingProperty { Name = ImagingAccessBase.DocType, DisplayName = "Document Type" });
+            Properties.SingleOrDefault(p => p.Name == ImagingAccessBase.DocType)!.Value = value;
         }
     }
 
-    public class ImagingContent
+    public override string ToString()
     {
-        public string Filename { get; set; } = null!;
-        public string MimeType { get; set; } = null!;
+        return $"Doc Class: {DocumentClass}\\r\\nGuid = {Guid}";
     }
+}
 
-    public class ImagingSearchCriteria
-    {
-        public string ContentSearchString { get; set; } = string.Empty;
-        public string DocClass { get; set; } = string.Empty;
-        public string Fields { get; set; } = string.Empty;
-        public int MaxResults { get; set; }
-        public int SearchTimeoutSeconds { get; set; }
-        public string WhereClause { get; set; } = string.Empty;
-    }
+public class ImagingContent
+{
+    public string Filename { get; set; } = null!;
+    public string MimeType { get; set; } = null!;
+}
 
-    public class ImagingChoice
-    {
-        public string DisplayValue { get; set; } = string.Empty;
-        public string Value { get; set; } = string.Empty;
-    }
+public class ImagingSearchCriteria
+{
+    public string ContentSearchString { get; set; } = string.Empty;
+    public string DocClass { get; set; } = string.Empty;
+    public string Fields { get; set; } = string.Empty;
+    public int MaxResults { get; set; }
+    public int SearchTimeoutSeconds { get; set; }
+    public string WhereClause { get; set; } = string.Empty;
+}
 
-    public class ImagingProperty
-    {
-        public ImagingChoice[]? ChoiceOption { get; set; }
-        public ImagingPropertyDataType DataType { get; set; }
-        public bool DataTypeSpecified { get; set; }
-        public DateTime?[] DateListValue { get; set; } = [];
-        public DateTime DateValue { get; set; }
-        public bool DateValueSpecified { get; set; }
-        public string? DisplayName { get; set; }
-        public string Description { get; set; } = string.Empty;
-        public string[] ListValue { get; set; } = [];
-        public string Name { get; set; } = string.Empty;
-        public bool ReadOnly { get; set; }
-        public bool ReadOnlySpecified { get; set; }
-        public bool Required { get; set; }
-        public bool RequiredSpecified { get; set; }
-        public string RequiredFormat { get; set; } = string.Empty;
-        public string RequiredFormatRegex { get; set; } = string.Empty;
-        public bool SystemGenerated { get; set; }
-        public bool SystemGeneratedSpecified { get; set; }
-        public string? Value { get; set; }
-    }
+public class ImagingChoice
+{
+    public string DisplayValue { get; set; } = string.Empty;
+    public string Value { get; set; } = string.Empty;
+}
+
+public class ImagingProperty
+{
+    public ImagingChoice[]? ChoiceOption { get; set; }
+    public ImagingPropertyDataType DataType { get; set; }
+    public bool DataTypeSpecified { get; set; }
+    public DateTime?[] DateListValue { get; set; } = [];
+    public DateTime DateValue { get; set; }
+    public bool DateValueSpecified { get; set; }
+    public string? DisplayName { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string[] ListValue { get; set; } = [];
+    public string Name { get; set; } = string.Empty;
+    public bool ReadOnly { get; set; }
+    public bool ReadOnlySpecified { get; set; }
+    public bool Required { get; set; }
+    public bool RequiredSpecified { get; set; }
+    public string RequiredFormat { get; set; } = string.Empty;
+    public string RequiredFormatRegex { get; set; } = string.Empty;
+    public bool SystemGenerated { get; set; }
+    public bool SystemGeneratedSpecified { get; set; }
+    public string? Value { get; set; }
 }
 
 public enum ImagingPropertyDataType

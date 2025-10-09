@@ -7,17 +7,17 @@
 <RenderModeBackground />
 
 <RadzenDataGrid TItem="Agent" Data="@Agents" @ref="@AgentsGrid" Density="Density.Compact"
-                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" GridLines="DataGridGridLines.Vertical"
                 SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true"
-                AllowPaging="true" PageSize="10" AllowSorting="true">
+                AllowPaging="true" PageSize="10" AllowSorting="true" AllowColumnResize="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
-        <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense"
-                        Style="height:300px;" AllowVirtualization="true"
+        <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense" AllowColumnResize="true"
+                        Style="height:300px;" AllowVirtualization="true" GridLines="DataGridGridLines.Vertical"
                         AllowFiltering="true">
             <HeaderTemplate>
                 <RadzenPanel Style="width: 100%">
@@ -32,7 +32,7 @@
                 </RadzenPanel>
             </HeaderTemplate>
             <Columns>
-                <RadzenDataGridColumn TItem="AgencyLicense" Title="License #" Width="125px" Property="LicenseNumber">
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Width="125px" Property="LicenseNumber">
                     <Template Context="license">
                         <RadzenText Text="@license.LicenseNumber" />
                     </Template>
@@ -96,7 +96,6 @@
     private List<Agent> Agents { get; set; } = [];
     private RadzenDataGrid<Agent> AgentsGrid { get; set; } = null!;
     private List<Insurer> AllInsurers { get; set; } = [];
-    private bool _isLoading = true;
     
     private IDataAccessResult<List<Agent>> _agentsResult = null!;
     private IDataAccessResult<List<Insurer>> _insurersResult = null!;
@@ -135,12 +134,14 @@
     {
         await base.OnInitializedAsync();
 
-         _isLoading = false;
+         IsLoading = false;
     }
     
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        await ShowLoading();
 
         await LoadData();
     }
@@ -165,6 +166,8 @@
         substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
         substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
         substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
+        substitutions.AddSubstitution("NationalProducerNumber", "NationalProducerNumber", "NationalProducerNumber");
+        
         NavigationManager.NavigateTo(ExportDataGridUrl(AgentsGrid,
                 $"/export/AgencyContacts/{AgencyId}", format, substitutions),
             true);

@@ -1,8 +1,12 @@
 ﻿@using JamesWebUI.Client.Pages
 @using Microsoft.AspNetCore.Components.WebAssembly.Authentication
 @using ThemeService = JamesWebUI.Client.Services.ThemeService
+
 @inherits JamesLayoutComponentBase
+
 @inject NavigationManager NavigationManager
+@inject IAppEnvironment Env
+
 @attribute [Authorize]
 
 <RadzenComponents />
@@ -30,9 +34,9 @@
 <RadzenLayout Style="width:100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader class="rz-shadow-0">
         <ChildContent>
-            <RadzenRow>
+            <RadzenRow Style="@_headerStyle">
                 <RadzenColumn Size="5">
-                    <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040" />
+                    <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040; margin-left: 7px; margin-top: 7px;" />
                 </RadzenColumn>
                 <RadzenColumn Size="7">
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
@@ -135,7 +139,7 @@
             <RadzenSidebar @bind-Expanded="@notebookExpanded" Responsive="false" Style="position: absolute; width:325px;">
                 <RadzenDataList Data="notifications" TItem="Notification">
                     <Template Context="notification">
-                        @*<NotificationCard NotificationToDisplay="notification" />*@
+                        <NotificationCard NotificationToDisplay="notification" />
                     </Template>
                 </RadzenDataList>
             </RadzenSidebar>@*
@@ -156,10 +160,17 @@
     private bool sidebarExpanded = true;
     private bool notebookExpanded = false;
     public Notification[] notifications;
+    private string _headerStyle = "";
 
     protected override void OnInitialized()
     {
         JamesThemeService.Initialize(NavigationManager);
+
+        _headerStyle = Env.IsDevelopment() || true //TODO: Make a functional check to turn this off on production servers
+            ? OperatingSystem.IsBrowser()
+                ? "background-color: cornsilk;"
+                : "background-color: #e0e0e0;"
+            : "";
 
         notifications = new Notification[]{
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},

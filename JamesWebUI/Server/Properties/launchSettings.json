@@ -13,7 +13,7 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "Employees",
+      "launchUrl": "Agency/322?tabsAgencyProfile=tabContacts",
       //"launchUrl": "Admin/SecurityRoles",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

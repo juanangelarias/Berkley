@@ -1,0 +1,114 @@
+﻿@using Blazorise.Animate
+
+@inherits JamesLayoutComponentBase
+
+@inject TooltipService TooltipService;
+@inject IDataAccess DataAccess;
+
+<RadzenColumn Size="12">
+    <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenColumn Size="5">
+            <RadzenCard class="rz-px-2" Style="height: 250px;">
+                <RadzenRow Gap="1rem" Wrap="FlexWrap.Wrap" class="rz-p-sm-2">
+                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+                        <RadzenLabel Component="swProfitSharing" Text="Profit sharing"/>
+                        <RadzenSwitch @bind-Value="@Agency.ProfitSharing" Name="swProfitSharing"
+                                      Change="@(args => ToggleProfitSharing(args))"/>
+                        <RadzenButton Icon="info" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Info"
+                                      MouseEnter="@(args => ShowProfitSharingTooltip(args))"
+                                      Style="height: 30px;"/>
+                        <RadzenFormField Text="Minimum Premium Threshold" Variant="Variant.Text" class="rz-ml-12">
+                            <RadzenNumeric TValue="int?" @bind-Value="@Agency.ProfitSharingMinimumPremium" Format="c0"
+                                           Disabled="@(!_isProfitSharingEnabled)" Name="numMinimumPremiumThreshold"
+                                           TextAlign="TextAlign.Right"/>
+                        </RadzenFormField>
+                    </RadzenStack>
+                </RadzenRow>
+                <RadzenRow Gap="1rem">
+                    <RadzenColumn Size="12">
+                        <RadzenCard class="rz-my-6 rz-mx-auto" Variant="Variant.Text">
+                            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Right" Gap="1rem">
+                                <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Secondary" Variant="Variant.Flat"
+                                              Disabled="@(!ProfitSharingChanged)" Click="CancelProfitSharing"/>
+                                <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat"
+                                              Disabled="@(!ProfitSharingChanged)" Click="SaveProfitSharing"/>
+                            </RadzenStack>
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+            </RadzenCard>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenColumn>
+
+@code {
+    [Parameter, EditorRequired] public required Agency Agency { get; set; }
+
+    private bool _isProfitSharingEnabled;
+    private bool _originalProfitSharing;
+    private int? _originalMinimumPremium;
+
+    private bool ProfitSharingChanged => 
+        _originalProfitSharing != Agency.ProfitSharing ||
+        _originalMinimumPremium != Agency.ProfitSharingMinimumPremium;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _isProfitSharingEnabled = Agency.ProfitSharing;
+        _originalProfitSharing = Agency.ProfitSharing;
+        _originalMinimumPremium = Agency.ProfitSharingMinimumPremium;
+    }
+
+    private void ShowProfitSharingTooltip(ElementReference args)
+    {
+        const string html = "<div>- If the premium threshold falls below the yearly premium,</br> " +
+                            "&nbsp;&nbsp;profit sharing becomes ineffective.</br>" +
+                            "- If the loss percentage falls above the annual maximum, </br>" +
+                            "&nbsp;&nbsp;profit sharing becomes ineffective.</div>";
+        RenderFragment render = b => { b.AddMarkupContent(0, html); };
+        var opts = new TooltipOptions
+        {
+            Duration = 7500,
+            Position = TooltipPosition.Top
+        };
+
+        TooltipService.Open(args, childContent: _ => render, o: opts);
+    }
+
+    private void ToggleProfitSharing(bool isProfitSharing)
+    {
+        _isProfitSharingEnabled = isProfitSharing;
+
+        if (!isProfitSharing)
+            Agency.ProfitSharingMinimumPremium = 0;
+
+        StateHasChanged();
+    }
+
+    private void CancelProfitSharing()
+    {
+        Agency.ProfitSharing = _originalProfitSharing;
+        Agency.ProfitSharingMinimumPremium = _originalMinimumPremium;
+        
+        ToggleProfitSharing(Agency.ProfitSharing);
+    }
+    
+    private async Task SaveProfitSharing(MouseEventArgs arg)
+    {
+        var result = await DataAccess.SetAgencyProfitSharingInfo(Agency.Id, Agency.ProfitSharing, 
+            Agency.ProfitSharingMinimumPremium);
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "agency sharing profit");
+            return;
+        }
+        
+        NotifySuccessfulSave("Agency sharing profit");
+        
+        _originalProfitSharing = Agency.ProfitSharing;
+        _originalMinimumPremium = Agency.ProfitSharingMinimumPremium;
+    }
+}

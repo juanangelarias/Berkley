@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using James.Shared.Model;
-using JamesWebUI.Client.Components;
-using Microsoft.AspNetCore.Components;
-using Radzen;
+﻿using James.Shared.Model;
+using JamesWebUI.Client.Components.AgencyComponents;
 using Radzen.Blazor;
 
 namespace JamesWebUI.Client.Test
@@ -24,6 +17,7 @@ namespace JamesWebUI.Client.Test
                 DialogService = null,
                 NotificationService = null
             };
+            
             var AgencyId = 131;
             var url = testComponent.ExportDataGridUrl(testDataGrid,
                 $"/export/AgencyContacts/{AgencyId}", format);
@@ -52,9 +46,9 @@ namespace JamesWebUI.Client.Test
             var url = testComponent.ExportDataGridUrl(testDataGrid,
                 $"/export/AgencyContacts/{AgencyId}", format, substitutions);
             Assert.StartsWith("/export/AgencyContacts", url);
-            Assert.Contains("IdNavigation.GivenName as Given你Name", url);
-            Assert.Contains("IdNavigation.MiddleInitial as Middle你Initial", url);
-            Assert.Contains("IdNavigation.FamilyName as Family你Name", url);
+            Assert.Contains("IdNavigation.GivenName as Given_Name", url);
+            Assert.Contains("IdNavigation.MiddleInitial as Middle_Initial", url);
+            Assert.Contains("IdNavigation.FamilyName as Family_Name", url);
 		}
         [Fact]
         public void PropertyChangeSubstitutionsGridUrl()
@@ -100,9 +94,9 @@ namespace JamesWebUI.Client.Test
             var url = testComponent.ExportDataGridUrl(testDataGrid,
                 $"/export/AgencyContacts/{AgencyId}", format, substitutions);
             Assert.StartsWith("/export/AgencyContacts", url);
-            Assert.Contains("Asparagus as Grilled你Asparagus", url);
-            Assert.Contains("Banana as Fried你Banana", url);
-            Assert.Contains("DragonFruit as Pureed你DragonFruit", url);
+            Assert.Contains("Asparagus as Grilled_Asparagus", url);
+            Assert.Contains("Banana as Fried_Banana", url);
+            Assert.Contains("DragonFruit as Pureed_DragonFruit", url);
         }
 
 		private RadzenDataGrid<Agent> testDataGrid = new RadzenDataGrid<Agent>

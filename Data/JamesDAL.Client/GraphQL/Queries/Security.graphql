@@ -37,6 +37,15 @@ query GetEmployees($activeOnly: Boolean!) {
   }
 }
 
+query GetSecurityRolesByUser($input: UUID!) {
+    securityRolesByUser(principalId: $input) {
+        ord
+        role
+        description
+        id
+    }
+}
+
 mutation AddPrincipalToSecurityRole($input: AddPrincipalToSecurityRoleInput!) {
   addPrincipalToSecurityRole(input: $input) {
     boolean

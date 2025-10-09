@@ -25,9 +25,11 @@ namespace James.Data.Server.GraphQL.Queries
         public async Task<List<SecurityRole>>  GetSecurityRolesByUser(Guid principalId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
+            
             //NOTE: Entity Framework makes the format string below safe from SQL injection attacks.
             var result = await ctx.SecurityRoles.FromSqlInterpolated($"EXEC dbo.GetSecurityRolesByUserId {principalId}")
                                                                 .ToListAsync();
+            
             return result.OrderBy(r => r.Ord).ToList(); ;
         }
 

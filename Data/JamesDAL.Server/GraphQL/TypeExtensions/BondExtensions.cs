@@ -1,7 +1,4 @@
-﻿using HotChocolate.Types;
-using James.Data.Server.Model;
-
-namespace James.Data.Server.GraphQL.TypeExtensions
+﻿namespace James.Data.Server.GraphQL.TypeExtensions
 {
 
     [ExtendObjectType(typeof(Bond), IgnoreProperties = new[]{ "BondType", "Agency", "Obligee", "ResponsibleParty" })]
@@ -34,23 +31,20 @@ namespace James.Data.Server.GraphQL.TypeExtensions
             }
             return bond.Agency;
         }
-        public async Task<LegalEntity?> GetObligee([Parent] Bond bond,
+
+        public LegalEntity GetObligee([Parent] Bond bond,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            if (null == bond.Obligee)
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-                bond.Agency = await ctx.LegalEntities.SingleAsync(agc => agc.Id == bond.ObligeeId);
-            }
-            return bond.Obligee;
+            return bond.Obligee ?? new LegalEntity { FullName = "Unknown" };
         }
+
         public async Task<LegalEntity?> GetResponsibleParty([Parent] Bond bond,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             if (null == bond.ResponsibleParty)
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
-                bond.Agency = await ctx.LegalEntities.SingleAsync(agc => agc.Id == bond.ResponsiblePartyId);
+                bond.ResponsibleParty = await ctx.LegalEntities.SingleAsync(agc => agc.Id == bond.ResponsiblePartyId);
             }
             return bond.ResponsibleParty;
         }

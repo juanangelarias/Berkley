@@ -5,48 +5,62 @@
 
 <Theme />
 
-<RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency"
-                AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true"
-                Style="height: 400px; border-radius: 10px;" IsLoading="@_isLoading" FilterMode="FilterMode.Advanced">
+<RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="Agency" GridLines="DataGridGridLines.Vertical"
+                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed" Density="Density.Compact"
+                Style="@style"  IsLoading="@IsLoading" FilterMode="FilterMode.Advanced" AllowColumnResize="true">
     <HeaderTemplate>
-        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-            <BsgExportGridToButton IsLoading="@_isLoading" ExportGrid="ExportGrid"/>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Visible="@NotResumed">
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
-        <RadzenDataGridColumn TItem="Agency" Title="Agency #" Property="AgencyNumber" Width="100px" />
-        <RadzenDataGridColumn TItem="Agency" Title="Agency Name" Property="IdNavigation.FullName" />
-        <RadzenDataGridColumn TItem="Agency" Title="Address" Filterable="false"
-                              Property="MainAddress.Address1">
+        <RadzenDataGridColumn TItem="Agency" Title="Status" Property="Status" Width="110px" TextAlign="TextAlign.Center">
+            <Template Context="relParty">
+                @if (relParty.Status == "Active")
+                {
+                    <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success"/>
+                }
+                else
+                {
+                    <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger"/>
+                }
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agency" Title="Agency" Property="AgencyNumber" Width="110px"
+                              TextAlign="TextAlign.Right"/>
+        <RadzenDataGridColumn TItem="Agency" Title="Agency Name" Property="IdNavigation.FullName"
+                              MinWidth="250px"/>
+        <RadzenDataGridColumn TItem="Agency" Title="Address" Filterable="false" MaxWidth="200px"
+                              Property="MainAddress.Address1" Visible="@NotResumed">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address1
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="Address2" Filterable="false"
+        <RadzenDataGridColumn TItem="Agency" Title="Address2" Filterable="false" MaxWidth="200px"
                               Property="IdNavigation.MainAddress.Address2" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address2
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="Address3" Filterable="false"
+        <RadzenDataGridColumn TItem="Agency" Title="Address3" Filterable="false" MaxWidth="200px"
                               Property="IdNavigation.MainAddress.Address3" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.Address3
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="City"
+        <RadzenDataGridColumn TItem="Agency" Title="City" Width="150x"
                               Property="IdNavigation.MainAddress.City">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.City
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="State"
+        <RadzenDataGridColumn TItem="Agency" Title="State" Width="100px" TextAlign="TextAlign.Center"
                               Property="IdNavigation.MainAddress.State">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.StateCode
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agency" Title="Zip Code"
+        <RadzenDataGridColumn TItem="Agency" Title="Zip Code" Width="110px" TextAlign="TextAlign.Center"
                               Property="IdNavigation.MainAddress.PostalCode" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.MainAddress?.PostalCode
@@ -59,11 +73,12 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public required Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public required bool NotResumed { get; set; }
+    
     private List<Agency> RelatedParties { get; set; } = [];
     private RadzenDataGrid<Agency> RelatedPartiesGrid { get; set; } = null!;
-    private bool _isLoading;
-    private ExportFormat _defaultExportFormat;
+    private string style = string.Empty;
     
     private IDataAccessResult<List<Agency>> _relatedPartiesResult = null!;
 
@@ -76,12 +91,19 @@
                 Data = (List<Agency>)cache!
             },
             ResultVariable = () => _relatedPartiesResult,
-            AfterLoad = () => { RelatedParties = _relatedPartiesResult.Data!; }
+            AfterLoad = () =>
+            {
+                RelatedParties = _relatedPartiesResult.Data!;
+            }
         }, "agency related parties");
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        
+        style = NotResumed
+            ? "height: 400px; border-radius: 10px;"
+            : "height: 225px; border-radius: 10px;";
 
         await ShowLoading();
         await LoadRelatedParties();
@@ -99,11 +121,11 @@
     
     protected async Task ShowLoading()
     {
-        _isLoading = true;
+        IsLoading = true;
 
         await Task.Yield();
 
-        _isLoading = false;
+        IsLoading = false;
     }
 
     private void ExportGrid(ExportFormat format)
@@ -114,9 +136,11 @@
         substitutions.AddSubstitution("MainAddress.Address1", "MainAddress.Address1", "Address");
         substitutions.AddSubstitution("MainAddress.Address2", "MainAddress.Address2", "Address2");
         substitutions.AddSubstitution("MainAddress.Address3", "MainAddress.Address3", "Address3");
-        substitutions.AddSubstitution("MainAddress.City", "MainAddress.City", "City");
-        substitutions.AddSubstitution("MainAddress.State", "MainAddress.StateCode", "State");
+        substitutions.AddSubstitution("IdNavigation.MainAddress.City", "IdNavigation.MainAddress.City", "City");
+        substitutions.AddSubstitution("IdNavigation.MainAddress.State", "IdNavigation.MainAddress.StateCode", "State");
         substitutions.AddSubstitution("MainAddress.PostalCode", "MainAddress.PostalCode", "Zip");
+        substitutions.AddSubstitution("Status", "Status", "Status");
+        
         NavigationManager.NavigateTo(ExportDataGridUrl(RelatedPartiesGrid,
                 $"/export/AgencyRelatedParties/{AgencyId}", format, substitutions),
             true);

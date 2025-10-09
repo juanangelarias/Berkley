@@ -12,13 +12,9 @@
                 foreach (var a in AllAddresses)
                 {
                     <RadzenTabsItem Text="@(a.LegalEntityAddress!.Type)">
-                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" AddressId="a.Id"
-                                        StateChanged="@(() => LoadAddresses())"
-                                        AddSubscription="@(() => DataAccess.AddressModified(a.Id, async void (sra) =>
-                                                         {
-                                                             if (_addressDisplays[a.LegalEntityAddress.Type].EditorIdentifier == sra.Identifier) return;
-                                                             await _addressDisplays[a.LegalEntityAddress.Type].SubscriptionUpdate(sra.Result);
-                                                         }))"/>
+                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" Address="a"
+                                        StateChanged="@LoadAddresses"
+                                        AddressEdited="UpdateAddresses" AddressDeleted="DeleteAddress"/>
                     </RadzenTabsItem>
                     //NOTE: The redundant specification of the AddressCreate below is needed to prevent the AddressCreate from being selected initially
                     if (a == AllAddresses.Last())
@@ -43,21 +39,29 @@
 
 @code {
 
-    [Parameter]
-    public Guid LegalEntityId { get; set; }
+    [Parameter, EditorRequired] public required Guid LegalEntityId { get; set; }
+    [Parameter] public Func<IDisposable>? AddSubscription { get; set; }
 
     private List<Address> AllAddresses { get; set; } = [];
     private readonly Dictionary<string, AddressDisplay> _addressDisplays = [];
     private int SelectedTab { get; set; }
+    private IDisposable? _subscription;
+
+    private readonly Guid _editorIdentifier = Guid.NewGuid();
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
         if (LegalEntityId != Guid.Empty)
+        {
             await LoadAddresses();
+            if (null != AddSubscription)
+                _subscription = AddSubscription();
+        }
     }
 
     private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
+
     private LoadItem AddressesLoadItem => AddEventNotify(
         new LoadItem<List<Address>>
         {
@@ -82,11 +86,54 @@
             }
         }, "addresses");
 
+    private async Task UpdateAddresses(Address address)
+    {
+        await DataAccess.SetAddress(address, _editorIdentifier.ToString());
+        var actual = AllAddresses.FirstOrDefault(f => f.Id == address.Id);
+
+        if (actual == null)
+        {
+            AllAddresses.Add(address);
+        }
+        else
+        {
+            actual.Address1 = address.Address1;
+            actual.Address2 = address.Address2;
+            actual.Address3 = address.Address3;
+            actual.City = address.City;
+            actual.StateCode = address.StateCode;
+            actual.PostalCode = address.PostalCode;
+        }
+    }
+
+    private async Task DeleteAddress(Guid id)
+    {
+        var deleteResult = await DataAccess.DeleteAddress(id, _editorIdentifier.ToString());
+
+        if (deleteResult.Errors.Any())
+        {
+            LoggingService.LogError("DeleteAddress return error(s)", string.Join("\r\n", deleteResult.Errors), "GraphQL");
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Detail = "Error while deleting this address.",
+                Duration = 4000
+            });
+            return;
+        }
+
+        var toDelete = AllAddresses
+            .FirstOrDefault(f => f.Id == id);
+
+        if (toDelete != null)
+            AllAddresses.Remove(toDelete);
+    }
+
     private async Task LoadAddresses()
     {
         await DataAccess.GetCacheOrLoadDataAsync(AddressesLoadItem);
     }
-    
+
     private async Task AddressCreated(Guid addressToSelect)
     {
         await LoadAddresses();
@@ -99,4 +146,5 @@
                 : 0;
         }
     }
+
 }

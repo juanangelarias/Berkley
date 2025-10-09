@@ -397,8 +397,13 @@
 
     private bool CanEditDelete(AgencyCommissionRateRange rate)
     {
+        if (rate.To == null || rate.Id == 0)
+            return true;
+        
+        var nullExist = _ranges.Any(a=>a.To == null);
+        
         var max = _ranges.Max(m => m.To);
-
-        return rate.To == null || rate.Id == 0 || rate.To == max;
+        
+        return !nullExist && rate.To == max;
     }
 }

@@ -7,10 +7,8 @@ using James.Shared;
 using James.Shared.Data;
 using James.Shared.Dto;
 using James.Shared.Imaging;
-using James.Shared.Notification;
 using James.Shared.Server;
 using Microsoft.AspNetCore.Http;
-using Notification = James.Shared.Notification.Notification;
 
 namespace James.Data.Server
 {

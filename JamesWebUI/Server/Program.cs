@@ -178,9 +178,7 @@ try
 
     builder.Services
         // A
-        .AddScoped<IAccountState, AccountState>()
-        // N
-        .AddScoped<INotificationGeneralState, NotificationGeneralState>();
+        .AddScoped<IAccountState, AccountState>();
 
     #endregion
 

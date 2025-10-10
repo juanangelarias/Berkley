@@ -118,18 +118,22 @@
 
         await DataAccess.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
     }
-    
-    protected async Task ShowLoading()
-    {
-        IsLoading = true;
-
-        await Task.Yield();
-
-        IsLoading = false;
-    }
 
     private void ExportGrid(ExportFormat format)
     {
-        // ToDo: JAA revert
+        var substitutions = new ExportColumnSubstitutions();
+        substitutions.AddSubstitution("AgencyNumber", "AgencyNumber", "Number");
+        substitutions.AddSubstitution("IdNavigation.FullName", "IdNavigation.FullName", "Agency");
+        substitutions.AddSubstitution("MainAddress.Address1", "MainAddress.Address1", "Address");
+        substitutions.AddSubstitution("MainAddress.Address2", "MainAddress.Address2", "Address2");
+        substitutions.AddSubstitution("MainAddress.Address3", "MainAddress.Address3", "Address3");
+        substitutions.AddSubstitution("IdNavigation.MainAddress.City", "MainAddress.City", "City");
+        substitutions.AddSubstitution("IdNavigation.MainAddress.State", "MainAddress.StateCode", "State");
+        substitutions.AddSubstitution("MainAddress.PostalCode", "MainAddress.PostalCode", "Zip");
+        substitutions.AddSubstitution("Status", "Status", "Status");
+        
+        NavigationManager.NavigateTo(ExportDataGridUrl(RelatedPartiesGrid,
+                $"/export/AgencyRelatedParties/{AgencyId}", format, substitutions),
+            true);
     }
 }

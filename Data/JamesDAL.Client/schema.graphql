@@ -310,6 +310,11 @@ type CreateLicensePayload {
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
+input SetEmployeeIsActiveInput {
+  employeeId: UUID!
+  isActive: Boolean!
+}
+
 type Agency {
   id: UUID!
   created: DateTime!
@@ -519,6 +524,7 @@ type Query {
   securityRolesByUser(principalId: UUID!): [SecurityRole!]!
   securityRoleMembers(role: String!): [SecurityRoleMember!]!
   employees(activeOnly: Boolean!): [Employee!]!
+  activeDirectoryUsers(searchText: String!): [PotentialEmployeeActiveDirectoryInfo!]!
   allStates: [State!]!
 }
 
@@ -1029,6 +1035,13 @@ input CreateAgencyInput {
   billingPostalCode: String!
 }
 
+type PotentialEmployeeActiveDirectoryInfo {
+  username: String!
+  fullName: String!
+  emails: [String!]!
+  initials: String!
+}
+
 type BondTypeDm {
   id: UUID!
   created: DateTime!
@@ -1196,6 +1209,7 @@ type Mutation {
   addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
   removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
   addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
+  setEmployeeIsActive(input: SetEmployeeIsActiveInput!): SetEmployeeIsActivePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1630,6 +1644,10 @@ type NotebookEntryTypeDm {
   modified: DateTime!
   type: String!
   notebookEntries: [NotebookEntry!]!
+}
+
+type SetEmployeeIsActivePayload {
+  boolean: Boolean
 }
 
 type LineOfBusinessDm {

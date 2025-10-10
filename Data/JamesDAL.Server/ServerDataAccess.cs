@@ -578,6 +578,11 @@ namespace James.Data.Server
             return await ExecuteGet(async()=> await query.GetEmployees(activeOnly, contextFactory));
         }
 
+        public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText)
+        {
+            return await ExecuteGet(async () => await query.GetActiveDirectoryUsers(usernameSearchText));
+        }
+
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
         {
             return await ExecuteGet(async () => await query.GetPOADocumentNames(contextFactory));

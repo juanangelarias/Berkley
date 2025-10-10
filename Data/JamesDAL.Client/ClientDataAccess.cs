@@ -611,13 +611,16 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true)
         {
-            //throw new NotImplementedException();
-            //return new DataAccessResult<List<Employee>>()
-            //{
-            //    Data = [new Employee(){FullName = "Test Employee", Title = "Tester", Active = true}]
-            //};
             var result = await ExecuteGet<List<Employee>>(
                 async () => await jamesClient.GetEmployees.ExecuteAsync(activeOnly), "Employees");
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText)
+        {
+            var result = await ExecuteGet < List<PotentialEmployeeActiveDirectoryInfo>>(
+                async () => await jamesClient.GetActiveDirectoryUsers.ExecuteAsync(usernameSearchText),
+                "activeDirectoryUsers");
             return result;
         }
 

@@ -46,6 +46,15 @@ query GetSecurityRolesByUser($input: UUID!) {
     }
 }
 
+query GetActiveDirectoryUsers($usernameSearchText: String!) {
+  activeDirectoryUsers(searchText: $usernameSearchText) {
+    emails
+    fullName
+    initials
+    username
+  }
+}
+
 mutation AddPrincipalToSecurityRole($input: AddPrincipalToSecurityRoleInput!) {
   addPrincipalToSecurityRole(input: $input) {
     boolean

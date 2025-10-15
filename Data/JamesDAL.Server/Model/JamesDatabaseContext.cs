@@ -16,6 +16,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<AccountClassDm> AccountClassDms { get; set; }
 
+    public virtual DbSet<AccountParentAncestorSafe> AccountParentAncestorSafe { get; set; }
+
     public virtual DbSet<AccountProgram> AccountPrograms { get; set; }
 
     public virtual DbSet<AccountProgramEmailNotificationGroup> AccountProgramEmailNotificationGroups { get; set; }
@@ -553,6 +555,23 @@ public partial class JamesDatabaseContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.Name)
                 .HasMaxLength(20)
+                .IsUnicode(false);
+        });
+        
+        modelBuilder.Entity<AccountParentAncestorSafe>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("AccountParentAncestorSafe", "Beta");
+
+            entity.Property(e => e.AccountNum)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.AncestorAccountNum)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.ParentAcctNumber)
+                .HasMaxLength(8)
                 .IsUnicode(false);
         });
 

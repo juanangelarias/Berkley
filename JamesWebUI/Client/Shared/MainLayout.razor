@@ -6,6 +6,7 @@
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
+@inject TooltipService TooltipService
 @inject IJSRuntime JS
 
 
@@ -36,7 +37,7 @@
 </style>
 
 <RadzenLayout
-    Style="width:100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
+    Style="width: 100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader class="rz-shadow-0">
         <ChildContent>
             <RadzenRow Gap="0.5rem" Style="@_headerStyle">
@@ -93,17 +94,17 @@
             </RadzenRow>
         </ChildContent>
     </RadzenHeader>
-    <RadzenSidebar Style="width: max-content" Responsive="false" Visible="@(_sidebarExpanded)">
-        <RadzenRow>
+    <RadzenSidebar Style="width: max-content" Responsive="false">
+        <RadzenRow JustifyContent="JustifyContent.End">
             <AccessControl/>
         </RadzenRow>
         <RadzenRow>
             <RadzenStack Orientation="@(_sidebarExpanded ? Orientation.Horizontal : Orientation.Vertical)"
                          AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
                 <RadzenButton Variant="Variant.Text" Icon="note" Size="ButtonSize.Small"
-                              Click="@(() => notebookExpanded = !notebookExpanded)"/>
+                              Click="@(() => NotebookExpanded = !NotebookExpanded)"/>
                 <RadzenButton Variant="Variant.Text" Icon="notifications" Size="ButtonSize.Small"
-                              Click="@(() => notebookExpanded = !notebookExpanded)">
+                              Click="@(() => NotebookExpanded = !NotebookExpanded)">
                     <RadzenBadge Variant="Variant.Outlined" BadgeStyle="BadgeStyle.Secondary" Text="15"
                                  title="You have new notifications."/>
                 </RadzenButton>
@@ -111,26 +112,29 @@
             </RadzenStack>
         </RadzenRow>
         <RadzenRow>
-            <RadzenButton Icon="logout" Text="Logout" Click="BeginSignOut" Variant="Variant.Text"
-                          Size="ButtonSize.Small"/>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenPanelMenu
-                DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
-                Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
-                <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard"/>
-                <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds"/>
-                <RadzenPanelMenuItem Text="Accounts" Icon="account_balance" Path="Account"/>
-                <RadzenPanelMenuItem Text="Agencies" Icon="store" Path="Agency"/>
-                <RadzenPanelMenuItem Text="Agents" Icon="person" Path="Agents"/>
-                <RadzenPanelMenuItem Text="Obligees" Icon="person" Path="Obligee"/>
-                <RadzenPanelMenuItem Text="Finances" Icon="request_quote" Path="Finances"/>
+            <RadzenPanelMenu DisplayStyle="@DisplayStyle" Style="@_panelMenuStyle" ShowArrow="true">
+                <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard"
+                                     title="@(_sidebarExpanded ? "" : "Dashboard")"/>
+                <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds"
+                                     title="@(_sidebarExpanded ? "" : "Bonds")"/>
+                <RadzenPanelMenuItem Text="Accounts" Icon="account_balance" Path="Account"
+                                     title="@(_sidebarExpanded ? "" : "Accounts")"/>
+                <RadzenPanelMenuItem Text="Agencies" Icon="store" Path="Agency"
+                                     title="@(_sidebarExpanded ? "" : "Agencies")"/>
+                <RadzenPanelMenuItem Text="Agents" Icon="person" Path="Agents"
+                                     title="@(_sidebarExpanded ? "" : "Agents")"/>
+                <RadzenPanelMenuItem Text="Obligees" Icon="person" Path="Obligee"
+                                     title="@(_sidebarExpanded ? "" : "Obligees")"/>
+                <RadzenPanelMenuItem Text="Finances" Icon="request_quote" Path="Finances"
+                                     title="@(_sidebarExpanded ? "" : "Finances")"/>
                 @if (Environment.MachineName.Equals("localhost", StringComparison.InvariantCultureIgnoreCase) ||
                      Environment.MachineName.StartsWith("USUBL", StringComparison.InvariantCultureIgnoreCase))
                 {
                     //Show up only on developer machines
-                    <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl"/>
-                    <RadzenPanelMenuItem Text="Notifications" Icon="notifications" Path="NotificationAdmin"/>
+                    <RadzenPanelMenuItem Text="GraphQl" Icon="build" Path="GraphQl"
+                                         title="@(_sidebarExpanded ? "" : "GraphQL")"/>
+                    <RadzenPanelMenuItem Text="Notifications" Icon="notifications" Path="NotificationAdmin"
+                                         title="@(_sidebarExpanded ? "" : "Notifications")"/>
                 }
                 else
                 {
@@ -146,11 +150,16 @@
                 <RadzenPanelMenu
                     DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
                     Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
-                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="Admin">
-                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Users"/>
-                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles"/>
-                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions"/>
-                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings"/>
+                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="Admin"
+                                         title="@(_sidebarExpanded ? "" : "Admin")">
+                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Users"
+                                             title="@(_sidebarExpanded ? "" : "Users")"/>
+                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles"
+                                             title="@(_sidebarExpanded ? "" : "Roles")"/>
+                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions"
+                                             title="@(_sidebarExpanded ? "" : "Permissions")"/>
+                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings"
+                                             title="@(_sidebarExpanded ? "" : "Settings")"/>
                     </RadzenPanelMenuItem>
                 </RadzenPanelMenu>
             </RadzenRow>
@@ -158,19 +167,15 @@
     </RadzenSidebar>
     <RadzenBody>
         <ErrorBoundary>
-            <RadzenSidebar @bind-Expanded="@notebookExpanded" Responsive="false"
+            <RadzenSidebar @bind-Expanded="@NotebookExpanded" Responsive="false"
                            Style="position: absolute; width:325px;">
-                <RadzenDataList Data="notifications" TItem="Notification">
+                <RadzenDataList Data="Notifications" TItem="Notification">
                     <Template Context="notification">
                         <NotificationCard NotificationToDisplay="notification"/>
                     </Template>
                 </RadzenDataList>
-            </RadzenSidebar>@*
-                <RadzenPanel>
-                    <ChildContent> *@
+            </RadzenSidebar>
             @Body
-            @* </ChildContent>
-                </RadzenPanel> *@
         </ErrorBoundary>
     </RadzenBody>
 
@@ -179,11 +184,18 @@
     window.getAllLocalStorageKeys = () => Object.keys(localStorage);
 </script>
 
-@code 
+@code
 {
+    private MenuItemDisplayStyle DisplayStyle => _sidebarExpanded
+        ? MenuItemDisplayStyle.IconAndText
+        : MenuItemDisplayStyle.Icon;
+
+    private readonly string _panelMenuStyle = "background: #FCFCFC; border-color:#FCFCFC; " +
+                                              "font-weight: bold; color: #404040";
+
     private bool _sidebarExpanded = true;
-    public bool notebookExpanded = false;
-    public Notification[]? notifications;
+    public bool NotebookExpanded = false;
+    public Notification[]? Notifications;
     private string _headerStyle = "height: 3.5rem; padding: 0.5rem;";
 
     protected override void OnInitialized()
@@ -191,20 +203,20 @@
         JamesThemeService.Initialize(NavigationManager);
 
         var isDevelopment = NavigationManager.Uri.Contains("localhost");
-        
+
         _headerStyle = isDevelopment
             ? OperatingSystem.IsBrowser()
                 ? "height: 3.5rem; padding: 0.5rem; background-color: cornsilk;"
                 : "height: 3.5rem; padding: 0.5rem; background-color: #e0e0e0;"
             : "height: 3.5rem; padding: 0.5rem;";
 
-        notifications = new Notification[]{
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
+        Notifications = new Notification[]
+        {
+            new Notification { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567" },
+            new Notification { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678" },
+            new Notification { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789" },
+            new Notification { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890" }
         };
-
     }
 
     void ChangeTheme(object value)
@@ -234,4 +246,18 @@
     {
         await DialogService.OpenAsync<SuperSearch>("Super Search", options: _superSearchDialogOptions);
     }
+
+    private void ShowToolTip(ElementReference elementReference, string text)
+    {
+        if (_sidebarExpanded)
+            return;
+        var options = new TooltipOptions
+        {
+            Delay = 200,
+            Position = TooltipPosition.Right
+        };
+
+        TooltipService.Open(elementReference, text, options);
+    }
+
 }

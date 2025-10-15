@@ -876,6 +876,14 @@ namespace James.Data.Client
             return response;
         }
 
+        public async Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum)
+        {
+            var response = await ExecuteGet<AccountAlertPackageDto>(async () =>
+                await jamesClient.GetAccountAlerts.ExecuteAsync(period, accountNum), "AccountAlerts");
+
+            return response;
+        }
+
         private sealed class AddressModifiedWatchClass(
             IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription) :
             //IObservable<SubscriptionResult<Address>>,

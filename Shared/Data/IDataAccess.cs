@@ -279,6 +279,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteAccountWatch(Guid id);
 
         public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId);
+        public Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum);
     }
 
     public interface ISaveDataResult

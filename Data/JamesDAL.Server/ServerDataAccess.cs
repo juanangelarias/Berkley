@@ -796,6 +796,11 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAllAccountWatches(accountId, contextFactory));
         }
 
+        public async Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetAccountAlerts(period, accountNum, contextFactory));
+        }
+
         private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<T>> dataFunc)
         {
             try

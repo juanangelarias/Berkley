@@ -5,7 +5,7 @@ public static class CacheKeys
     // Calculated
     // A
     public static string AccountKey(string accountNumber) => $"Account-{accountNumber}";
-    public static string AgencyAgents(Guid id) => $"AgencyAgents-{id}";
+    public static string AgencyAgents(string id) => $"AgencyAgents-{id}";
     // L
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";
     public static string LegalEntityEmails(Guid id) => $"LegalEntityPhoneEmails-{id}";
@@ -13,6 +13,7 @@ public static class CacheKeys
     
     // Fixed
     // A
+    public const string AccountAlerts = "AccountAlerts";
     public const string AddressTypes = "AddressTypes";
     public const string AgenciesDto = "AgenciesDto";
     public const string AgencyStatuses = "AgencyStatuses";
@@ -24,9 +25,6 @@ public static class CacheKeys
     public const string Divisions = "Divisions";
     // E
     public const string EmailTypes = "EmailTypes";
-    // N
-    public const string Notifications = "Notifications";
-    public const string NotificationPriorities = "NotificationPriorities";
     // P
     public const string PhoneTypes = "PhoneTypes";
     // S

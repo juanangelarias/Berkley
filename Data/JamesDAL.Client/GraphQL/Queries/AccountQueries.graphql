@@ -377,3 +377,19 @@ query GetAllAccountWatches($input: UUID!) {
         watchStatus
     }
 }
+
+query GetAccountAlerts($input1: Int!, $input2: String!) {
+    accountAlerts(period: $input1, accountNum: $input2){
+        claims {
+            bondNumber
+            classCode 
+            claimId
+        },
+        alerts {
+            date
+            type
+            alert
+            link
+        }
+    }
+}

@@ -6,8 +6,6 @@ namespace James.Data.Server.GraphQL.Queries;
 
 public partial class Query
 {
-    private readonly Random _random = new(DateTime.Today.Millisecond);
-
     [Authorize]
     public async Task<AccountAlertPackageDto> GetAccountAlerts(int period, string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -40,10 +38,19 @@ public partial class Query
         // ToDo - Add Submission
         
         // ToDo - Add Claims
-        
-        var notifications = new AccountAlertPackageDto();
-
-        notifications.Alerts.AddRange(lostAccounts.Select(s=> new AccountAlertDto
+        var rnd = new Random(DateTime.Now.Millisecond);
+        var claims = new List<AccountAlertClaimDto>();
+        for (var i = 0; i < 3; i++)
+        {
+            claims.Add(new()
+            {
+                ClaimId = $"CL-{rnd.Next(100000, 999999):000000}",
+                BondNumber = $"{rnd.Next(100000, 999999):000000}",
+                ClassCode = $"{i:000}"
+            });
+        }
+        var alerts = new List<AccountAlertDto>();
+        alerts.AddRange(lostAccounts.Select(s=> new AccountAlertDto
         {
             Type = AccountAlertType.LostAccount,
             Date = s.Effective,
@@ -51,7 +58,7 @@ public partial class Query
             Link = $"{Links.Account}{s.AccountNumNavigation.AccountNum}"
         }));
         
-        notifications.Alerts.AddRange(newAccounts.Select(s=>new AccountAlertDto
+        alerts.AddRange(newAccounts.Select(s=>new AccountAlertDto
         {
             Type = AccountAlertType.NewAccount,
             Date = s.Effective,
@@ -59,10 +66,11 @@ public partial class Query
             Link = $"{Links.Account}{s.AccountNumNavigation.AccountNum}"
         }));
         
-        notifications.Alerts = notifications.Alerts
-            .OrderByDescending(o => o.Type)
-            .ThenBy(t=>t.Date)
-            .ToList();
+        var notifications = new AccountAlertPackageDto
+        {
+            Alerts = alerts.OrderBy(o=>o.Type).ThenBy(t=>t.Date).ToList(),
+            Claims = claims
+        };
 
         return notifications;
     }
@@ -78,86 +86,5 @@ public partial class Query
             _ => endDate.AddDays(-30)
         };
         return startDate;
-    }
-
-    private async Task<List<string>> GetRelatedAccounts(JamesDatabaseContext ctx, string prmAccountNum)
-    {
-        var accounts = await ctx.Accounts
-            .Include(i => i.IdNavigation)
-            .ThenInclude(t => t.ParentNavigation)
-            .ThenInclude(t1 => t1!.AccountIdNavigation)
-            .Select(s => new AccountControl
-            {
-                AccountNum = s.AccountNum,
-                ParentAccountNum = s.IdNavigation.ParentNavigation!.AccountIdNavigation!.AccountNum
-            })
-            .ToListAsync();
-
-        foreach (var account in accounts
-                     .Where(account => account.AccountNum == account.ParentAccountNum))
-        {
-            account.ParentAccountNum = null;
-        }
-
-        var parentAccount = GetParentAccount(prmAccountNum, accounts);
-
-        return GetChildren(parentAccount, accounts);
-    }
-
-    private List<string> GetChildren(string accountNum, List<AccountControl> accounts)
-    {
-        var relatedAccounts = new List<string>();
-        var children = accounts
-            .Where(a => a.ParentAccountNum == accountNum)
-            .Select(a => a.AccountNum)
-            .ToList();
-
-        relatedAccounts.AddRange(children);
-
-        foreach (var child in children)
-        {
-            relatedAccounts.AddRange(GetChildren(child, accounts));
-        }
-
-        return relatedAccounts;
-    }
-
-    private string GetParentAccount(string accountNum, List<AccountControl> accounts)
-    {
-        var acc = accounts.FirstOrDefault(a => a.AccountNum == accountNum);
-
-        return acc?.ParentAccountNum == null
-            ? accountNum
-            : GetParentAccount(acc.ParentAccountNum, accounts);
-    }
-
-    private static DateTime GetRandomDate(DateTime startDate, DateTime endDate)
-    {
-        var random = new Random();
-        var randomDate = startDate.AddDays(random.Next(0, (int)(endDate - startDate).TotalDays));
-        return randomDate;
-    }
-
-    private static List<string> GetTexts()
-    {
-        return
-        [
-            "Lorem ipsum dolor sit amet consectetur adipiscing elit.",
-            "Ex sapien vitae pellentesque sem placerat in id.",
-            "Pretium tellus duis convallis tempus leo eu aenean.",
-            "Urna tempor pulvinar vivamus fringilla lacus nec metus.",
-            "Iaculis massa nisl malesuada lacinia integer nunc posuere.",
-            "Semper vel class aptent taciti sociosqu ad litora.",
-            "Conubia nostra inceptos himenaeos orci varius natoque penatibus.",
-            "Dis parturient montes nascetur ridiculus mus donec rhoncus.",
-            "Nulla molestie mattis scelerisque maximus eget fermentum odio.",
-            "Purus est efficitur laoreet mauris pharetra vestibulum fusce."
-        ];
-    }
-
-    class AccountControl
-    {
-        public string AccountNum { get; set; } = "";
-        public string? ParentAccountNum { get; set; }
     }
 }

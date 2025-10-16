@@ -310,6 +310,11 @@ type CreateLicensePayload {
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
+type AgencyLocationsDto {
+  isTopParent: Boolean!
+  agency: Agency!
+}
+
 type Agency {
   id: UUID!
   created: DateTime!
@@ -480,7 +485,8 @@ type Query {
   agencyPOAs(agencyId: UUID!): [PowerOfAttorney!]!
   poaDocumentNames: [PowerOfAttorneyDocumentNameDm!]!
   allPoaStatuses: [PowerOfAttorneyStatusDm!]!
-  agencyRelatedParties(agencyId: UUID!): [Agency!]!
+  agencyRelatedParties(agencyId: UUID!): [AgencyLocationsDto!]!
+  agencyTopParentId(agencyId: UUID!): UUID
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   idAgencyNumbers: [Agency!]!
   agentByAgentId(agentId: UUID!): Agent!

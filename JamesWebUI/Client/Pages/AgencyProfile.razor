@@ -118,7 +118,7 @@
                                             </RadzenFormField>
                                         </RadzenColumn>
                                         <RadzenColumn>
-                                            <RadzenFormField Text="Branch" Variant="Variant.Text" AllowFloatingLabel="true" Style="width:90%">
+                                            <RadzenFormField Text="Appointing Branch" Variant="Variant.Text" AllowFloatingLabel="true" Style="width:90%">
                                                 <RadzenDropDown TValue="string" @bind-Value="@_agencyToDisplay.Branch"
                                                                 Data="AllBranches" ValueProperty="BranchKey" TextProperty="Name"
                                                                 Disabled="!EditMode" Style="color: black;" />
@@ -174,8 +174,8 @@
                 <PositionSavingTabsItem Text="General Info" TabName="tabGenInfo">
                     <AgencyGeneralInfoGrids Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
-                <PositionSavingTabsItem Text="Contacts" TabName="tabContacts">
-                    <AgencyContactsGrid AgencyId="@_agencyToDisplay.Id" />
+                <PositionSavingTabsItem Text="Agents" TabName="tabAgents">
+                    <AgencyAgentsGrid AgencyId="@_agencyToDisplay.Id" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Inventory" TabName="tabInventory">
                     <AgencyInventoryGrid AgencyId="@_agencyToDisplay.Id" />

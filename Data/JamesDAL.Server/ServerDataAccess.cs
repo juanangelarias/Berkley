@@ -131,7 +131,7 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.SearchAgents(searchString, contextFactory));
         }
-        public async Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId)
+        public async Task<IDataAccessResult<List<AgencyLocationsDto>>> GetAgencyRelatedParties(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyRelatedParties(agencyId, contextFactory));
         }

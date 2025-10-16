@@ -1,5 +1,6 @@
 ﻿using James.Shared;
 using James.Shared.Data;
+using James.Shared.Dto;
 using James.Shared.Model;
 using Microsoft.AspNetCore.Mvc;
 using SharedBusinessLogic;
@@ -92,7 +93,7 @@ namespace JamesWebUI.Server.Controllers
             if (Guid.Empty == agencyId)
                 return new StatusCodeResult(422); //Unprocessable content
 
-            IDataAccessResult<List<Agency>> poaResult = null!;
+            IDataAccessResult<List<AgencyLocationsDto>> poaResult = null!;
             IDataAccessResult<Agency?> agencyNameNumberResult = null!;
 
             var loads = new List<Func<Task>>

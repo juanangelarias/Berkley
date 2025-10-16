@@ -60,11 +60,9 @@
                               SortOrder="SortOrder.Descending" Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" Width="175px"
                               Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="100px"
+        <RadzenDataGridColumn TItem="Bond" Title="Class Code" Property="Siccode" FormatString="{0:d}" Width="125px"
                               Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName" Width="200px" Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" FormatString="{0:d}"
-                              Width="175px" Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass" Resizable="true"
                               Filterable="true" FilterValue="@_classFilter" FilterProperty="BondClass"
                               FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)"

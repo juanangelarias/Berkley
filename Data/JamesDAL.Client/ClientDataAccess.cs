@@ -261,9 +261,9 @@ namespace James.Data.Client
             return await ExecuteGet<Agent>(
                 async () => await jamesClient.AgentByAgentId.ExecuteAsync(agentId), "AgentByAgentId", "AgentByAgentId");
         }
-        public async Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId)
+        public async Task<IDataAccessResult<List<AgencyLocationsDto>>> GetAgencyRelatedParties(Guid agencyId)
         {
-            return await ExecuteGet<List<Agency>>(
+            return await ExecuteGet<List<AgencyLocationsDto>>(
                 async () => await jamesClient.GetAgencyRelatedParties.ExecuteAsync(agencyId), "AgencyRelatedParties");
         }
 

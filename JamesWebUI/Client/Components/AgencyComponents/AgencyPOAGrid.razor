@@ -14,7 +14,7 @@
                 AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true" Density="Density.Compact"
                 RowCreate="@OnPoaCreate" RowUpdate="@UpdatePoaRow" EditMode="DataGridEditMode.Single"
                 IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
-                Filter="@ShowLoading">
+                Filter="@ShowLoading" ColumnWidth="150px">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <AuthorizeView Policy="InRoleCanAddAgencyPOA">
@@ -35,7 +35,7 @@
     </Template>
     <Columns>
         <RadzenDataGridColumn Title="Status" Property="Status" Type="typeof(string)"
-                              FilterValue="@_statusFilter" FilterProperty="Status"
+                              FilterValue="@_statusFilter" FilterProperty="Status" Width="150px" MinWidth="150px"
                               FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@_statusFilter" AllowClear="true" Style="width:95%"
@@ -48,9 +48,10 @@
                 <RadzenText Text="@poa.Status"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Insurer" Property="Insurer" Width="300px"
-                              FilterValue="@_insurerFilter" FilterProperty="Insurer.IdNavigation.FullName"
-                              FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or">
+        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Writing Company" Property="Insurer" Width="350px" 
+                              MinWidth="350px" FilterValue="@_insurerFilter" 
+                              FilterProperty="Insurer.IdNavigation.FullName" FilterOperator="FilterOperator.Contains" 
+                              LogicalFilterOperator="LogicalFilterOperator.Or">
             <Template Context="poa">
                 <RadzenText Text="@poa.Insurer.IdNavigation.FullName"/>
             </Template>
@@ -60,28 +61,31 @@
                 <RadzenRequiredValidator Text="Insurer is required" Component="CmbInsurer" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px">
+        <RadzenDataGridColumn Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px"
+                              MinWidth="175px">
             <EditTemplate Context="poa">
                 <RadzenNumeric @bind-Value="poa.Limit" Format="c0" Style="width: 95%" ShowUpDown="false"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Ref No." Property="ReferenceNumber">
+        <RadzenDataGridColumn Title="Ref No." Property="ReferenceNumber" Width="150px" MinWidth="150px">
             <EditTemplate Context="poa">
                 <RadzenTextBox @bind-Value="poa.ReferenceNumber" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" Width="200px">
+        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" Width="200px"
+                              MinWidth="200px" TextAlign="TextAlign.Center">
             <EditTemplate Context="poa">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.FirstIssued" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}"
-                              SortOrder="SortOrder.Descending" Width="200px">
+                              SortOrder="SortOrder.Descending" Width="240px" MinWidth="240px" 
+                              TextAlign="TextAlign.Center">
             <EditTemplate Context="poa">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.CurrentIssued" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="POA Document">
+        <RadzenDataGridColumn Title="POA Document" Width="150px" MinWidth="150px" Filterable="false">
             <Template Context="poa">
                 <InlineImagingDocument DocumentShortName="POA Document"
                                        DocumentCategory="ImagingDocumentCategory.Agency"
@@ -94,7 +98,8 @@
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
-                              Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
+                              Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="75px" 
+                              MinWidth="80px">
             <Template Context="poa">
                 <AuthorizeView Policy="InRoleCanEditAgencyPOA">
                     <RadzenButton Variant="Variant.Flat"
@@ -426,7 +431,7 @@
     {
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Status", "Status", "Status");
-        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Insurer");
+        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Writing Company");
         substitutions.AddSubstitution("ReferenceNumber", "ReferenceNumber", "Reference Number");
         substitutions.AddSubstitution("FirstIssued", "FirstIssued", "First Issued");
         substitutions.AddSubstitution("CurrentIssued", "CurrentIssued", "Current Issued");

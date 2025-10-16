@@ -8,15 +8,13 @@
 
 <Theme/>
 
-<RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@AgencyLicenses"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@AgencyLicenses" ColumnWidth="125px"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
-                GridLines="DataGridGridLines.Vertical"
-                AllowSorting="true" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple"
-                AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                AllowColumnPicking="true" AllowGrouping="true" AllowColumnResize="true"
-                RowUpdate="UpdateLicenseRow" EditMode="@_editMode" RowCreate="@OnLicenseCreate"
-                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
-                Filter="@ShowLoading">
+                GridLines="DataGridGridLines.Vertical" AllowSorting="true" Density="Density.Compact"
+                SelectionMode="DataGridSelectionMode.Multiple" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                AllowColumnPicking="true" AllowGrouping="true" AllowColumnResize="true" RowUpdate="UpdateLicenseRow"
+                EditMode="@_editMode" RowCreate="@OnLicenseCreate" IsLoading="@IsLoading" Sort="@ShowLoading"
+                Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <AuthorizeView Policy="InRoleCanAddAgencyLicense">
@@ -44,8 +42,8 @@
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Status" Filterable="false"
-                              Property="IsActive" Width="90px">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Status" Filterable="true" Property="IsActive" Width="150px"
+                              MinWidth="150px" TextAlign="TextAlign.Center">
             <Template Context="license">
                 @{
                     if (license.IsActive)
@@ -64,8 +62,8 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Type="typeof(IEnumerable<string>)"
                               Filterable="true" FilterValue="@_stateFilter" FilterProperty="State"
-                              FilterOperator="FilterOperator.Contains"
-                              Property="State" Width="100px" SortOrder="SortOrder.Ascending">
+                              FilterOperator="FilterOperator.Contains" Property="State" Width="150px" MinWidth="150px"
+                              SortOrder="SortOrder.Ascending" TextAlign="TextAlign.Center">
             <Template Context="license">
                 <RadzenText Text="@license.State"/>
             </Template>
@@ -75,7 +73,8 @@
                 <RadzenRequiredValidator Text="State is required" Component="State" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="75px" Property="AppointingState">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="170px" MinWidth="170px"
+                              Property="AppointingState" TextAlign="TextAlign.Center">
             <Template Context="license">
                 <RadzenCheckBox Value="license.AppointingState" ReadOnly="true"/>
             </Template>
@@ -83,7 +82,8 @@
                 <RadzenCheckBox @bind-Value="license.AppointingState"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Property="LicenseNumber" Width="100px">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Property="LicenseNumber" Width="160px"
+                              MinWidth="160px">
             <Template Context="license">
                 <RadzenText Text="@license.LicenseNumber"/>
             </Template>
@@ -91,16 +91,19 @@
                 <RadzenTextBox @bind-Value="license.LicenseNumber" Style="width:95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Resident" Width="75px" Property="IsResident">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Resident" Width="170px" MinWidth="170px"
+                              Property="IsResident" TextAlign="TextAlign.Center">
             <Template Context="license">
-                <RadzenCheckBox TValue="bool" Value="license.IsResident" ReadOnly="true"/>
+                <RadzenRow JustifyContent="JustifyContent.Center">
+                    <RadzenCheckBox TValue="bool" Value="license.IsResident" ReadOnly="true"/>
+                </RadzenRow>
             </Template>
             <EditTemplate Context="license">
                 <RadzenCheckBox TValue="bool" @bind-Value="license.IsResident"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Insurer" Filterable="false"
-                              Property="Insurer" Width="200px">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Insurer" Filterable="true" Property="Insurer" Width="350px"
+                              MinWidth="350px">
             <Template Context="license">
                 <RadzenText Text="@license.Insurer.IdNavigation.FullName"/>
             </Template>
@@ -110,8 +113,8 @@
                 <RadzenRequiredValidator Text="Insurer is required" Component="CmbInsurer" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="125px"
-                              FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="170px"
+                              MinWidth="170px" FormatString="{0:d}">
             <Template Context="license">
                 <RadzenText Text="@license.Appointment.ToString()"/>
             </Template>
@@ -119,8 +122,8 @@
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Appointment"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="125px"
-                              FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="170px"
+                              MinWidth="170px" FormatString="{0:d}">
             <Template Context="license">
                 <RadzenText Text="@license.Termination.ToString()"/>
             </Template>
@@ -128,7 +131,8 @@
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Termination"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Certificate" Width="60px" Visible="!_bulkMode">
+        <RadzenDataGridColumn Title="Certificate" Width="175px" MinWidth="175px" Visible="!_bulkMode"
+                              TextAlign="TextAlign.Center" Filterable="false">
             <Template Context="lic">
                 @*ToDo: Add Security in InlineImagingDocument to only allow uploading/viewing of documents that the user has access to*@
                 <InlineImagingDocument DocumentShortName="License Certificate"
@@ -140,9 +144,9 @@
                                        UploadErrorAction=@(msg => LogUploadError(msg, lic))/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Width="75px" TItem="AgencyLicense" Filterable="false" Sortable="false"
-                              TextAlign="TextAlign.Right"
-                              Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+        <RadzenDataGridColumn Width="75px" MinWidth="75px" TItem="AgencyLicense" Filterable="false" Sortable="false"
+                              TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right"
+                              Resizable="false">
             <Template Context="license">
                 <AuthorizeView Policy="InRoleCanEditAgencyLicense">
                     <RadzenButton Icon="edit"
@@ -522,7 +526,7 @@
         substitutions.AddSubstitution("LicenseNumber", "LicenseNumber", "License_Number");
         substitutions.AddSubstitution("Appointment", "Appointment", "Appointment");
         substitutions.AddSubstitution("Termination", "Termination", "Termination");
-        
+
         NavigationManager.NavigateTo(ExportDataGridUrl(LicenseGrid,
                 $"/export/AgencyLicenses/{Agency.Id}", format, substitutions),
             true);
@@ -607,6 +611,21 @@
 
     private async Task SaveBulkChanges()
     {
+        var options = new DialogOptions
+        {
+            Height = "200px",
+            Width = "400px",
+            Resizable = false,
+            CloseDialogOnEsc = true,
+            ShowClose = false,
+            Draggable = true
+        };
+        
+        var response = await DialogService.OpenAsync<AgencyLicensesBulkEditConfirmationDialog>("Confirm Bulk Edit", null, options);
+        
+        if ((bool?)response is null or false)
+            return;
+        
         await ShowLoading();
 
         IsLoading = true;

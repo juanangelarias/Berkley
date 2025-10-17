@@ -167,11 +167,12 @@
     {
         JamesThemeService.Initialize(NavigationManager);
 
-        _headerStyle = Env.IsDevelopment()
+        var isDevelopment = NavigationManager.Uri.Contains("localhost");
+        _headerStyle = isDevelopment
             ? OperatingSystem.IsBrowser()
-                ? "background-color: cornsilk;"
-                : "background-color: #e0e0e0;"
-            : "";
+                ? "height: 3.5rem; padding: 0.5rem; background-color: cornsilk;"
+                : "height: 3.5rem; padding: 0.5rem; background-color: #e0e0e0;"
+            : "height: 3.5rem; padding: 0.5rem;";
 
         notifications = new Notification[]{
             new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},

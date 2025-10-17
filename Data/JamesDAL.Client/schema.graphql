@@ -486,7 +486,6 @@ type Query {
   poaDocumentNames: [PowerOfAttorneyDocumentNameDm!]!
   allPoaStatuses: [PowerOfAttorneyStatusDm!]!
   agencyRelatedParties(agencyId: UUID!): [AgencyLocationsDto!]!
-  agencyTopParentId(agencyId: UUID!): UUID
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   idAgencyNumbers: [Agency!]!
   agentByAgentId(agentId: UUID!): Agent!

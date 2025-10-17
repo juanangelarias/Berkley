@@ -92,7 +92,7 @@
 
     private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem<List<Agency>>
     {
-        Key = $"RelatedParties{AgencyId}",
+        Key = $"AgencyLocations{AgencyId}",
         AsyncLoadTask = async () => _relatedPartiesResult = await DataAccess.GetAgencyRelatedParties(AgencyId),
         CacheLoadTask = cache => _relatedPartiesResult = new DataAccessResult<List<AgencyLocationsDto>>
         {
@@ -107,7 +107,7 @@
             _parentLocation = parentLocation == null
                 ? ""
                 : $"Parent: {parentLocation.Agency.AgencyNumber} - {parentLocation.Agency.IdNavigation.FullName}";
-        }
+        }, CacheDuration = new TimeSpan(0,0,0,0,10)
     }, "agency related parties");
 
     protected override async Task OnParametersSetAsync()

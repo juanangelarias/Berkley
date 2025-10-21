@@ -183,58 +183,6 @@ namespace James.Data.Server.GraphQL.Mutations
             }
         }
 
-        [Authorize]
-        public async Task<bool> SetUserSetting(string key, string? value, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared, [Service] ILoggingService loggingService)
-        {
-            var username = (await userShared.GetCurrentUser()).Username;
-            if (null == username)
-                throw new UnauthorizedAccessException("You must be logged in to set user settings.");
-            return await SetUserSetting(key, value, username, contextFactory, loggingService);
-        }
-
-        [Authorize]
-        public async Task<bool> SetDefaultUserSetting(string key, string? value, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            return await SetUserSetting(key, value, "Default", contextFactory, loggingService);
-        }
-
-        private async Task<bool> SetUserSetting(string key, string? value, string username, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            try
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-                //TODO:Change to UserSettings below when schema change is done
-                var existing = await ctx.UserPreferences.FirstOrDefaultAsync(up => up.Username == username && up.Key == key);
-                if (existing == null)
-                {
-                    if (value == null)
-                        return true;//Nothing to delete from DB
-                    //TODO:Change to UserSettings below when schema change is done
-                    ctx.UserPreferences.Add(new UserPreference { Username = username, Key = key, Value = value });
-                    await ctx.SaveChangesAsync();
-                }
-                else
-                {
-                    if (value == null)
-                    {
-                        //TODO:Change to UserSettings below when schema change is done
-                        ctx.UserPreferences.Remove(existing);
-                        await ctx.SaveChangesAsync();
-                        return true;
-                    }
-                    existing.Value = value;
-                    //TODO:Change to UserSettings below when schema change is done
-                    ctx.UserPreferences.Update(existing);
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                loggingService.LogException(ex, "Exception saving user setting to database", category: StandardLoggingCategories.DataAccess);
-                return false;
-            }
-        }
-
         //TODO: Restrict to people in the change permissions role
         [Authorize]
         public async Task<bool> AddPrincipalToSecurityRole(Guid principalId, string role,

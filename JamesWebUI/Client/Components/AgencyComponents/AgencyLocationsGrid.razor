@@ -1,22 +1,32 @@
-﻿@using James.Shared.Dto
+﻿@using Newtonsoft.Json
+@using James.Shared.Constants
+@using James.Shared.Dto
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
+@inject TooltipService TooltipService
 
 <Theme/>
 
-<RadzenDataGrid @ref="RelatedPartiesGrid" Data="RelatedParties" TItem="AgencyLocationsDto"
-                GridLines="DataGridGridLines.Vertical"
-                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed"
-                Density="Density.Compact"
-                Style="@style" IsLoading="@IsLoading" FilterMode="FilterMode.Advanced" AllowColumnResize="true"
-                CellRender="RenderGridCell">
+<RadzenDataGrid @ref="LocationsGrid" Data="RelatedParties" TItem="AgencyLocationsDto"
+                GridLines="DataGridGridLines.Vertical" @bind-Settings="@GridSettings" AllowColumnReorder="true"
+                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed" 
+                Density="Density.Compact" Style="@style" IsLoading="@IsLoading" FilterMode="FilterMode.Advanced" 
+                AllowColumnResize="true" CellRender="RenderGridCell">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Visible="@NotResumed"
                      Gap="2rem">
-            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="_defaultExportFormat"/>
             <RadzenText Text="@_parentLocation" TextStyle="TextStyle.Body2"/>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
+                <RadzenButton Icon="settings" Click="SaveGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                              Visible="@_userSettingsChanged"/>
+                <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                              Visible="@_userSettingsLoaded"/>
+            </RadzenStack>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -84,10 +94,33 @@
     [Parameter, EditorRequired] public required bool NotResumed { get; set; }
 
     private List<AgencyLocationsDto> RelatedParties { get; set; } = [];
-    private RadzenDataGrid<AgencyLocationsDto> RelatedPartiesGrid { get; set; } = null!;
+    private RadzenDataGrid<AgencyLocationsDto> LocationsGrid { get; set; } = null!;
     private string style = string.Empty;
     private string _parentLocation = string.Empty;
+    
+    #region Grid User Settings
 
+    private DataGridSettings? _dataGridSettings;
+    private DataGridSettings? GridSettings
+    {
+        get => _dataGridSettings;
+        set
+        {
+            if (_dataGridSettings == value)
+                return;
+
+            _dataGridSettings = value;
+            _userSettingsChanged = true;
+        }
+    }
+
+    private bool _userSettingsLoaded;
+    private bool _userSettingsChanged;
+
+    #endregion
+
+    private ExportFormat _defaultExportFormat;
+    
     private IDataAccessResult<List<AgencyLocationsDto>> _relatedPartiesResult = null!;
 
     private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem<List<Agency>>
@@ -119,6 +152,7 @@
             : "height: 225px; border-radius: 10px;";
 
         await ShowLoading();
+        await GetGridSettings();
         await LoadRelatedParties();
     }
 
@@ -130,15 +164,6 @@
         await ShowLoading();
 
         await DataAccess.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
-    }
-
-    protected async Task ShowLoading()
-    {
-        IsLoading = true;
-
-        await Task.Yield();
-
-        IsLoading = false;
     }
 
     private void ExportGrid(ExportFormat format)
@@ -154,7 +179,7 @@
         substitutions.AddSubstitution("Agency.MainAddress.PostalCode", "Agency.MainAddress.PostalCode", "Zip");
         substitutions.AddSubstitution("Agency.Status", "Agency.Status", "Status");
 
-        NavigationManager.NavigateTo(ExportDataGridUrl(RelatedPartiesGrid,
+        NavigationManager.NavigateTo(ExportDataGridUrl(LocationsGrid,
                 $"/export/AgencyRelatedParties/{AgencyId}", format, substitutions),
             true);
     }
@@ -169,6 +194,88 @@
         {
             args.Attributes.Add("style", "background-color: var(--rz-base-background-color);");
         }
+    }
+
+    #region Grid User Settings
+
+    private async Task SaveGridSettings()
+    {
+        await ShowLoading();
+        
+        var userGridSettings = new GridSettings
+        {
+            DefaultExportFormat = _defaultExportFormat,
+            Settings = GridSettings
+        };
+
+        var value = JsonConvert.SerializeObject(userGridSettings);
+        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyLocationGrid, value);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "user settings");
+            return;
+        }
+
+        _userSettingsLoaded = true;
+        _userSettingsChanged = false;
+        StateHasChanged();
+    }
+
+    private async Task GetGridSettings()
+    {
+        await ShowLoading();
+        
+        var response = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyLocationGrid);
+        if (!response.Success || response is { Success: true, Data: null })
+        {
+            if (!response.Success)
+                NotifyLoadError(response.Errors, "user settings");
+
+            _userSettingsLoaded = false;
+            return;
+        }
+
+        var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(response.Data!.Value);
+
+        if (userGridSettings == null)
+            return;
+
+        _defaultExportFormat = userGridSettings.DefaultExportFormat;
+        GridSettings = userGridSettings.Settings;
+        _userSettingsLoaded = true;
+        _userSettingsChanged = false;
+    }
+
+    private async Task ResetGridSettings()
+    {
+        await ShowLoading();
+        
+        GridSettings = null;
+        _defaultExportFormat = ExportFormat.Excel;
+        await LocationsGrid.ReloadSettings();
+
+        await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyLocationGrid);
+        _userSettingsLoaded = false;
+        _userSettingsChanged = false;
+    }
+
+    #endregion
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
     }
 
 }

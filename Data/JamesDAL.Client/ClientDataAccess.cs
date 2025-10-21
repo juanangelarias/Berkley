@@ -466,24 +466,7 @@ namespace James.Data.Client
             return await ExecuteGet<List<VImagingCategoryTabDivisionType>>(async () => await jamesClient.GetAllImagingCategoryTabDivisionTypes.ExecuteAsync(), "AllImagingCategoryTabDivisionType");
         }
 
-        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
-        {
-            var settingList =
-                await ExecuteGet<List<KeyValuePair<string, string>>>(
-                    async () => await jamesClient.GetUserSettings.ExecuteAsync(), "UserSettings");
-            return new DataAccessResult<Dictionary<string, string>>
-                { Data = settingList.Data?.ToDictionary(), Errors = settingList.Errors };
-        }
-
-        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
+        
 
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null)
         {
@@ -966,6 +949,60 @@ namespace James.Data.Client
                     IsActive = isActive
                 }), "SetAgencyLicense");
         }
+        
+        #region User Settings
+        
+        public async Task<IDataAccessResult<UserSetting?>> GetUserSetting(string key)
+        {
+            return await ExecuteGet<UserSetting?>(async () =>
+                await jamesClient.GetUserSetting.ExecuteAsync(key), "UserSetting");
+        }
+
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
+        {
+            var settingList =
+                await ExecuteGet<List<KeyValuePair<string, string>>>(
+                    async () => await jamesClient.GetAllUserSettings.ExecuteAsync(), "UserSettings");
+            return new DataAccessResult<Dictionary<string, string>>
+                { Data = settingList.Data?.ToDictionary(), Errors = settingList.Errors };
+        }
+
+        public async Task<ISaveDataResult> SetUserSetting(string key, string value)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.SetUserSetting.ExecuteAsync(new()
+                {
+                    Key = key,
+                    Value = value ?? ""
+                }), "SetUserSetting");
+        }
+
+        public async Task<ISaveDataResult> ResetUserSettings()
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.ResetUserSettings.ExecuteAsync(), "ResetUserSettings");
+        }
+
+        public async Task<ISaveDataResult> ResetUserSetting(string key)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.ResetUserSetting.ExecuteAsync(new()
+                {
+                    Key = key
+                }), "ResetUserSetting");
+        }
+
+        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.SetDefaultUserSetting.ExecuteAsync(new()
+                {
+                    Key = key,
+                    Value = value ?? ""
+                }), "SetDefaultUserSetting");
+        }
+
+        #endregion
 
         private static string ErrorToString(IClientError error)
         {

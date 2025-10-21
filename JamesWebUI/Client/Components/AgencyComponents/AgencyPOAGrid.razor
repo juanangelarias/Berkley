@@ -1,11 +1,14 @@
 ﻿@using ClientBusinessLogic
+@using James.Shared.Constants
 @using James.Shared.Imaging
+@using Newtonsoft.Json
 @using SharedBusinessLogic
 
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
+@inject TooltipService TooltipService
 
 <Theme/>
 
@@ -14,13 +17,22 @@
                 AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true" Density="Density.Compact"
                 RowCreate="@OnPoaCreate" RowUpdate="@UpdatePoaRow" EditMode="DataGridEditMode.Single"
                 IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
-                Filter="@ShowLoading" ColumnWidth="150px">
+                Filter="@ShowLoading" ColumnWidth="150px" @bind-Settings="@GridSettings"
+                AllowColumnReorder="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <AuthorizeView Policy="InRoleCanAddAgencyPOA">
                 <RadzenButton Icon="add" Text="New POA" Variant="Variant.Text" Click="@InsertPOARow"/>
             </AuthorizeView>
-            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="_defaultExportFormat"/>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
+                <RadzenButton Icon="settings" Click="SaveGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                              Visible="@_userSettingsChanged"/>
+                <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                              Visible="@_userSettingsLoaded"/>
+            </RadzenStack>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="poa">
@@ -166,6 +178,27 @@
     private List<Insurer> _insurerList = [];
     private List<string> _statusList = [];
     private ExportFormat _defaultExportFormat;
+    
+    #region Grid User Settings
+
+    private DataGridSettings? _dataGridSettings;
+    private DataGridSettings? GridSettings
+    {
+        get => _dataGridSettings;
+        set
+        {
+            if (_dataGridSettings == value)
+                return;
+
+            _dataGridSettings = value;
+            _userSettingsChanged = true;
+        }
+    }
+
+    private bool _userSettingsLoaded;
+    private bool _userSettingsChanged;
+
+    #endregion
 
     #region Loaders
 
@@ -243,6 +276,7 @@
 
         await ShowLoading();
 
+        await GetGridSettings();
         await LoadData();
     }
 
@@ -454,4 +488,87 @@
         _insurerFilter = list.Select(s => s).ToList();
         POAGrid.Reload();
     }
+    
+        #region Grid User Settings
+
+    private async Task SaveGridSettings()
+    {
+        await ShowLoading();
+        
+        var userGridSettings = new GridSettings
+        {
+            DefaultExportFormat = _defaultExportFormat,
+            Settings = GridSettings
+        };
+
+        var value = JsonConvert.SerializeObject(userGridSettings);
+        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyPoaGrid, value);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "user settings");
+            return;
+        }
+
+        _userSettingsLoaded = true;
+        _userSettingsChanged = false;
+        StateHasChanged();
+    }
+
+    private async Task GetGridSettings()
+    {
+        await ShowLoading();
+        
+        var response = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyPoaGrid);
+        if (!response.Success || response is { Success: true, Data: null })
+        {
+            if (!response.Success)
+                NotifyLoadError(response.Errors, "user settings");
+
+            _userSettingsLoaded = false;
+            return;
+        }
+
+        var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(response.Data!.Value);
+
+        if (userGridSettings == null)
+            return;
+
+        _defaultExportFormat = userGridSettings.DefaultExportFormat;
+        GridSettings = userGridSettings.Settings;
+        _userSettingsLoaded = true;
+        _userSettingsChanged = false;
+    }
+
+    private async Task ResetGridSettings()
+    {
+        await ShowLoading();
+        
+        GridSettings = null;
+        _defaultExportFormat = ExportFormat.Excel;
+        await POAGrid.ReloadSettings();
+
+        await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyPoaGrid);
+        _userSettingsLoaded = false;
+        _userSettingsChanged = false;
+    }
+
+    #endregion
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
+    }
+
 }

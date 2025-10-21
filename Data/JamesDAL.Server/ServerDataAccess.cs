@@ -14,7 +14,7 @@ namespace James.Data.Server
 {
     public class ServerDataAccess(IDbContextFactory<JamesDatabaseContext> contextFactory, Query query, 
         AccountMutation accountMutation, AgencyMutation agencyMutation, ObligeeMutation obligeeMutation, 
-        GeneralMutation generalMutation, ServerImagingAccess imagingAccess, 
+        GeneralMutation generalMutation, ServerImagingAccess imagingAccess, UserSettingsMutation userSettingsMutation,
         ITopicEventSender eventSender, ITopicEventReceiver eventReceiver, ILoggingService loggingService, 
         IHttpContextAccessor contextAccessor, IUserShared userShared, IBrowserStorageCache browserStorageCache) 
         : BaseDataAccess(browserStorageCache, loggingService), IDataAccess
@@ -520,21 +520,6 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAllImagingCategoryTabDivisionType(contextFactory));
         }
 
-        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
-        {
-            return await ExecuteGet(async () => new Dictionary<string, string>(await query.GetUserSettings(contextFactory, contextAccessor)));
-        }
-
-        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
-        {
-            return await ExecuteSave(async () => await generalMutation.SetUserSetting(key, value, contextFactory, userShared, loggingService));
-        }
-
-        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
-        {
-            return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService));
-        }
-
         public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
             ImagingDocumentCategory docCategory, Guid documentId)
         {
@@ -666,6 +651,47 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await ImagingSearchCriteria(id, docCategory, useDocCategoryAsCriteria));
         }
+        
+        #region User Settings
+        
+        public async Task<IDataAccessResult<UserSetting?>> GetUserSetting(string key)
+        {
+            return await ExecuteGet(async () => await query.GetUserSetting(key, contextFactory, contextAccessor));
+        }
+
+        public async Task<ISaveDataResult> SetUserSettings(string key, string value)
+        {
+            return await ExecuteSave(async () =>
+                await userSettingsMutation.SetUserSetting(key, value, contextFactory, contextAccessor));
+        }
+        
+        public async Task<ISaveDataResult> ResetUserSettings()
+        {
+            return await ExecuteSave(async () =>
+                await userSettingsMutation.ResetUserSettings(contextFactory, contextAccessor));
+        }
+        
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
+        {
+            return await ExecuteGet(async () => new Dictionary<string, string>(await query.GetAllUserSettings(contextFactory, contextAccessor)));
+        }
+
+        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async () => await userSettingsMutation.SetUserSetting(key, value, contextFactory, contextAccessor));
+        }
+
+        public async Task<ISaveDataResult> ResetUserSetting(string key)
+        {
+            return await ExecuteSave(async () => await userSettingsMutation.ResetUserSetting(key, contextFactory, contextAccessor));
+        }
+        
+        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async () => await userSettingsMutation.SetDefaultUserSetting(key, value, contextFactory));
+        }
+
+        #endregion
 
         private async Task<ImagingSearchCriteria> ImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true)

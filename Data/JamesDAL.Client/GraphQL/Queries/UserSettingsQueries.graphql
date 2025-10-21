@@ -1,0 +1,12 @@
+﻿query GetUserSetting($input: String!) {
+    userSetting(key: $input) {
+        value
+    }
+}
+
+query GetAllUserSettings {
+    allUserSettings {
+        key
+        value
+    }
+}

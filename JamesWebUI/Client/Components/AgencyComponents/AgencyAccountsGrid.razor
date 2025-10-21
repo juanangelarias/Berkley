@@ -1,33 +1,46 @@
-﻿@using James.Shared.Dto
+﻿@using Newtonsoft.Json
+@using James.Shared.Constants
+@using James.Shared.Dto
 @inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
+@inject TooltipService TooltipService;
 
-<Theme />
+<Theme/>
 
-
-<RadzenDataGrid TItem="AgencyAccountDto" @ref="@_agencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true" AllowSorting="true"
-                Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true" Density="Density.Compact"
-                AllowFiltering="true" FilterMode="FilterMode.Advanced" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                RowExpand="RowExpand" IsLoading="@IsLoading" AllowColumnReorder="true">
+<RadzenDataGrid TItem="AgencyAccountDto" @ref="@AgencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true"
+                AllowSorting="true" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true" 
+                Density="Density.Compact" AllowFiltering="true" FilterMode="FilterMode.Advanced" IsLoading="@IsLoading" 
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" RowExpand="RowExpand" 
+                @bind-Settings="@GridSettings" AllowColumnReorder="true">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+            <RadzenButton Icon="settings" Click="SaveGridSettings"
+                          MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                          Visible="@_userSettingsChanged"/>
+            <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                          MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                          Visible="@_userSettingsLoaded"/>
+        </RadzenStack>
+    </HeaderTemplate>
     <Template Context="account">
         <RadzenDataGrid Data="account.Bonds" TItem="AgencyAccountBondDto" Density="Density.Compact"
-                        Style="height: 400px; border-radius: 10px;" >
+                        Style="height: 400px; border-radius: 10px;">
             <Columns>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Status" Property="Status" MinWidth="80px" 
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Status" Property="Status" MinWidth="80px"
                                       TextAlign="TextAlign.Center" Resizable="true">
                     <Template Context="bond">
                         @if (bond.Status == "Active")
                         {
                             <RadzenIcon Icon="circle" Style="color: green;"/>
-                        } 
+                        }
                         else
                         {
                             <RadzenIcon Icon="circle" Style="color: red;"/>
                         }
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Bond No." Property="BondNumber" 
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Bond No." Property="BondNumber"
                                       MinWidth="100px" Resizable="true"/>
                 <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Account Name" Width="300px" Resizable="true">
                     <Template>
@@ -40,9 +53,9 @@
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Type" Property="BondType" MinWidth="110px"/>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Begin Date" Property="Effective" 
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Begin Date" Property="Effective"
                                       FormatString="{0:dd/MM/yyyy}" MinWidth="120px" Resizable="true"/>
-                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="End Date" Property="Expiration" 
+                <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="End Date" Property="Expiration"
                                       FormatString="{0:dd/MM/yyyy}" MinWidth="120px" Resizable="true"/>
             </Columns>
         </RadzenDataGrid>
@@ -114,9 +127,32 @@
     [Parameter] public required string AgencyNumber { get; set; }
 
     private List<AgencyAccountDto> _agencyAccounts = new();
-    private RadzenDataGrid<AgencyAccountDto> _agencyAccountGrid = null!;
-    
+    private RadzenDataGrid<AgencyAccountDto> AgencyAccountGrid { get; set; } = null!;
+
     private IDataAccessResult<List<AgencyAccountDto>> _accountResult = null!;
+
+    #region Grid User Settings
+
+    private DataGridSettings? _dataGridSettings;
+    private DataGridSettings? GridSettings
+    {
+        get => _dataGridSettings;
+        set
+        {
+            if (_dataGridSettings == value)
+                return;
+
+            _dataGridSettings = value;
+            _userSettingsChanged = true;
+        }
+    }
+
+    private bool _userSettingsLoaded;
+    private bool _userSettingsChanged;
+
+    #endregion
+    
+    private ExportFormat _defaultExportFormat;
 
     // ToDo: Once we resolve the problem of deserialization we need to remove the line
     //       >> CacheDuration = new (0, 0, 0, 0) <<
@@ -137,17 +173,16 @@
     {
         await base.OnInitializedAsync();
 
+        await GetGridSettings();
         await Task.Delay(100);
-
     }
-    
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
         await ShowLoading();
         await LoadAgencyAccounts();
-
     }
 
     private async Task LoadAgencyAccounts()
@@ -157,17 +192,100 @@
 
         await DataAccess.GetCacheOrLoadDataAsync(AccountLoad);
     }
-    
+
     private async Task RowExpand(AgencyAccountDto arg)
     {
-        if(arg.Bonds.Any())
+        if (arg.Bonds.Any())
             return;
-        
+
         var bondsResult = await DataAccess.GetAgencyAccountBonds(arg.AccountNum);
-        
+
         if (bondsResult.Success)
             arg.Bonds = bondsResult.Data!;
         else
             NotifyLoadError(bondsResult.Errors, "bonds", true);
     }
+
+    #region Grid User Settings
+
+    private async Task SaveGridSettings()
+    {
+        await ShowLoading();
+        
+        var userGridSettings = new GridSettings
+        {
+            DefaultExportFormat = _defaultExportFormat,
+            Settings = GridSettings
+        };
+
+        var value = JsonConvert.SerializeObject(userGridSettings);
+        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyAccountGrid, value);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "user settings");
+            return;
+        }
+
+        _userSettingsLoaded = true;
+        _userSettingsChanged = false;
+        StateHasChanged();
+    }
+
+    private async Task GetGridSettings()
+    {
+        await ShowLoading();
+        
+        var response = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyAccountGrid);
+        if (!response.Success || response is { Success: true, Data: null })
+        {
+            if (!response.Success)
+                NotifyLoadError(response.Errors, "user settings");
+
+            _userSettingsLoaded = false;
+            return;
+        }
+
+        var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(response.Data!.Value);
+
+        if (userGridSettings == null)
+            return;
+
+        _defaultExportFormat = userGridSettings.DefaultExportFormat;
+        GridSettings = userGridSettings.Settings;
+        _userSettingsLoaded = true;
+        _userSettingsChanged = false;
+    }
+
+    private async Task ResetGridSettings()
+    {
+        await ShowLoading();
+        
+        GridSettings = null;
+        _defaultExportFormat = ExportFormat.Excel;
+        await AgencyAccountGrid.ReloadSettings();
+
+        await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyAccountGrid);
+        _userSettingsLoaded = false;
+        _userSettingsChanged = false;
+    }
+
+    #endregion
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
+    }
+
 }

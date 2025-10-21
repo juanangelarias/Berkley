@@ -122,9 +122,4 @@ query GetAllCountries {
   }
 }
 
-query GetUserSettings {
-  userSettings {
-    key
-    value
-  }
-}
+

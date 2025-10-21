@@ -77,13 +77,13 @@ namespace JamesWebUI.Client.Services
                     _semaphore.Release();
                 }
             }
-            var userSettings = await GetUserSettings();
-            return userSettings;
+            var userSetting = await GetUserSettings();
+            return userSetting;
         }
         public async Task<string?> GetUserSettingAsync(string key, bool forceReload = false)
         {
-            var userSettings = await GetAllUserSettingsAsync(forceReload);
-            return userSettings.GetValueOrDefault(key);
+            var userSetting = await GetAllUserSettingsAsync(forceReload);
+            return userSetting.GetValueOrDefault(key);
         }
         public async Task<ISaveDataResult> SetUserSettingAsync(string key, string? value)
         {
@@ -96,6 +96,7 @@ namespace JamesWebUI.Client.Services
             }
             return await dataAccess.SetUserSetting(key, value);
         }
+        
         public async Task<ISaveDataResult> SetDefaultUserSettingAsync(string key, string? value)
         {
             return await dataAccess.SetDefaultUserSetting(key, value);

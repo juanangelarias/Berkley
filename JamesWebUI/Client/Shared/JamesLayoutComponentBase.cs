@@ -211,7 +211,6 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         return loadItem;
     }
 
-
     private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
         string.IsNullOrWhiteSpace(original)
             ? original

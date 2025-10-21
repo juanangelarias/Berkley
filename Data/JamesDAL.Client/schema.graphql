@@ -506,7 +506,6 @@ type Query {
   phoneTypes: [PhoneTypeDm!]!
   addressTypes: [AddressTypeDm!]!
   allCountries: [CountryDm!]!
-  userSettings: [KeyValuePairOfStringAndString!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -525,6 +524,8 @@ type Query {
   securityRoleMembers(role: String!): [SecurityRoleMember!]!
   allEmployees: [Employee!]!
   allStates: [State!]!
+  allUserSettings: [KeyValuePairOfStringAndString!]!
+  userSetting(key: String!): UserSetting
 }
 
 type AgencyCommission {
@@ -1196,8 +1197,6 @@ type Mutation {
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
   deletePhoneNumber(input: DeletePhoneNumberInput!): DeletePhoneNumberPayload!
-  setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
-  setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
   addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
   removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
   addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
@@ -1205,6 +1204,10 @@ type Mutation {
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
   createObligee(input: CreateObligeeInput!): CreateObligeePayload!
+  setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
+  resetUserSettings: ResetUserSettingsPayload!
+  resetUserSetting(input: ResetUserSettingInput!): ResetUserSettingPayload!
+  setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
 }
 
 type SetDefaultUserSettingPayload {
@@ -1598,6 +1601,15 @@ input AddSecurityRoleInput {
   ord: Int!
 }
 
+type UserSetting {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  username: String!
+  key: String!
+  value: String!
+}
+
 type ImagingChoice {
   displayValue: String!
   value: String!
@@ -1626,6 +1638,10 @@ type AgencyLicenseBulkInsertPayload {
 }
 
 type DeletePhoneNumberPayload {
+  boolean: Boolean
+}
+
+type ResetUserSettingsPayload {
   boolean: Boolean
 }
 
@@ -1936,6 +1952,10 @@ type AdditionalRelatedParty {
   comments: String
   accountNumNavigation: Account!
   idNavigation: LegalEntity!
+}
+
+type ResetUserSettingPayload {
+  boolean: Boolean
 }
 
 input SetUserSettingInput {
@@ -2780,6 +2800,10 @@ type AccountProgramStatusDm {
   accountProgramStatusHistoryNewStatusNavigations: [AccountProgramStatusHistory!]!
   accountProgramStatusHistoryOldStatusNavigations: [AccountProgramStatusHistory!]!
   accountPrograms: [AccountProgram!]!
+}
+
+input ResetUserSettingInput {
+  key: String!
 }
 
 type CreateAgencyPOADocumentLinkPayload {

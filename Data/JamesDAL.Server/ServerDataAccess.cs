@@ -136,7 +136,7 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAgencyRelatedParties(agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly)
+        public async Task<IDataAccessResult<List<AgencySearchDto>>> SearchAgencies(string? search, bool activeOnly)
         {
             return await ExecuteGet(async () => await query.SearchAgencies(search, activeOnly, contextFactory));
         }

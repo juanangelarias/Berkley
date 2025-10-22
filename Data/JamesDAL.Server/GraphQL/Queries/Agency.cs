@@ -14,38 +14,46 @@ namespace James.Data.Server.GraphQL.Queries
         /// <param name="contextFactory">database context</param>
         /// <returns>Matching agencies</returns>
         [Authorize]
-        public async Task<List<Agency>> SearchAgencies(string? stringToSearch, bool activeOnly,
+        public async Task<List<AgencySearchDto>> SearchAgencies(string? stringToSearch, bool activeOnly,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            if (!string.IsNullOrWhiteSpace(stringToSearch))
-            {
-                var likeString = $"%{stringToSearch}%";
-                //NOTE:This assumes that AgencyNumbers are always digits only
-                var byAgencyNum = stringToSearch.IsDigitsOnly()
-                    ? ctx.Agencies.Include(a => a.IdNavigation)
-                        .Include(a => a.IdNavigation.LegalEntityAddresses)
-                        .ThenInclude(a => a.Address)
-                        .Include(a => a.IdNavigation.LegalEntityEmails)
-                        .Where(a => EF.Functions.Like(a.AgencyNumber, likeString) &&
-                                    (activeOnly || a.Status == "Active")).ToListAsync()
-                    : Task.FromResult(new List<Agency>());
-                var ctx2 = await contextFactory.CreateDbContextAsync();
-                var byName = ctx2.Agencies.Include(a => a.IdNavigation)
-                    .Include(a => a.IdNavigation.LegalEntityAddresses)
-                    .ThenInclude(a => a.Address)
-                    .Include(a => a.IdNavigation.LegalEntityEmails)
-                    .Where(a => EF.Functions.Like(a.IdNavigation.FullName, likeString) &&
-                                (activeOnly || a.Status == "Active")).ToListAsync();
-                var results = await byAgencyNum;
-                var byNameResults = await byName;
-                results.AddRange(byNameResults);
-                return results;
-            }
+            if (string.IsNullOrWhiteSpace(stringToSearch))
+                return [];
 
-            //Allow this for testing, but shouldn't be allowed by UI
-            return await ctx.Agencies.Include(a => a.IdNavigation)
+            var likeString = $"%{stringToSearch}%";
+            var filter = stringToSearch.ToLower().Trim();
+
+            var agencies = await ctx.Agencies.Include(a => a.IdNavigation)
+                .Include(a => a.IdNavigation.LegalEntityAddresses)
+                .ThenInclude(a => a.Address)
+                .Include(a => a.IdNavigation.LegalEntityEmails)
+                .Where(a => !activeOnly || a.Status == "Active")
+                .Select(s => new AgencySearchDto
+                {
+                    Id = s.Id,
+                    AgencyNumber = s.AgencyNumber,
+                    AgencyName = s.IdNavigation.FullName,
+                    City = s.IdNavigation.LegalEntityAddresses
+                        .FirstOrDefault(f => f.Type == "Main")!
+                        .Address.City + ", " + s.IdNavigation.LegalEntityAddresses
+                        .FirstOrDefault(f => f.Type == "Main")!.Address.StateCode,
+                    Branch = s.Branch,
+                    Status = s.Status,
+                    ParentChild = s.Id == s.IdNavigation.Parent ? "P" : "C"
+                })
                 .ToListAsync();
+
+            var results = agencies
+                .Where(a => a.AgencyNumber.ToLower().Contains(filter) ||
+                            a.AgencyName.ToLower().Contains(filter) ||
+                            a.City.ToLower().Contains(filter) ||
+                            a.Branch.ToLower().Contains(filter))
+                .ToList();
+            
+            Console.WriteLine($"Agency Search Results: {results.Count}");
+            
+            return results;
         }
 
         [Authorize]

@@ -1,52 +1,77 @@
-﻿@using James.Shared
+﻿@using James.Shared.Dto
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
+@inject IDataAccess DataAccess
 
-
-@inject IDataAccess _dataAccess
-
-<RadzenStack Orientation="Orientation.Horizontal">
-    <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 100%;"
-                        ValueChanged="ResultSelected"
-                        Placeholder="Search..." Data="@SearchResults" LoadData="SearchAgency"
-                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
-        <Template Context="agency">
-            <RadzenStack Orientation="Orientation.Horizontal" Style="width:500px;">
-                <RadzenIcon Icon="person" />
-                <RadzenText Text="@agency.AgencyNumber" Style="width: 100px;" />
-                <RadzenText Text="@agency.IdNavigation.FullName" Style="width: 400px;" />
-            </RadzenStack>
-        </Template>
-    </RadzenAutoComplete>
-</RadzenStack>
-
+<RadzenColumn Size="12">
+    <RadzenDropDownDataGrid TValue="AgencySearchDto" Name="SearchDropDown" @bind-Value="@SelectedAgency" @ref="@SearchCtrl"
+                            Data="@SearchResults" AllowColumnResize="true" Style="width: 90%" FilterDelay="300"
+                            AllowFilteringByAllStringColumns="true" Placeholder="Select an Agency" FilterAsYouType="true"
+                            AllowFiltering="true" LoadData="@SearchAgency" FocusFilterOnPopup="false" PopupStyle="width: 100%;"
+                            TextProperty="@nameof(AgencySearchDto.AgencyName)">
+        <Columns>
+            <RadzenDropDownDataGridColumn Title="" Width="60px">
+                <Template>
+                    <RadzenIcon Icon="person"/>
+                </Template>
+            </RadzenDropDownDataGridColumn>
+            <RadzenDropDownDataGridColumn Title="Number" Width="125px" Property="@nameof(AgencySearchDto.AgencyNumber)"/>
+            <RadzenDropDownDataGridColumn Title="Name" Width="250px" Property="@nameof(AgencySearchDto.AgencyName)"/>
+            <RadzenDropDownDataGridColumn Title="City" Width="150px" Property="@nameof(AgencySearchDto.City)"/>
+            <RadzenDropDownDataGridColumn Title="Branch" Width="110px" Property="@nameof(AgencySearchDto.Branch)"/>
+            <RadzenDropDownDataGridColumn Title="Status" Width="110px" Property="@nameof(AgencySearchDto.Status)"/>
+            <RadzenDropDownDataGridColumn Title="Parent" Width="110px" Property="@nameof(AgencySearchDto.ParentChild)"/>
+        </Columns>
+    </RadzenDropDownDataGrid>
+</RadzenColumn>
 
 @code {
-    private List<Agency> SearchResults { get; set; } = new List<Agency>();
-    private Agency SelectedAgency { get; set; } = null!;
-    private RadzenAutoComplete autoComplete { get; set; } = null!;
+    private RadzenDropDownDataGrid<AgencySearchDto> SearchCtrl { get; set; } = null!;
+    private List<AgencySearchDto> SearchResults { get; set; } = [];
+    private AgencySearchDto? _selectedAgency;
+    private AgencySearchDto? SelectedAgency
+    {
+        get => _selectedAgency;
+        set
+        {
+            if (_selectedAgency != value)
+            {
+                _selectedAgency = value;
+                ResultSelected();
+            }
+        }
+    }
 
     private async Task SearchAgency(LoadDataArgs args)
     {
-        var result = await _dataAccess.SearchAgencies(args.Filter, false);
+        if(string.IsNullOrWhiteSpace(args.Filter))
+        {
+            SearchResults.Clear();
+            return;
+        }
+        
+        var result = await DataAccess.SearchAgencies(args.Filter, true);
 
         if (result.Errors.Any())
         {
-            //TODO: Error Handling
+            NotifyLoadError(result.Errors, "agency search");
         }
         else
         {
             SearchResults = result.Data!;
         }
     }
-    private async Task ResultSelected(dynamic args)
-    {
 
-        if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Agency))
-        {
-            NavigationManager.NavigateTo("/Agency/" + ((Agency)autoComplete.Value).AgencyNumber); 
-            autoComplete.Value = "";
-        }
+    private void ResultSelected()
+    {
+        if (SelectedAgency == null)
+            return;
+
+        var agencyNumber = SelectedAgency.AgencyNumber;
+        _selectedAgency = null;
+        SearchCtrl.Reset();
+        NavigationManager.NavigateTo($"/Agency/{agencyNumber}");
     }
+
 }

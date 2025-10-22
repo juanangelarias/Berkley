@@ -267,9 +267,9 @@ namespace James.Data.Client
                 async () => await jamesClient.GetAgencyRelatedParties.ExecuteAsync(agencyId), "AgencyRelatedParties");
         }
 
-        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly)
+        public async Task<IDataAccessResult<List<AgencySearchDto>>> SearchAgencies(string? search, bool activeOnly)
         {
-            return await ExecuteGet<List<Agency>>(
+            return await ExecuteGet<List<AgencySearchDto>>(
                 async () => await jamesClient.SearchAgencies.ExecuteAsync(search, activeOnly), "SearchAgencies");
         }
 

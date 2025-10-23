@@ -470,7 +470,7 @@ type Query {
   idAccountNumbers: [Account!]!
   searchAccountsByAccountNumber(accountNumberFragment: String! activeOnly: Boolean!): [Account!]!
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
-  searchAgencies(stringToSearch: String activeOnly: Boolean!): [Agency!]!
+  searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
   agencyById(agencyId: UUID!): Agency
   agencyAccounts(agencyNumber: String!): [AgencyAccountDto!]!
@@ -1116,6 +1116,16 @@ type InforceAccountLOA {
   accountNum: String!
   contractLOA: LineOfAuthorityLog
   commercialLOA: LineOfAuthorityLog
+}
+
+type AgencySearchDto {
+  id: UUID!
+  agencyNumber: String!
+  agencyName: String!
+  city: String!
+  branch: String!
+  status: String!
+  parentChild: String!
 }
 
 type CreateAgencyLicenseDocumentLinkPayload {

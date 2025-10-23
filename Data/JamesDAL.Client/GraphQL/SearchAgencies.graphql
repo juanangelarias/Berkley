@@ -1,27 +1,11 @@
 ﻿query SearchAgencies($searchString: String, $activeOnly: Boolean!) {
   searchAgencies(stringToSearch: $searchString, activeOnly: $activeOnly) {
-    agencyNumber
-    branch
-    status
-    idNavigation {
-      fullName
-      legalEntityAddresses {
-        type
-        address {
-          address1
-          address2
-          address3
-          city
-          stateCode
-          stateCodeNavigation {
-            countryCode
-            countryCodeNavigation {
-              name
-            }
-          }
-          postalCode
-        }
-      }
-    }
+      id
+      agencyNumber
+      agencyName
+      city
+      branch
+      parentChild
+      status
   }
 }

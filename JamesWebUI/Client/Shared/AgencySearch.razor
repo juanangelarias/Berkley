@@ -4,12 +4,19 @@
 @inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
 
+<style>
+    #popup-dropDownDataGrid {
+        width: 900px !important;
+        height: 500px !important;
+    }
+</style>
+
 <RadzenColumn Size="12">
     <RadzenDropDownDataGrid TValue="AgencySearchDto" Name="SearchDropDown" @bind-Value="@SelectedAgency" @ref="@SearchCtrl"
                             Data="@SearchResults" AllowColumnResize="true" Style="width: 90%" FilterDelay="300"
                             AllowFilteringByAllStringColumns="true" Placeholder="Select an Agency" FilterAsYouType="true"
-                            AllowFiltering="true" LoadData="@SearchAgency" FocusFilterOnPopup="false" PopupStyle="width: 100%;"
-                            TextProperty="@nameof(AgencySearchDto.AgencyName)">
+                            AllowFiltering="true" LoadData="@SearchAgency" FocusFilterOnPopup="false" 
+                            TextProperty="@nameof(AgencySearchDto.AgencyName)" id="dropDownDataGrid">
         <Columns>
             <RadzenDropDownDataGridColumn Title="" Width="60px">
                 <Template>

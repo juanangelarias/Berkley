@@ -51,8 +51,6 @@ namespace James.Data.Server.GraphQL.Queries
                             a.Branch.ToLower().Contains(filter))
                 .ToList();
             
-            Console.WriteLine($"Agency Search Results: {results.Count}");
-            
             return results;
         }
 

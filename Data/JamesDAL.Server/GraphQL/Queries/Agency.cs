@@ -210,7 +210,7 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<List<Bond>> GetAgencyBonds(Guid agencyId,
+        public async Task<List<Bond>> GetAgencyBonds(Guid agencyId, int skip, int take,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -219,8 +219,13 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(b => b.IdNavigation)
                 .Include(b => b.Obligee)
                 .Include(b => b.AccountNumNavigation)
-                .ThenInclude(b => b.IdNavigation)
+                .ThenInclude(i => i.AccountStatusLogs)
+                .Include(i => i.AccountNumNavigation.IdNavigation)
                 .Include(b => b.BondType)
+                .OrderBy(o => o.AgencyId)
+                .ThenBy(t => t.Effective)
+                .Skip(skip)
+                .Take(take)
                 .ToListAsync();
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");

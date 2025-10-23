@@ -79,7 +79,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes();
         public Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId);
         public Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId);
-        public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
+        public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
         public Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId);

@@ -1,4 +1,5 @@
-﻿@using James.Shared.Constants
+﻿@using James.Data.Client.GraphQL
+@using James.Shared.Constants
 @using Newtonsoft.Json
 @inherits JamesLayoutComponentBase
 
@@ -7,12 +8,16 @@
 
 <Theme/>
 
-<RadzenDataGrid TItem="Bond" @ref="@AgencyBondGrid" Data="@_agencyBonds" AllowGrouping="true" AllowSorting="true"
-                AllowColumnResize="true" AllowColumnPicking="true" Density="Density.Compact" Style="height: 400px; border-radius: 10px;"
+<RadzenDataGrid TItem="Bond" @ref="@AgencyBondGrid" Data="@_agencyBonds" LoadData="@LoadAgencyBonds"
+                AllowVirtualization="true" @bind-Settings="@GridSettings" AllowColumnReorder="true"
+                Density="Density.Compact" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
+                AllowColumnPicking="true">
+    
+    @*AllowGrouping="true" AllowSorting="true" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading" 
+                Sort="@ShowLoading"
                 GridLines="DataGridGridLines.Vertical" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" IsLoading="@IsLoading" Sort="@ShowLoading"
-                Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading" @bind-Settings="@GridSettings"
-                AllowColumnReorder="true">
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" IsLoading="@IsLoading"> *@
+
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
             <RadzenButton Icon="settings" Click="SaveGridSettings"
@@ -95,7 +100,9 @@
         <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
     </LoadingTemplate>
 </RadzenDataGrid>
-
+<RadzenRow>
+    <RadzenText Text="@_message"/>
+</RadzenRow>
 
 @code {
     [Parameter] public Guid AgencyId { get; set; }
@@ -105,6 +112,13 @@
     private List<string>? _statusFilter;
     private List<string>? _classFilter;
     private List<string>? _bondTypeFilter;
+    
+    private int _skip;
+    private int _take;
+    private int _count;
+    private string _lastFilter;
+    
+    private string _message = "";
     
     #region Grid User Settings
 
@@ -138,7 +152,7 @@
     private LoadItem AgencyBondsLoad => AddEventNotify(new LoadItem
     {
         Key = $"AgencyBondGrid{AgencyId}",
-        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId),
+        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId, _skip, _take),
         CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<Bond>>
         {
             Data = (List<Bond>)cache!
@@ -152,16 +166,32 @@
         await base.OnParametersSetAsync();
 
         await ShowLoading();
-
+        
         await GetGridSettings();
-        await LoadAgencyBonds();
     }
 
-    private async Task LoadAgencyBonds()
+    private async Task LoadAgencyBonds(LoadDataArgs args)
     {
         if (AgencyId == Guid.Empty)
             return;
 
+        if (!string.IsNullOrEmpty(args.Filter) && _lastFilter != args.Filter)
+        {
+            args.Skip = 0;
+        }
+        
+        _message = $"Skip: {args.Skip}, Top: {args.Top}\r\n";
+        _message += $"Filter 0: {args.Filter}";
+        var f = 0;
+        foreach (var filter in args.Filters)
+        {
+            f += 1;
+            _message += $"Filter {f}: {filter}";
+        }
+
+        _skip = args.Skip!.Value;
+        _take = args.Top!.Value;
+        
         await DataAccess.GetCacheOrLoadDataAsync(AgencyBondsLoad);
     }
 

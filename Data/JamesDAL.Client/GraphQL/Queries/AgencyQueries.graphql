@@ -87,15 +87,18 @@ query agencyAccountBonds($accountNum: String!) {
     }
 }
 
-query GetAgencyBonds($agencyId: UUID!) {
-  agencyBonds(agencyId: $agencyId) {
+query GetAgencyBonds($agencyId: UUID!, $skip: Int!, $take: Int!) {
+  agencyBonds(agencyId: $agencyId, skip: $skip, take: $take) {
     bondNumber
     accountNumNavigation{
       accountNum
       idNavigation{
         fullName
       }
-      
+        accountStatusLogs {
+            effective            
+            accountStatus            
+        }
     }
     effective
     expiration

@@ -149,8 +149,8 @@ namespace James.Data.Server.GraphQL.Queries
                     throw new UnauthorizedAccessException("Must be logged in to get user settings.");
                 var ctx = await contextFactory.CreateDbContextAsync();
                 var ctx2 = await contextFactory.CreateDbContextAsync();
-                var userSettingsTask = ctx.UserPreferences.Where(up => up.Username == username).Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
-                var defaultSettingsTask = ctx2.UserPreferences.Where(up => up.Username == "Default").Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
+                var userSettingsTask = ctx.UserSettings.Where(up => up.Username == username).Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
+                var defaultSettingsTask = ctx2.UserSettings.Where(up => up.Username == "Default").Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
                 Task[] parallelTasks = [userSettingsTask, defaultSettingsTask];
                 await Task.WhenAll(parallelTasks);
                 var settings = defaultSettingsTask.Result.ToDictionary();

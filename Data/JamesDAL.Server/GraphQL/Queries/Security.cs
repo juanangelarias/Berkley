@@ -86,6 +86,7 @@ namespace James.Data.Server.GraphQL.Queries
                     searcher.PropertiesToLoad.Add("initials");
                     searcher.PropertiesToLoad.Add("sn");
                     searcher.PropertiesToLoad.Add("proxyaddresses");
+                    searcher.PropertiesToLoad.Add("title");
 
                     foreach (SearchResult result in searcher.FindAll())
                         try
@@ -113,7 +114,8 @@ namespace James.Data.Server.GraphQL.Queries
                                     FullName = result.Properties["cn"][0].ToString()!,
                                     Emails = emails,
                                     Initials =
-                                        $"{result.Properties["givenName"]?[0].ToString()?[0]}{(initials.Length>0?initials[0]??"":"")}{result.Properties["sn"]?[0].ToString()?[0]}"
+                                        $"{result.Properties["givenName"]?[0].ToString()?[0]}{(initials.Length > 0 ? initials[0] ?? "" : "")}{result.Properties["sn"]?[0].ToString()?[0]}".ToUpperInvariant(),
+                                    Title = result.Properties["title"]?[0].ToString()??""
                                 };
                                 users.Add(siteUser);
                             }

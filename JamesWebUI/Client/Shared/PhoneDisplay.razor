@@ -7,14 +7,14 @@
     <RadzenStack Orientation="Orientation.Horizontal">
 
         <RadzenColumn Size="2">
-            <RadzenFormField Text="Country Code" AllowFloatingLabel="false" Variant="Variant.Text">
+            <JamesFormField Text="Country Code" AllowFloatingLabel="false" >
                 <RadzenTextBox Value="@PhoneNumberToDisplay.CountryCode" />
-            </RadzenFormField>
+            </JamesFormField>
         </RadzenColumn>
         <RadzenColumn Size="5">
-            <RadzenFormField Text="Phone Number" AllowFloatingLabel="false" Variant="Variant.Text">
+            <JamesFormField Text="Phone Number" AllowFloatingLabel="false" >
                 <RadzenMask Mask="(***) ***-****" CharacterPattern="[0-9]" Placeholder="(000) 000-0000" Value="@PhoneNumberToDisplay.MainNumber" />
-            </RadzenFormField>
+            </JamesFormField>
         </RadzenColumn>
         <RadzenColumn>
             <RadzenButton Icon="delete" Variant="Variant.Text" ButtonStyle="ButtonStyle.Success" Click="@DeletePhoneNumber" />
@@ -23,9 +23,9 @@
 </RadzenRow>
 <RadzenRow>
     <RadzenColumn Size="4">
-        <RadzenFormField Text="Extension" AllowFloatingLabel="false" Variant="Variant.Text">
+        <JamesFormField Text="Extension" AllowFloatingLabel="false" >
             <RadzenTextBox Value="@PhoneNumberToDisplay.Extension" />
-        </RadzenFormField>
+        </JamesFormField>
     </RadzenColumn>
 </RadzenRow>
 

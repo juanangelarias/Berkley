@@ -52,6 +52,19 @@ query GetActiveDirectoryUsers($usernameSearchText: String!) {
     fullName
     initials
     username
+    title
+  }
+}
+
+mutation SetEmployeeEmail($input: SetEmployeeEmailInput!) {
+  setEmployeeEmail(input:$input){
+    boolean
+  }
+}
+
+mutation CreateEmployee($input:CreateEmployeeInput!) {
+  createEmployee(input: $input){
+    boolean
   }
 }
 

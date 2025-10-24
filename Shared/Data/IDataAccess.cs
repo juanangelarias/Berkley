@@ -205,6 +205,11 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true);
         public Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText);
 
+        public Task<ISaveDataResult> CreateEmployee(string username, string fullName,
+                                                    string initials, string title, string email);
+
+        public Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email);
+
         public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames();
 
         public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,

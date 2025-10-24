@@ -1040,6 +1040,8 @@ type PotentialEmployeeActiveDirectoryInfo {
   fullName: String!
   emails: [String!]!
   initials: String!
+  title: String!
+  selectedEmail: String
 }
 
 type BondTypeDm {
@@ -1210,6 +1212,8 @@ type Mutation {
   removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
   addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
   setEmployeeIsActive(input: SetEmployeeIsActiveInput!): SetEmployeeIsActivePayload!
+  setEmployeeEmail(input: SetEmployeeEmailInput!): SetEmployeeEmailPayload!
+  createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1447,6 +1451,14 @@ input SetAgencyLicenseInput {
   isActive: Boolean!
 }
 
+input CreateEmployeeInput {
+  username: String!
+  fullName: String!
+  initials: String!
+  title: String!
+  email: String!
+}
+
 type JamesSearchResult {
   name: String!
   entity: LegalEntity!
@@ -1551,6 +1563,11 @@ type AccountStatusDm {
   accountStatus: String!
   active: Boolean!
   accountStatusLogs: [AccountStatusLog!]!
+}
+
+input SetEmployeeEmailInput {
+  employeeId: UUID!
+  email: String!
 }
 
 type EmailHistory {
@@ -2623,6 +2640,10 @@ type KeyPersonnel {
   familyName: String
 }
 
+type CreateEmployeePayload {
+  boolean: Boolean
+}
+
 type ImagingCategory {
   id: UUID!
   created: DateTime!
@@ -2962,6 +2983,10 @@ type State {
   countryCodeNavigation: CountryDm
   insurerStates: [InsurerState!]!
   surcharges: [Surcharge!]!
+}
+
+type SetEmployeeEmailPayload {
+  boolean: Boolean
 }
 
 input CreateAgencyStatusLogInput {

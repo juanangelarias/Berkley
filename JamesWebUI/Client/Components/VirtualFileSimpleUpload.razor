@@ -28,7 +28,7 @@
         </RadzenRow>
         <RadzenTemplateForm TItem="string" Data="currentDescription" Submit="@((args) =>StartUpload(args))">
             <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
-                <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:100%">
+                <JamesFormField Text="Name" AllowFloatingLabel="true" Style="width:100%">
                     <ChildContent>
                         <RadzenTextBox Name="tbDescription" @bind-Value=@currentDescription Style="width:100%" />
                     </ChildContent>
@@ -42,7 +42,7 @@
                                                Validator="@(()=>!ClientBusinessLogic.Validators.ValidateFileName(currentDescription)||
                                                                 SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(currentDescription))" />
                     </Helper>
-                </RadzenFormField>
+                </JamesFormField>
             </RadzenRow>
             <RadzenRow Visible="@(progress>0)">
                 <RadzenColumn Size="12">

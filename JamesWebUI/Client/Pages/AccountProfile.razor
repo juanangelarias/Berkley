@@ -38,31 +38,31 @@
                                 <RadzenColumn Size="12">
                                     <RadzenRow>
                                         <RadzenColumn Size="3">
-                                            <RadzenFormField Text="Agency No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
+                                            <JamesFormField Text="Agency No." AllowFloatingLabel="false" Style="width:90%">
                                                 <RadzenTextBox Value="@AccountToDisplay.AccountNum" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
+                                            </JamesFormField>
                                         </RadzenColumn>
                                         <RadzenColumn>
-                                            <RadzenFormField Text="Name" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
+                                            <JamesFormField Text="Name" AllowFloatingLabel="false" Style="width:90%">
                                                 <RadzenTextBox Value="@AccountToDisplay.IdNavigation.FullName" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
+                                            </JamesFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow>
                                         <RadzenColumn Size="3">
-                                            <RadzenFormField Text="Parent No." Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
+                                            <JamesFormField Text="Parent No." AllowFloatingLabel="false" Style="width:90%">
                                                 <RadzenTextBox Value="@AccountToDisplay.IdNavigation.ParentNavigation?.AccountIdNavigation?.AccountNum" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
+                                            </JamesFormField>
                                         </RadzenColumn>
                                         <RadzenColumn>
-                                            <RadzenFormField Text="Parent" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
+                                            <JamesFormField Text="Parent" AllowFloatingLabel="false" Style="width:90%">
                                                 <RadzenTextBox Value="@AccountToDisplay.IdNavigation.ParentNavigation?.FullName" Disabled="true" Style="color: black;" />
-                                            </RadzenFormField>
+                                            </JamesFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow>
                                         <RadzenColumn>
-                                            <RadzenFormField Text="Tax ID" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
+                                            <JamesFormField Text="Tax ID" AllowFloatingLabel="false" Style="width:90%">
                                                 <ChildContent>
                                                     @* TODO: Once encryption is figured out replace these values *@
                                                     <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" Visible="ShowTaxId" />
@@ -72,26 +72,26 @@
                                                     @* TODO: Add authorization to use this button due to PII. *@
                                                     <RadzenButton Icon="@(ShowTaxId ? "visibility" : "visibility_off")" Click="@(() => ShowTaxId = !ShowTaxId)" Variant="Variant.Text" Size="ButtonSize.Small" />
                                                 </End>
-                                            </RadzenFormField>
+                                            </JamesFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow>
                                         <RadzenColumn Size="6">
-                                            <RadzenFormField Text="UW" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
+                                            <JamesFormField Text="UW" AllowFloatingLabel="false" Style="width:90%">
                                                 <RadzenTextBox Value="@AccountToDisplay.Underwriter?.IdNavigation.FullName" />
-                                            </RadzenFormField>
+                                            </JamesFormField>
                                         </RadzenColumn>
                                         <RadzenColumn Size="6">
-                                            <RadzenFormField Text="Branch" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%">
+                                            <JamesFormField Text="Branch" AllowFloatingLabel="false" Style="width:90%">
                                                 <RadzenTextBox Value="@AccountToDisplay.Branch" />
-                                            </RadzenFormField>
+                                            </JamesFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
                                     <RadzenRow>
                                         <RadzenColumn Size="6">
-                                            <RadzenFormField Text="Division" Variant="Variant.Text" AllowFloatingLabel="false" Style="width:90%;">
+                                            <JamesFormField Text="Division" AllowFloatingLabel="false" Style="width:90%;">
                                                 <RadzenTextBox Value="@AccountToDisplay.Division" />
-                                            </RadzenFormField>
+                                            </JamesFormField>
                                         </RadzenColumn>
                                     </RadzenRow>
                                 </RadzenColumn>

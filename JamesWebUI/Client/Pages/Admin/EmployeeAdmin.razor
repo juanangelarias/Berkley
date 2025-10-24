@@ -12,12 +12,12 @@
     <RadzenColumn Size="4">
         <RadzenDataGrid @ref=@_employeeGrid TItem="Employee" GridLines="DataGridGridLines.Vertical"
                         SelectionMode="DataGridSelectionMode.Single" Density="Density.Compact"
-                        @bind-Value=@_selectedEmployees
+                        Value=@_selectedEmployees
                         PageSize="15" AllowPaging="true"
-                        Data="@_employees">
+                        Data="@_employees" ValueChanged="UserSelectedChanged">
             <HeaderTemplate>
                 <RadzenRow>
-                    <AuthorizeView Policy="InRoleAddEmployee">
+                    <AuthorizeView Policy="InRoleAddUser">
                         <RadzenColumn Size="6">
                             <RadzenButton Icon="add" Text="Add Employee" Variant="Variant.Text" Size="ButtonSize.Small"
                                           Click="@AddEmployee" />
@@ -46,26 +46,26 @@
                         <Tabs>
                             <RadzenTabsItem Text="Employee">
                                 <RadzenStack>
-                                    <RadzenFormField Text="Active Directory Account" Variant="Variant.Text">
+                                    <JamesFormField Text="Active Directory Account" >
                                         <ChildContent>
                                             <RadzenText Text="@_selectedEmployees[0].ActiveDirectoryAccount" />
                                         </ChildContent>
-                                    </RadzenFormField>
-                                    <RadzenFormField Text="Initials" Variant="Variant.Text">
+                                    </JamesFormField>
+                                    <JamesFormField Text="Initials" >
                                         <ChildContent><RadzenText Text="@_selectedEmployees[0].Initials" /></ChildContent>
-                                    </RadzenFormField>
-                                    <RadzenFormField Text="Email" Variant="Variant.Text">
+                                    </JamesFormField>
+                                    <JamesFormField Text="Email" >
                                         <ChildContent>
-                                            <RadzenDropDown @bind-Value=@_selectedEmployees[0].Email Data=@SelectedEmployeeEmailOptions />
+                                            <RadzenDropDown @onfocusout="Callback" @bind-Value=@SelectedEmployeeEmail Data=@SelectedEmployeeEmailOptions />
                                         </ChildContent>
-                                    </RadzenFormField>
-                                    <RadzenFormField Text="Primary Branch" Variant="Variant.Text">
+                                    </JamesFormField>
+                                    <JamesFormField Text="Primary Branch" >
                                         <ChildContent>
                                             <RadzenDropDown TValue="Branch" bind-Value=@_selectedEmployees[0].PrimaryBranchId
                                                             Data=@AllBranches TextProperty="@nameof(Branch.Name)"
                                                             ValueProperty="@nameof(Branch.Id)" />
                                         </ChildContent>
-                                    </RadzenFormField>
+                                    </JamesFormField>
                                     <RadzenToggleButton @bind-Value=@_selectedEmployees[0].HomeOfficeApprover
                                                         ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Dark"
                                                         Text="Home Office Approver" />
@@ -81,7 +81,7 @@
                                         <text> </text>
                                         <br />
                                         <hr />
-                                        <RadzenText TextStyle="TextStyle.H6" Text="Underwriter Info"/>
+                                        <RadzenText TextStyle="TextStyle.H6" Text="Underwriter Info" />
                                         <RadzenToggleButton @bind-Value=@_selectedEmployees[0].UnderwriterIdNavigation!.DropDownList
                                                             ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Dark"
                                                             Text="Active as underwriter" MouseEnter="@(er=>ShowActiveUnderwriterTooltip(er))" />
@@ -107,7 +107,11 @@
     private bool _activeOnly = true; //Should this be a user preference that persists?
     private async Task AddEmployee()
     {
-        throw new NotImplementedException();
+        var result = await DialogService.OpenAsync<AddEmployee>("Add Employee");
+        //TODO: If no Employees were added, skip the below
+        DataAccess.Clear("emp");
+        DataAccess.Clear("empAll");
+        await DataAccess.GetCacheOrLoadDataAsync(EmployeesLoadItem(_activeOnly));
     }
 
     List<Employee> _employees = [];
@@ -142,13 +146,46 @@
             AfterLoad = () =>
             {
                 Debug.Assert(_branchesResult.Data != null);
-                AllBranches = new List<Branch>(_branchesResult.Data.Count + 1) { new() {BranchKey = "None", Name = "No primary branch" } };
+                AllBranches = new List<Branch>(_branchesResult.Data.Count + 1) { new() { BranchKey = "None", Name = "No primary branch" } };
                 AllBranches.AddRange(_branchesResult.Data.OrderBy(b => b.Name).ToList());
             }
         }, "branches");
 
-    //TODO:Pull all options from active directory
-    private List<string> SelectedEmployeeEmailOptions => [_selectedEmployees[0].Email ?? ""];
+    private IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>> _adUsersResult = null!;
+    private LoadItem<List<PotentialEmployeeActiveDirectoryInfo>> AdUsersLoadItem(string usernameSearchText) =>
+        (LoadItem<List<PotentialEmployeeActiveDirectoryInfo>>)
+        AddEventNotify(new LoadItem<List<PotentialEmployeeActiveDirectoryInfo>>
+        {
+            Key = $"adUsers{usernameSearchText}",
+            AsyncLoadTask = async () => _adUsersResult = await DataAccess.GetActiveDirectoryUsers(usernameSearchText),
+            CacheLoadTask = cache => _adUsersResult = new DataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>> { Data = (List<PotentialEmployeeActiveDirectoryInfo>)cache! },
+            ResultVariable = () => _adUsersResult,
+            AfterLoad = () =>
+            {
+                Debug.Assert(_adUsersResult.Data != null);
+
+                foreach (var adInfo in _adUsersResult.Data)
+                    _userEmailOptions[adInfo.Username] = adInfo.Emails;
+                //Cause drop-down to reload
+                StateHasChanged();
+            }
+        }, "active directory users");
+
+    private List<string> SelectedEmployeeEmailOptions
+    {
+        get
+        {
+            if (_selectedEmployees.Any())
+            {
+                if (_userEmailOptions.ContainsKey(_selectedEmployees[0].ActiveDirectoryAccount))
+                    return _userEmailOptions[_selectedEmployees[0].ActiveDirectoryAccount];
+                //Lookup options from ActiveDirectory
+                Task.Factory.StartNew(() => DataAccess.GetCacheOrLoadDataAsync(AdUsersLoadItem(_selectedEmployees[0].ActiveDirectoryAccount)));
+            }
+            return [_selectedEmployees[0].Email ?? "", "Loading..."];
+        }
+    }
+
     private string _selectedEmployeeEmail = "";
 
     private string SelectedEmployeeEmail
@@ -156,19 +193,14 @@
         get
         {
             if (string.IsNullOrWhiteSpace(_selectedEmployeeEmail))
+                //Needs to reset when selected employee changes
                 _selectedEmployeeEmail = _selectedEmployees[0].Email ?? "";
             return _selectedEmployeeEmail;
         }
-        set
-        {
-            if (value != _selectedEmployeeEmail)
-            {
-                //TODO:Save new email here
-                _selectedEmployeeEmail = value;
-            }
-        }
+        set => _selectedEmployeeEmail = value;
     }
 
+    private readonly Dictionary<string, List<string>> _userEmailOptions = [];
 
     protected override async Task OnInitializedAsync()
     {
@@ -227,13 +259,37 @@
 
     private async Task ShowActiveUnderwriterTooltip(ElementReference er)
     {
-        // TooltipService.Open(er, "Active Underwriters show up in drop down lists when selecting an underwriter.  Setting inactive does not remove the underwriter from any items they are associate with.");
-        TooltipService.Open(er, ds=> 
+        TooltipService.Open(er, _ =>
             @<div style="max-width:700px;">
-                Active Underwriters show up in drop down lists when selecting an underwriter.
-                <br/>
-                Setting inactive does not remove the underwriter from any items they are associate with.
-            </div>);
+    Active Underwriters show up in drop down lists when selecting an underwriter.
+    <br />
+    Setting inactive does not remove the underwriter from any items they are associate with.
+</div>
+    );
+    }
+
+    private void UserSelectedChanged(IList<Employee> selectedEmployees)
+    {
+        _selectedEmployees = selectedEmployees;
+        //Clear employee email so dropdown will reload for new user
+        _selectedEmployeeEmail = "";
+        //Force email options to reload
+        _ = SelectedEmployeeEmailOptions;
+        StateHasChanged();
+    }
+
+    private async Task Callback()
+    {
+        if (_selectedEmployeeEmail != (_selectedEmployees[0].Email ?? ""))
+        {
+            var result = await DataAccess.SetEmployeeEmail(_selectedEmployees[0].Id, _selectedEmployeeEmail);
+            if (result.Success)
+            {
+                NotifySuccessfulSave("Email");
+                _selectedEmployees[0].Email = _selectedEmployeeEmail;
+            }
+            else NotifySaveError(result.Errors, "email");
+        }
     }
 
 }

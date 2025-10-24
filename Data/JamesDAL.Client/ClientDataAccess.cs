@@ -620,8 +620,31 @@ namespace James.Data.Client
         {
             var result = await ExecuteGet < List<PotentialEmployeeActiveDirectoryInfo>>(
                 async () => await jamesClient.GetActiveDirectoryUsers.ExecuteAsync(usernameSearchText),
-                "activeDirectoryUsers");
+                "ActiveDirectoryUsers");
             return result;
+        }
+
+        public async Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials, string title, string email)
+        {
+            return await ExecuteSave(async () => await jamesClient.CreateEmployee.ExecuteAsync(
+                new CreateEmployeeInput
+                {
+                    Username = username, 
+                    FullName = fullName, 
+                    Initials = initials, 
+                    Title = title, 
+                    Email = email
+                }));
+        }
+
+        public async Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetEmployeeEmail.ExecuteAsync(
+                new SetEmployeeEmailInput
+                {
+                   EmployeeId = employeeId, 
+                   Email = email
+                }));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()

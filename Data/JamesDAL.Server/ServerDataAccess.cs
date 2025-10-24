@@ -583,6 +583,18 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetActiveDirectoryUsers(usernameSearchText));
         }
 
+        public async Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials, string title, string email)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.CreateEmployee(username, fullName, initials, title, email, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.SetEmployeeEmail(employeeId, email, contextFactory));
+        }
+
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()
         {
             return await ExecuteGet(async () => await query.GetPOADocumentNames(contextFactory));

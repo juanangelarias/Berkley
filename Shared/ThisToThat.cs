@@ -17,7 +17,7 @@ namespace James.Shared
             }
             catch (InvalidCastException icex)
             {
-                LoggingService?.LogException(icex, $"Invalid Cast in ThisToThat", category:StandardLoggingCategories.DataAccess, data: new Dictionary<string, string>{{"sourceType", source?.GetType().Name ?? "null"}, {"destType" ,typeof(TDest).Name}});
+                LoggingService?.LogException(icex, $"Invalid Cast in ThisToThat", category: StandardLoggingCategories.DataAccess, data: new Dictionary<string, string> { { "sourceType", source?.GetType().Name ?? "null" }, { "destType", typeof(TDest).Name } });
                 throw;
             }
         }
@@ -28,7 +28,7 @@ namespace James.Shared
         {
             if (null == source)
                 return null!;
-            if (destinationType.GetInterfaces().Contains(typeof(IEnumerable)))
+            if (typeof(string) != destinationType && destinationType.GetInterfaces().Contains(typeof(IEnumerable)))
             {
                 return CopyIEnumerable((IEnumerable)source, destinationType);
             }
@@ -50,6 +50,9 @@ namespace James.Shared
                         //The simplest case:  Scalar to scalar
                         propMatch.dProp.SetValue(result, propMatch.sProp.GetValue(source));
                     }
+                    else if (propMatch.dProp.PropertyType == typeof(string))
+                        //Simply cast source to string
+                        propMatch.dProp.SetValue(result, propMatch.sProp.GetValue(source)?.ToString());
                     else if (propMatch.sProp.PropertyType.GetInterfaces().Contains(typeof(IEnumerable)))
                     {
 
@@ -58,9 +61,6 @@ namespace James.Shared
                         if (sList != null!)
                             propMatch.dProp.SetValue(result, CopyIEnumerable(sList, destEnumerableType));
                     }
-                    else if(propMatch.dProp.PropertyType == typeof(string))
-                        //Simply cast source to string
-                        propMatch.dProp.SetValue(result, propMatch.sProp.GetValue(source)?.ToString());
                     else if (propMatch.dProp.PropertyType.IsClass)
                     {
                         //Object to Object: Try to convert recursively
@@ -96,7 +96,7 @@ namespace James.Shared
                             propMatch.dProp.SetValue(result, dateOnlyProperty);
                         }
                     }
-                    else if(propMatch.sProp.PropertyType.IsEnum && propMatch.dProp.PropertyType.IsEnum )
+                    else if (propMatch.sProp.PropertyType.IsEnum && propMatch.dProp.PropertyType.IsEnum)
                     {
                         var enumText = Enum.GetName(propMatch.sProp.PropertyType, propMatch.sProp.GetValue(source)!);
                         var destVal = Enum.Parse(propMatch.dProp.PropertyType, enumText!, true);
@@ -127,6 +127,10 @@ namespace James.Shared
         {
             //HACK: Will fail on multi-argument generic list.  I don't believe they will be encountered in these conversions.
             if (null! == source) return null!;
+            if (destType == typeof(string))
+            {
+                return source!.ToString()!;
+            }
             //Confirm destination type is a generic IEnumerable and cache the result to avoid reflection hit.
             //TODO:Performance test this
             if (!_validIEnumerableTypes.Contains(destType))
@@ -137,7 +141,9 @@ namespace James.Shared
             }
 
             var dListType = destType.GenericTypeArguments.Single();
-            var list = (from object? item in source select ToEntityType(item, dListType)).ToList();
+            var list = (from object? item 
+                        in source 
+                        select dListType == typeof(string) ? item : ToEntityType(item, dListType)).ToList();
 
             IEnumerable? MakeConcreteList(Type type)
             {

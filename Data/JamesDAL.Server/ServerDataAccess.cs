@@ -573,9 +573,26 @@ namespace James.Data.Server
             return await ExecuteSave(async()=> await generalMutation.AddSecurityRole(role.Role, role.Description!, role.Ord, contextFactory, loggingService));
         }
 
-        public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
+        public async Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true)
         {
-            return await ExecuteGet(async()=> await query.GetAllEmployees(contextFactory));
+            return await ExecuteGet(async()=> await query.GetEmployees(activeOnly, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText)
+        {
+            return await ExecuteGet(async () => await query.GetActiveDirectoryUsers(usernameSearchText));
+        }
+
+        public async Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials, string title, string email)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.CreateEmployee(username, fullName, initials, title, email, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.SetEmployeeEmail(employeeId, email, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()

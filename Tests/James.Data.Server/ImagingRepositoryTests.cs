@@ -146,7 +146,7 @@ namespace James.Data.Server.Test
         {
             var scsb = new SqlConnectionStringBuilder
             {
-                DataSource = "usilg01-dwd057",
+                DataSource = "usilg01-dwd217",
                 InitialCatalog = "JamesDev",
                 TrustServerCertificate = true,
                 MultipleActiveResultSets = true,

@@ -310,6 +310,11 @@ type CreateLicensePayload {
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
+input SetEmployeeIsActiveInput {
+  employeeId: UUID!
+  isActive: Boolean!
+}
+
 type Agency {
   id: UUID!
   created: DateTime!
@@ -518,7 +523,8 @@ type Query {
   allSecurityRoles: [SecurityRole!]!
   securityRolesByUser(principalId: UUID!): [SecurityRole!]!
   securityRoleMembers(role: String!): [SecurityRoleMember!]!
-  allEmployees: [Employee!]!
+  employees(activeOnly: Boolean!): [Employee!]!
+  activeDirectoryUsers(searchText: String!): [PotentialEmployeeActiveDirectoryInfo!]!
   allStates: [State!]!
 }
 
@@ -1029,6 +1035,15 @@ input CreateAgencyInput {
   billingPostalCode: String!
 }
 
+type PotentialEmployeeActiveDirectoryInfo {
+  username: String!
+  fullName: String!
+  emails: [String!]!
+  initials: String!
+  title: String!
+  selectedEmail: String
+}
+
 type BondTypeDm {
   id: UUID!
   created: DateTime!
@@ -1196,6 +1211,9 @@ type Mutation {
   addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
   removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
   addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
+  setEmployeeIsActive(input: SetEmployeeIsActiveInput!): SetEmployeeIsActivePayload!
+  setEmployeeEmail(input: SetEmployeeEmailInput!): SetEmployeeEmailPayload!
+  createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1433,6 +1451,14 @@ input SetAgencyLicenseInput {
   isActive: Boolean!
 }
 
+input CreateEmployeeInput {
+  username: String!
+  fullName: String!
+  initials: String!
+  title: String!
+  email: String!
+}
+
 type JamesSearchResult {
   name: String!
   entity: LegalEntity!
@@ -1539,6 +1565,11 @@ type AccountStatusDm {
   accountStatusLogs: [AccountStatusLog!]!
 }
 
+input SetEmployeeEmailInput {
+  employeeId: UUID!
+  email: String!
+}
+
 type EmailHistory {
   id: UUID!
   created: DateTime!
@@ -1630,6 +1661,10 @@ type NotebookEntryTypeDm {
   modified: DateTime!
   type: String!
   notebookEntries: [NotebookEntry!]!
+}
+
+type SetEmployeeIsActivePayload {
+  boolean: Boolean
 }
 
 type LineOfBusinessDm {
@@ -2605,6 +2640,10 @@ type KeyPersonnel {
   familyName: String
 }
 
+type CreateEmployeePayload {
+  boolean: Boolean
+}
+
 type ImagingCategory {
   id: UUID!
   created: DateTime!
@@ -2944,6 +2983,10 @@ type State {
   countryCodeNavigation: CountryDm
   insurerStates: [InsurerState!]!
   surcharges: [Surcharge!]!
+}
+
+type SetEmployeeEmailPayload {
+  boolean: Boolean
 }
 
 input CreateAgencyStatusLogInput {

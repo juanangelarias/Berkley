@@ -1,0 +1,113 @@
+﻿@using System.Diagnostics
+@inherits JamesLayoutComponentBase
+@attribute [Authorize(Policy = "InRoleAddUser")]
+
+@inject IDataAccess DataAccess
+<RadzenStack>
+    <RadzenSteps CanChange="CanChangeSteps">
+        <Steps>
+            <RadzenStepsItem Text="Active Directory Lookup">
+                <RadzenStack>
+                    <RadzenText>Enter new employees Active Directory Username</RadzenText>
+                    <RadzenRow>
+                        <RadzenColumn Size="9">
+                            <RadzenTextBox Immediate="true" @bind-Value=@_searchText
+                                                                                      @oninput="SearchTextChanged"/>
+                        </RadzenColumn>
+                        <RadzenColumn Size="3">
+                            <RadzenButton Text="Lookup" 
+                                          Disabled="@(_searchText.Length<3)"
+                                          Click="LookupInActiveDirectory" />
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenText Visible="@_loading">Loading data from Active Directory . . .</RadzenText>
+                    <RadzenDataGrid TItem="PotentialEmployeeActiveDirectoryInfo" 
+                                    Data="@_adUsers" SelectionMode="DataGridSelectionMode.Single"
+                                    @bind-Value=@_selectedUsers>
+                        <Columns>
+                            <RadzenDataGridColumn Property="Username" Title="Username" />
+                            <RadzenDataGridColumn Property="FullName" Title="Name" />
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenStack>
+            </RadzenStepsItem>
+            <RadzenStepsItem Text="Employee Detail">
+                <RadzenStack>
+                    <JamesFormField Text="Initials">
+                        <RadzenTextBox @bind-Value=@SelectedUser!.Initials />
+                    </JamesFormField>
+                    <JamesFormField Text="Username">
+                        <RadzenText Text=@SelectedUser!.Username/>
+                    </JamesFormField>
+                    <JamesFormField Text="Full Name">
+                        <RadzenText Text=@SelectedUser!.FullName />
+                    </JamesFormField>
+                    <JamesFormField Text="Email">
+                        <RadzenDropDown TValue="string"
+                                        Data=@SelectedUser!.Emails
+                                        Value="@SelectedUser!.SelectedEmail"/>
+                    </JamesFormField>
+                    <JamesFormField Text="Title">
+                        <RadzenTextBox @bind-Value=@SelectedUser!.Title />
+                    </JamesFormField>
+                    <RadzenButton Text="Create New Employee"
+                                  Click="CreateNewUser"/>
+                </RadzenStack>
+            </RadzenStepsItem>
+        </Steps>
+    </RadzenSteps>
+</RadzenStack>
+@code {
+    string _searchText = "";
+    string _prevSearchText = "";
+    IList<PotentialEmployeeActiveDirectoryInfo> _selectedUsers = [];
+    bool _loading;
+
+    PotentialEmployeeActiveDirectoryInfo? SelectedUser => _selectedUsers.FirstOrDefault();
+    List<PotentialEmployeeActiveDirectoryInfo> _adUsers = [];
+    PotentialEmployeeActiveDirectoryInfo? _selectedAdUser;
+    RadzenAutoComplete _adUsersAutoComplete;
+    private IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>> _adUsersResult = null!;
+    private LoadItem<List<PotentialEmployeeActiveDirectoryInfo>> AdUsersLoadItem(string usernameSearchText) =>
+        (LoadItem<List<PotentialEmployeeActiveDirectoryInfo>>)
+        AddEventNotify(new LoadItem<List<PotentialEmployeeActiveDirectoryInfo>>
+        {
+            Key = $"adUsers{usernameSearchText}",
+            AsyncLoadTask = async () => _adUsersResult = await DataAccess.GetActiveDirectoryUsers(usernameSearchText),
+            CacheLoadTask = cache => _adUsersResult = new DataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>> { Data = (List<PotentialEmployeeActiveDirectoryInfo>)cache! },
+            ResultVariable = () => _adUsersResult,
+            AfterLoad = () =>
+            {
+                Debug.Assert(_adUsersResult.Data != null);
+                _prevSearchText = usernameSearchText;
+                _adUsers = _adUsersResult.Data;
+                _loading = false;
+            }
+        }, "active directory users");
+
+    private async Task LookupInActiveDirectory()
+    {
+        //Get list from AD
+        await DataAccess.GetCacheOrLoadDataAsync(AdUsersLoadItem(_searchText));
+    }
+
+    private void SearchTextChanged(ChangeEventArgs obj)
+    {
+        //Update on each keypress so that the Lookup button enables 
+        //  when the user enters 3 characters or more.
+        _searchText = obj.Value?.ToString()??"";
+    }
+
+    private void CanChangeSteps(StepsCanChangeEventArgs args)
+    {
+        if (args.SelectedIndex==0 && _selectedUsers.Count== 0)
+            //Must select a user in order to continue
+            args.PreventDefault();
+    }
+
+    private void CreateNewUser()
+    {
+        throw new NotImplementedException();
+    }
+
+}

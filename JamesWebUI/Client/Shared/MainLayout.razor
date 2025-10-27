@@ -5,7 +5,6 @@
 @inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
-@inject IJSRuntime JS
 @inject IAppEnvironment Env
 
 @attribute [Authorize]
@@ -125,8 +124,8 @@
             <RadzenRow>
                 <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
                                  Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
-                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="Admin">
-                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Users" />
+                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true">
+                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Employees" />
                         <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles" />
                         <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions" />
                         <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings" />
@@ -167,7 +166,7 @@
     {
         JamesThemeService.Initialize(NavigationManager);
 
-        _headerStyle = Env.IsDevelopment()
+        _headerStyle = Env.IsDevelopment() || true //TODO: Make a functional check to turn this off on production servers
             ? OperatingSystem.IsBrowser()
                 ? "background-color: cornsilk;"
                 : "background-color: #e0e0e0;"

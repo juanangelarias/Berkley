@@ -2,7 +2,6 @@
 @inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
-@inject ILocalStorageService LocalStorageService
 @inject TooltipService TooltipService
 @attribute [Authorize]
 
@@ -58,59 +57,41 @@
     private List<Employee> _employees = new();
     private const string LoadEmployeesKey = "Emp";
     private IDataAccessResult<List<Employee>> _loadEmployeesResult = null!;
-    private LoadItem EmployeesLoadItem => AddEventNotify(
-        new()
+    private LoadItem<List<Employee>> EmployeesLoadItem => (LoadItem<List<Employee>>)AddEventNotify(
+        new LoadItem<List<Employee>>()
         {
             Key = LoadEmployeesKey,
             //TODO: Add actual data called when created
-            AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetAllEmployees(),
+            AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetEmployees(),
             CacheLoadTask = cache => _loadEmployeesResult = new DataAccessResult<List<Employee>> { Data = (List<Employee>)cache! },
             ResultVariable = () => _loadEmployeesResult,
-            AfterLoad = () =>
-            {
-                _employees = _loadEmployeesResult.Data!;
-                //Save to local storage asynchronously and don't wait for the save to finish
-                Task.Factory.StartNew(data =>
-                    LocalStorageService.SetItemAsyncWithExpiry(LoadEmployeesKey, TimeSpan.FromHours(1), data), _loadEmployeesResult.Data);
-            }
-        }, "security roles");
+            AfterLoad = () => _employees = _loadEmployeesResult.Data!
+        }, "employees");
 
 
     List<SecurityRole> _securityRoles = null!;
     private IDataAccessResult<List<SecurityRole>> _loadSecurityRolesResult = null!;
-    private LoadItem RolesLoadItem => AddEventNotify(
-        new()
+    private LoadItem<List<SecurityRole>> RolesLoadItem => (LoadItem<List<SecurityRole>>)AddEventNotify(
+        new LoadItem<List<SecurityRole>>()
         {
             Key = "SecRoles",
             AsyncLoadTask = async () => _loadSecurityRolesResult = await DataAccess.GetAllSecurityRoles(),
             CacheLoadTask = cache => _loadSecurityRolesResult = new DataAccessResult<List<SecurityRole>> { Data = (List<SecurityRole>)cache! },
             ResultVariable = () => _loadSecurityRolesResult,
-            AfterLoad = () =>
-            {
-                _securityRoles = _loadSecurityRolesResult.Data!;
-                //Save to local storage asynchronously and don't wait for the save to finish
-                Task.Factory.StartNew(data =>
-                    LocalStorageService.SetItemAsyncWithExpiry("SecRoles", TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
-            }
+            AfterLoad = () => _securityRoles = _loadSecurityRolesResult.Data!
         }, "security roles");
 
     List<SecurityRoleMember> _securityRoleMembers = null!;
     private IDataAccessResult<List<SecurityRoleMember>> _loadMembersResult = null!;
-    private LoadItem MembersLoadItem(string role) => AddEventNotify(
-        new()
+    private LoadItem<List<SecurityRoleMember>> MembersLoadItem(string role) => (LoadItem<List<SecurityRoleMember>>)AddEventNotify(
+        new LoadItem<List<SecurityRoleMember>>()
         {
             Key = $"RlMbr{role}",
             AsyncLoadTask = async () => _loadMembersResult = await DataAccess.GetSecurityRoleMembers(role),
             CacheLoadTask = cache => _loadMembersResult = new DataAccessResult<List<SecurityRoleMember>> { Data = (List<SecurityRoleMember>)cache! },
             CacheDuration = TimeSpan.FromMinutes(2),
             ResultVariable = () => _loadMembersResult,
-            AfterLoad = () =>
-            {
-                _securityRoleMembers = _loadMembersResult.Data!;
-                //Save to local storage asynchronously and don't wait for the save to finish
-                Task.Factory.StartNew(data =>
-                    LocalStorageService.SetItemAsyncWithExpiry($"RlMbr{role}", TimeSpan.FromMinutes(2), data), _loadMembersResult.Data);
-            }
+            AfterLoad = () => _securityRoleMembers = _loadMembersResult.Data!
         }, "role members");
 
     private IList<Employee> SelectedEmployees { get; set; } = new List<Employee>();
@@ -186,7 +167,7 @@
 
         //Reload members
         DataAccess.Clear($"RlMbr{Role}");
-        await DataAccess.GetCacheOrLoadDataAsync(RolesLoadItem);
+        await DataAccess.GetCacheOrLoadDataAsync(MembersLoadItem(Role));
         if (closeAfterwards)
             DialogService.Close(HasAdded);
     }

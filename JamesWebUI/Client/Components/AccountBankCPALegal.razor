@@ -1,16 +1,14 @@
 ﻿@inherits JamesLayoutComponentBase
 
-<RenderModeBackground />
-
 <RadzenRow>
     <RadzenColumn Size="6">
         <RadzenStack Orientation="Orientation.Vertical">
             <RadzenFieldset Text="Bank Information">
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Bank" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Bank" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenTextBox Value="@AccountToDisplay.Bank" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="1">
                         <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text" />
@@ -18,40 +16,40 @@
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Reference Name" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Reference Name" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenTextBox Value="@AccountToDisplay.BankReferenceName" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Average Cash Balance" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Average Cash Balance" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenNumeric Value="@AccountToDisplay.BankAverageBalance" Format="c0" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Phone No." AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Phone No." AllowFloatingLabel="false" Style="Width:95%" >
                             @* <RadzenTextBox Value="@AccountToDisplay.BankPhone" /> *@
                             <RadzenText Text="Placeholder" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Last Contacted" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Last Contacted" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenTextBox Value="@AccountToDisplay.BankLastContacted.ToString()" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenFieldset>
             <RadzenFieldset Text="CPA Information">
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="CPA Firm Name" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="CPA Firm Name" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenText Text="@AccountToDisplay?.Cpafirm?.FullName" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="1">
                         <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text" />
@@ -59,37 +57,37 @@
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Contact Person" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Contact Person" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenTextBox Value="@AccountToDisplay?.Cpacontact?.FullName" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Phone" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Phone" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenText Text="Placeholder" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Email" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Email" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenText Text="Placeholder" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenFieldset>
             <RadzenFieldset Text="Attorney Information">
                 <RadzenRow>
                     <RadzenColumn Size="9">
-                        <RadzenFormField Text="Attorney Name" AllowFloatingLabel="false" Style="width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Attorney Name" AllowFloatingLabel="false" Style="width:95%" >
                             <RadzenTextBox Value="Placeholder" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="MH Rating" AllowFloatingLabel="false" Style="width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="MH Rating" AllowFloatingLabel="false" Style="width:95%" >
                             <RadzenTextBox Value="Placeholder" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenFieldset>
@@ -100,9 +98,9 @@
             <RadzenFieldset Text="Bank Line of Credit">
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Amount" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Amount" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenNumeric Format="c0" Value="@AccountToDisplay.BankLoc" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="1">
                         <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text" />
@@ -110,51 +108,51 @@
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Expires" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Expires" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay.BankLocexpires" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Amount in Use" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Amount in Use" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenNumeric Format="c0" Value="@AccountToDisplay.BankLocused" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="When" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="When" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenDatePicker ShowTime="false" TValue="DateOnly" Value="@AccountToDisplay.BankLochighDate" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Most Used" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Most Used" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenNumeric Format="c0" Value="@AccountToDisplay.BankLochigh" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="11">
-                        <RadzenFormField Text="Security" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Security" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenText Text="@AccountToDisplay?.BankLocsecurity" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenFieldset>
             <RadzenFieldset Text="Law Firm Information">
                 <RadzenRow>
                     <RadzenColumn Size="9">
-                        <RadzenFormField Text="Law Firm Name" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="Law Firm Name" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenTextBox Value="@AccountToDisplay?.LawFirm?.IdNavigation?.FullName" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="MH Rating" AllowFloatingLabel="false" Style="Width:95%" Variant="Variant.Text">
+                        <JamesFormField Text="MH Rating" AllowFloatingLabel="false" Style="Width:95%" >
                             <RadzenTextBox Value="@AccountToDisplay?.LawFirm?.MartindaleHubbellRating" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>

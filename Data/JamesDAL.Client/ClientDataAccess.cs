@@ -609,11 +609,42 @@ namespace James.Data.Client
             return result;
         }
 
-        public async Task<IDataAccessResult<List<Employee>>> GetAllEmployees()
+        public async Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true)
         {
             var result = await ExecuteGet<List<Employee>>(
-                async () => await jamesClient.GetAllEmployees.ExecuteAsync(), "AllEmployees");
+                async () => await jamesClient.GetEmployees.ExecuteAsync(activeOnly), "Employees");
             return result;
+        }
+
+        public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText)
+        {
+            var result = await ExecuteGet < List<PotentialEmployeeActiveDirectoryInfo>>(
+                async () => await jamesClient.GetActiveDirectoryUsers.ExecuteAsync(usernameSearchText),
+                "ActiveDirectoryUsers");
+            return result;
+        }
+
+        public async Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials, string title, string email)
+        {
+            return await ExecuteSave(async () => await jamesClient.CreateEmployee.ExecuteAsync(
+                new CreateEmployeeInput
+                {
+                    Username = username, 
+                    FullName = fullName, 
+                    Initials = initials, 
+                    Title = title, 
+                    Email = email
+                }));
+        }
+
+        public async Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetEmployeeEmail.ExecuteAsync(
+                new SetEmployeeEmailInput
+                {
+                   EmployeeId = employeeId, 
+                   Email = email
+                }));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames()

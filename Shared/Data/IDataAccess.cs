@@ -202,7 +202,13 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role);
         public Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role);
         public Task<ISaveDataResult> AddSecurityRole(SecurityRole role);
-        public Task<IDataAccessResult<List<Employee>>> GetAllEmployees();
+        public Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true);
+        public Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText);
+
+        public Task<ISaveDataResult> CreateEmployee(string username, string fullName,
+                                                    string initials, string title, string email);
+
+        public Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email);
 
         public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames();
 

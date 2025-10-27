@@ -22,6 +22,7 @@ using Serilog;
 using System.Data.SqlClient;
 using System.Net.Http.Headers;
 using JamesWebUI.Server.SharedServices;
+using Microsoft.AspNetCore.Http;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -198,6 +199,8 @@ namespace JamesWebUI.Client.Test.Services
             services.AddScoped<GeneralMutation>();
             services.AddScoped<ObligeeMutation>();
             services.AddScoped<IUserShared, TestUserShared>();
+            services.AddScoped<IHttpContextAccessor, TestHttpContextAccessor>();
+            services.AddScoped<IBrowserStorageCache, NoBrowserStorageCache>();
             services.AddScoped<ImagingKong0Helper>();
             services.AddScoped<ServerImagingAccess>();
             services.AddScoped<AgencyMutation>();

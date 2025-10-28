@@ -26,7 +26,7 @@ public partial class AgencyStatusLog
 
     public virtual Agency AgencyNumberNavigation { get; set; } = null!;
 
-    public virtual UserProfile? ChangedByNavigation { get; set; }
+    public virtual Employee? ChangedByNavigation { get; set; }
 
     public virtual AgencyStatusDm? NewStatusNavigation { get; set; }
 

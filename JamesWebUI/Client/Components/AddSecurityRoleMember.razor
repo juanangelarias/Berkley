@@ -63,7 +63,7 @@
         {
             Key = LoadEmployeesKey,
             //TODO: Add actual data called when created
-            AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetAllEmployees(),
+            AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetEmployees(),
             CacheLoadTask = cache => _loadEmployeesResult = new DataAccessResult<List<Employee>> { Data = (List<Employee>)cache! },
             ResultVariable = () => _loadEmployeesResult,
             AfterLoad = () =>

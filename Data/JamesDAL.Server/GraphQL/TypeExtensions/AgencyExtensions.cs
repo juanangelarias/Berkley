@@ -55,7 +55,7 @@ namespace James.Data.Server.GraphQL.TypeExtensions
             if (agency.OnlineBondSystems.Count==0)
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
-                agency.OnlineBondSystems = await ctx.OnlineBondSystems.Where(obs=>obs.AgencyId == agency.Id).ToArrayAsync();
+                agency.OnlineBondSystems = await ctx.OnlineBondSystems.Where(obs=>obs.LegalEntityId== agency.Id).ToArrayAsync();
             }
             return agency.OnlineBondSystems.ToArray();
         }

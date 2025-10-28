@@ -24,7 +24,6 @@ type UserProfile {
   accountStatusLogs: [AccountStatusLog!]!
   agencyCompetitions: [AgencyCompetition!]!
   agencyInventories: [AgencyInventory!]!
-  agencyStatusLogs: [AgencyStatusLog!]!
   bondBlocks: [BondBlock!]!
   bondHolds: [BondHold!]!
   bondRequestCctoNavigations: [BondRequest!]!
@@ -310,6 +309,11 @@ type CreateLicensePayload {
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
+input SetEmployeeIsActiveInput {
+  employeeId: UUID!
+  isActive: Boolean!
+}
+
 type Agency {
   id: UUID!
   created: DateTime!
@@ -443,6 +447,9 @@ type Employee {
   homeOfficeApprover: Boolean!
   active: Boolean!
   entraId: String
+  activeDirectoryTitle: String
+  agencyStatusLogs: [AgencyStatusLog!]!
+  notificationGroupMembers: [NotificationGroupMember!]!
   underwriterIdNavigation: Underwriter
   underwriterReportsToNavigations: [Underwriter!]!
 }
@@ -493,7 +500,7 @@ type Query {
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
   phoneNumber(phoneId: UUID!): PhoneNumber!
-  userProfileByUserName(userName: String!): UserProfile!
+  employeeByUserName(userName: String!): Employee!
   allInventoryDocTypes: [InventoryDocumentDm!]!
   allBranches: [Branch!]!
   allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
@@ -518,7 +525,8 @@ type Query {
   allSecurityRoles: [SecurityRole!]!
   securityRolesByUser(principalId: UUID!): [SecurityRole!]!
   securityRoleMembers(role: String!): [SecurityRoleMember!]!
-  allEmployees: [Employee!]!
+  employees(activeOnly: Boolean!): [Employee!]!
+  activeDirectoryUsers(searchText: String!): [PotentialEmployeeActiveDirectoryInfo!]!
   allStates: [State!]!
 }
 
@@ -532,7 +540,7 @@ type AgencyCommission {
   maximum: Int
   rate: Float!
   effective: DateTime!
-  expires: DateTime
+  expiration: DateTime
   expireIncluded: Int!
 }
 
@@ -951,7 +959,6 @@ type PowerOfAttorney {
   status: String!
   agency: Agency!
   insurer: Insurer!
-  onlineBondSystems: [OnlineBondSystem!]!
   powerOfAttorneyDocumentStatuses: [PowerOfAttorneyDocumentStatus!]!
   statusNavigation: PowerOfAttorneyStatusDm!
 }
@@ -989,12 +996,12 @@ type AccountWatch {
   id: UUID!
   created: DateTime!
   modified: DateTime
-  accountId: UUID!
   watchDate: DateTime!
   watchStatus: String!
   reason: String!
   actionPlan: String!
-  account: Account!
+  accountNum: String!
+  accountNumNavigation: Account!
   watchStatusNavigation: WatchStatusDm!
 }
 
@@ -1027,6 +1034,15 @@ input CreateAgencyInput {
   billingCity: String!
   billingStateCode: String!
   billingPostalCode: String!
+}
+
+type PotentialEmployeeActiveDirectoryInfo {
+  username: String!
+  fullName: String!
+  emails: [String!]!
+  initials: String!
+  title: String!
+  selectedEmail: String
 }
 
 type BondTypeDm {
@@ -1146,8 +1162,9 @@ type Underwriter {
   created: DateTime!
   modified: DateTime!
   notificationSendTo: String
-  dropDownList: Boolean!
+  active: Boolean!
   reportsTo: UUID
+  notificationGroup: String
   accounts: [Account!]!
   bondHolds: [BondHold!]!
   bondRequestCommercials: [BondRequestCommercial!]!
@@ -1155,6 +1172,7 @@ type Underwriter {
   bondTransactions: [BondTransaction!]!
   bonds: [Bond!]!
   idNavigation: Employee!
+  notificationGroupNavigation: NotificationGroup
   profitCenters: [ProfitCenter!]!
   reportsToNavigation: Employee
 }
@@ -1196,6 +1214,9 @@ type Mutation {
   addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
   removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
   addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
+  setEmployeeIsActive(input: SetEmployeeIsActiveInput!): SetEmployeeIsActivePayload!
+  setEmployeeEmail(input: SetEmployeeEmailInput!): SetEmployeeEmailPayload!
+  createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1433,6 +1454,14 @@ input SetAgencyLicenseInput {
   isActive: Boolean!
 }
 
+input CreateEmployeeInput {
+  username: String!
+  fullName: String!
+  initials: String!
+  title: String!
+  email: String!
+}
+
 type JamesSearchResult {
   name: String!
   entity: LegalEntity!
@@ -1492,6 +1521,7 @@ type LegalEntity {
   legalEntityPhones: [LegalEntityPhone!]!
   obligee: Obligee
   obligeeContact: ObligeeContact
+  onlineBondSystems: [OnlineBondSystem!]!
   parentNavigation: LegalEntity
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
@@ -1537,6 +1567,11 @@ type AccountStatusDm {
   accountStatus: String!
   active: Boolean!
   accountStatusLogs: [AccountStatusLog!]!
+}
+
+input SetEmployeeEmailInput {
+  employeeId: UUID!
+  email: String!
 }
 
 type EmailHistory {
@@ -1630,6 +1665,10 @@ type NotebookEntryTypeDm {
   modified: DateTime!
   type: String!
   notebookEntries: [NotebookEntry!]!
+}
+
+type SetEmployeeIsActivePayload {
+  boolean: Boolean
 }
 
 type LineOfBusinessDm {
@@ -1916,7 +1955,7 @@ input AgencyCommissionInput {
   maximum: Int
   rate: Float!
   effective: DateTime!
-  expires: DateTime
+  expiration: DateTime
   expireIncluded: Int!
 }
 
@@ -2187,6 +2226,16 @@ input SetPowerOfAttorneyInput {
   status: String!
 }
 
+type NotificationGroup {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  groupName: String!
+  description: String
+  notificationGroupMembers: [NotificationGroupMember!]!
+  underwriters: [Underwriter!]!
+}
+
 input DeleteAgencyPOAInput {
   poaId: UUID!
 }
@@ -2255,13 +2304,12 @@ type OnlineBondSystem {
   id: UUID!
   created: DateTime!
   modified: DateTime!
-  agencyId: UUID!
+  legalEntityId: UUID!
   systemName: String!
   insurerId: UUID!
-  powerOfAttorneyId: UUID!
-  agency: Agency!
+  writingLimit: Int
   insurer: Insurer!
-  powerOfAttorney: PowerOfAttorney!
+  legalEntity: LegalEntity!
   systemNameNavigation: AgentSystemDm!
 }
 
@@ -2321,6 +2369,16 @@ type DeleteLicensePayload {
 
 "The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
 scalar Long
+
+type NotificationGroupMember {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  groupName: String!
+  employeeId: UUID!
+  employee: Employee!
+  groupNameNavigation: NotificationGroup!
+}
 
 type PersonalFinancialSubaccount {
   id: UUID!
@@ -2590,6 +2648,7 @@ type KeyPersonnel {
   personalIndemnification: Boolean!
   comments: String
   profession: String
+  active: Boolean!
   accountNumNavigation: Account!
   idNavigation: LegalEntity!
   responsibilityNavigation: ResponsibilityDm
@@ -2603,6 +2662,10 @@ type KeyPersonnel {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type CreateEmployeePayload {
+  boolean: Boolean
 }
 
 type ImagingCategory {
@@ -2946,6 +3009,10 @@ type State {
   surcharges: [Surcharge!]!
 }
 
+type SetEmployeeEmailPayload {
+  boolean: Boolean
+}
+
 input CreateAgencyStatusLogInput {
   id: UUID!
   agencyNumber: String!
@@ -2967,7 +3034,7 @@ type AgencyStatusLog {
   changedBy: UUID
   comments: String
   agencyNumberNavigation: Agency!
-  changedByNavigation: UserProfile
+  changedByNavigation: Employee
   newStatusNavigation: AgencyStatusDm
   oldStatusNavigation: AgencyStatusDm
 }

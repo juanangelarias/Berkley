@@ -12,8 +12,6 @@ public partial class AccountWatch
 
     public DateTime? Modified { get; set; }
 
-    public Guid AccountId { get; set; }
-
     public DateTime WatchDate { get; set; }
 
     public string WatchStatus { get; set; } = null!;
@@ -22,7 +20,9 @@ public partial class AccountWatch
 
     public string ActionPlan { get; set; } = null!;
 
-    public virtual Account Account { get; set; } = null!;
+    public string AccountNum { get; set; } = null!;
+
+    public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual WatchStatusDm WatchStatusNavigation { get; set; } = null!;
 }

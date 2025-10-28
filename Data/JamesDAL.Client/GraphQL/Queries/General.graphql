@@ -17,10 +17,10 @@ query GetAllInventoryDocTypes {
   }
 }
 
-query GetUserProfileByUserName($userName: String!){
-    userProfileByUserName(userName: $userName){
+query GetEmployeeByUserName($userName: String!){
+    employeeByUserName(userName: $userName){
         id
-        username
+        activeDirectoryAccount
         fullName
         initials
     }

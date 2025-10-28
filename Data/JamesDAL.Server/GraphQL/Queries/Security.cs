@@ -1,17 +1,8 @@
 ﻿using FileNetP8SoapService;
 using HotChocolate.Authorization;
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.DirectoryServices;
-using System.DirectoryServices.AccountManagement;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace James.Data.Server.GraphQL.Queries
 {

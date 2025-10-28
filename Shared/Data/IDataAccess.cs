@@ -92,7 +92,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly);
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
         public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
-        public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
+        public Task<IDataAccessResult<Employee>> GetEmployeeByUserName(string userName);
         public Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
             string? businessType, string? priorSurety, int? estAnnualPremium);
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);

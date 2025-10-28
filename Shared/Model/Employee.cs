@@ -30,6 +30,12 @@ public partial class Employee
 
     public string? EntraId { get; set; }
 
+    public string? ActiveDirectoryTitle { get; set; }
+
+    public virtual ICollection<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
+
+    public virtual ICollection<NotificationGroupMember> NotificationGroupMembers { get; set; } = new List<NotificationGroupMember>();
+
     public virtual Underwriter? UnderwriterIdNavigation { get; set; }
 
     public virtual ICollection<Underwriter> UnderwriterReportsToNavigations { get; set; } = new List<Underwriter>();

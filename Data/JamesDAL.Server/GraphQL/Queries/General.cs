@@ -22,12 +22,12 @@ namespace James.Data.Server.GraphQL.Queries
             return result ?? throw new GraphQLException($"No phone number found with PhoneID {phoneId}.");
         }
         [Authorize]
-        public async Task<UserProfile> GetUserProfileByUserName(string userName, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<Employee> GetEmployeeByUserName(string userName, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.UserProfiles.Where(u => u.Username == userName).FirstOrDefaultAsync();
+            var result = await ctx.Employees.Where(e => e.ActiveDirectoryAccount == userName).FirstOrDefaultAsync();
 
-            return result ?? throw new GraphQLException($"No user found with UserName {userName}.");
+            return result ?? throw new GraphQLException($"No employee found with UserName {userName}.");
         }
         [Authorize]
         public async Task<List<InventoryDocumentDm>> GetAllInventoryDocTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

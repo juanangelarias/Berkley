@@ -178,9 +178,9 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyCommissionRates(agencyId, contextFactory));
         }
-        public async Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName)
+        public async Task<IDataAccessResult<Employee>> GetEmployeeByUserName(string userName)
         {
-            return await ExecuteGet(async () => await query.GetUserProfileByUserName(userName, contextFactory));
+            return await ExecuteGet(async () => await query.GetEmployeeByUserName(userName, contextFactory));
         }
         public async Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
             string? businessType, string? priorSurety, int? estAnnualPremium)

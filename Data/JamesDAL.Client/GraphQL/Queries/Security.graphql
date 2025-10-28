@@ -27,7 +27,7 @@ query GetEmployees($activeOnly: Boolean!) {
     email
     homeOfficeApprover
     underwriterIdNavigation {
-      dropDownList
+      active
       notificationSendTo
       reportsToNavigation {
         id

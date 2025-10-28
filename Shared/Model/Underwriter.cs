@@ -14,9 +14,11 @@ public partial class Underwriter
 
     public string? NotificationSendTo { get; set; }
 
-    public bool DropDownList { get; set; }
+    public bool Active { get; set; }
 
     public Guid? ReportsTo { get; set; }
+
+    public string? NotificationGroup { get; set; }
 
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
@@ -31,6 +33,8 @@ public partial class Underwriter
     public virtual ICollection<Bond> Bonds { get; set; } = new List<Bond>();
 
     public virtual Employee IdNavigation { get; set; } = null!;
+
+    public virtual NotificationGroup? NotificationGroupNavigation { get; set; }
 
     public virtual ICollection<ProfitCenter> ProfitCenters { get; set; } = new List<ProfitCenter>();
 

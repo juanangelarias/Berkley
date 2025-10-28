@@ -157,7 +157,7 @@ query GetAgencyCommissionRates($agencyId: UUID!){
         agencyId
         bondType
         effective
-        expires
+        expiration
         id
         maximum
         minimum

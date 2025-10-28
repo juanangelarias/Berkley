@@ -163,7 +163,8 @@
     private async Task SaveStatusLogRow(AgencyStatusLog statusLog)
     {
         await ShowLoading();
-        var userProfile = await DataAccess.GetUserProfileByUserName(TxtUserName.Text);
+        //TODO:  Need to update the below to a load item
+        var userProfile = await DataAccess.GetEmployeeByUserName(TxtUserName.Text);
         statusLog.ChangedByNavigation = userProfile.Data;
         await StatusLogGrid.UpdateRow(statusLog);
         await LoadAgencyStatusLog();
@@ -186,7 +187,7 @@
     {
         //TODO: Get UserID
         var userName = TxtUserName.Text;
-        var userProfile = await DataAccess.GetUserProfileByUserName(userName);
+        var userProfile = await DataAccess.GetEmployeeByUserName(userName);
 
         var result = await DataAccess.CreateAgencyStatusLog(
             statusLog.Id,

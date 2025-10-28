@@ -295,9 +295,8 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<Employee>> GetEmployeeByUserName(string userName)
         {
-            throw new NotImplementedException("UNDONE");
-            //return await ExecuteGet<Employee>(async () => await jamesClient.GetEmployeeByUserName.ExecuteAsync(userName),
-            //    "EmployeeByUserName");
+            return await ExecuteGet<Employee>(async () => await jamesClient.GetEmployeeByUserName.ExecuteAsync(userName),
+                "EmployeeByUserName");
         }
         public async Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
     string? businessType, string? priorSurety, int? estAnnualPremium)

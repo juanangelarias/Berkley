@@ -17,11 +17,11 @@
                         <RadzenButton Icon="info" Size="ButtonSize.ExtraSmall" ButtonStyle="ButtonStyle.Info"
                                       MouseEnter="@(args => ShowProfitSharingTooltip(args))"
                                       Style="height: 30px;"/>
-                        <RadzenFormField Text="Minimum Premium Threshold" Variant="Variant.Text" class="rz-ml-12">
+                        <JamesFormField Text="Minimum Premium Threshold" class="rz-ml-12">
                             <RadzenNumeric TValue="int?" @bind-Value="@Agency.ProfitSharingMinimumPremium" Format="c0"
                                            Disabled="@(!_isProfitSharingEnabled)" Name="numMinimumPremiumThreshold"
                                            TextAlign="TextAlign.Right"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenStack>
                 </RadzenRow>
                 <RadzenRow Gap="1rem">

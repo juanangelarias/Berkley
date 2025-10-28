@@ -3,22 +3,20 @@
 @inherits JamesLayoutComponentBase
 @inject IDataAccess DataAccess
 
-<RenderModeBackground />
-
 <RadzenRow>
     <RadzenColumn Size="6">
         <RadzenStack Orientation="Orientation.Vertical">
             <RadzenFieldset Text="General Information">
                 <RadzenRow JustifyContent="JustifyContent.End">
                     <RadzenColumn Size="4">
-                        <RadzenFormField Text="Year Started" AllowFloatingLabel="false" Variant="Variant.Text" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)">
+                        <JamesFormField Text="Year Started" AllowFloatingLabel="false" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)">
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.YearOpened" Disabled="@(!MasterEditMode && !GenInfoEditMode)" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="4">
-                        <RadzenFormField Text="Curr. Mgt Year" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="Curr. Mgt Year" AllowFloatingLabel="false" >
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.CurrentManagementYear" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="4">
                         <RadzenButton Icon="edit" Variant="Variant.Text" Size="ButtonSize.Small" Visible="!GenInfoEditMode" Click="@(() => GenInfoEditMode = true)" 
@@ -31,33 +29,33 @@
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="4">
-                        <RadzenFormField Text="Business Class" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="Business Class" AllowFloatingLabel="false" >
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.BusinessTypeClass" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="8">
-                        <RadzenFormField Text="Business Type" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="Business Type" AllowFloatingLabel="false" >
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.BusinessType" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
-                    <RadzenFormField Text="Prior Surety" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <JamesFormField Text="Prior Surety" AllowFloatingLabel="false" >
                         <RadzenTextBox @bind-Value="@AccountToDisplay!.PriorSuretyCompany" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)" />
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenRow>
                 <RadzenRow>
-                    <RadzenFormField Text="Est. Annual Premium" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <JamesFormField Text="Est. Annual Premium" AllowFloatingLabel="false" >
                         <RadzenTextBox Value="Placeholder" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)" />
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenRow>
             </RadzenFieldset>
             <RadzenFieldset Text="Systems">
                 <RadzenRow JustifyContent="JustifyContent.End">
                     <RadzenColumn Size="10">
-                        <RadzenFormField Text="Estimating System" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="Estimating System" AllowFloatingLabel="false" >
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.EstimatingSystem" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="2">
                         <RadzenButton Icon="edit" Variant="Variant.Text" Size="ButtonSize.Small" Visible="!SystemsEditMode" Click="@(() => SystemsEditMode = true)" 
@@ -69,14 +67,14 @@
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
-                    <RadzenFormField Text="Estimating Sign-Off" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <JamesFormField Text="Estimating Sign-Off" AllowFloatingLabel="false" >
                         <RadzenTextBox @bind-Value="@AccountToDisplay!.EstimatingSignoff" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)" />
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenRow>
                 <RadzenRow>
-                    <RadzenFormField Text="Internal Accounting System" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <JamesFormField Text="Internal Accounting System" AllowFloatingLabel="false" >
                         <RadzenTextBox @bind-Value="@AccountToDisplay!.AccountingSystem" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)" />
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenStack Orientation="Orientation.Horizontal">
@@ -94,22 +92,22 @@
             <RadzenFieldset Text="Credit Report">
                 <RadzenRow>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="Credit Report" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="Credit Report" AllowFloatingLabel="false" >
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.CreditReport" 
                                            Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="Report Date" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="Report Date" AllowFloatingLabel="false" >
                             <RadzenDatePicker ShowTime="false" TValue="DateOnly?" @bind-Value="@AccountToDisplay!.DunBradstreetDate" 
                                               Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="Rating" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="Rating" AllowFloatingLabel="false" >
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.DunBradstreetRate" 
                                            Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3" Visible="@(null!=AccountToDisplay)" Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)">
                         <InlineImagingDocument DocumentShortName="Current Credit Report"
@@ -124,58 +122,58 @@
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="SIC Code" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="SIC Code" AllowFloatingLabel="false" >
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.DunBradstreetSic" 
                                            Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn>
-                        <RadzenFormField Text="SIC Name" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="SIC Name" AllowFloatingLabel="false" >
                             <RadzenTextBox Placeholder="SIC Name"   
                                            Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="Paydex/Intelliscore" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="Paydex/Intelliscore" AllowFloatingLabel="false" >
                             <RadzenNumeric @bind-Value="@AccountToDisplay!.PaydexIntelliscore" 
                                            Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="NAICS" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="NAICS" AllowFloatingLabel="false" >
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.Naics" 
                                            Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn>
-                        <RadzenFormField Text="NAICS Name" AllowFloatingLabel="false" Variant="Variant.Text">
+                        <JamesFormField Text="NAICS Name" AllowFloatingLabel="false" >
                             <RadzenTextBox Placeholder="NAICS Name" 
                                            Disabled="@((!MasterEditMode && !GenInfoEditMode) || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenFieldset>
             <RadzenFieldset Text="Job Mix">
                 <RadzenRow>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="Public" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
+                        <JamesFormField Text="Public" AllowFloatingLabel="false" Style="width: 95%;">
                             <RadzenNumeric TValue="double?" Format="###%" @bind-Value="@AccountToDisplay!.PublicPercent" 
                                            Disabled="@(!JobMixEditMode || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="Private" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
+                        <JamesFormField Text="Private" AllowFloatingLabel="false" Style="width: 95%;">
                             <RadzenNumeric TValue="double?" Format="##%" @bind-Value="@AccountToDisplay!.PrivatePercent"  
                                            Disabled="@(!JobMixEditMode || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
-                        <RadzenFormField Text="Subbed" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
+                        <JamesFormField Text="Subbed" AllowFloatingLabel="false" Style="width: 95%;">
                             <RadzenNumeric Format="p2" @bind-Value="@AccountToDisplay!.SubcontractPercent" 
                                            Disabled="@(!JobMixEditMode || Disabled)"/>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="3">
                         <RadzenButton Icon="edit" Variant="Variant.Text" Size="ButtonSize.Small" Visible="!JobMixEditMode" Click="@(() => JobMixEditMode = true)" 
@@ -188,14 +186,14 @@
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenColumn Size="4">
-                        <RadzenFormField Text="Sub Protection" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
+                        <JamesFormField Text="Sub Protection" AllowFloatingLabel="false" Style="width: 95%;">
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.SubcontractProtection" Disabled="!JobMixEditMode" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="8">
-                        <RadzenFormField Text="Geographic Spread of Work" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 100%;">
+                        <JamesFormField Text="Geographic Spread of Work" AllowFloatingLabel="false" Style="width: 100%;">
                             <RadzenTextBox @bind-Value="@AccountToDisplay!.GeographicSpread" Disabled="!JobMixEditMode" />
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenFieldset>
@@ -348,31 +346,31 @@
         </RadzenFieldset>
         <RadzenFieldset Text="Most Recent Cost to Complete">
             <RadzenRow>
-                <RadzenFormField Text="Cost to Complete" AllowFloatingLabel="false" Variant="Variant.Text">
+                <JamesFormField Text="Cost to Complete" AllowFloatingLabel="false" >
                     <RadzenTextBox Placeholder="Placeholder" Disabled="@(Disabled)"/>
-                </RadzenFormField>
+                </JamesFormField>
             </RadzenRow>
             <RadzenRow>
-                <RadzenFormField Text="As of" AllowFloatingLabel="false" Variant="Variant.Text">
+                <JamesFormField Text="As of" AllowFloatingLabel="false" >
                     <RadzenTextBox Placeholder="Placeholder" Disabled="@(Disabled)"/>
-                </RadzenFormField>
+                </JamesFormField>
             </RadzenRow>
         </RadzenFieldset>
         <RadzenFieldset Text="Tax Basis and Business Structure">
             <RadzenRow>
                 <RadzenColumn>
-                    <RadzenFormField Text="Tax Basis" Variant="Variant.Text" AllowFloatingLabel="false">
+                    <JamesFormField Text="Tax Basis" AllowFloatingLabel="false">
                         <RadzenDropDown TValue="string" Value="@AccountToDisplay?.TaxBasis" 
                                         Disabled="@(Disabled)"/>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn>
-                    <RadzenFormField Text="Business Structure" Variant="Variant.Text" AllowFloatingLabel="false">
+                    <JamesFormField Text="Business Structure" AllowFloatingLabel="false">
                         <RadzenDropDown TValue="string" Placeholder="placeholder" 
                                         Disabled="@(Disabled)"/>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
         </RadzenFieldset>

@@ -39,6 +39,7 @@
     <ProjectReference Include="..\..\JamesWebUI\Server\JamesWebUI.Server.csproj" />
     <ProjectReference Include="..\..\JApplicationLog\ApplicationLog.csproj" />
     <ProjectReference Include="..\..\Test\James.Test.Shared\James.Test.Shared.csproj" />
+    <ProjectReference Include="..\JamesWebUI.Client.Test\JamesWebUI.Client.Test.csproj" />
   </ItemGroup>
 
   <ItemGroup>

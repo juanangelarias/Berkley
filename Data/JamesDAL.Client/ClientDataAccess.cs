@@ -619,7 +619,7 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText)
         {
-            var result = await ExecuteGet<List<PotentialEmployeeActiveDirectoryInfo>>(
+            var result = await ExecuteGet < List<PotentialEmployeeActiveDirectoryInfo>>(
                 async () => await jamesClient.GetActiveDirectoryUsers.ExecuteAsync(usernameSearchText),
                 "ActiveDirectoryUsers");
             return result;
@@ -630,10 +630,10 @@ namespace James.Data.Client
             return await ExecuteSave(async () => await jamesClient.CreateEmployee.ExecuteAsync(
                 new CreateEmployeeInput
                 {
-                    Username = username,
-                    FullName = fullName,
-                    Initials = initials,
-                    Title = title,
+                    Username = username, 
+                    FullName = fullName, 
+                    Initials = initials, 
+                    Title = title, 
                     Email = email
                 }));
         }
@@ -643,8 +643,8 @@ namespace James.Data.Client
             return await ExecuteSave(async () => await jamesClient.SetEmployeeEmail.ExecuteAsync(
                 new SetEmployeeEmailInput
                 {
-                    EmployeeId = employeeId,
-                    Email = email
+                   EmployeeId = employeeId, 
+                   Email = email
                 }));
         }
 

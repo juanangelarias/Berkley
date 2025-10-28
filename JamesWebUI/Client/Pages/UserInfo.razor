@@ -6,7 +6,7 @@
 @inject HttpClient Http
 @attribute [Authorize]
 @inject ILoggingService _logging;
-<RenderModeBackground />
+
 <h3>User Info</h3>
 <hr />
 <VirtualFileSimpleUpload Title="POA Form Upload"
@@ -29,7 +29,7 @@
                       InputAttributes="@(new Dictionary<string,object>(){ { "aria-label", "select file" }})" />
         @*    <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0 rz-m-md-12">
         <RadzenTemplateForm TItem="string" Data="currentFileName">
-        <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:100%">
+        <JamesFormField Text="Name" AllowFloatingLabel="true" Style="width:100%">
     <ChildContent>*@
         <RadzenTextBox Name="tbFileName" @ref="tbFilename" @bind-Value=@currentFileName Style="width:100%" />
     @*</ChildContent>
@@ -42,7 +42,7 @@
         <RadzenCustomValidator Component="tbFileName" Text="File extension is not allowed by BTS"
         Validator="@(() => !ClientBusinessLogic.Validators.ValidateFileName(currentFileName) || SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(currentFileName))" />
         </Helper>
-        </RadzenFormField>
+        </JamesFormField>
         </RadzenTemplateForm>
         </RadzenRow> *@
         <RadzenButton Click="@ButtonClick" Text="Upload selected file" />

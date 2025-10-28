@@ -1,4 +1,5 @@
-﻿using HotChocolate.Authorization;
+﻿using FileNetP8SoapService;
+using HotChocolate.Authorization;
 using System.DirectoryServices;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;

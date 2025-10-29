@@ -18,12 +18,10 @@ namespace JamesWebUI.Client.Test.Selenium
         public async Task OnAddressModifiedClientSideNotification()
         {
             //Load 2 browsers and make sure they are running agency profile on the client side.
-            var baseUrl = configFixture.Config["SeleniumBaseUrl"];
+            var baseUrl = configFixture.Config["SeleniumBaseUrl"]!;
             try
             {
                 //Launch both browsers on Agency 208 page
-                var initPage = "/agency/208";
-                
                 await LoadAgencyPage(baseUrl, 208, webDriverFixture.ChromeDriver1);
                 await RefreshUntilClientSide(webDriverFixture.ChromeDriver1);
                 await LoadAgencyPage(baseUrl, 208, webDriverFixture.ChromeDriver2);

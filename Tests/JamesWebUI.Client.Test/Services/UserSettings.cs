@@ -22,8 +22,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using System.Net.Http.Headers;
-using System.Security.Claims;
-using System.Security.Principal;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -143,6 +141,7 @@ namespace JamesWebUI.Client.Test.Services
             services.AddScoped<ObligeeMutation>();
             services.AddScoped<IUserShared, TestUserShared>();
             services.AddScoped<IHttpContextAccessor, TestHttpContextAccessor>();
+            services.AddScoped<IBrowserStorageCache, NoBrowserStorageCache>();
             services.AddScoped<ImagingKong0Helper>();
             services.AddScoped<ServerImagingAccess>();
             services.AddScoped<AgencyMutation>();
@@ -170,26 +169,6 @@ namespace JamesWebUI.Client.Test.Services
                     .WriteTo.TestOutput(Output)
                     .CreateLogger()));
             return services.BuildServiceProvider();
-        }
-    }
-
-    public class TestHttpContextAccessor : IHttpContextAccessor
-    {
-        private HttpContext? _httpContext;
-        public HttpContext? HttpContext
-        {
-            get
-            {
-                if (null == _httpContext)
-                {
-                    _httpContext = new DefaultHttpContext();
-                    var testUserIdentity = new GenericIdentity("TestUser1234");
-                    testUserIdentity.AddClaim(new Claim("nickname", "TestUser1234"));
-                    _httpContext.User = new ClaimsPrincipal(testUserIdentity);
-                }
-                return _httpContext;
-            }
-            set => _httpContext = value;
         }
     }
 }

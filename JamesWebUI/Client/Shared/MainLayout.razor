@@ -9,6 +9,7 @@
 @inject TooltipService TooltipService
 @inject IJSRuntime JS
 
+@inject IAppEnvironment Env
 
 @attribute [Authorize]
 
@@ -147,19 +148,13 @@
         <AuthorizeView Policy="InRoleChangePermissions">
             <RadzenRow>&nbsp;</RadzenRow>
             <RadzenRow>
-                <RadzenPanelMenu
-                    DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
-                    Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
-                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Path="Admin"
-                                         title="@(_sidebarExpanded ? "" : "Admin")">
-                        <RadzenPanelMenuItem Text="Users" Icon="people" Path="Users"
-                                             title="@(_sidebarExpanded ? "" : "Users")"/>
-                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles"
-                                             title="@(_sidebarExpanded ? "" : "Roles")"/>
-                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions"
-                                             title="@(_sidebarExpanded ? "" : "Permissions")"/>
-                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings"
-                                             title="@(_sidebarExpanded ? "" : "Settings")"/>
+                <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
+                                 Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
+                    <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true" Path="Admin">
+                        <RadzenPanelMenuItem Text="Employees" Icon="people" Path="Employees" />
+                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles" />
+                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions" />
+                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings" />
                     </RadzenPanelMenuItem>
                 </RadzenPanelMenu>
             </RadzenRow>
@@ -202,9 +197,7 @@
     {
         JamesThemeService.Initialize(NavigationManager);
 
-        var isDevelopment = NavigationManager.Uri.Contains("localhost");
-
-        _headerStyle = isDevelopment
+        _headerStyle = Env.IsDevelopment() //TODO: Make a functional check to turn this off on production servers
             ? OperatingSystem.IsBrowser()
                 ? "height: 3.5rem; padding: 0.5rem; background-color: cornsilk;"
                 : "height: 3.5rem; padding: 0.5rem; background-color: #e0e0e0;"

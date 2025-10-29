@@ -250,7 +250,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     }
 
     private string SubstituteTitleIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
-        string.IsNullOrWhiteSpace(original) ? original : substitutions[original].Title;
+        string.IsNullOrWhiteSpace(original) || !substitutions.ContainsKey(original) ? original : substitutions[original].Title ?? "";
 
     public string ExportDataGridUrl<T>(RadzenDataGrid<T> dataGrid, string url, ExportFormat format,
         ExportColumnSubstitutions? propertySubstitutions = null)

@@ -1,6 +1,5 @@
 ﻿@page "/Account/{AccountNumber?}"
 
-@inject IAccountState AccountState
 @using JamesWebUI.Client.Model
 @inherits JamesLayoutComponentBase
 
@@ -23,21 +22,21 @@
                             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
                                          JustifyContent="JustifyContent.End">
                                 <RadzenLabel Text="View Type: " Style="font-size: small;"
-                                             Visible="@AccountState.IsUserManager"/>
+                                             Visible="@IsUserManager"/>
                                 <RadzenDropDown Data="@(Enum.GetValues(typeof(AccountLayout)).Cast<Enum>())"
-                                                @bind-Value="@AccountState.SelectedType"
+                                                @bind-Value="@SelectedType"
                                                 Text="Select View Type" Style="font-size: small; height: 35px;"
-                                                Visible="@AccountState.IsUserManager"/>
+                                                Visible="@IsUserManager"/>
                             </RadzenStack>
                         </RadzenCard>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenCard>
         </RadzenRow>
-        @if (AccountState.IsAccountLoaded)
+        @if (IsAccountLoaded)
         {
             <RadzenRow Style="width: 100%; margin-top: -30px;">
-                @switch (AccountState.SelectedType)
+                @switch (SelectedType)
                 {
                     case AccountLayout.Commercial:
                         <AccountCommercial/>
@@ -81,18 +80,16 @@
     {
         await base.OnParametersSetAsync();
 
-        await AccountState.SetLayout();
+        await SetLayout();
 
         if (string.IsNullOrEmpty(AccountNumber))
         {
-            AccountState.ClearAccount();
-            AccountState.IsAccountLoaded = true;
+            ClearAccount();
+            IsAccountLoaded = true;
             return;
         }
 
-        AccountState.AccountNumber = AccountNumber;
-
-        await AccountState.Initialize();
+        await Initialize();
 
         StateHasChanged();
     }
@@ -100,9 +97,9 @@
     private async Task OnSetAccount(string arg)
     {
         AccountNumber = arg;
-        AccountState.AccountNumber = arg;
+        AccountNumber = arg;
 
-        await AccountState.Initialize();
+        await Initialize();
     }
     
     private async Task CreateNewAccount()

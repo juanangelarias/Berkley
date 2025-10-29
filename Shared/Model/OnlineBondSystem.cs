@@ -12,19 +12,17 @@ public partial class OnlineBondSystem
 
     public DateTime Modified { get; set; }
 
-    public Guid AgencyId { get; set; }
+    public Guid LegalEntityId { get; set; }
 
     public string SystemName { get; set; } = null!;
 
     public Guid InsurerId { get; set; }
 
-    public Guid PowerOfAttorneyId { get; set; }
-
-    public virtual Agency Agency { get; set; } = null!;
+    public int? WritingLimit { get; set; }
 
     public virtual Insurer Insurer { get; set; } = null!;
 
-    public virtual PowerOfAttorney PowerOfAttorney { get; set; } = null!;
+    public virtual LegalEntity LegalEntity { get; set; } = null!;
 
     public virtual AgentSystemDm SystemNameNavigation { get; set; } = null!;
 }

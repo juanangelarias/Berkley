@@ -22,12 +22,12 @@ namespace James.Data.Server.GraphQL.Queries
             return result ?? throw new GraphQLException($"No phone number found with PhoneID {phoneId}.");
         }
         [Authorize]
-        public async Task<UserProfile> GetUserProfileByUserName(string userName, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<Employee> GetEmployeeByUserName(string userName, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.UserProfiles.Where(u => u.Username == userName).FirstOrDefaultAsync();
+            var result = await ctx.Employees.Where(e => e.ActiveDirectoryAccount == userName).FirstOrDefaultAsync();
 
-            return result ?? throw new GraphQLException($"No user found with UserName {userName}.");
+            return result ?? throw new GraphQLException($"No employee found with UserName {userName}.");
         }
         [Authorize]
         public async Task<List<InventoryDocumentDm>> GetAllInventoryDocTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -188,8 +188,8 @@ namespace James.Data.Server.GraphQL.Queries
                     throw new UnauthorizedAccessException("Must be logged in to get user settings.");
                 var ctx = await contextFactory.CreateDbContextAsync();
                 var ctx2 = await contextFactory.CreateDbContextAsync();
-                var userSettingsTask = ctx.UserPreferences.Where(up => up.Username == username).Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
-                var defaultSettingsTask = ctx2.UserPreferences.Where(up => up.Username == "Default").Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
+                var userSettingsTask = ctx.UserSettings.Where(up => up.Username == username).Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
+                var defaultSettingsTask = ctx2.UserSettings.Where(up => up.Username == "Default").Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
                 Task[] parallelTasks = [userSettingsTask, defaultSettingsTask];
                 await Task.WhenAll(parallelTasks);
                 var settings = defaultSettingsTask.Result.ToDictionary();

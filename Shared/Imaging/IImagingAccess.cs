@@ -121,15 +121,4 @@
             return (null != ext && AllowedFileTypes.Contains(ext));
         }
     }
-
-    //UNDONE:Remove after schema is updated for new Imaging 
-    public class ImagingCategoryTabDivisionType
-    {
-        public ImagingDocumentCategory Category { get; set; }
-        public required string TabName { get; set; }
-        public required string TabDescription { get; set; }
-        public string? DivisionCode { get; set; }
-        public required string Type { get; set; }
-        public required string TypeDescription { get; set; }
-    }
 }

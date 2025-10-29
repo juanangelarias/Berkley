@@ -1,7 +1,5 @@
 ﻿@inherits JamesLayoutComponentBase
 
-<RenderModeBackground />
-
 <RadzenSteps>
     <Steps>
         <RadzenStepsItem Text="Contract Bond Request Information">
@@ -12,38 +10,38 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="2">
-                    <RadzenFormField Text="Date of Request" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <JamesFormField Text="Date of Request" AllowFloatingLabel="false" >
                         <RadzenDatePicker TValue="DateTime" ShowTime="false" />
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="2">
-                    <RadzenFormField Text="" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <JamesFormField Text="" AllowFloatingLabel="false" >
                         <RadzenDropDown TValue="string">
                             
                         </RadzenDropDown>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="2">
-                    <RadzenFormField Text="Bid Date" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <JamesFormField Text="Bid Date" AllowFloatingLabel="false" >
                         <RadzenDatePicker TValue="DateTime" ShowTime="false" />
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="2">
-                    <RadzenFormField Text="Bond Number" AllowFloatingLabel="false" Variant="Variant.Text">
+                    <JamesFormField Text="Bond Number" AllowFloatingLabel="false" >
                         <RadzenTextBox Value="Placeholder" />
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow Gap="5">
                 <RadzenColumn Size="4">
-                    <RadzenFormField Text="Obligee" AllowFloatingLabel="false" Variant="Variant.Text" Style="width: 95%;">
+                    <JamesFormField Text="Obligee" AllowFloatingLabel="false" Style="width: 95%;">
                         <ChildContent>
                             <RadzenTextBox @bind-Value="SelectedObligee" />
                         </ChildContent>
                         <End>
                             <RadzenButton Icon="search" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Text"/>
                         </End>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn>
                     <RadzenButton Variant="Variant.Filled" Text="Add New Obligee" ButtonStyle="ButtonStyle.Light" Click="CreateObligeeClick" />
@@ -51,9 +49,9 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="4">
-                    <RadzenFormField Text="Project Name" AllowFloatingLabel="false" Variant="Variant.Text" Style="width:95%">
+                    <JamesFormField Text="Project Name" AllowFloatingLabel="false" Style="width:95%">
                         <RadzenTextBox Value="Placeholder"/>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
         </RadzenStepsItem>

@@ -67,6 +67,29 @@ public class ThisToThatTests
         }
     }
 
+    [Fact]
+    public void CopyListOfStrings()
+    {
+        WithListOfStringsA a = new();
+        var b = ThisToThat.ToEntityType<WithListOfStringsB>(a);
+        Assert.NotNull(b);
+        Assert.NotNull(b.ListOfStrings);
+        Assert.Equal(a.ListOfStrings.Count, b.ListOfStrings.Count);
+        for( var i =0;i<a.ListOfStrings.Count;i++)
+            Assert.Equal(a.ListOfStrings[i], b.ListOfStrings[i]);
+    }
+
+    [Fact]
+    public void CopyString()
+    {
+        List<string> a = ["TestString!!", "TestString2!?!"];
+        var b = ThisToThat.ToEntityType<List<string>>(a);
+
+        Assert.NotNull(b);
+        Assert.Equal(a.Count, b.Count);
+        for (var i = 0; i < a.Count; i++)
+            Assert.Equal(a[i], b[i]);
+    }
     private static void CompareComplex(ComplexA source, ComplexB copiedSource)
     {
         Assert.Equal(source.Id, copiedSource.Id);
@@ -353,5 +376,14 @@ public class ThisToThatTests
     private enum EnumB
     {
         A, B, C, D
+    }
+
+    private class WithListOfStringsA
+    {
+        public List<string> ListOfStrings { get; set; } = [.. "It's the end of the world and I feel fine.".Split(' ')];
+    }
+    private class WithListOfStringsB
+    {
+        public List<string> ListOfStrings { get; set; } = [];
     }
 }

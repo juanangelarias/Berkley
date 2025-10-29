@@ -44,8 +44,6 @@ public partial class UserProfile
 
     public virtual ICollection<AgencyInventory> AgencyInventories { get; set; } = new List<AgencyInventory>();
 
-    public virtual ICollection<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
-
     public virtual ICollection<BondBlock> BondBlocks { get; set; } = new List<BondBlock>();
 
     public virtual ICollection<BondHold> BondHolds { get; set; } = new List<BondHold>();

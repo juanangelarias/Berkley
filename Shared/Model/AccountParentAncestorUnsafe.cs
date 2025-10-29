@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class AccountParentAncestorSafe
+public partial class AccountParentAncestorUnsafe
 {
     public Guid? Id { get; set; }
 

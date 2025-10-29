@@ -130,6 +130,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<CommercialBondTypeDm> CommercialBondTypeDms { get; set; }
 
+    public virtual DbSet<CommercialFinancial> CommercialFinancials { get; set; }
+
     public virtual DbSet<CommercialRate> CommercialRates { get; set; }
 
     public virtual DbSet<CommercialRegionDm> CommercialRegionDms { get; set; }
@@ -2486,6 +2488,39 @@ public partial class JamesDatabaseContext : DbContext
                 .HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<CommercialFinancial>(entity =>
+        {
+            entity.HasKey(e => new { e.AccountNum, e.Period }).IsClustered(false);
+
+            entity.ToTable("CommercialFinancial");
+
+            entity.HasIndex(e => e.Id, "UQ_CommercialFinancial_Id").IsUnique();
+
+            entity.Property(e => e.AccountNum)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.Period)
+                .HasMaxLength(7)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Scaling)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasDefaultValue("Thousands");
+
+            entity.HasOne(d => d.ScalingNavigation).WithMany(p => p.CommercialFinancials)
+                .HasForeignKey(d => d.Scaling)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CommercialFinancial_Scaling");
+        });
+
         modelBuilder.Entity<CommercialRate>(entity =>
         {
             entity.HasKey(e => e.Id).IsClustered(false);
@@ -3905,7 +3940,6 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_OnlineBondSystem_Insurer");
 
             entity.HasOne(d => d.LegalEntity).WithMany(p => p.OnlineBondSystems)
-                .HasPrincipalKey(p => p.Id)
                 .HasForeignKey(d => d.LegalEntityId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_OnlineBondSystem_LegalEntity");
@@ -4466,10 +4500,18 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.QcratioAllowed).HasColumnName("QCRatioAllowed");
-            entity.Property(e => e.QcratioStated).HasColumnName("QCRatioStated");
-            entity.Property(e => e.QleverageAllowed).HasColumnName("QLeverageAllowed");
-            entity.Property(e => e.QleverageStated).HasColumnName("QLeverageStated");
+            entity.Property(e => e.QcratioAllowed)
+                .HasColumnType("decimal(12, 6)")
+                .HasColumnName("QCRatioAllowed");
+            entity.Property(e => e.QcratioStated)
+                .HasColumnType("decimal(12, 6)")
+                .HasColumnName("QCRatioStated");
+            entity.Property(e => e.QleverageAllowed)
+                .HasColumnType("decimal(12, 6)")
+                .HasColumnName("QLeverageAllowed");
+            entity.Property(e => e.QleverageStated)
+                .HasColumnType("decimal(12, 6)")
+                .HasColumnName("QLeverageStated");
             entity.Property(e => e.QnetworthAllowed).HasColumnName("QNetworthAllowed");
             entity.Property(e => e.QnetworthStated).HasColumnName("QNetworthStated");
             entity.Property(e => e.QprofitAllowed).HasColumnName("QProfitAllowed");

@@ -60,8 +60,6 @@ public partial class Agency
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 
-    public virtual ICollection<OnlineBondSystem> OnlineBondSystems { get; set; } = new List<OnlineBondSystem>();
-
     public virtual ICollection<PowerOfAttorney> PowerOfAttorneys { get; set; } = new List<PowerOfAttorney>();
 
     public virtual AgencyStatusDm StatusNavigation { get; set; } = null!;

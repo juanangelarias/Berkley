@@ -49,16 +49,6 @@ namespace James.Data.Server.GraphQL.TypeExtensions
             }
             return agency.Accounts.ToArray();
         }
-        public async Task<OnlineBondSystem[]> OnlineBondSystems([Parent] Agency agency,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-        {
-            if (agency.OnlineBondSystems.Count==0)
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-                agency.OnlineBondSystems = await ctx.OnlineBondSystems.Where(obs=>obs.LegalEntityId== agency.Id).ToArrayAsync();
-            }
-            return agency.OnlineBondSystems.ToArray();
-        }
 
         public async Task<AgencyInventory[]> Inventories([Parent] Agency agency,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

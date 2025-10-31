@@ -1,7 +1,6 @@
-﻿@inject IAccountState AccountState
-
-<h3>Default Account</h3>
+﻿<h3>Default Account</h3>
 
 @code {
-    
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+        
 }

@@ -12,7 +12,6 @@ using System.Text.Json.Serialization;
 using JamesWebUI.Client.AuthenticationStateSyncer;
 using JamesWebUI.Client.Classes;
 using JamesWebUI.Client.Security;
-using JamesWebUI.Client.States;
 using Microsoft.AspNetCore.Components.Authorization;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
@@ -51,15 +50,6 @@ builder.Services
     .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>()
     .AddSingleton<IAppEnvironment, ClientAppEnvironment>();
-
-#region States
-
-builder.Services
-    // A
-    .AddScoped<IAccountState, AccountState>();
-
-#endregion
-
 
 builder.Services.AddOidcAuthentication(options =>
 {

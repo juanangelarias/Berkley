@@ -1,160 +1,226 @@
-﻿@using JamesWebUI.Client.Model
+﻿@using James.Shared.Constants
+@using JamesWebUI.Client.Model
 
-@inject IAccountState AccountState
+@inject IDataAccess DataAccess
 @inject TooltipService TooltipService
 
 @inherits JamesLayoutComponentBase
 
 <Theme/>
 
-<RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow-x: scroll; white-space: nowrap;">
+<RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow-x: scroll; white-space: nowrap;" Visible="@(_model != null)">
     <RadzenColumn Size="12">
-        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
-            <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
-                <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
-                              Click="@ToggleEditMode" Disabled="@(_isEditMode)"/>
-            </RadzenRow>
-            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" Visible="@(!_isEditMode)">
-                <RadzenColumn Size="3">
-                    <BsgFormField Text="Agency No.">
-                        <RadzenTextBox @bind-Value="@_agencyNumber"
-                                       Disabled="true" Style="color: black;"/>
-                    </BsgFormField>
-                </RadzenColumn>
-                <RadzenColumn Size="9">
+        <RadzenTemplateForm TItem="AccountAgencyAgentModel" Data="@_model" Submit="@SaveEdit" @ref="@_form">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+                <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
+                    <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
+                                  Click="@ToggleEditMode" Disabled="@(_isEditMode)"/>
+                </RadzenRow>
+                <RadzenRow JustifyContent="JustifyContent.SpaceBetween" Visible="@(!_isEditMode)">
+                    <RadzenColumn Size="3">
+                        <BsgFormField Text="Agency No.">
+                            <RadzenTextBox @bind-Value="@_model!.AgencyNumber" Style="color: black;"/>
+                        </BsgFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="9">
+                        <BsgFormField Text="Agency">
+                            <RadzenTextBox @bind-Value="@_model!.AgencyName" Style="color: black;"/>
+                        </BsgFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow JustifyContent="JustifyContent.Start" Visible="@(_isEditMode)">
                     <BsgFormField Text="Agency">
-                        <RadzenTextBox @bind-Value="@_agencyName"
-                                       Disabled="true" Style="color: black;"/>
+                        <RadzenDropDown Data="@_allAgencies" AllowFiltering="true" AllowClear="true"
+                                        Multiple="false" Change="@(_ => OnAgencyChanged())"
+                                        TextProperty="@nameof(AgencyDto.FullNameDisplay)"
+                                        @bind-Value="@_model!.AgencyNumber"
+                                        ValueProperty="@nameof(AgencyDto.AgencyNumber)"
+                                        Name="Agency"/>
+                        <RadzenRequiredValidator Text="The agency is required." Component="Agency"/>
                     </BsgFormField>
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow JustifyContent="JustifyContent.Start" Visible="@(_isEditMode)">
-                <BsgFormField Text="Agency">
-                    <RadzenDropDown Data="@AccountState.AllAgencies" AllowFiltering="true" AllowClear="true"
-                                    Multiple="false" Change="AgencyChanged" TextProperty="@nameof(AgencyDto.FullNameDisplay)"
-                                    @bind-Value="@_agencyId" ValueProperty="@nameof(AgencyDto.Id)" Name="Agency"/>
-                    <RadzenRequiredValidator Text="The agency is required." Component="Agency"/>
-                </BsgFormField>
-            </RadzenRow>
-            <RadzenRow>
-                <RadzenColumn Size="5">
-                    <BsgFormField Text="City">
-                        <RadzenTextBox @bind-Value="@_city" Disabled="true" Style="color: black;"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="5">
+                        <BsgFormField Text="City">
+                            <RadzenTextBox @bind-Value="@_model!.AgencyCity" Style="color: black;" Disabled="true"/>
+                        </BsgFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="2">
+                        <BsgFormField Text="State">
+                            <RadzenTextBox @bind-Value="@_model!.AgencyStateCode" Style="color: black;" Disabled="true"/>
+                        </BsgFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="5">
+                        <BsgFormField Text="Status">
+                            <Start>
+                                <RadzenIcon Icon="fiber_manual_record" IconStyle="@AgencyStatusStyle"/>
+                            </Start>
+                            <ChildContent>
+                                <RadzenTextBox @bind-Value="@_model!.AgencyStatus" Style="color: black;"
+                                               Disabled="true"/>
+                            </ChildContent>
+                        </BsgFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <BsgFormField Text="Agency Email">
+                        <RadzenTextBox @bind-Value="@_model!.AgencyEmail" Style="color: black;" Disabled="true"/>
                     </BsgFormField>
-                </RadzenColumn>
-                <RadzenColumn Size="2">
-                    <BsgFormField Text="State">
-                        <RadzenTextBox @bind-Value="@_stateCode" Disabled="true" Style="color: black;"/>
-                    </BsgFormField>
-                </RadzenColumn>
-                <RadzenColumn Size="5">
-                    <BsgFormField Text="Status">
-                        <Start>
-                            <RadzenIcon Icon="fiber_manual_record"
-                                        IconStyle="@AccountState.AgencyStatusStyle"/>
-                        </Start>
-                        <ChildContent>
-                            <RadzenTextBox @bind-Value="@_status" Disabled="true" Style="color: black;"/>
-                        </ChildContent>
-                    </BsgFormField>
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow>
-                <BsgFormField Text="Agency Email">
-                    <RadzenTextBox @bind-Value="@_agencyEmail" Disabled="true" Style="color: black;"/>
-                </BsgFormField>
-            </RadzenRow>
-            <RadzenRow AlignItems="AlignItems.Center" Visible="@(!_isEditMode)">
-                <RadzenColumn Size="6">
+                </RadzenRow>
+                <RadzenRow AlignItems="AlignItems.Center" Visible="@(!_isEditMode)">
+                    <RadzenColumn Size="6">
+                        <BsgFormField Text="Agent">
+                            <RadzenTextBox @bind-Value="@_model!.AgentName" Style="color: black;" Disabled="true"/>
+                        </BsgFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <BsgFormField Text="Agent Email">
+                            <RadzenTextBox @bind-Value="@_model!.AgentEmail" Style="color: black;" Disabled="true"/>
+                        </BsgFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="2">
+                        <RadzenButton Icon="add" Text="Add" Size="ButtonSize.Small" ImageAlternateText="Add Agent"
+                                      MouseEnter="@(args => ShowTooltipAddAgent(args))"
+                                      Click="OnRequestAgent"/>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow class="rz-mt-4" JustifyContent="JustifyContent.End" Visible="@(_isEditMode)">
                     <BsgFormField Text="Agent">
-                        <RadzenTextBox @bind-Value="@_agentName" Disabled="true" Style="color: black;"/>
+                        <RadzenDropDown Data="@_agencyAgentsLookup" AllowFiltering="true" AllowClear="true"
+                                        TextProperty="@nameof(BsgLookup.Name)" ValueProperty="@nameof(BsgLookup.Id)"
+                                        @bind-Value="@_model!.AgentId" Name="Agent" Change="@OnAgentChanged"/>
                     </BsgFormField>
-                </RadzenColumn>
-                <RadzenColumn Size="4">
-                    <BsgFormField Text="Agent Email">
-                        <RadzenTextBox @bind-Value="@_agentEmail" Disabled="true" Style="color: black;"/>
-                    </BsgFormField>
-                </RadzenColumn>
-                <RadzenColumn Size="2">
-                    <RadzenButton Icon="add" Text="Add" Size="ButtonSize.Small" ImageAlternateText="Add Agent"
-                                  MouseEnter="@(args => ShowTooltipAddAgent(args))"
-                                  Click="OnRequestAgent"/>
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow class="rz-mt-4" JustifyContent="JustifyContent.End" Visible="@(_isEditMode)">
-                <BsgFormField Text="Agent">
-                    <RadzenDropDown Data="AccountState.AgencyAgentsLookup" AllowFiltering="true" AllowClear="true"
-                                    TextProperty="@nameof(BsgLookup.Name)" ValueProperty="@nameof(BsgLookup.Id)" 
-                                    @bind-Value="@_agentId"/>
-                </BsgFormField>
-            </RadzenRow>
-            <RadzenRow class="rz-mt-4" JustifyContent="JustifyContent.End" Visible="@(_isEditMode)">
-                <RadzenStack Orientation="Orientation.Horizontal">
-                    <RadzenButton Text="Cancel" Icon="cancel" Click="@CancelEdit" ButtonType="ButtonType.Reset"
-                                  ButtonStyle="ButtonStyle.Secondary"/>
-                    <RadzenButton Text="Save" Icon="save" Click="@SaveEdit" ButtonType="ButtonType.Submit"
-                                  ButtonStyle="ButtonStyle.Primary" Disabled="@(!Changed)"/>
-                </RadzenStack>
-            </RadzenRow>
-        </RadzenStack>
+                </RadzenRow>
+                <RadzenRow class="rz-mt-4" JustifyContent="JustifyContent.End" Visible="@(_isEditMode)">
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenButton Text="Cancel" Icon="cancel" Click="@CancelEdit" ButtonType="ButtonType.Reset"
+                                      ButtonStyle="ButtonStyle.Light"/>
+                        <RadzenButton Text="Save" Icon="save" ButtonType="ButtonType.Submit"
+                                      ButtonStyle="ButtonStyle.Primary" Disabled="@(!_model!.IsChanged)"/>
+                    </RadzenStack>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenTemplateForm>
     </RadzenColumn>
 </RadzenCard>
 
 @code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private RadzenTemplateForm<AccountAgencyAgentModel> _form = null!;
     private bool _isEditMode;
+    private AccountAgencyAgentModel? _model;
     private AgencyDto? _agency;
     private Agent? _agent;
-    private string _agencyNumber = "";
-    private Guid? _agencyId;
-    private string _agencyName = "";
-    private string _city = "";
-    private string _stateCode = "";
-    private string _status = "";
-    private string _agencyEmail = "";
-    private Guid? _agentId;
-    private string _agentName = "";
-    private string _agentEmail = "";
+    private List<AgencyDto> _allAgencies = [];
+    private List<Agent> _agencyAgents = [];
+    private List<BsgLookup> _agencyAgentsLookup = [];
 
-    private bool Changed => _agent?.Id != _agentId ||
-                            _agency?.Id != _agencyId;
-
-    protected override void OnParametersSet()
+    private IconStyle AgencyStatusStyle => _model?.AgencyStatus?.ToLower() switch
     {
-        if(AccountState.Account == null || string.IsNullOrEmpty(AccountState.Account.AccountNum))
-            return;
-        
-        SetDisplayFields();
+        "active" => IconStyle.Success,
+        "pending" or "on hold" => IconStyle.Warning,
+        "lost" or "terminated" => IconStyle.Danger,
+        _ => IconStyle.Base
+    };
+
+    #region Loaders
+
+    #region Agency Agents
+
+    private IDataAccessResult<List<Agent>> _agencyAgentsResult = null!;
+
+    private LoadItem AgencyAgentsLoad => AddEventNotify(new()
+    {
+        Key = CacheKeys.AgencyAgents(_model?.AgencyNumber ?? Account.AgencyNumber ?? ""),
+        AsyncLoadTask = async () =>
+            _agencyAgentsResult = await DataAccess.GetAgencyAgents(_agency?.Id ?? Account.AgencyNumberNavigation?.Id ?? Guid.Empty),
+        CacheLoadTask = cache => _agencyAgentsResult = new DataAccessResult<List<Agent>>
+        {
+            Data = (List<Agent>)cache!
+        },
+        ResultVariable = () => _agencyAgentsResult,
+        AfterLoad = () =>
+        {
+            _agencyAgents = _agencyAgentsResult.Data!;
+            _agencyAgentsLookup = _agencyAgents
+                .Select(s => new BsgLookup
+                {
+                    Id = s.Id,
+                    Code = "",
+                    Name = s.IdNavigation.FullName
+                })
+                .ToList();
+        }
+    }, "agency agents");
+
+    #endregion
+
+    #region Agencies
+
+    private IDataAccessResult<List<AgencyDto>> _agenciesResult = null!;
+
+    private LoadItem AgenciesLoad => AddEventNotify(new()
+    {
+        Key = CacheKeys.AgenciesDto,
+        AsyncLoadTask = async () => _agenciesResult = await DataAccess.GetAllActiveAgencies(),
+        CacheLoadTask = cache => _agenciesResult = new DataAccessResult<List<AgencyDto>>
+        {
+            Data = (List<AgencyDto>)cache!
+        },
+        ResultVariable = () => _agenciesResult,
+        AfterLoad = () =>
+        {
+            _allAgencies = _agenciesResult.Data!;
+        }
+    }, "agencies");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            await LoadAgencies();
+            await LoadAgents();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
+        var agency = _allAgencies.FirstOrDefault(f => f.AgencyNumber == Account.AgencyNumber);
+        var mainAddress = agency?.Addresses.FirstOrDefault(f => f.Type.ToLower() == "main");
+        var email = agency?.Emails.FirstOrDefault(f => f.Type.ToLower() == "main");
+        var agent = _agencyAgents.FirstOrDefault(f => f.Id == Account.AgentId);
+
+        _model = new(agency?.AgencyNumber, agency?.FullName, mainAddress?.City, mainAddress?.StateCode, agency?.Status,
+            email?.EmailAddress, Account.AgentId, agent?.IdNavigation.FullName, agent?.IdNavigation.GetMainEmail());
     }
-    
-    private void SetDisplayFields()
+
+    private async Task LoadAgencies()
     {
-        _agency = AccountState.Account?.AgencyNumberNavigation == null
-            ? null
-            : new AgencyDto
-            {
-                Id = AccountState.Account?.AgencyNumberNavigation?.Id ?? Guid.Empty,
-                AgencyNumber = AccountState.Account?.AgencyNumberNavigation?.AgencyNumber ?? "",
-                FullName = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.FullName ?? ""
-            };
-        _agencyId = AccountState.Account?.AgencyNumberNavigation?.Id ?? Guid.NewGuid();
-        _agencyNumber = _agency?.AgencyNumber ?? "";
-        _agencyName = _agency?.FullName ?? ""; 
-        _agencyEmail = AccountState.Agency?.IdNavigation.LegalEntityEmails
-            .FirstOrDefault(f => f.Type.ToLower() == "main")?
-            .EmailAddress ?? "";
-        _city = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.GetMainAddress()?.City ?? "";
-        _stateCode = AccountState.Account?.AgencyNumberNavigation?.IdNavigation.GetMainAddress()?.StateCode ?? "";
-        _status = AccountState.Account?.AgencyNumberNavigation?.AgencyStatusLogs
-            .OrderByDescending(o => o.Effective)
-            .FirstOrDefault()?
-            .NewStatus ?? "";
-        
-        _agent = AccountState.Account?.Agent;
-        _agentId = _agent?.Id;
-        _agentName = _agent?.IdNavigation.FullName ?? "";
-        _agentEmail = _agent?.IdNavigation.LegalEntityEmails
-            .FirstOrDefault(f => f.Type.ToLower() == "main")?
-            .EmailAddress ?? "";
+        await DataAccess.GetCacheOrLoadDataAsync(AgenciesLoad);
+    }
+
+    private async Task LoadAgents()
+    {
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyAgentsLoad);
+    }
+
+    private async Task OnAgencyChanged()
+    {
+        SetAgency();
+
+        await LoadAgents();
+    }
+
+    private void OnAgentChanged()
+    {
+        SetAgent();
     }
 
     private void ToggleEditMode()
@@ -186,57 +252,93 @@
 
         var dialogParameters = new Dictionary<string, object>
         {
-            { "AgencyName", _agencyName },
-            { "AgencyNumber", _agencyNumber }
+            { "AgencyName", _model!.AgencyName! },
+            { "AgencyNumber", _model!.AgencyNumber! }
         };
 
         await DialogService.OpenAsync<AccountNewAgent>("Request for a new Agent", dialogParameters, dialogOptions);
     }
 
-    private async Task AgencyChanged(object? obj)
-    {
-        if(obj == null)
-            return;
-        
-        var agencyId = (Guid)obj;
-        var agency = AccountState.AllAgencies
-            .FirstOrDefault(f => f.Id == agencyId);
-        if(agency == null)
-            return;
-        
-        var updatedAgency = await AccountState.AgencyChanged(agency.AgencyNumber);
-        
-        _agencyId = updatedAgency?.Id;
-        _agencyNumber = updatedAgency?.AgencyNumber ?? "";
-        _agencyName = updatedAgency?.IdNavigation.FullName ?? "";
-        _city = updatedAgency?.IdNavigation.GetMainAddress()?.City ?? "";
-        _stateCode = updatedAgency?.IdNavigation.GetMainAddress()?.StateCode ?? "";
-        _status = updatedAgency?.Status ?? "";
-        
-        _agent = null;
-        _agentId = null;
-        
-        StateHasChanged();
-    }
-    
     private void CancelEdit()
     {
-        SetDisplayFields();
+        _model?.Reset();
         _isEditMode = false;
+    }
+
+    private void SetAgency()
+    {
+        _agency = _allAgencies.FirstOrDefault(f => f.AgencyNumber == _model!.AgencyNumber);
+        var address = _agency?.Addresses.FirstOrDefault(f => f.Type.ToLower() == "main");
+        var email = _agency?.Emails.FirstOrDefault(f => f.Type.ToLower() == "main")?.EmailAddress;
+        _model!.AgencyName = _agency?.FullName;
+        _model!.AgencyCity = address?.City;
+        _model!.AgencyStateCode = address?.StateCode;
+        _model!.AgencyEmail = email;
+        _model!.AgencyStatus = _agency?.Status;
+
+        _model!.AgentId = null;
+        _model!.AgentName = null;
+        _model!.AgentEmail = null;
+    }
+
+    private void SetAgent()
+    {
+        _agent = _agencyAgents
+            .FirstOrDefault(f => f.Id == _model!.AgentId);
+        _model!.AgentName = _agent?.IdNavigation.FullName;
+        _model!.AgentEmail = _agent?.IdNavigation.GetMainEmail();
     }
 
     private async Task SaveEdit()
     {
-        if(string.IsNullOrEmpty(_agencyNumber) || _agentId == null)
+        if (!_form.IsValid)
             return;
-        
-        var success = await AccountState.SaveAgencyAndAgent(_agencyNumber, _agentId.Value);
-        
-        SetDisplayFields();
-        
-        if(success)
+
+        var success = await SaveAgencyAndAgent(_model!.AgencyNumber!, _model!.AgentId);
+
+        if (success)
             NotifySuccessfulSave("Agency and Agent successfully updated");
-        
+
         _isEditMode = false;
     }
+
+    private async Task<bool> SaveAgencyAndAgent(string agencyNumber, Guid? agentId)
+    {
+        var response = await DataAccess.SetAccountAgencyAndAgent(Account.Id, agencyNumber, agentId);
+        if (response.Success)
+        {
+            var agencyResponse = await DataAccess.GetAgencyByAgencyNumber(agencyNumber);
+            Account.AgencyNumber = agencyNumber;
+            Account.AgencyNumberNavigation = agencyResponse.Data;
+
+            if (agentId != null)
+            {
+                var agentResponse = await DataAccess.GetAgent(agentId.Value);
+
+                if (!agentResponse.Success)
+                {
+                    Account.AgentId = null;
+                    Account.Agent = null;
+
+                    NotifyLoadError(agentResponse.Errors, "agent", true);
+                }
+                else
+                {
+                    Account.AgentId = agentId;
+                    Account.Agent = agentResponse.Data;
+                }
+            }
+            else
+            {
+                Account.AgentId = null;
+                Account.Agent = null;
+            }
+
+            return true;
+        }
+
+        NotifyLoadError(response.Errors, "account", true);
+        return false;
+    }
+
 }

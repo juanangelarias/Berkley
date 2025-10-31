@@ -754,11 +754,11 @@ namespace James.Data.Server
                 received, documentTypeId, comments, eventSender, contextFactory));
         }
 
-        public async Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, Guid accountId,
+        public async Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, string accountNum,
             DateTime watchDate,
             string watchStatus, string reason, string actionPlan)
         {
-            return await ExecuteGet(async () => await accountMutation.CreateAccountWatch(id, accountId, watchDate,
+            return await ExecuteGet(async () => await accountMutation.CreateAccountWatch(id, accountNum, watchDate,
                 watchStatus, reason, actionPlan, contextFactory));
         }
 
@@ -786,7 +786,7 @@ namespace James.Data.Server
             return response;
         }
 
-        public async Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid agentId)
+        public async Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid? agentId)
         {
             var response = await ExecuteSave(async () =>
                 await accountMutation.SetAccountAgencyAndAgent(accountId, agencyNumber, agentId, contextFactory));
@@ -807,9 +807,14 @@ namespace James.Data.Server
                 };
         }
 
-        public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId)
+        public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum)
         {
-            return await ExecuteGet(async () => await query.GetAllAccountWatches(accountId, contextFactory));
+            return await ExecuteGet(async () => await query.GetAllAccountWatches(accountNum, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetFirstIndemnity(accountNum, contextFactory));
         }
 
         public async Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum)

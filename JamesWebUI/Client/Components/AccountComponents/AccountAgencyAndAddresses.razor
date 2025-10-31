@@ -2,10 +2,10 @@
     <RadzenTabs TabPosition="TabPosition.Top">
         <Tabs>
             <RadzenTabsItem Text="Agency">
-                <AccountAgency/>
+                <AccountAgency Account="@Account"/>
             </RadzenTabsItem>
             <RadzenTabsItem Text="Addresses">
-                <AccountAgencyAddresses/>
+                <AccountAddresses Account="@Account"/>
             </RadzenTabsItem>
         </Tabs>
     </RadzenTabs>
@@ -13,5 +13,5 @@
 
 
 @code {
-    
+    [Parameter, EditorRequired] public required Account Account { get; set; }
 }

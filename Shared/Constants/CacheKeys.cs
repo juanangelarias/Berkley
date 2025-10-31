@@ -5,6 +5,7 @@ public static class CacheKeys
     // Calculated
     // A
     public static string AccountKey(string accountNumber) => $"Account-{accountNumber}";
+    public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
     public static string AgencyAgents(string id) => $"AgencyAgents-{id}";
     // L
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";

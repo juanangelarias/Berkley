@@ -52,17 +52,6 @@ query GetDivisions{
     }
 }
 
-query GetUnderwriters{
-    underwriters {
-        id
-        idNavigation {
-            initials
-            fullName
-        }
-    }
-}
-
-
 query GetAllLegalEntityAddresses($input: UUID!) {
   allLegalEntityAddresses (legalEntityId: $input) {
     address1
@@ -131,6 +120,35 @@ query GetAllLegalEntityPhoneNumbers($input: UUID!) {
 	}
 }
 
+query GetAllCountries {
+  allCountries {
+    abbreviation
+    active
+    code
+    name
+    phoneCode
+    phoneMask
+    postalCodeMask
+  }
+}
+
+query GetUserSettings {
+  userSettings {
+    key
+    value
+  }
+}
+
+query GetUnderwriters{
+    underwriters {
+        id
+        idNavigation {
+            initials
+            fullName
+        }
+    }
+}
+
 query GetAllLegalEntityEmails($input: UUID!){
     allLegalEntityEmails(legalEntityId: $input) {
         emailAddress
@@ -152,23 +170,4 @@ query GetAllEmailTypes {
         id
         type
     }
-}
-
-query GetAllCountries {
-  allCountries {
-    abbreviation
-    active
-    code
-    name
-    phoneCode
-    phoneMask
-    postalCodeMask
-  }
-}
-
-query GetUserSettings {
-  userSettings {
-    key
-    value
-  }
 }

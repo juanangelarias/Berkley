@@ -148,7 +148,7 @@
         <AuthorizeView Policy="InRoleChangePermissions">
             <RadzenRow>&nbsp;</RadzenRow>
             <RadzenRow>
-                <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
+                <RadzenPanelMenu DisplayStyle="@(_sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
                                  Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
                     <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true" Path="Admin">
                         <RadzenPanelMenuItem Text="Employees" Icon="people" Path="Employees" />

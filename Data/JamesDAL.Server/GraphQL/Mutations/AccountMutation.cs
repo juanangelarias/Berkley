@@ -155,7 +155,7 @@ public class AccountMutation
     }
 
     [Authorize]
-    public async Task<AccountWatch> CreateAccountWatch(Guid id, Guid accountId, DateTime watchDate, string watchStatus,
+    public async Task<AccountWatch> CreateAccountWatch(Guid id, string accountNum, DateTime watchDate, string watchStatus,
         string reason, string actionPlan, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
@@ -163,7 +163,7 @@ public class AccountMutation
         var accountWatch = new AccountWatch
         {
             Id = id,
-            AccountId = accountId,
+            AccountNum = accountNum,
             WatchDate = watchDate,
             WatchStatus = watchStatus,
             Reason = reason,
@@ -254,7 +254,7 @@ public class AccountMutation
     }
 
     [Authorize]
-    public async Task<bool> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid agentId,
+    public async Task<bool> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid? agentId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();

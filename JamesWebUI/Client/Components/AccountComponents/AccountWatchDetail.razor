@@ -1,23 +1,22 @@
-﻿@using JustifyContent = Radzen.JustifyContent
-@using Orientation = Radzen.Orientation
-
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
 <RadzenCard Variant="Variant.Text">
     <RadzenColumn Size="12">
         <RadzenRow Gap="1rem">
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
                 <RadzenColumn Size="5">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
-                        <RadzenText Text="Reason" TextStyle="TextStyle.Subtitle1" Style="width: 300px"/>
-                        <RadzenTextArea @bind-Value="@AccountWatch.Reason" Style="width: 300px;" Rows="4"/>
-                    </RadzenStack>
+                    <RadzenFormField Text="Reason" Style="width: 300px;">
+                        <RadzenTextArea @bind-Value="@AccountWatch.Reason" Style="width: 300px;" Rows="4"
+                                        Name="Reason" ReadOnly="@(!InEdition)"/>
+                        <RadzenRequiredValidator Text="Reason is required" Component="Reason"/>
+                    </RadzenFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="5">
-                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
-                        <RadzenText Text="Action Plan" TextStyle="TextStyle.Subtitle1" Style="width: 300px"/>
-                        <RadzenTextArea @bind-Value="@AccountWatch.ActionPlan" Style="width: 300px;" Rows="4"/>
-                    </RadzenStack>
+                        <RadzenFormField Text="Action Plan" Style="width: 300px;">
+                            <RadzenTextArea @bind-Value="@AccountWatch.ActionPlan" Style="width: 300px;" Rows="4"
+                                            Name="ActionPlan" ReadOnly="@(!InEdition)"/>
+                            <RadzenRequiredValidator Text="Action Plan is required" Component="ActionPlan"/>
+                        </RadzenFormField>
                 </RadzenColumn>
             </RadzenStack>
         </RadzenRow>
@@ -26,11 +25,13 @@
 
 @code {
     [Parameter, EditorRequired] public AccountWatchDisplay AccountWatch { get; set; } = null!;
+    [Parameter, EditorRequired] public bool InEdition { get; set; }
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        
+
         StateHasChanged();
     }
+
 }

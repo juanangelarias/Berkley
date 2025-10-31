@@ -1,7 +1,10 @@
 ﻿@page "/Account/{AccountNumber?}"
 
 @using JamesWebUI.Client.Model
+
 @inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
 
 @attribute [Authorize]
 
@@ -12,69 +15,59 @@
 <RadzenColumn Size="12">
     <RadzenStack Orientation="Orientation.Vertical">
         <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
-            <RadzenCard Variant="Variant.Text" Style="width: 100%; margin: 10px; padding: 0;" >
+            <RadzenCard Variant="Variant.Text" Style="width: 100%; margin: 10px; padding: 0;">
                 <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
                     <RadzenColumn Size="8">
-                            <AccountSearch SetAccount="OnSetAccount" CreateNewAccount="CreateNewAccount"/>
+                        <AccountSearch SetAccount="OnSetAccount" CreateNewAccount="CreateNewAccount"/>
                     </RadzenColumn>
                     <RadzenColumn Size="4">
                         <RadzenCard Variant="Variant.Text" Style="width: 100%;">
                             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
                                          JustifyContent="JustifyContent.End">
                                 <RadzenLabel Text="View Type: " Style="font-size: small;"
-                                             Visible="@IsUserManager"/>
+                                             Visible="@_isUserManager"/>
                                 <RadzenDropDown Data="@(Enum.GetValues(typeof(AccountLayout)).Cast<Enum>())"
-                                                @bind-Value="@SelectedType"
+                                                @bind-Value="@_selectedType"
                                                 Text="Select View Type" Style="font-size: small; height: 35px;"
-                                                Visible="@IsUserManager"/>
+                                                Visible="@_isUserManager"/>
                             </RadzenStack>
                         </RadzenCard>
                     </RadzenColumn>
                 </RadzenRow>
             </RadzenCard>
         </RadzenRow>
-        @if (IsAccountLoaded)
-        {
-            <RadzenRow Style="width: 100%; margin-top: -30px;">
-                @switch (SelectedType)
-                {
-                    case AccountLayout.Commercial:
-                        <AccountCommercial/>
-                        break;
-                    case AccountLayout.Contract:
-                        <AccountContract/>
-                        break;
-                    case AccountLayout.Default:
-                        <AccountDefault/>
-                        break;
-                    default:
-                        <RadzenColumn span="12">
-                            <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-                                <RadzenText Text="The user needs to be defined as Commercial or Contract user"
-                                            TextStyle="TextStyle.DisplayH5" TextAlign="TextAlign.Center"/>
-                            </RadzenRow>
-                        </RadzenColumn>
-                        break;
-                }
-            </RadzenRow>
-        }
-        else
-        {
-            <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-                <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-                    <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
-                        <RadzenColumn Size="4">
-                            <BusyDialog Message="Loading..."/>
-                        </RadzenColumn>
-                    </RadzenRow>
-                </RadzenStack>
-            </RadzenRow>
-        }
+        <RadzenRow Style="width: 100%; margin-top: -30px;" Visible="@(_account != null)">
+            @switch (_selectedType)
+            {
+                case AccountLayout.Commercial:
+                    <AccountCommercial Account="@_account"/>
+                    break;
+                case AccountLayout.Contract:
+                    <AccountContract Account="@_account"/>
+                    break;
+                case AccountLayout.Default:
+                    <AccountDefault Account="@_account"/>
+                    break;
+                default:
+                    <RadzenColumn span="12">
+                        <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+                            <RadzenText Text="The user needs to be defined as Commercial or Contract user"
+                                        TextStyle="TextStyle.DisplayH5" TextAlign="TextAlign.Center"/>
+                        </RadzenRow>
+                    </RadzenColumn>
+                    break;
+            }
+        </RadzenRow>
     </RadzenStack>
 </RadzenColumn>
 
 @code {
     [Parameter] public string? AccountNumber { get; set; }
+
+    private bool _isUserManager;
+    private UserType _userType;
+    private AccountLayout? _selectedType;
+    private Account? _account;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -82,28 +75,50 @@
 
         await SetLayout();
 
+        if (!string.IsNullOrEmpty(AccountNumber))
+            await LoadAccount();
+    }
+
+    private async Task LoadAccount()
+    {
         if (string.IsNullOrEmpty(AccountNumber))
-        {
-            ClearAccount();
-            IsAccountLoaded = true;
             return;
+
+        var accountResult = await DataAccess.GetAccountByNumber(AccountNumber!);
+        if (!accountResult.Success)
+        {
+            NotifyLoadError(accountResult.Errors, "account", true);
         }
 
-        await Initialize();
+        _account = accountResult.Data;
+    }
 
-        StateHasChanged();
+    private async Task SetLayout()
+    {
+        // ToDo: With Greg define how to obtain the user type (Commercial or Contract)
+        _isUserManager = true;
+        _userType = UserType.Commercial;
+
+        _selectedType = _userType switch
+        {
+            UserType.Commercial => AccountLayout.Commercial,
+            UserType.Contract => AccountLayout.Contract,
+            UserType.Default => AccountLayout.Default,
+            UserType.Undefined => null,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     private async Task OnSetAccount(string arg)
     {
         AccountNumber = arg;
-        AccountNumber = arg;
 
-        await Initialize();
+        await LoadAccount();
     }
-    
+
     private async Task CreateNewAccount()
     {
         throw new NotImplementedException();
     }
+
 }

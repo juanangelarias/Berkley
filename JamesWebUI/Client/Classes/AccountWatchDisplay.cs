@@ -9,7 +9,7 @@ public class AccountWatchDisplay: AccountWatch
     public AccountWatchDisplay(AccountWatch watch)
     {
         Id = watch.Id;
-        AccountId = watch.AccountId;
+        AccountNum = watch.AccountNum;
         WatchDate = watch.WatchDate;
         WatchStatus = watch.WatchStatus;
         Reason = watch.Reason;
@@ -21,7 +21,7 @@ public class AccountWatchDisplay: AccountWatch
         return new AccountWatch
         {
             Id = Id,
-            AccountId = AccountId,
+            AccountNum = AccountNum,
             WatchDate = WatchDate,
             WatchStatus = WatchStatus,
             Reason = Reason,

@@ -1,4 +1,4 @@
-﻿@inject IAccountState AccountState
+﻿@*@inject IAccountState AccountState
 @inject NavigationManager Navigation
 
 @inherits JamesLayoutComponentBase
@@ -74,6 +74,9 @@
 </RadzenCard>
 
 @code {
+    [Parameter, EditorRequired] public required Guid AccountId { get; set; }
+    [Parameter] public EventCallback<bool> OnAlertOrClaimExist { get; set; }
+    
     private Dictionary<int, string> _periods = [];
     private int SelectedPeriod { get; set; }
     private List<AccountAlertDto> _alerts = [];
@@ -136,4 +139,4 @@
             Navigation.NavigateTo(alert.Link);
         }
     }
-}
+}*@

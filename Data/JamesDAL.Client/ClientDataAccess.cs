@@ -591,8 +591,8 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
         {
             throw new NotImplementedException();
-            //return await ExecuteGetString(async () =>
-            //await jamesClient.GetBondRequestNumberType.ExecuteAsync(bondNumber));
+            /*return await ExecuteGetString(async () =>
+            await jamesClient.GetBondRequestNumberType.ExecuteAsync(bondNumber));*/
         }
 
         public async Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber)
@@ -832,7 +832,7 @@ namespace James.Data.Client
                     }));
         }
 
-        public async Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, Guid accountId,
+        public async Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, string accountNum,
             DateTime watchDate,
             string watchStatus, string reason, string actionPlan)
         {
@@ -840,7 +840,7 @@ namespace James.Data.Client
                 new()
                 {
                     Id = id,
-                    AccountId = accountId,
+                    AccountNum = accountNum,
                     WatchDate = watchDate,
                     WatchStatus = watchStatus,
                     Reason = reason,
@@ -879,7 +879,7 @@ namespace James.Data.Client
             return GraphQLSaveResult(response);
         }
 
-        public async Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid agentId)
+        public async Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid? agentId)
         {
             var response = await jamesClient
                 .SetAccountAgencyAndAgent.ExecuteAsync(new()
@@ -897,10 +897,18 @@ namespace James.Data.Client
             return await ExecuteSave(async () => await jamesClient.DeleteAccountWatch.ExecuteAsync(new() { Id = id }));
         }
 
-        public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId)
+        public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum)
         {
             var response = await ExecuteGet<List<AccountWatch>>(async () =>
-                await jamesClient.GetAllAccountWatches.ExecuteAsync(accountId));
+                await jamesClient.GetAllAccountWatches.ExecuteAsync(accountNum));
+
+            return response;
+        }
+
+        public async Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum)
+        {
+            var response = await ExecuteGet<DateOnly?>(async () =>
+                await jamesClient.GetFirstIndemnity.ExecuteAsync(accountNum));
 
             return response;
         }
@@ -1339,8 +1347,8 @@ namespace James.Data.Client
 
         private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<IOperationResult>> dataFunc,
             string subProperty = "",
-            [CallerMemberName] string graphQlFunctionName = "GraphQL call", T? defaultValue = null)
-            where T : class, new()
+            [CallerMemberName] string graphQlFunctionName = "GraphQL call", T? defaultValue = default)
+            where T : new()
         {
             try
             {

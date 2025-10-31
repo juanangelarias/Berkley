@@ -24,7 +24,6 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using JamesWebUI.Client.Security;
-using JamesWebUI.Client.States;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -173,14 +172,6 @@ try
                 .AllowAnyMethod();
         });
     });
-    
-    #region States
-
-    builder.Services
-        // A
-        .AddScoped<IAccountState, AccountState>();
-
-    #endregion
 
     //Set up logging
     ConfirmAppSettingsEntry("ApplicationId");

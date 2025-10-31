@@ -1,380 +1,272 @@
 ﻿query GetAccountByNumber($accountNumber: String) {
-  accountByNumber(accountNumber: $accountNumber) {
-      id
-      idNavigation {
-          fullName
-          legalEntityAddresses {
-              type
-              address {
-                  address1
-                  address2
-                  address3
-                  city
-                  stateCode
-                  stateCodeNavigation {
-                      countryCode
-                      countryCodeNavigation {
-                          name
-                      }
-                  }
-                  postalCode
-              }
-          }
-          legalEntityPhones {
-              type
-              phoneNumber {
-                  mainNumber
-                  extension
-              }
-          }
-          legalEntityEmails {
-              type
-              emailAddress
-          }
-      }
-      bank
-      agentId
-      agent {
-          id
-          idNavigation {
-              fullName
-              legalEntityEmails {
-                  id
-                  type
-                  emailAddress
-              }
-          }
-      }
-      agencyNumber
-      agencyNumberNavigation {
-          id
-          agencyNumber
-          idNavigation {
-              fullName
-              legalEntityAddresses {
-                  type
-                  address {
-                      city
-                      stateCode
-                      address1
-                      address2
-                      address3
-                      country
-                      countryCode
-                      id
-                      postalCode
-                      state
-                  }
-              }
-          }
-          agencyStatusLogs {
-              id
-              effective
-              newStatus
-              oldStatus
-          }
-      }
-      accountWatches {
-          id
-          actionPlan
-          reason
-          watchDate
-          watchStatus
-      }
-      accountNum
-      division
-      homeOfficeReviewByNavigation {
-          fullName
-      }
-      homeOfficeReviewed
-      branchReviewByNavigation {
-          fullName
-      }
-      branchReviewed
-      attorney {
-          idNavigation {
-              fullName
-          }
-          martindaleHubbellRating
-      }
-      underwriterId
-      underwriter {
-          idNavigation {
-              fullName
-              initials
-              title
-              email
-          }
-          reportsTo
-      }
-      branch
-      branchNavigation {
-          id
-          branchKey
-          name
-      }
-      divisionNavigation {
-          id
-          divisionCode
-          division
-      }
-      accountStatusLogs {
-          accountStatus
-          effective
-          id
-      }
-      bankPhone {
-          countryCode
-          created
-          extension
-          id
-          mainNumber
-          modified
-      }
-      cpafirm {
-          created
-          entityType
-          familyName
-          fullName
-          givenName
-          id
-          isIndividual
-          middleInitial
-          modified
-          parent
-          taxIdEncrypted
-          website
-          legalEntityPhones {
-              legalEntityId
-              phoneNumberId
-              type
-          }
-      }
-      cpacontact {
-          created
-          entityType
-          familyName
-          fullName
-          givenName
-          id
-          isIndividual
-          middleInitial
-          modified
-          parent
-          taxIdEncrypted
-          website
-      }
-      businessTypeNavigation {
-          businessType
-          created
-          id
-          modified
-      }
-      businessTypeClassNavigation {
-          businessType
-          classCode
-          created
-          id
-          isContract
-          modified
-      }
-      lawFirm {
-          comment
-          idNavigation {
-              fullName
-          }
-          martindaleHubbellRating
-      }
-      indemnitors {
-          id
-          agreementDate
-      }
-      yearOpened
-      currentManagementYear
-      creditReport
-      interimWips
-      indemnityPerson
-      indemnityFull
-      indemnityCorp
-      indemnityComments
-      priorSuretyCompany
-      subcontractPercent
-      subcontractProtection
-      taxBasis
-      continuityActiveMultipleOwners
-      continuityFundedBuySell
-      continuityKeyManagementLifeInsurance
-      continuityManagementIncentives
-      businessType
-      businessTypeClass
-      estimatingSignoff
-      estimatingSystem
-      accountingSystem
-      affiliateCompany
-      bankAverageBalance
-      bankLastContacted
-      bankLoc
-      bankLocexpires
-      bankLochigh
-      bankLochighDate
-      bankLocsecurity
-      bankLocused
-      bankReferenceName
-      berkleyAffiliate
-  }
+    accountByNumber(accountNumber: $accountNumber) {
+        id
+        accountNum
+        idNavigation {
+            fullName
+            legalEntityAddresses {
+                type
+                address {
+                    address1
+                    address2
+                    address3
+                    city
+                    countryCode
+                    country
+                    stateCode
+                    state
+                    postalCode
+                    id
+                }
+            }
+            legalEntityEmails {
+                type
+                emailAddress
+                id
+            }
+            legalEntityPhones {
+                type
+                phoneNumber {
+                    countryCode
+                    mainNumber
+                    formatted
+                    extension
+                    id
+                }
+            }
+            mainAddress {
+                address1
+                address2
+                address3
+                city
+                countryCode
+                country
+                stateCode
+                state
+                postalCode
+                id
+            }
+            mainEmail
+            mainPhoneNumber {
+                id
+                countryCode
+                mainNumber
+                formatted
+                extension
+            }
+            parent
+            website
+        }
+        agency {
+            id
+            agencyNumber
+            idNavigation {
+                fullName
+            }
+        }
+        agent {
+            id
+            nationalProducerNumber
+            fullName
+        }
+        underwriter {
+            id
+            idNavigation {
+                fullName
+            }
+        }
+        branch
+        branchReviewByNavigation {
+            id
+            fullName
+        }
+        bank
+        bankPhone {
+            id
+            countryCode
+            mainNumber
+            extension
+        }
+        cpafirm {
+            id
+            fullName
+            legalEntityPhones {
+                type
+                phoneNumber {
+                    countryCode
+                    mainNumber
+                    extension
+                    id
+                }
+            }
+        }
+        businessType
+        businessTypeClass
+        businessTypeClassNavigation {
+            isContract
+        }
+        lawFirm {
+            id
+            fullName
+            idNavigation {
+                fullName
+            }
+        }
+        accountStatusLogs {
+            effective
+            accountStatus
+            accountStatusNavigation {
+                active
+            }
+        }
+    }
+}
+
+query GetFirstIndemnity($input: String!) {
+    firstIndemnity(accountNum: $input) 
 }
 
 query SearchAccounts($input: String!) {
-  searchAccounts(searchString: $input) {
-    accountNum
-    idNavigation {
-      fullName
-      legalEntityAddresses {
-        type
-        address {
-          address1
-          address2
-          address3
-          city
-          stateCode
-          stateCodeNavigation {
-            countryCode
-            countryCodeNavigation {
-              name
+    searchAccounts(searchString: $input) {
+        accountNum
+        idNavigation {
+            fullName
+            legalEntityAddresses {
+                type
+                address {
+                    address1
+                    address2
+                    address3
+                    city
+                    stateCode
+                    stateCodeNavigation {
+                        countryCode
+                        countryCodeNavigation {
+                            name
+                        }
+                    }
+                    postalCode
+                }
             }
-          }
-          postalCode
+            legalEntityPhones {
+                type
+                phoneNumber {
+                    mainNumber
+                    extension
+                }
+            }
+            legalEntityEmails {
+                type
+                emailAddress
+            }
         }
-      }
-      legalEntityPhones {
-        type
-        phoneNumber {
-          mainNumber
-          extension
-        }
-      }
-      legalEntityEmails {
-        type
-        emailAddress
-      }
     }
-  }
 }
 
 query GetAccountActiveLinesOfAuthority($input: String!) {
-  accountActiveLinesOfAuthority(accountNumber: $input) {
-    accountNum
-    commercialLOA {
-      accountNum
-      approved
-      approvedBy
-      bondType
-      comments
-      conditions
-      created
-      createdBy
-      division
-      effective
-      expiration
-      homeOfficeApproved
-      id
-      loaaggregate
-      loasingle
-      modified
-      sequenceNumber
-      status
+    accountActiveLinesOfAuthority(accountNumber: $input) {
+        accountNum
+        commercialLOA {
+            accountNum
+            approved
+            approvedBy
+            bondType
+            comments
+            conditions
+            created
+            createdBy
+            division
+            effective
+            expiration
+            homeOfficeApproved
+            id
+            loaaggregate
+            loasingle
+            modified
+            sequenceNumber
+            status
+        }
+        contractLOA {
+            accountNum
+            approved
+            approvedBy
+            bondType
+            comments
+            conditions
+            created
+            createdBy
+            division
+            effective
+            expiration
+            homeOfficeApproved
+            id
+            loaaggregate
+            loasingle
+            modified
+            sequenceNumber
+            status
+        }
     }
-    contractLOA {
-      accountNum
-      approved
-      approvedBy
-      bondType
-      comments
-      conditions
-      created
-      createdBy
-      division
-      effective
-      expiration
-      homeOfficeApproved
-      id
-      loaaggregate
-      loasingle
-      modified
-      sequenceNumber
-      status
-    }
-  }
-} 
+}
 
 query GetAccountProgramHistory($input: String!) {
-  accountProgramHistory(accountNumber: $input) {
-    accountNum
-    aggregate
-    approvedBy
-    approvedDate
-    comments
-    created
-    createdBy
-    effective
-    expiration
-    homeOfficeApproved
-    id
-    modified
-    single
-    statusId
-    accountProgramStatusHistories {
-      accountProgramId
-      accountNum
-      created
-      id
-      modified
-      newAggregate
-      newSingle
-      newStatus
-      oldAggregate
-      oldSingle
-      oldStatus
-      statusChangeBy
-      statusDate
+    accountProgramHistory(accountNumber: $input) {
+        accountNum
+        aggregate
+        approvedBy
+        approvedDate
+        comments
+        created
+        createdBy
+        effective
+        expiration
+        homeOfficeApproved
+        id
+        modified
+        single
+        statusId
+        accountProgramStatusHistories {
+            accountProgramId
+            accountNum
+            created
+            id
+            modified
+            newAggregate
+            newSingle
+            newStatus
+            oldAggregate
+            oldSingle
+            oldStatus
+            statusChangeBy
+            statusDate
+        }
     }
-  }
-} 
+}
 query GetAdditionalRelatedParties($input: String!) {
-  additionalRelatedParties(accountNumber: $input) {
-    accountNum
-    comments
-    created
-    financialStatements
-    guarantor
-    id
-    indemnity
-    modified
-    idNavigation {
-      created
-      entityType
-      fullName
-      isIndividual
-      modified
-      parent
+    additionalRelatedParties(accountNumber: $input) {
+        accountNum
+        comments
+        created
+        financialStatements
+        guarantor
+        id
+        indemnity
+        modified
+        idNavigation {
+            created
+            entityType
+            fullName
+            isIndividual
+            modified
+            parent
+        }
     }
-  }
 }
 
 query GetIdAccountNumbers {
-  idAccountNumbers {
-      id
-      accountNum
-  }
-}
-
-query GetAllAccountWatches($input: UUID!) {
-    allAccountWatches(accountId: $input){
-        actionPlan
+    idAccountNumbers {
         id
-        reason
-        watchDate
-        watchStatus
+        accountNum
     }
 }
 
@@ -382,7 +274,7 @@ query GetAccountAlerts($input1: Int!, $input2: String!) {
     accountAlerts(period: $input1, accountNum: $input2){
         claims {
             bondNumber
-            classCode 
+            classCode
             claimId
         },
         alerts {
@@ -391,5 +283,15 @@ query GetAccountAlerts($input1: Int!, $input2: String!) {
             alert
             link
         }
+    }
+}
+
+query GetAllAccountWatches($input: String!) {
+    allAccountWatches(accountNum: $input){
+        actionPlan
+        id
+        reason
+        watchDate
+        watchStatus
     }
 }

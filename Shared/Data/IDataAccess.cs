@@ -270,7 +270,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
             DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
 
-        public Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, Guid accountId, DateTime watchDate,
+        public Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, string accountNum, DateTime watchDate,
             string watchStatus, string reason, string actionPlan);
 
         public Task<IDataAccessResult<AccountWatch>> UpdateAccountWatch(Guid id, string watchStatus, string reason,
@@ -279,10 +279,11 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetAccountCommercialInfo(Guid accountId, string fullName, Guid underwriterId,
             string branchKey, string divisionCode, Guid sicCodeId, Guid hoLead);
 
-        public Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid agentId);
+        public Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid? agentId);
         public Task<ISaveDataResult> DeleteAccountWatch(Guid id);
 
-        public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(Guid accountId);
+        public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum);
+        public Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum);
         public Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum);
     }
 

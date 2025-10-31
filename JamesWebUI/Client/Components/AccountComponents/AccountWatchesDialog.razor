@@ -1,6 +1,6 @@
 ﻿@inherits JamesLayoutComponentBase
 
-@inject IAccountState AccountState
+@inject IDataAccess DataAccess
 
 <Theme/>
 
@@ -19,7 +19,7 @@
                     </RadzenStack>
                 </HeaderTemplate>
                 <Template Context="watch">
-                    <AccountWatchDetail AccountWatch="@watch"/>
+                    <AccountWatchDetail AccountWatch="@watch" InEdition="@InEdition"/>
                 </Template>
                 <Columns>
                     <RadzenDataGridColumn Width="30px">
@@ -37,9 +37,11 @@
                             <RadzenText Text="@watch.WatchStatus"/>
                         </Template>
                         <EditTemplate Context="watch">
-                            <RadzenDropDown TValue="string" Data="@AccountState.WatchStatuses"
+                            <RadzenDropDown TValue="string" Data="@WatchStatuses"
                                             @bind-Value="watch.WatchStatus" TextProperty="WatchStatus"
-                                            ValueProperty="WatchStatus" Style="width: 100%;"/>
+                                            ValueProperty="WatchStatus" Style="width: 100%;" Name="WatchStatus"/>
+                            <RadzenRequiredValidator Text="Watch Status field is missing."
+                                                     Component="WatchStatus"/>
                         </EditTemplate>
                     </RadzenDataGridColumn>
                     <RadzenDataGridColumn Title="Previous" Property="PreviousWatchStatus" Width="100px">
@@ -47,7 +49,8 @@
                             <RadzenText Text="@watch.PreviousWatchStatus"/>
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn Context="watch" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
+                    <RadzenDataGridColumn Context="watch" Filterable="false" Sortable="false"
+                                          TextAlign="TextAlign.Right"
                                           Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="100px">
                         <Template Context="watch">
                             <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
@@ -77,10 +80,12 @@
 </RadzenColumn>
 
 @code {
-    
+    [Parameter, EditorRequired] public required string AccountNum { get; set; } = null!;
+    [Parameter, EditorRequired] public required List<AccountWatch> AccountWatches { get; set; } = [];
+    [Parameter, EditorRequired] public required List<WatchStatusDm> WatchStatuses { get; set; } = [];
 
     private RadzenDataGrid<AccountWatchDisplay> _watchGrid = null!;
-    private bool _inEdition;
+    public bool InEdition;
     private List<AccountWatchDisplay> _watchStatusListDisplay = [];
     private readonly List<AccountWatchDisplay> _watchesToInsert = [];
     private readonly List<AccountWatchDisplay> _watchesToUpdate = [];
@@ -89,13 +94,13 @@
     {
         base.OnParametersSet();
 
-        if (AccountState.AccountWatches.Any())
+        if (AccountWatches.Any())
             Load();
     }
 
     private void Load()
     {
-        _watchStatusListDisplay = AccountState.AccountWatches
+        _watchStatusListDisplay = AccountWatches
             .Select(s => new AccountWatchDisplay(s))
             .ToList();
         foreach (var status in _watchStatusListDisplay)
@@ -106,115 +111,157 @@
                 .WatchStatus ?? "";
         }
     }
-    
+
     private async Task OnAddRow(MouseEventArgs obj)
     {
         await ShowLoading();
-        if(!_watchGrid.IsValid)
+        if (!_watchGrid.IsValid)
             return;
-        
-        _inEdition = true;
-        
-        var previous = AccountState.AccountWatches
+
+        InEdition = true;
+
+        var previous = AccountWatches
             .OrderByDescending(o => o.WatchDate)
             .FirstOrDefault()?
             .WatchStatus ?? "";
 
         var newRecord = new AccountWatchDisplay(new()
         {
-            Id = Guid.NewGuid(), 
-            AccountId = AccountState.Account!.Id,
+            Id = Guid.NewGuid(),
+            AccountNum = AccountNum,
             WatchDate = DateTime.Now
         })
         {
             PreviousWatchStatus = previous
         };
-        
+
         _watchesToInsert.Add(newRecord);
         await _watchGrid.InsertRow(newRecord);
-        
+        await _watchGrid.ExpandRow(newRecord);
+
         ReSort();
     }
 
     private async Task OnRowUpdate(AccountWatchDisplay watch)
     {
         await ShowLoading();
-        
+
         Reset(watch);
-        
-        var record = AccountState.AccountWatches
+
+        var record = AccountWatches
             .FirstOrDefault(f => f.Id == watch.Id);
 
         if (record != null)
         {
-            await AccountState.UpdateAccountWatch(watch.GetAccountWatch());
+            var response = await DataAccess.UpdateAccountWatch(watch.Id, watch.WatchStatus, watch.Reason, watch.ActionPlan);
+            if (!response.Success)
+            {
+                NotifySaveError(response.Errors, "account status");
+                return;
+            }
+
+            NotifySuccessfulSave("account status");
+
             record.WatchStatus = watch.WatchStatus;
             record.Reason = watch.Reason;
             record.ActionPlan = watch.ActionPlan;
         }
         else
         {
-            AccountState.AccountWatches.Add(watch.GetAccountWatch());
-            await AccountState.CreateAccountWatch(watch.GetAccountWatch());
+            AccountWatches.Add(watch.GetAccountWatch());
+
+            var response = await DataAccess.CreateAccountWatch(watch.Id, watch.AccountNum, watch.WatchDate,
+                watch.WatchStatus, watch.Reason, watch.ActionPlan);
+
+            if (!response.Success)
+            {
+                NotifySaveError(response.Errors, "account status");
+                return;
+            }
+
+            NotifySuccessfulSave("account status update");
         }
-        
+
         ReSort();
     }
-    
+
     private async Task OnRowCreate(AccountWatchDisplay watch)
     {
         await ShowLoading();
-        
-        await AccountState.CreateAccountWatch(watch.GetAccountWatch());
+
+        var response = await DataAccess.CreateAccountWatch(watch.Id, watch.AccountNum, watch.WatchDate,
+            watch.WatchStatus, watch.Reason, watch.ActionPlan);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "account status");
+            return;
+        }
+
+        NotifySuccessfulSave("account status create");
+
         _watchStatusListDisplay.Add(watch);
-        AccountState.AccountWatches.Add(watch.GetAccountWatch());
-        
+        AccountWatches.Add(watch.GetAccountWatch());
+
         _watchesToInsert.Remove(watch);
-        
+
         ReSort();
     }
-    
+
     private async Task EditRow(AccountWatchDisplay watch)
     {
-        if(!_watchGrid.IsValid)
+        if (!_watchGrid.IsValid)
             return;
-        
+
         Reset();
+
+        await _watchGrid.ExpandRow(watch);
         
+        InEdition = true;
         _watchesToUpdate.Add(watch);
         await _watchGrid.EditRow(watch);
     }
-    
+
     private void CancelEdit(AccountWatchDisplay watch)
     {
         Reset(watch);
 
         _watchGrid.CancelEditRow(watch);
-        
-        var original = AccountState.AccountWatches
+
+        var original = AccountWatches
             .FirstOrDefault(f => f.Id == watch.Id);
 
-        if (original == null) 
+        if (original == null)
             return; // was a new watch
-        
+
         watch.WatchStatus = original.WatchStatus;
         watch.Reason = original.Reason;
         watch.ActionPlan = original.ActionPlan;
+
+        InEdition = false;
     }
-    
+
     private async Task DeleteRow(AccountWatchDisplay watch)
     {
         await ShowLoading();
-        
+
         Reset(watch);
 
-        var record = AccountState.AccountWatches
+        var record = AccountWatches
             .FirstOrDefault(f => f.Id == watch.Id);
-        
+
         if (record != null)
         {
-            await AccountState.DeleteAccountWatch(record.Id);
-            AccountState.AccountWatches.Remove(record);
+            var response = await DataAccess.DeleteAccountWatch(record.Id);
+            if (!response.Success)
+            {
+                NotifySaveError(response.Errors, "account status delete");
+                return;
+            }
+
+            NotifySuccessfulSave("account status delete");
+
+            AccountWatches.Remove(record);
         }
 
         var existingWatch = _watchStatusListDisplay.FirstOrDefault(f => f.Id == watch.Id);
@@ -222,16 +269,16 @@
         {
             _watchStatusListDisplay.Remove(existingWatch);
         }
-        
+
         await _watchGrid.Reload();
-        
+
         ReSort();
     }
-    
+
     private async Task SaveRow(AccountWatchDisplay watch)
     {
         var errors = Validate(watch);
-        if(errors.Count != 0)
+        if (errors.Count != 0)
         {
             NotificationService.Notify(new()
             {
@@ -239,11 +286,12 @@
                 Severity = NotificationSeverity.Error,
                 Duration = 5000
             });
-            
+
             return;
         }
-        
+
         await _watchGrid.UpdateRow(watch);
+        InEdition = false;
     }
 
     private void Reset()
@@ -260,18 +308,18 @@
 
     private void Close()
     {
-        if(IsChanged())
+        if (IsChanged())
             return;
-        
-        DialogService.Close();
+
+        DialogService.Close(AccountWatches);
     }
 
     private bool IsChanged()
     {
-        if (AccountState.AccountWatches.Count != _watchStatusListDisplay.Count)
+        if (AccountWatches.Count != _watchStatusListDisplay.Count)
             return true;
 
-        foreach (var original in AccountState.AccountWatches)
+        foreach (var original in AccountWatches)
         {
             var actual = _watchStatusListDisplay
                 .FirstOrDefault(f => f.Id == original.Id);
@@ -288,14 +336,11 @@
 
     private void ReSort()
     {
-        AccountState.AccountWatches = AccountState.AccountWatches
+        AccountWatches = AccountWatches
             .OrderByDescending(o => o.WatchDate)
             .ToList();
-        
-        AccountState.ActiveWatch = AccountState.AccountWatches
-            .FirstOrDefault();
     }
-    
+
     private IconStyle GetIconStyle(AccountWatchDisplay watch)
     {
         return watch.WatchStatus switch
@@ -310,24 +355,22 @@
     private List<string> Validate(AccountWatchDisplay watch)
     {
         var errors = new List<string>();
-        
-        if(string.IsNullOrEmpty(watch.WatchStatus))
+
+        if (string.IsNullOrEmpty(watch.WatchStatus))
             errors.Add("Watch Status field is missing.");
 
-        if (watch.WatchStatus != "None")
-        {
-            if(string.IsNullOrEmpty(watch.Reason))
-                errors.Add("Reason field is missing.");
-        
-            if(string.IsNullOrEmpty(watch.ActionPlan))
-                errors.Add("Action Plan field is missing.");
-        }
-        
-        if(watch.WatchDate == DateTime.MinValue &&
-           watch.WatchDate > DateTime.Now)
+        if (string.IsNullOrEmpty(watch.Reason))
+            errors.Add("Reason field is missing.");
+
+        if (string.IsNullOrEmpty(watch.ActionPlan))
+            errors.Add("Action Plan field is missing.");
+
+        if (watch.WatchDate == DateTime.MinValue &&
+            watch.WatchDate > DateTime.Now)
             errors.Add("Invalid date.");
 
         return errors;
     }
+
 }
-@* ReSharper restore CollectionNeverQueried.Local *@
+

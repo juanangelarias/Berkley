@@ -14,7 +14,7 @@ public partial class Query
 
         var startDate = GetStartDate(DateTime.Today, (AlertPeriod)period);
         
-        var relatedAccountNumbers = await ctx.AccountParentAncestorSafe
+        var relatedAccountNumbers = await ctx.AccountParentAncestorSaves
             .Where(r=>r.AncestorAccountNum == accountNum)
             .Select(s=>s.AccountNum)
             .ToListAsync();

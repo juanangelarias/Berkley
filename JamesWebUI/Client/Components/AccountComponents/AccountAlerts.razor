@@ -1,4 +1,4 @@
-﻿@*@inject IAccountState AccountState
+﻿@inject IDataAccess DataAccess
 @inject NavigationManager Navigation
 
 @inherits JamesLayoutComponentBase
@@ -22,7 +22,7 @@
                     <RadzenSplitter Orientation="Orientation.Vertical" class="rz-m-0" Style="height: 100%; border: 0">
                         <RadzenSplitterPane Style="height: 60%;">
                             <RadzenPanel Text="Alerts">
-                                <RadzenDataGrid Data="@_alerts" 
+                                <RadzenDataGrid Data="@_alerts" TItem="AccountAlertDto" @ref="_gridAlerts"
                                                 Style="max-height: 250px; border-radius: 10px;" AllowGrouping="false" 
                                                 AllGroupsExpanded="true" HideGroupedColumn="true"
                                                 Render="@OnAlertGridRender" ShowGroupExpandColumn="false"
@@ -52,7 +52,7 @@
                         </RadzenSplitterPane>
                         <RadzenSplitterPane Style="height: 40%;">
                             <RadzenPanel Text="Claims Activity">
-                                <RadzenDataGrid Data="@_claims" 
+                                <RadzenDataGrid Data="@_claims" TItem="AccountAlertClaimDto" @ref="_gridClaims"
                                                 Style="max-height: 250px; border-radius: 10px;"
                                                 Density="Density.Compact" IsLoading="@IsLoading">
                                     <Columns>
@@ -74,18 +74,22 @@
 </RadzenCard>
 
 @code {
-    [Parameter, EditorRequired] public required Guid AccountId { get; set; }
+    [Parameter, EditorRequired] public required string AccountNum { get; set; }
     [Parameter] public EventCallback<bool> OnAlertOrClaimExist { get; set; }
-    
+
+    private RadzenDataGrid<AccountAlertDto> _gridAlerts = null!;
+    private RadzenDataGrid<AccountAlertClaimDto> _gridClaims = null!;
     private Dictionary<int, string> _periods = [];
     private int SelectedPeriod { get; set; }
     private List<AccountAlertDto> _alerts = [];
     private List<AccountAlertClaimDto> _claims = [];
+    private AlertPeriod _alertPeriod = AlertPeriod.Last30Days;
+    private AccountAlertPackageDto _allAlerts = new();
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        await base.OnParametersSetAsync();
-
+        await base.OnInitializedAsync();
+        
         var periods = (AlertPeriod[])Enum.GetValues(typeof(AlertPeriod));
         _periods = [];
         foreach (var period in periods)
@@ -93,32 +97,51 @@
             _periods.Add((int)period, period.GetDisplayDescription());
         }
 
-        SelectedPeriod = _periods.FirstOrDefault().Key;
+        _alertPeriod = AlertPeriod.Last30Days;
+        SelectedPeriod = (int)_alertPeriod;
+    }
 
-        await OnAlertPeriodChange();
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadAlerts();
     }
 
     private void OnAlertGridRender(DataGridRenderEventArgs<AccountAlertDto> args)
     {
-        if (args.FirstRender)
-        {
-            args.Grid.Groups.Add(new GroupDescriptor { Property = "Type", SortOrder = SortOrder.Ascending });
-            StateHasChanged();
-        }
+        if (!args.FirstRender) 
+            return;
+        
+        args.Grid.Groups.Add(new() { Property = "Type", SortOrder = SortOrder.Ascending });
     }
 
     private async Task OnAlertPeriodChange()
     {
-        AccountState.AlertPeriod = (AlertPeriod)SelectedPeriod;
+        if(_alertPeriod == (AlertPeriod)SelectedPeriod)
+            return;
+        
+        _alertPeriod = (AlertPeriod)SelectedPeriod;
 
-        await AccountState.LoadAlerts();
+        await LoadAlerts();
 
-        _alerts = AccountState.Alerts.Alerts.OrderBy(s=>s.Type).ToList();
-        _claims = AccountState.Alerts.Claims;
+        if (_alerts.Any() || _claims.Any())
+            await OnAlertOrClaimExist.InvokeAsync(true);
+    }
 
-        /*await _gridNotification.Reload();
-        await _gridClaim.Reload();*/
-        StateHasChanged();
+    private async Task LoadAlerts()
+    {
+        var response = await DataAccess.GetAccountAlerts((int)_alertPeriod, AccountNum);
+        if (!response.Success)
+        {
+            NotifyLoadError(response.Errors, "account alerts");
+            return;
+        }
+
+        _allAlerts = response.Data!;
+        
+        _alerts = _allAlerts.Alerts.OrderBy(s=>s.Type).ToList();
+        _claims = _allAlerts.Claims;
     }
 
     private async Task OpenAlertDialog(AccountAlertDto alert)
@@ -139,4 +162,4 @@
             Navigation.NavigateTo(alert.Link);
         }
     }
-}*@
+}

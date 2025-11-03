@@ -7,26 +7,24 @@
 
 <Theme/>
 
-<RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow-x: scroll; white-space: nowrap;">
-    <RadzenTemplateForm TItem="AccountBasicInfoModel" Data="@_formModel" @ref="@Form" Submit="@OnSave">
-        <RadzenColumn Size="12">
+@if (_isEditMode)
+{
+    <RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow-x: scroll; white-space: nowrap;">
+        <RadzenTemplateForm TItem="AccountBasicInfoModel" Data="@_workAccount" @ref="@Form" Submit="@OnSave">
             <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
                 <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
-                    <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
-                                  Click="@ToggleEditMode" Disabled="@(_isEditMode)"/>
+                    <RadzenText Style="height: 30px;"/>
                 </RadzenRow>
                 <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
                     <RadzenColumn Size="3">
                         <BsgFormField Text="Account No.">
-                            <RadzenTextBox @bind-Value="@Account.AccountNum"
-                                           ReadOnly="true"/>
+                            <RadzenTextBox @bind-Value="@_workAccount.AccountNum" ReadOnly="true"/>
                             <RadzenRequiredValidator Text="Account No. is required"/>
                         </BsgFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="9">
                         <BsgFormField Text="Name">
-                            <RadzenTextBox @bind-Value="@Account.IdNavigation.FullName"
-                                           ReadOnly="@(!_isEditMode)"/>
+                            <RadzenTextBox @bind-Value="@_workAccount.FullName"/>
                             <RadzenRequiredValidator Text="Name is required"/>
                             <RadzenLengthValidator Min="5" Max="255"
                                                    Text="The lenght should be between 5 and 255 characters"/>
@@ -40,9 +38,7 @@
                         </BsgFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="6">
-                        <RadzenButton Text="Reason/Action Plan" ButtonStyle="@(GetButtonStyle())"
-                                      Click="@ShowReasonAndActionPlan" Style="width: 100%"
-                                      Disabled="@(_isEditMode)"/>
+
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
@@ -51,12 +47,9 @@
                             <RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                             FilterOperator="StringFilterOperator.Contains"
                                             AllowFiltering="true" Name="Underwriter"
-                                            Data="@_underwritersLookup"
-                                            TextProperty="@nameof(BsgLookup.Name)"
-                                            ValueProperty="@nameof(BsgLookup.Id)"
-                                            AllowClear="true"
-                                            @bind-Value="@Account.UnderwriterId"
-                                            Disabled="@(!_isEditMode)" Style="color: black;"/>
+                                            Data="@_underwritersLookup" TextProperty="@nameof(BsgLookup.Name)"
+                                            ValueProperty="@nameof(BsgLookup.Id)" AllowClear="true"
+                                            @bind-Value="@_workAccount.UnderwriterId"/>
                             <RadzenRequiredValidator Text="Underwriter is required" Component="Underwriter"/>
                         </BsgFormField>
                     </RadzenColumn>
@@ -64,13 +57,10 @@
                         <BsgFormField Text="Branch" Style="width: 100%">
                             <RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                             FilterOperator="StringFilterOperator.Contains"
-                                            AllowFiltering="true" Name="Branch"
-                                            Data="@_branchesLookup"
+                                            AllowFiltering="true" Name="Branch" Data="@_branchesLookup"
                                             TextProperty="@nameof(BsgLookup.Label)"
-                                            ValueProperty="@nameof(BsgLookup.Code)"
-                                            AllowClear="true"
-                                            @bind-Value="@Account.Branch"
-                                            Disabled="@(!_isEditMode)" Style="color: black;"/>
+                                            ValueProperty="@nameof(BsgLookup.Code)" AllowClear="true"
+                                            @bind-Value="@_workAccount.Branch"/>
                             <RadzenRequiredValidator Text="Branch is required" Component="Branch"/>
                         </BsgFormField>
                     </RadzenColumn>
@@ -78,7 +68,7 @@
                 <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
                     <RadzenColumn Size="6">
                         <BsgFormField Text="HO Lead" Style="width: 100%">
-                            <RadzenTextBox Value="HO Lead (TBD)" ReadOnly="@_isEditMode" Name="HoLead"/>
+                            <RadzenTextBox Value="HO Lead (TBD)" Name="HoLead"/>
                             <RadzenRequiredValidator Text="HO Lead is required" Component="HoLead"/>
                         </BsgFormField>
                     </RadzenColumn>
@@ -86,13 +76,10 @@
                         <BsgFormField Text="Division" Style="width: 100%">
                             <RadzenDropDown FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                             FilterOperator="StringFilterOperator.Contains"
-                                            AllowFiltering="true" Name="Division"
-                                            Data="@_divisionsLookup"
+                                            AllowFiltering="true" Name="Division" Data="@_divisionsLookup"
                                             TextProperty="@nameof(BsgLookup.Label)"
-                                            ValueProperty="@nameof(BsgLookup.Code)"
-                                            AllowClear="true"
-                                            @bind-Value="@Account.Division"
-                                            Disabled="@(!_isEditMode)" Style="color: black;"/>
+                                            ValueProperty="@nameof(BsgLookup.Code)" AllowClear="true"
+                                            @bind-Value="@_workAccount.Division"/>
                             <RadzenRequiredValidator Text="Division is required" Component="Division"/>
                         </BsgFormField>
                     </RadzenColumn>
@@ -100,36 +87,109 @@
                 <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
                     <RadzenColumn Size="6">
                         <BsgFormField Text="SIC Code" Style="width: 100%">
-                            <RadzenTextBox Value="SIC Code (TBD)" ReadOnly="@_isEditMode" Name="SicCode"/>
+                            <RadzenTextBox Value="SIC Code (TBD)" Name="SicCode"/>
                             <RadzenRequiredValidator Text="SIC Code is required" Component="SicCode"/>
                         </BsgFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem" Visible="@(_isEditMode)">
-                    <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary" 
-                                  ButtonType="ButtonType.Submit" Disabled="@(!Form.IsValid && _formModel.IsChanged)"/>
-                    <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light" 
+                    <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary"
+                                  ButtonType="ButtonType.Submit" Disabled="@(!Form.IsValid)"/>
+                    <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
                                   ButtonType="ButtonType.Reset"/>
                 </RadzenRow>
             </RadzenStack>
-        </RadzenColumn></RadzenTemplateForm>
-</RadzenCard>
+        </RadzenTemplateForm>
+    </RadzenCard>
+}
+else
+{
+    <RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow-x: scroll; white-space: nowrap;">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+            <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
+                <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
+                              Click="@ToggleEditMode" Style="height: 30px;"/>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
+                <RadzenColumn Size="3">
+                    <BsgFormField Text="Account No.">
+                        <RadzenTextBox Value="@Account.AccountNum" ReadOnly="true"/>
+                    </BsgFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="9">
+                    <BsgFormField Text="Name">
+                        <RadzenTextBox Value="@Account.IdNavigation.FullName" ReadOnly="true"/>
+                    </BsgFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenColumn Size="5">
+                    <BsgFormField Text="Concerns/Watch">
+                        <RadzenTextBox Value="@(_activeWatch?.WatchStatus ?? "None")" ReadOnly="true"/>
+                    </BsgFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <RadzenButton Text="Reason/Action Plan" ButtonStyle="@(GetButtonStyle())"
+                                  Click="@ShowReasonAndActionPlan" Style="width: 100%"/>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="Underwriter" Style="width: 100%">
+                        <RadzenTextBox Value="@(UnderwriterName)" ReadOnly="true"/>
+                    </BsgFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="Branch" Style="width: 100%">
+                        <RadzenTextBox Value="@(BranchName)" ReadOnly="true"/>
+                    </BsgFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="HO Lead" Style="width: 100%">
+                        <RadzenTextBox Value="HO Lead (TBD)" Name="HoLead" ReadOnly="true"/>
+                    </BsgFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="Division" Style="width: 100%">
+                        <RadzenTextBox Value="@(DivisionName)" ReadOnly="true"/>
+                    </BsgFormField>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" AlignItems="AlignItems.Center">
+                <RadzenColumn Size="6">
+                    <BsgFormField Text="SIC Code" Style="width: 100%">
+                        <RadzenTextBox Value="SIC Code (TBD)" Name="SicCode" ReadOnly="true"/>
+                    </BsgFormField>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenStack>
+    </RadzenCard>
+}
+
+
 
 @code {
     // ToDo Waiting for SicCode and HoLead to be added to the Account model
-    
+
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
     private RadzenTemplateForm<AccountBasicInfoModel> Form { get; set; } = null!;
-    private AccountBasicInfoModel _formModel = null!;
-    
+    //private AccountBasicInfoModel _formModel = null!;
+
     private bool _isEditMode;
+    private AccountBasicInfoModel _workAccount = null!;
     private AccountWatch? _activeWatch;
     private List<BsgLookup> _underwritersLookup = [];
     private List<BsgLookup> _branchesLookup = [];
     private List<BsgLookup> _divisionsLookup = [];
     private List<WatchStatusDm> _watchStatuses = [];
     private List<AccountWatch> _accountWatches = [];
+
+    private string UnderwriterName => _underwritersLookup.FirstOrDefault(f => f.Id == Account.UnderwriterId)?.Name ?? "";
+    private string BranchName => _branchesLookup.FirstOrDefault(f => f.Code == Account.Branch)?.Label ?? "";
+    private string DivisionName => _divisionsLookup.FirstOrDefault(f => f.Code == Account.Division)?.Label ?? "";
 
     #region Loaders
 
@@ -146,10 +206,7 @@
             Data = (List<AccountWatch>)cache!
         },
         ResultVariable = () => _accountWatchesResult,
-        AfterLoad = () =>
-        {
-            _accountWatches = _accountWatchesResult.Data!;
-        },
+        AfterLoad = () => { _accountWatches = _accountWatchesResult.Data!; },
     }, "account watches");
 
     #endregion
@@ -263,28 +320,14 @@
         await base.OnParametersSetAsync();
 
         await LoadLookups();
-
-        InitFormModel();
-    }
-
-    private void InitFormModel()
-    {
-        _formModel = new AccountBasicInfoModel(
-            Account.Id,
-            Account.AccountNum,
-            Account.IdNavigation.FullName,
-            Account.UnderwriterId,
-            Account.Branch,
-            "",
-            Account.Division,
-            Account.BusinessTypeClass);
+        _workAccount = CloneAccount();
     }
 
     private async Task LoadLookups()
     {
-        await DataAccess.ParallelGetCacheOrDataAsync(BranchesLoad, DivisionsLoad, UnderwritersLoad, WatchStatusesLoad, 
+        await DataAccess.ParallelGetCacheOrDataAsync(BranchesLoad, DivisionsLoad, UnderwritersLoad, WatchStatusesLoad,
             AccountWatchesLoad);
-        
+
         ReSortAccountWatches();
     }
 
@@ -343,14 +386,14 @@
         };
     }
 
-    private async Task OnSave()
+    private async Task OnSave(AccountBasicInfoModel account)
     {
-        if(!Form.IsValid)
+        if (!Form.IsValid)
             return;
-        
+
         var response = await DataAccess
-            .SetAccountCommercialInfo(_formModel.Id, _formModel.FullName, _formModel.UnderwriterId!.Value,
-                _formModel.Branch, _formModel.Division, Guid.Empty, Guid.Empty);
+            .SetAccountCommercialInfo(Account.Id, _workAccount.FullName, _workAccount.UnderwriterId!.Value,
+                _workAccount.Branch, _workAccount.Division, Guid.Empty, Guid.Empty);
 
         if (!response.Success)
         {
@@ -359,16 +402,35 @@
         else
         {
             NotifySuccessfulSave("basic information");
+            Account.IdNavigation.FullName = _workAccount.FullName;
+            Account.UnderwriterId = _workAccount.UnderwriterId;
+            Account.Branch = _workAccount.Branch;
+            Account.Division = _workAccount.Division;
+            // ToDo: Waiting for SicCode and HoLead to be added to the Account model
+            //Account.SicCode = _workAccount.SicCode;
+            //Account.HoLead = _workAccount.HoLead;
             _isEditMode = false;
         }
     }
 
-    private void OnCancel(MouseEventArgs obj)
+    private void OnCancel()
     {
-        if(_formModel.IsChanged)
-            _formModel.Reset();
-        
+        _workAccount = CloneAccount();
         _isEditMode = false;
+    }
+
+    private AccountBasicInfoModel CloneAccount()
+    {
+        return new()
+        {
+            AccountNum = Account.AccountNum,
+            Branch = Account.Branch,
+            Division = Account.Division,
+            FullName = Account.IdNavigation.FullName,
+            HoLead = "",
+            SicCode = "",
+            UnderwriterId = Account.UnderwriterId
+        };
     }
 
 }

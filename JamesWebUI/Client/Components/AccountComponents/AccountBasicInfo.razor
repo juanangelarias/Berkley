@@ -48,7 +48,7 @@
                                             FilterOperator="StringFilterOperator.Contains"
                                             AllowFiltering="true" Name="Underwriter"
                                             Data="@_underwritersLookup" TextProperty="@nameof(BsgLookup.Name)"
-                                            ValueProperty="@nameof(BsgLookup.Id)" AllowClear="true"
+                                            ValueProperty="@nameof(BsgLookup.Id)"
                                             @bind-Value="@_workAccount.UnderwriterId"/>
                             <RadzenRequiredValidator Text="Underwriter is required" Component="Underwriter"/>
                         </BsgFormField>
@@ -59,7 +59,7 @@
                                             FilterOperator="StringFilterOperator.Contains"
                                             AllowFiltering="true" Name="Branch" Data="@_branchesLookup"
                                             TextProperty="@nameof(BsgLookup.Label)"
-                                            ValueProperty="@nameof(BsgLookup.Code)" AllowClear="true"
+                                            ValueProperty="@nameof(BsgLookup.Code)"
                                             @bind-Value="@_workAccount.Branch"/>
                             <RadzenRequiredValidator Text="Branch is required" Component="Branch"/>
                         </BsgFormField>
@@ -78,7 +78,7 @@
                                             FilterOperator="StringFilterOperator.Contains"
                                             AllowFiltering="true" Name="Division" Data="@_divisionsLookup"
                                             TextProperty="@nameof(BsgLookup.Label)"
-                                            ValueProperty="@nameof(BsgLookup.Code)" AllowClear="true"
+                                            ValueProperty="@nameof(BsgLookup.Code)"
                                             @bind-Value="@_workAccount.Division"/>
                             <RadzenRequiredValidator Text="Division is required" Component="Division"/>
                         </BsgFormField>

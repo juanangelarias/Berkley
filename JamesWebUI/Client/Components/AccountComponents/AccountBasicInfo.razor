@@ -168,15 +168,12 @@ else
     </RadzenCard>
 }
 
-
-
 @code {
     // ToDo Waiting for SicCode and HoLead to be added to the Account model
 
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
     private RadzenTemplateForm<AccountBasicInfoModel> Form { get; set; } = null!;
-    //private AccountBasicInfoModel _formModel = null!;
 
     private bool _isEditMode;
     private AccountBasicInfoModel _workAccount = null!;

@@ -900,7 +900,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum)
         {
             var response = await ExecuteGet<List<AccountWatch>>(async () =>
-                await jamesClient.GetAllAccountWatches.ExecuteAsync(accountNum));
+                await jamesClient.GetAllAccountWatches.ExecuteAsync(accountNum), "AllAccountWatches");
 
             return response;
         }

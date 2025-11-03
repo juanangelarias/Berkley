@@ -8,7 +8,8 @@
 
 <Theme/>
 
-<RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow-x: scroll; white-space: nowrap;" Visible="@(_model != null)">
+<RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow-x: scroll; white-space: nowrap;"
+            Visible="@(_model != null)">
     <RadzenColumn Size="12">
         <RadzenTemplateForm TItem="AccountAgencyAgentModel" Data="@_model" Submit="@SaveEdit" @ref="@_form">
             <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
@@ -47,7 +48,8 @@
                     </RadzenColumn>
                     <RadzenColumn Size="2">
                         <BsgFormField Text="State">
-                            <RadzenTextBox @bind-Value="@_model!.AgencyStateCode" Style="color: black;" Disabled="true"/>
+                            <RadzenTextBox @bind-Value="@_model!.AgencyStateCode" Style="color: black;"
+                                           Disabled="true"/>
                         </BsgFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="5">
@@ -169,10 +171,7 @@
             Data = (List<AgencyDto>)cache!
         },
         ResultVariable = () => _agenciesResult,
-        AfterLoad = () =>
-        {
-            _allAgencies = _agenciesResult.Data!;
-        }
+        AfterLoad = () => { _allAgencies = _agenciesResult.Data!; }
     }, "agencies");
 
     #endregion
@@ -181,16 +180,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        try
-        {
-            await LoadAgencies();
-            await LoadAgents();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        await LoadAgencies();
+        await LoadAgents();
 
         var agency = _allAgencies.FirstOrDefault(f => f.AgencyNumber == Account.AgencyNumber);
         var mainAddress = agency?.Addresses.FirstOrDefault(f => f.Type.ToLower() == "main");

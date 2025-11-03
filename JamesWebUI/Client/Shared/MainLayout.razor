@@ -197,7 +197,7 @@
     {
         JamesThemeService.Initialize(NavigationManager);
 
-        _headerStyle = Env.IsDevelopment() //TODO: Make a functional check to turn this off on production servers
+        _headerStyle = Env.IsDevelopment()  || NavigationManager.BaseUri.Contains("localhost") //TODO: Make a functional check to turn this off on production servers
             ? OperatingSystem.IsBrowser()
                 ? "height: 3.5rem; padding: 0.5rem; background-color: cornsilk;"
                 : "height: 3.5rem; padding: 0.5rem; background-color: #e0e0e0;"

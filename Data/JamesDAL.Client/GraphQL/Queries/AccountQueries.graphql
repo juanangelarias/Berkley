@@ -57,6 +57,7 @@
             parent
             website
         }
+        agencyNumber
         agency {
             id
             agencyNumber
@@ -64,17 +65,20 @@
                 fullName
             }
         }
+        agentId
         agent {
             id
             nationalProducerNumber
             fullName
         }
+        underwriterId
         underwriter {
             id
             idNavigation {
                 fullName
             }
         }
+        division
         branch
         branchReviewByNavigation {
             id
@@ -123,7 +127,7 @@
 }
 
 query GetFirstIndemnity($input: String!) {
-    firstIndemnity(accountNum: $input) 
+    firstIndemnity(accountNum: $input)
 }
 
 query SearchAccounts($input: String!) {

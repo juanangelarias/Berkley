@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using James.Shared;
 using James.Shared.Data;
 using James.Shared.Model;
-using JamesWebUI.Client.Components.GeneralUse;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Radzen;
@@ -92,22 +91,6 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         await toExecute;
 
         IsLoading = false;
-    }
-    
-    public async Task BusyDialog(string message)
-    {
-        await DialogService.OpenAsync<BusyDialog>("",
-            new Dictionary<string, object> { { "Message", message } },
-            new DialogOptions
-            {
-                Resizable = false,
-                Draggable = false,
-                CloseDialogOnEsc = false,
-                CloseDialogOnOverlayClick = false,
-                ShowClose = false,
-                ShowTitle = false,
-                Style = "min-height:auto;min-width:auto;width:auto"
-            });
     }
     
     #region Common Client Actions

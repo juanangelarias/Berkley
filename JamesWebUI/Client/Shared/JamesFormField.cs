@@ -1,17 +1,13 @@
 ﻿using Radzen;
 using Radzen.Blazor;
 
-namespace JamesWebUI.Client.Shared
+namespace JamesWebUI.Client.Shared;
+
+public sealed class JamesFormField: RadzenFormField
 {
-    /// <summary>
-    /// RadzenFormField with styling for James to keep the UI consistent
-    /// </summary>
-    public class JamesFormField:RadzenFormField
+    public JamesFormField()
     {
-        public JamesFormField()
-        {
-            //Set default style
-            Variant = Variant.Text;
-        }
+        Variant = Variant.Text;
+        Style = "width: 100%";
     }
 }

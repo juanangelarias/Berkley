@@ -4,6 +4,7 @@ namespace JamesWebUI.Client.Classes;
 
 public class AccountWatchDisplay: AccountWatch
 {
+    // ToDo: This a possible candidate for an extension property once we move to .NET 10
     public string PreviousWatchStatus { get; set; } = "";
 
     public AccountWatchDisplay(AccountWatch watch)

@@ -203,9 +203,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     Id = id,
                     LegalEntityId = legalEntityId,
                     EmailAddress = emailAddress,
-                    Type = type,
-                    Created = DateTime.Today,
-                    Modified = DateTime.Today
+                    Type = type
                 };
                 ctx.LegalEntityEmails.Add(newRecord);
                 await ctx.SaveChangesAsync();
@@ -215,7 +213,6 @@ namespace James.Data.Server.GraphQL.Mutations
 
             oldRecord.EmailAddress = emailAddress;
             oldRecord.Type = type;
-            oldRecord.Modified = DateTime.Today;
             ctx.Update(oldRecord);
             await ctx.SaveChangesAsync();
             

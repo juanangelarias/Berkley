@@ -84,7 +84,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId);
         public Task<IDataAccessResult<List<LegalEntityEmail>>> GetAllLegalEntityEmails(Guid legalEntityId);
         public Task<IDataAccessResult<List<EmailTypeDm>>> GetAllEmailTypes();
-        public Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatuses();
+        public Task<IDataAccessResult<List<WatchStatusDm>>> GetAllWatchStatuses();
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
@@ -117,7 +117,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id);
 
         public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective,
-            DateTime expriration, int single, int aggregate,
+            DateTime expiration, int single, int aggregate,
             string? comments, Guid statusId);
 
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,

@@ -11,18 +11,12 @@ public class AccountMutation
         [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        try
-        {
-            var account = ctx.Accounts.FirstOrDefault(p => p.AccountNum == accountNum);
-            if (account == null) return false;
-            account.CreditReportImagingId = imagingDocumentId;
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+
+        var account = ctx.Accounts.FirstOrDefault(p => p.AccountNum == accountNum);
+        if (account == null) return false;
+        account.CreditReportImagingId = imagingDocumentId;
+        await ctx.SaveChangesAsync();
+        return true;
     }
 
     [Authorize]
@@ -32,93 +26,72 @@ public class AccountMutation
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        try
-        {
-            var account = await ctx.Accounts
-                .Include(a => a.IdNavigation)
-                .FirstOrDefaultAsync(a => a.Id == accountId);
+        var account = await ctx.Accounts
+            .Include(a => a.IdNavigation)
+            .FirstOrDefaultAsync(a => a.Id == accountId);
 
-            if (account == null) return false;
-            account.YearOpened = yearStarted;
-            account.CurrentManagementYear = currentManagementYear;
-            account.BusinessTypeClass = businessClass;
-            account.BusinessType = businessType;
-            account.PriorSuretyCompany = priorSurety;
+        if (account == null) return false;
+        account.YearOpened = yearStarted;
+        account.CurrentManagementYear = currentManagementYear;
+        account.BusinessTypeClass = businessClass;
+        account.BusinessType = businessType;
+        account.PriorSuretyCompany = priorSurety;
 
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        await ctx.SaveChangesAsync();
+        return true;
     }
 
     [Authorize]
     public async Task<bool> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff,
-        string? internalAccountingSystem, bool? interimWips, bool? interimPOCs, 
+        string? internalAccountingSystem, bool? interimWips, bool? interimPOCs,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        try
-        {
-            var account = await ctx.Accounts
-                .Include(a => a.IdNavigation)
-                .FirstOrDefaultAsync(a => a.Id == accountId);
 
-            if (account == null) return false;
-            account.EstimatingSystem = estimatingSystem;
-            account.EstimatingSignoff = estimatingSignoff;
-            account.AccountingSystem = internalAccountingSystem;
-            account.InterimWips = interimWips ?? false;
-            account.Pocinterims = interimPOCs ?? false;
+        var account = await ctx.Accounts
+            .Include(a => a.IdNavigation)
+            .FirstOrDefaultAsync(a => a.Id == accountId);
 
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        if (account == null) return false;
+        account.EstimatingSystem = estimatingSystem;
+        account.EstimatingSignoff = estimatingSignoff;
+        account.AccountingSystem = internalAccountingSystem;
+        account.InterimWips = interimWips ?? false;
+        account.Pocinterims = interimPOCs ?? false;
+
+        await ctx.SaveChangesAsync();
+        return true;
     }
 
     [Authorize]
     public async Task<bool> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity,
-        bool? personalIndemnity, bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, 
+        bool? personalIndemnity, bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell,
         bool? multipleActiveOwners, bool? trackCommAccount, bool? berkleyAffiliate, string? comments,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        try
-        {
-            var account = await ctx.Accounts.Include(a => a.IdNavigation).FirstOrDefaultAsync(a => a.Id == accountId);
+        var account = await ctx.Accounts.Include(a => a.IdNavigation).FirstOrDefaultAsync(a => a.Id == accountId);
 
-            if (account == null) return false;
-            account.IndemnityFull = fullIndemnity ?? false;
-            account.IndemnityCorp = corpIndemnity ?? false;
-            account.IndemnityPerson = personalIndemnity ?? false;
-            account.ContinuityKeyManagementLifeInsurance = keyManagementLifeInsurance ?? false;
-            account.ContinuityManagementIncentives = managementIncentives ?? false;
-            account.ContinuityFundedBuySell = fundedBuySell ?? false;
-            account.ContinuityActiveMultipleOwners = multipleActiveOwners ?? false;
-            //TODO: Deal with "trackCommAccount." Seems to be missing from DB.
-            account.BerkleyAffiliate = berkleyAffiliate ?? false;
-            account.IndemnityComments = comments;
+        if (account == null) return false;
+        account.IndemnityFull = fullIndemnity ?? false;
+        account.IndemnityCorp = corpIndemnity ?? false;
+        account.IndemnityPerson = personalIndemnity ?? false;
+        account.ContinuityKeyManagementLifeInsurance = keyManagementLifeInsurance ?? false;
+        account.ContinuityManagementIncentives = managementIncentives ?? false;
+        account.ContinuityFundedBuySell = fundedBuySell ?? false;
+        account.ContinuityActiveMultipleOwners = multipleActiveOwners ?? false;
+        //TODO: Deal with "trackCommAccount." Seems to be missing from DB.
+        account.BerkleyAffiliate = berkleyAffiliate ?? false;
+        account.IndemnityComments = comments;
 
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-
-        catch
-        {
-            return false;
-        }
+        await ctx.SaveChangesAsync();
+        return true;
     }
 
     [Authorize]
     public async Task<AccountProgram> SetAccountProgram(Guid programId, DateTime effective, DateTime expritation,
-        int single, int aggregate, string? comments, Guid statusId, 
+        int single, int aggregate, string? comments, Guid statusId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         //TODO: Implement. Need to deal with status changes via business logic
@@ -155,7 +128,8 @@ public class AccountMutation
     }
 
     [Authorize]
-    public async Task<AccountWatch> CreateAccountWatch(Guid id, string accountNum, DateTime watchDate, string watchStatus,
+    public async Task<AccountWatch> CreateAccountWatch(Guid id, string accountNum, DateTime watchDate,
+        string watchStatus,
         string reason, string actionPlan, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
@@ -216,24 +190,26 @@ public class AccountMutation
     #region Commercial
 
     [Authorize]
-    public async Task<bool> SetAccountCommercialInfo(Guid accountId, string fullName, Guid underwriterId, string branchKey, 
-        string divisionCode, Guid hoLead, Guid sicCodeId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    public async Task<bool> SetAccountCommercialInfo(Guid accountId, string fullName, Guid underwriterId,
+        string branchKey,
+        string divisionCode, Guid hoLead, Guid sicCodeId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var account = await ctx.Accounts
-            .Include(i=>i.IdNavigation)
+            .Include(i => i.IdNavigation)
             .FirstOrDefaultAsync(a => a.Id == accountId);
-        
-        if(account == null)
+
+        if (account == null)
             return false;
-        
+
         var validBranch = ctx.Branches.Any(b => b.BranchKey == branchKey);
         var validDivision = ctx.DivisionDms.Any(d => d.DivisionCode == divisionCode);
-        
-        if(!validBranch || !validDivision)
+
+        if (!validBranch || !validDivision)
             return false;
-        
+
         account.UnderwriterId = underwriterId;
         account.Branch = branchKey;
         account.Division = divisionCode;
@@ -242,13 +218,13 @@ public class AccountMutation
         {
             account.IdNavigation.FullName = fullName;
         }
-        
+
         // ToDo: When the fields HOLead and SICCodeId are added to the Account table,
         //       uncomment the following lines. And maybe will need to be validated like
         //       branchKey and divisionCode.
         //account.HOLead = hoLead;
         //account.SICCodeId = sicCodeId;
-        
+
         await ctx.SaveChangesAsync();
         return true;
     }
@@ -258,19 +234,19 @@ public class AccountMutation
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var account = await ctx.Accounts
-            .Include(i=>i.IdNavigation)
+            .Include(i => i.IdNavigation)
             .FirstOrDefaultAsync(a => a.Id == accountId);
-        
-        if(account == null)
+
+        if (account == null)
             return false;
-        
+
         account.AgencyNumber = agencyNumber;
         account.AgentId = agentId;
-        
+
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 

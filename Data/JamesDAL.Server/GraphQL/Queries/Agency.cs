@@ -254,7 +254,6 @@ namespace James.Data.Server.GraphQL.Queries
                     Id = s.Id,
                     AgencyNumber = s.AgencyNumber,
                     FullName = s.IdNavigation.FullName,
-                    FullNameDisplay = $"({s.AgencyNumber}) {s.IdNavigation.FullName}",
                     Status = s.AgencyStatusLogs
                         .OrderByDescending(o => o.Effective)
                         .FirstOrDefault()!

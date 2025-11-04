@@ -1,10 +1,10 @@
 ﻿using Radzen.Blazor;
 
-namespace JamesWebUI.Client.BsgComponents;
+namespace JamesWebUI.Client.Shared;
 
-public sealed class BsgFullWidthPanel: RadzenPanel
+public sealed class JamesFullWidthPanel: RadzenPanel
 {
-    public BsgFullWidthPanel()
+    public JamesFullWidthPanel()
     {
         Style = "border-radius: 10px; width: 100%; margin-bottom:0.2rem; padding:0.3rem;";
     }

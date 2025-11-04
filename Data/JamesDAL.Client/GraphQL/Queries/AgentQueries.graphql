@@ -2,7 +2,6 @@
     agentByAgentId(agentId: $agentId) {
         id
         idNavigation {
-            created
             entityType
             familyName
             fullName
@@ -10,7 +9,6 @@
             id
             isIndividual
             middleInitial
-            modified
             parent
             taxIdEncrypted
             website
@@ -22,9 +20,7 @@
             agentId
             attorneyInFact
             comments
-            created
             id
-            modified
             portalUser
         }
         agencyLicenses {
@@ -33,13 +29,11 @@
             appointingState
             appointment
             comments
-            created
             expiration
             id
             isActive
             isResident
             licenseNumber
-            modified
             state
             termination
             insurer {

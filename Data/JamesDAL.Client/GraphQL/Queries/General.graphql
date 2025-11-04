@@ -1,20 +1,20 @@
 ﻿query GetAddress($addressId: UUID!){
-  address(addressId: $addressId){
-    id
-    address1
-    address2
-    address3
-    city
-    stateCode
-    postalCode
-  }
+    address(addressId: $addressId){
+        id
+        address1
+        address2
+        address3
+        city
+        stateCode
+        postalCode
+    }
 }
 
 query GetAllInventoryDocTypes {
-  allInventoryDocTypes {
-    documentType
-    id
-  }
+    allInventoryDocTypes {
+        documentType
+        id
+    }
 }
 
 query GetEmployeeByUserName($userName: String!){
@@ -27,20 +27,20 @@ query GetEmployeeByUserName($userName: String!){
 }
 
 query GetAllBranches{
-  allBranches {
-    active
-    bccreceiver
-    branchKey
-    branchOfficeAddressId
-    emailReceiver
-    generalLedgerCode
-    headCount
-    homeOffice
-    id
-    name
-    phoneId
-    region
-  }
+    allBranches {
+        active
+        bccreceiver
+        branchKey
+        branchOfficeAddressId
+        emailReceiver
+        generalLedgerCode
+        headCount
+        homeOffice
+        id
+        name
+        phoneId
+        region
+    }
 }
 
 query GetDivisions{
@@ -53,90 +53,80 @@ query GetDivisions{
 }
 
 query GetAllLegalEntityAddresses($input: UUID!) {
-  allLegalEntityAddresses (legalEntityId: $input) {
-    address1
-    address2
-    address3
-    city
-    country
-    countryCode
-    created
-    id
-    modified
-    postalCode
-    state
-    stateCode
-    legalEntityAddress{
-      type
+    allLegalEntityAddresses (legalEntityId: $input) {
+        address1
+        address2
+        address3
+        city
+        country
+        countryCode
+        id
+        postalCode
+        state
+        stateCode
+        legalEntityAddress{
+            type
+        }
     }
-  }
-} 
+}
 
 query GetAddressTypes{
-  addressTypes {
-    created
-    id
-    modified
-    order
-    type
-  }
+    addressTypes {
+        id
+        order
+        type
+    }
 }
 
 query GetPhoneNumber($input: UUID!) {
-	phoneNumber(phoneId: $input) {
-	    countryCode
-	    created
-	    extension
-	    id
-	    mainNumber
-	    modified
-	    legalEntityPhone {
-		    legalEntityId
-		    phoneNumberId
-		    type
-	    }
+    phoneNumber(phoneId: $input) {
+        countryCode
+        extension
+        id
+        mainNumber
+        legalEntityPhone {
+            legalEntityId
+            phoneNumberId
+            type
+        }
     }
-} 
+}
 query GetPhoneTypes {
-	phoneTypes {
-	created
-	id
-	modified
-	order
-	type
-	}
+    phoneTypes {
+        id
+        order
+        type
+    }
 }
 query GetAllLegalEntityPhoneNumbers($input: UUID!) {
-	allLegalEntityPhoneNumbers(legalEntityId: $input) {
-	countryCode
-	created
-	extension
-	id
-	mainNumber
-	modified
+    allLegalEntityPhoneNumbers(legalEntityId: $input) {
+        countryCode
+        extension
+        id
+        mainNumber
         legalEntityPhone {
             type
         }
-	}
+    }
 }
 
 query GetAllCountries {
-  allCountries {
-    abbreviation
-    active
-    code
-    name
-    phoneCode
-    phoneMask
-    postalCodeMask
-  }
+    allCountries {
+        abbreviation
+        active
+        code
+        name
+        phoneCode
+        phoneMask
+        postalCodeMask
+    }
 }
 
 query GetUserSettings {
-  userSettings {
-    key
-    value
-  }
+    userSettings {
+        key
+        value
+    }
 }
 
 query GetUnderwriters{

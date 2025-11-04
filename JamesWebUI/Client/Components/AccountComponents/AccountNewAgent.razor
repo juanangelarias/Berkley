@@ -10,20 +10,20 @@
             <p>Please add the new agent info and submit the form.</p>
         </RadzenRow>
         <RadzenRow>
-            <BsgFormField Text="Agent name">
+            <JamesFormField Text="Agent name">
                 <RadzenTextBox @bind-Value="@_data.AgentName" Name="AgentName"/>
                 <RadzenRequiredValidator Text="The agent name is required." Component="AgentName" 
                                          Style="position: absolute"/>
-            </BsgFormField>
+            </JamesFormField>
         </RadzenRow>
         <RadzenRow>
-            <BsgFormField Text="Agent email">
+            <JamesFormField Text="Agent email">
                 <RadzenTextBox @bind-Value="@_data.AgentEmail" Name="AgentEmail"/>
                 <RadzenRequiredValidator Text="The agent email is required." Component="AgentEmail" 
                                          Style="position: absolute"/>
                 <RadzenEmailValidator Text="The field must be a valid email address" Component="AgentEmail" 
                                       Style="position: absolute"/>
-            </BsgFormField>
+            </JamesFormField>
         </RadzenRow>
         <RadzenRow JustifyContent="JustifyContent.End">
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-pt-8">

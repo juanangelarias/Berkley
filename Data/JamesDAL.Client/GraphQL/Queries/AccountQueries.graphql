@@ -177,8 +177,6 @@ query GetAccountActiveLinesOfAuthority($input: String!) {
             bondType
             comments
             conditions
-            created
-            createdBy
             division
             effective
             expiration
@@ -186,7 +184,6 @@ query GetAccountActiveLinesOfAuthority($input: String!) {
             id
             loaaggregate
             loasingle
-            modified
             sequenceNumber
             status
         }
@@ -197,8 +194,6 @@ query GetAccountActiveLinesOfAuthority($input: String!) {
             bondType
             comments
             conditions
-            created
-            createdBy
             division
             effective
             expiration
@@ -206,7 +201,6 @@ query GetAccountActiveLinesOfAuthority($input: String!) {
             id
             loaaggregate
             loasingle
-            modified
             sequenceNumber
             status
         }
@@ -220,21 +214,16 @@ query GetAccountProgramHistory($input: String!) {
         approvedBy
         approvedDate
         comments
-        created
-        createdBy
         effective
         expiration
         homeOfficeApproved
         id
-        modified
         single
         statusId
         accountProgramStatusHistories {
             accountProgramId
             accountNum
-            created
             id
-            modified
             newAggregate
             newSingle
             newStatus
@@ -250,18 +239,14 @@ query GetAdditionalRelatedParties($input: String!) {
     additionalRelatedParties(accountNumber: $input) {
         accountNum
         comments
-        created
         financialStatements
         guarantor
         id
         indemnity
-        modified
         idNavigation {
-            created
             entityType
             fullName
             isIndividual
-            modified
             parent
         }
     }

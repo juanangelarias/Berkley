@@ -147,7 +147,7 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAllInventoryDocTypes(contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatuses()
+        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetAllWatchStatuses()
         {
             return await ExecuteGet(async () => await query.GetAllWatchStatuses(contextFactory));
         }
@@ -247,6 +247,7 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyCommissionRates(agencyId, contextFactory));
         }
+
         public async Task<IDataAccessResult<Employee>> GetEmployeeByUserName(string userName)
         {
             return await ExecuteGet(async () => await query.GetEmployeeByUserName(userName, contextFactory));
@@ -293,16 +294,15 @@ namespace James.Data.Server
         }
 
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective,
-            DateTime expritation, int single, int aggregate,
+            DateTime expiration, int single, int aggregate,
             string? comments, Guid statusId)
         {
             return await ExecuteGet(async () => await accountMutation.SetAccountProgram(programId, effective,
-                expritation, single, aggregate, comments, statusId, contextFactory));
+                expiration, single, aggregate, comments, statusId, contextFactory));
         }
 
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,
-            string? referenceNumber, DateOnly? firstIssued,
-            DateOnly? currentIssued, string? comments, string status)
+            string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status)
         {
             return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorney(poaId, insurerId, limit,
                 referenceNumber, firstIssued, currentIssued, comments, status, eventSender, contextFactory));
@@ -331,8 +331,7 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> SetAddress(Address address, string identifier)
         {
             return await ExecuteSave((async () => await generalMutation.SetAddress(address.Id, address.Address1,
-                address.Address2,
-                address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
+                address.Address2, address.Address3, address.City, address.StateCode, address.PostalCode, identifier,
                 eventSender, contextFactory, loggingService)));
         }
 
@@ -342,8 +341,7 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () =>
                 await generalMutation.CreateAddress(addressId, address1, address2, address3, city, stateCode,
-                    postalCode,
-                    legalEntityId, addressType, identifier, eventSender, contextFactory, loggingService));
+                    postalCode, legalEntityId, addressType, identifier, eventSender, contextFactory, loggingService));
         }
 
         public async Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber,
@@ -372,8 +370,7 @@ namespace James.Data.Server
         }
 
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId,
-            string? taxId, string? npn, bool w9,
-            bool need1099, bool nasbp, string branchKey)
+            string? taxId, string? npn, bool w9, bool need1099, bool nasbp, string branchKey)
         {
             try
             {
@@ -411,9 +408,8 @@ namespace James.Data.Server
         }
 
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
-            string documentType, string? addressee,
-            Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode,
-            string? postalCode)
+            string documentType, string? addressee, Guid addressId, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode)
         {
             try
             {
@@ -535,15 +531,14 @@ namespace James.Data.Server
         }
 
         public async Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent,
-            int quantity, string documentType, string addressee,
-            string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode,
-            Guid approverId)
+            int quantity, string documentType, string addressee, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode, Guid approverId)
         {
             try
             {
                 var result = await agencyMutation.CreateAgencyInventory(inventoryId, agencyId, dateSent, quantity,
-                    documentType, addressee,
-                    address1, address2, address3, city, stateCode, postalCode, approverId, eventSender, contextFactory);
+                    documentType, addressee, address1, address2, address3, city, stateCode, postalCode, approverId,
+                    eventSender, contextFactory);
                 return new SaveDataResult { Errors = result ? [] : ["CreateAgencyInventory failed."] };
             }
             catch (AggregateException ae)
@@ -721,15 +716,17 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true)
         {
-            return await ExecuteGet(async()=> await query.GetEmployees(activeOnly, contextFactory));
+            return await ExecuteGet(async () => await query.GetEmployees(activeOnly, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText)
+        public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(
+            string usernameSearchText)
         {
             return await ExecuteGet(async () => await query.GetActiveDirectoryUsers(usernameSearchText));
         }
 
-        public async Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials, string title, string email)
+        public async Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials,
+            string title, string email)
         {
             return await ExecuteSave(async () =>
                 await generalMutation.CreateEmployee(username, fullName, initials, title, email, contextFactory));
@@ -747,8 +744,7 @@ namespace James.Data.Server
         }
 
         public async Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
-            DateTime? requested, DateTime? received, Guid documentTypeId,
-            string? comments)
+            DateTime? requested, DateTime? received, Guid documentTypeId, string? comments)
         {
             return await ExecuteGet(async () => await agencyMutation.SetPowerOfAttorneyDocumentStatus(id, requested,
                 received, documentTypeId, comments, eventSender, contextFactory));

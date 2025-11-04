@@ -1,6 +1,6 @@
 ﻿namespace JamesWebUI.Client.Model;
 
-public class BsgLookup
+public class JamesLookup
 {
     public Guid Id { get; set; }
     public string Code { get; set; } = "";

@@ -316,7 +316,7 @@ namespace James.Data.Client
                 await jamesClient.GetAllEmailTypes.ExecuteAsync(), "AllEmailTypes");
         }
 
-        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetWatchStatuses()
+        public async Task<IDataAccessResult<List<WatchStatusDm>>> GetAllWatchStatuses()
         {
             var response = await ExecuteGet<List<WatchStatusDm>>(async () =>
                 await jamesClient.GetAllWatchStatuses.ExecuteAsync(), "AllWatchStatuses");
@@ -477,7 +477,7 @@ namespace James.Data.Client
         }
 
         public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective,
-            DateTime expritation, int single, int aggregate,
+            DateTime expiration, int single, int aggregate,
             string? comments, Guid statusId)
         {
             //TODO: Fix

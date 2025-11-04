@@ -63,10 +63,6 @@ mutation  UpdateAccountWatch($input: UpdateAccountWatchInput!) {
             watchStatus
             reason
             actionPlan
-            watchStatusNavigation {
-                id
-                watchStatus
-            }
         }
     }
 }

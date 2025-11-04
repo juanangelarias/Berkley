@@ -1,4 +1,5 @@
 ﻿using HotChocolate.Authorization;
+using James.Data.Server.Exceptions;
 using James.Shared.Constants;
 using James.Shared.Dto;
 
@@ -10,12 +11,25 @@ public partial class Query
     public async Task<AccountAlertPackageDto> GetAccountAlerts(int period, string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
+        var start = DateTime.Now;
+        
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var startDate = GetStartDate(DateTime.Today, (AlertPeriod)period);
         
+        var accountId = (await ctx.Accounts.FirstOrDefaultAsync(a => a.AccountNum == accountNum))?.Id;
+        if (accountId == null)
+            throw new NotFoundException("Account not found");
+        
+        var topParentId = (await ctx.VEntityTopParents.FirstOrDefaultAsync(f=>f.ChildId == accountId))?
+            .ParentId;
+        
+        var parentAccountNum = (await ctx.Accounts.FirstOrDefaultAsync(a => a.Id == topParentId))?.AccountNum;
+        if(parentAccountNum == null)
+            throw new NotFoundException("Parent Account not found");
+        
         var relatedAccountNumbers = await ctx.AccountParentAncestorSaves
-            .Where(r=>r.AncestorAccountNum == accountNum)
+            .Where(r=>r.AncestorAccountNum == parentAccountNum)
             .Select(s=>s.AccountNum)
             .ToListAsync();
 
@@ -72,6 +86,17 @@ public partial class Query
             Claims = claims
         };
 
+        var lapse = DateTime.Now - start;
+        Console.WriteLine("*** *** *** *** ***");
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine($"GetAccountAlerts took {lapse.TotalMilliseconds} ms");
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine("*** *** *** *** ***");
+        
         return notifications;
     }
 

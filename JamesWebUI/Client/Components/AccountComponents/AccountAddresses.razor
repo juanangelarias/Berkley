@@ -1,33 +1,7 @@
 ﻿@inherits JamesLayoutComponentBase
 
-@inject IDataAccess DataAccess
-
-<LegalEntityAddressManager LegalEntityId="@(Account.Id)"
-                           OnAddressChanged="OnAddressChanged"
-                           TabPosition="TabPosition.Top"/>
+<LegalEntityAddressManager LegalEntityId="@(Account.Id)"/>
 
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
-
-    private async Task OnAddressChanged(List<Address> addresses)
-    {
-        var response = await DataAccess.GetAllLegalEntityAddresses(Account.Id);
-        if (response.Success)
-        {
-            Account.IdNavigation.LegalEntityAddresses = response.Data!
-                .Select(s => new LegalEntityAddress
-                {
-                    LegalEntityId = s.LegalEntityAddress!.LegalEntityId,
-                    AddressId = s.Id,
-                    Type = s.LegalEntityAddress.Type,
-                    TypeNavigation = s.LegalEntityAddress.TypeNavigation,
-                    Address = s
-                })
-                .ToList();
-        
-            Account.MainAddress =
-                addresses.FirstOrDefault(f => f.LegalEntityAddress?.Type.ToLower() == "main");
-        }
-    }
-
 }

@@ -43,11 +43,36 @@
     [Parameter] public Func<IDisposable>? AddSubscription { get; set; }
 
     private List<Address> AllAddresses { get; set; } = [];
-    private Dictionary<string, AddressDisplay> AddressDisplays { get; set; } = null!;
+    private Dictionary<string, AddressDisplay> AddressDisplays { get; } = [];
     private int SelectedTab { get; set; }
     private IDisposable? _subscription;
 
     private readonly Guid _editorIdentifier = Guid.NewGuid();
+
+    private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
+
+    private LoadItem AddressesLoadItem => AddEventNotify(new LoadItem<List<Address>>
+    {
+        Key = $"Adds{LegalEntityId}",
+        AsyncLoadTask = async () => _addressesLoadResult = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId),
+        CacheLoadTask = cache => _addressesLoadResult = new DataAccessResult<List<Address>> { Data = (List<Address>)cache! },
+        ResultVariable = () => _addressesLoadResult,
+        AfterLoad = void () =>
+        {
+            Debug.Assert(_addressesLoadResult.Data != null);
+            AllAddresses = _addressesLoadResult.Data;
+            SelectedTab = 0;
+        },
+        AddSubscriptionTask = li =>
+        {
+            //NOTE: Subscriptions for the address editors are added via the AddressDisplay AddSubscription function
+            li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async void (_) =>
+            {
+                DataAccess.Clear("addresses");
+                await LoadAddresses();
+            });
+        }
+    }, "addresses");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -59,32 +84,6 @@
                 _subscription = AddSubscription();
         }
     }
-
-    private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
-
-    private LoadItem AddressesLoadItem => AddEventNotify(
-        new LoadItem<List<Address>>
-        {
-            Key = $"Adds{LegalEntityId}",
-            AsyncLoadTask = async () => _addressesLoadResult = await DataAccess.GetAllLegalEntityAddresses(LegalEntityId),
-            CacheLoadTask = cache => _addressesLoadResult = new DataAccessResult<List<Address>> { Data = (List<Address>)cache! },
-            ResultVariable = () => _addressesLoadResult,
-            AfterLoad = void () =>
-            {
-                Debug.Assert(_addressesLoadResult.Data != null);
-                AllAddresses = _addressesLoadResult.Data;
-                SelectedTab = 0;
-            },
-            AddSubscriptionTask = li =>
-            {
-                //NOTE: Subscriptions for the address editors are added via the AddressDisplay AddSubscription function
-                li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async void (_) =>
-                {
-                    DataAccess.Clear("addresses");
-                    await LoadAddresses();
-                });
-            }
-        }, "addresses");
 
     private async Task UpdateAddresses(Address address)
     {
@@ -104,6 +103,8 @@
             actual.StateCode = address.StateCode;
             actual.PostalCode = address.PostalCode;
         }
+
+        DataAccess.UpdateCache($"Adds{LegalEntityId}", AllAddresses);
     }
 
     private async Task DeleteAddress(Guid id)

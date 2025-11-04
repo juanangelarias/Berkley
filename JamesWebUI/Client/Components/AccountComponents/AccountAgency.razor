@@ -270,35 +270,12 @@ else
 
     private async Task LoadAgencies()
     {
-        var start = DateTime.Now;
         await DataAccess.GetCacheOrLoadDataAsync(AgenciesLoad);
-        var lapse = DateTime.Now - start;
-        ConsoleLapse(lapse);
-    }
-
-    private void ConsoleLapse(TimeSpan lapse)
-    {
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine("**********   **********");
-        Console.WriteLine();
-        
-        Console.WriteLine($"Agencies load time: {lapse.TotalMilliseconds / 1000:N3} seconds");
-        
-        Console.WriteLine();
-        Console.WriteLine("**********   **********");
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine();
     }
 
     private async Task LoadAgents()
     {
-        var start = DateTime.Now;
         await DataAccess.GetCacheOrLoadDataAsync(AgencyAgentsLoad);
-        var lapse = DateTime.Now - start;
-        Console.WriteLine($"Agents load time: {lapse.TotalMilliseconds / 1000:N3} seconds");
     }
 
     private async Task OnAgencyChanged()

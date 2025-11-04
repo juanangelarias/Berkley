@@ -149,8 +149,10 @@
             @<RadzenStack Orientation="Orientation.Vertical">
                 <p>Are you sure you want to delete this address?</p>
                 <RadzenStack Orientation="Orientation.Horizontal">
-                    <RadzenButton Text="Yes" Click="() => ds.Close(true)" Style="width:80px;"/>
-                    <RadzenButton Text="No" Click="() => ds.Close(false)" Style="width:80px;"/>
+                    <RadzenButton Text="Yes" Click="() => ds.Close(true)" Style="width:80px;"
+                                  ButtonStyle="ButtonStyle.Primary"/>
+                    <RadzenButton Text="No" Click="() => ds.Close(false)" Style="width:80px;"
+                                  ButtonStyle="ButtonStyle.Light"/>
                 </RadzenStack>
             </RadzenStack>
         );

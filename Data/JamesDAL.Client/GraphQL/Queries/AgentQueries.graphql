@@ -38,16 +38,13 @@
             termination
             insurer {
                 active
-                created
                 currencyCountry
                 defaultRateGroup
                 fullName
                 id
                 lenumPeopleSoft
                 mainEmailAddress
-                modified
                 idNavigation {
-                    created
                     entityType
                     familyName
                     fullName
@@ -55,7 +52,6 @@
                     id
                     isIndividual
                     middleInitial
-                    modified
                     parent
                     taxIdEncrypted
                     website

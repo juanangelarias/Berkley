@@ -7,8 +7,8 @@
 
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
     <RadzenText Text="Search Account: " Style="margin-right: 0;" />
-    <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 60%;"
-                        ValueChanged="ResultSelected" Variant="Variant.Text"
+    <RadzenAutoComplete @ref="@AutoComplete" MinLength="3" Style="width: 60%;" 
+                        Variant="Variant.Text" SelectedItemChanged="@ResultSelected"
                         Placeholder="Account Name, Account No." Data="@SearchResults" LoadData="SearchAccount"
                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
         <Template Context="account">
@@ -29,7 +29,7 @@
     
     private List<Account> SearchResults { get; set; } = new List<Account>();
     private Account SelectedAccount { get; set; } = new Account();
-    private RadzenAutoComplete autoComplete { get; set; } = null!;
+    private RadzenAutoComplete AutoComplete { get; set; } = null!;
 
 
     private async Task SearchAccount(LoadDataArgs args)
@@ -46,13 +46,13 @@
         }
     }
 
-    private async Task ResultSelected(dynamic args)
+    private void ResultSelected(dynamic args)
     {
-        if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Account))
-        {
-            await SetAccount.InvokeAsync(((Account)autoComplete.Value).AccountNum);
-            NavigationManager.NavigateTo("/Account/" + ((Account)autoComplete.Value).AccountNum.ToString());
-            autoComplete.Value = "";
-        }
+        var account = (Account?)args;
+        if (account == null) 
+            return;
+        
+        NavigationManager.NavigateTo("/Account/" + ((Account)AutoComplete.Value).AccountNum);
+        AutoComplete.Value = "";
     }
 }

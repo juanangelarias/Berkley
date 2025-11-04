@@ -16,5 +16,7 @@ public partial class ScalingDm
 
     public virtual ICollection<CashFlowStatement> CashFlowStatements { get; set; } = new List<CashFlowStatement>();
 
+    public virtual ICollection<CommercialFinancial> CommercialFinancials { get; set; } = new List<CommercialFinancial>();
+
     public virtual ICollection<PersonalFinancialHeader> PersonalFinancialHeaders { get; set; } = new List<PersonalFinancialHeader>();
 }

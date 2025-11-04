@@ -158,7 +158,7 @@ else
     private RadzenTemplateForm<AccountAgencyAgentModel> _form = null!;
     private bool _isEditMode;
     private AccountAgencyAgentModel? _model;
-    private AgencyDto? _agency;
+    private Agency? _agency;
     private Agent? _agent;
     private List<AgencyDto> _allAgencies = [];
     private List<Agent> _agencyAgents = [];
@@ -172,21 +172,24 @@ else
         _ => IconStyle.Base
     };
 
-    private string AgencyName => _agency?.FullNameDisplay ?? "";
+    private string AgencyName => _agency?.IdNavigation.FullName ?? "";
 
-    private string AgencyCity => _agency?.Addresses
+    private string AgencyCity => _agency?.IdNavigation.LegalEntityAddresses
         .FirstOrDefault(f => f.Type.ToLower() == "main")?
-        .City ?? "";
+        .Address.City ?? "";
 
-    private string AgencyStateCode => _agency?.Addresses
+    private string AgencyStateCode => _agency?.IdNavigation.LegalEntityAddresses
         .FirstOrDefault(f => f.Type.ToLower() == "main")?
-        .StateCode ?? "";
+        .Address.StateCode ?? "";
 
-    private string AgencyEmail => _agency?.Emails
+    private string AgencyEmail => _agency?.IdNavigation.LegalEntityEmails
         .FirstOrDefault(f => f.Type.ToLower() == "main")?
         .EmailAddress ?? "";
 
-    private string AgencyStatus => _agency?.Status ?? "";
+    private string AgencyStatus => _agency?.AgencyStatusLogs
+        .OrderByDescending(o => o.Effective)
+        .FirstOrDefault()?
+        .NewStatus ?? "";
 
     private string AgentName => _agent?.IdNavigation.FullName ?? "";
     private string AgentEmail => _agent?.IdNavigation.GetMainEmail() ?? "";
@@ -248,8 +251,21 @@ else
         await LoadAgencies();
         await LoadAgents();
 
-        _agency = _allAgencies.FirstOrDefault(f => f.AgencyNumber == Account.AgencyNumber);
+        await LoadAgency(Account.AgencyNumber ?? "");
         _agent = _agencyAgents.FirstOrDefault(f => f.Id == Account.AgentId);
+    }
+
+    private async Task LoadAgency(string agencyNumber)
+    {
+        var response = await DataAccess.GetAgencyByAgencyNumber(agencyNumber);
+        if (!response.Success)
+        {
+            NotifyLoadError(response.Errors, "agency", true);
+            _agency = null;
+            return;
+        }
+
+        _agency = response.Data;
     }
 
     private async Task LoadAgencies()
@@ -257,7 +273,24 @@ else
         var start = DateTime.Now;
         await DataAccess.GetCacheOrLoadDataAsync(AgenciesLoad);
         var lapse = DateTime.Now - start;
+        ConsoleLapse(lapse);
+    }
+
+    private void ConsoleLapse(TimeSpan lapse)
+    {
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine("**********   **********");
+        Console.WriteLine();
+        
         Console.WriteLine($"Agencies load time: {lapse.TotalMilliseconds / 1000:N3} seconds");
+        
+        Console.WriteLine();
+        Console.WriteLine("**********   **********");
+        Console.WriteLine();
+        Console.WriteLine();
+        Console.WriteLine();
     }
 
     private async Task LoadAgents()
@@ -270,7 +303,7 @@ else
 
     private async Task OnAgencyChanged()
     {
-        SetAgency();
+        await SetAgency();
 
         await LoadAgents();
     }
@@ -318,9 +351,9 @@ else
         _isEditMode = false;
     }
 
-    private void SetAgency()
+    private async Task SetAgency()
     {
-        _agency = _allAgencies.FirstOrDefault(f => f.AgencyNumber == _model!.AgencyNumber);
+        await LoadAgency(_model!.AgencyNumber ?? "");
         _agent = null;
         StateHasChanged();
     }
@@ -388,7 +421,7 @@ else
     private async Task InitializeWorkModel()
     {
         _model = new(Account.AgencyNumber, Account.AgentId);
-        _agency = _allAgencies.FirstOrDefault(f => f.AgencyNumber == Account.AgencyNumber);
+        await LoadAgency(Account.AgencyNumber ?? "");
         await LoadAgents();
         _agent = _agencyAgents.FirstOrDefault(f => f.Id == Account.AgentId);
         StateHasChanged();

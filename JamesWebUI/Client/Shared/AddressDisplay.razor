@@ -122,7 +122,6 @@
     public bool DetailedMode { get; private set; }
     public bool EditMode { get; private set; }
     private Address _addressToDisplay = null!;
-    private readonly Guid _editorIdentifier = Guid.NewGuid();
     
     protected override async Task OnParametersSetAsync()
     {

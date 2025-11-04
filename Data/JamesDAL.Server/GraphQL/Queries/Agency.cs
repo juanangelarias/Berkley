@@ -52,10 +52,12 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(a => a!.AgencyIdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
+                .Include(i => i.IdNavigation.LegalEntityEmails)
                 .Include(a => a.AgencyErrorAndOmissions)
-                .Include(i=>i.AgentsInAgencies)
-                .ThenInclude(i=>i.Agent)
-                .ThenInclude(i=>i.IdNavigation)
+                .Include(i => i.AgentsInAgencies)
+                .ThenInclude(i => i.Agent)
+                .ThenInclude(i => i.IdNavigation)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync();
             
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
@@ -174,6 +176,7 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
         }
+        
         [Authorize]
         public async Task<List<AgencyInventory>> GetAgencyInventory(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -184,6 +187,7 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No agency inventory exists with agencyId {agencyId}.");
         }
+        
         [Authorize]
         public async Task<List<AgencyStatusLog>> GetAgencyStatusLog(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -201,6 +205,7 @@ namespace James.Data.Server.GraphQL.Queries
             }
 
         }
+        
         [Authorize]
         public async Task<List<Bond>> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -241,12 +246,8 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             var agencies = await ctx.Agencies
                 .Include(i => i.IdNavigation)
-                .Include(i => i.IdNavigation.LegalEntityAddresses)
-                .ThenInclude(t1 => t1.Address)
-                .ThenInclude(t2 => t2.StateCodeNavigation)
-                .ThenInclude(t3 => t3.CountryCodeNavigation)
-                .Include(i => i.IdNavigation.LegalEntityEmails)
                 .Include(i => i.AgencyStatusLogs)
+                .AsSplitQuery()
                 .Where(a => a.Status == "Active")
                 .Select(s => new AgencyDto
                 {
@@ -257,37 +258,13 @@ namespace James.Data.Server.GraphQL.Queries
                     Status = s.AgencyStatusLogs
                         .OrderByDescending(o => o.Effective)
                         .FirstOrDefault()!
-                        .NewStatus ?? "",
-                    Addresses = s.IdNavigation.LegalEntityAddresses
-                        .Select(s1 => new AddressDto
-                        {
-                            Id = s1.AddressId,
-                            Type = s1.Type,
-                            Address1 = s1.Address.Address1,
-                            Address2 = s1.Address.Address2 ?? "",
-                            Address3 = s1.Address.Address3 ?? "",
-                            City = s1.Address.City,
-                            StateCode = s1.Address.StateCode ?? "",
-                            State = s1.Address.StateCodeNavigation!.Name,
-                            PostalCode = s1.Address.PostalCode ?? "",
-                            CountryCode = s1.Address.StateCodeNavigation!.CountryCode!,
-                            Country = s1.Address.StateCodeNavigation!.CountryCodeNavigation!.Name
-                        })
-                        .ToList(),
-                    Emails = s.IdNavigation.LegalEntityEmails
-                        .Select(s2 => new EmailDto
-                        {
-                            Id = s2.Id,
-                            Type = s2.Type,
-                            EmailAddress = s2.EmailAddress
-                        })
-                        .ToList()
+                        .NewStatus ?? ""
                 })
                 .ToListAsync();
             
             return agencies;
         }
-
+        
         [Authorize]
         public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {

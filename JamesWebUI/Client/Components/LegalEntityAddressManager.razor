@@ -4,7 +4,7 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenTabs TabPosition="@TabPosition" @bind-SelectedIndex="@SelectedTab">
+<RadzenTabs TabPosition="TabPosition.Left" @bind-SelectedIndex="@SelectedTab">
     <Tabs>
         @{
             if (AllAddresses.Any())
@@ -12,7 +12,7 @@
                 foreach (var a in AllAddresses)
                 {
                     <RadzenTabsItem Text="@(a.LegalEntityAddress!.Type)">
-                        <AddressDisplay @ref="_addressDisplays[a.LegalEntityAddress!.Type]" Address="a"
+                        <AddressDisplay @ref="AddressDisplays[a.LegalEntityAddress!.Type]" Address="a"
                                         StateChanged="@LoadAddresses"
                                         AddressEdited="UpdateAddresses" AddressDeleted="DeleteAddress"/>
                     </RadzenTabsItem>
@@ -21,7 +21,7 @@
                     {
                         <RadzenTabsItem Icon="add" Text="Add Address">
                             <AddressCreate LegalEntityId="@LegalEntityId"
-                                           AddressCreated="@AddressCreated"></AddressCreate>
+                                           AddressCreated="@AddressCreated"/>
                         </RadzenTabsItem>
                     }
                 }
@@ -40,12 +40,10 @@
 @code {
 
     [Parameter, EditorRequired] public required Guid LegalEntityId { get; set; }
-    [Parameter] public EventCallback<List<Address>> OnAddressChanged { get; set; }
-    [Parameter] public TabPosition TabPosition { get; set; } = TabPosition.Left;
     [Parameter] public Func<IDisposable>? AddSubscription { get; set; }
 
     private List<Address> AllAddresses { get; set; } = [];
-    private readonly Dictionary<string, AddressDisplay> _addressDisplays = [];
+    private Dictionary<string, AddressDisplay> AddressDisplays { get; set; } = null!;
     private int SelectedTab { get; set; }
     private IDisposable? _subscription;
 
@@ -63,6 +61,7 @@
     }
 
     private IDataAccessResult<List<Address>> _addressesLoadResult = null!;
+
     private LoadItem AddressesLoadItem => AddEventNotify(
         new LoadItem<List<Address>>
         {
@@ -105,19 +104,29 @@
             actual.StateCode = address.StateCode;
             actual.PostalCode = address.PostalCode;
         }
-
-        await OnAddressChanged.InvokeAsync(AllAddresses);
     }
 
     private async Task DeleteAddress(Guid id)
     {
+        var deleteResult = await DataAccess.DeleteAddress(id, _editorIdentifier.ToString());
+
+        if (deleteResult.Errors.Any())
+        {
+            LoggingService.LogError("DeleteAddress return error(s)", string.Join("\r\n", deleteResult.Errors), "GraphQL");
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Detail = "Error while deleting this address.",
+                Duration = 4000
+            });
+            return;
+        }
+
         var toDelete = AllAddresses
             .FirstOrDefault(f => f.Id == id);
 
         if (toDelete != null)
             AllAddresses.Remove(toDelete);
-        
-        await OnAddressChanged.InvokeAsync(AllAddresses);
     }
 
     private async Task LoadAddresses()
@@ -136,7 +145,6 @@
                 ? AllAddresses.IndexOf(selected)
                 : 0;
         }
-
-        await OnAddressChanged.InvokeAsync(AllAddresses);
     }
+
 }

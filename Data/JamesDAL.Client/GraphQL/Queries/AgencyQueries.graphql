@@ -44,6 +44,10 @@
                     postalCode
                 }
             }
+            legalEntityEmails {
+                type
+                emailAddress
+            }
         }
     }
 }
@@ -333,23 +337,6 @@ query GetAllActiveAgencies {
         id
         agencyNumber
         fullName
-        addresses {
-            id
-            type
-            address1
-            address2
-            address3
-            city
-            stateCode
-            state
-            postalCode
-            countryCode
-            country
-        }
-        emails {
-            id
-            type
-            emailAddress
-        }
+        status
     }
 }

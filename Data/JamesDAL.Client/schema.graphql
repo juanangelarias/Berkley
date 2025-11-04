@@ -1103,8 +1103,6 @@ type AgencyDto {
   fullName: String!
   fullNameDisplay: String!
   status: String!
-  emails: [EmailDto!]!
-  addresses: [AddressDto!]!
 }
 
 type StatementQualityDm {
@@ -2054,20 +2052,6 @@ type AdditionalRelatedParty {
   idNavigation: LegalEntity!
 }
 
-type AddressDto {
-  id: UUID!
-  type: String!
-  address1: String!
-  address2: String!
-  address3: String!
-  city: String!
-  state: String!
-  stateCode: String!
-  postalCode: String!
-  country: String!
-  countryCode: String!
-}
-
 input SetUserSettingInput {
   key: String!
   value: String
@@ -2254,12 +2238,6 @@ type SecurityRoleMember {
   id: UUID!
   name: String!
   isRole: Boolean!
-}
-
-type EmailDto {
-  id: UUID!
-  type: String!
-  emailAddress: String!
 }
 
 input CreateAgencyInventoryInput {

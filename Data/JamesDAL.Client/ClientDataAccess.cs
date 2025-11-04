@@ -236,9 +236,8 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take)
         {
-            throw new NotImplementedException();
-            /*return await ExecuteGet<List<Bond>>(
-                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, skip, take), "AgencyBonds");*/
+            return await ExecuteGet<List<Bond>>(
+                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, skip, take), "AgencyBonds");
         }
 
         public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
@@ -426,7 +425,6 @@ namespace James.Data.Client
                     Minimum = rate.Minimum,
                     Maximum = rate.Maximum,
                     Effective = rate.Effective,
-                    Expiration = rate.Expiration,
                     ExpireIncluded = rate.Expiration == null ? 0 : 1,
                     Rate = rate.Rate
                 }

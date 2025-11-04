@@ -2,6 +2,7 @@
 using HotChocolate.Subscriptions;
 using James.Shared;
 using James.Shared.Data;
+using James.Shared.Model;
 using James.Shared.Server;
 
 namespace James.Data.Server.GraphQL.Mutations
@@ -185,6 +186,55 @@ namespace James.Data.Server.GraphQL.Mutations
 
         //TODO: Restrict to people in the change permissions role
         [Authorize]
+        public async Task<bool> SetUserSetting(string key, string? value, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared, [Service] ILoggingService loggingService)
+        {
+            var username = (await userShared.GetCurrentUser()).Username;
+            if (null == username)
+                throw new UnauthorizedAccessException("You must be logged in to set user settings.");
+            return await SetUserSetting(key, value, username, contextFactory, loggingService);
+        }
+
+        [Authorize]
+        public async Task<bool> SetDefaultUserSetting(string key, string? value, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        {
+            return await SetUserSetting(key, value, "Default", contextFactory, loggingService);
+        }
+
+        private async Task<bool> SetUserSetting(string key, string? value, string username, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var existing = await ctx.UserSettings.FirstOrDefaultAsync(up => up.Username == username && up.Key == key);
+                if (existing == null)
+                {
+                    if (value == null)
+                        return true;//Nothing to delete from DB
+                    ctx.UserSettings.Add(new UserSetting { Username = username, Key = key, Value = value });
+                    await ctx.SaveChangesAsync();
+                }
+                else
+                {
+                    if (value == null)
+                    {
+                        ctx.UserSettings.Remove(existing);
+                        await ctx.SaveChangesAsync();
+                        return true;
+                    }
+                    existing.Value = value;
+                    ctx.UserSettings.Update(existing);
+                    await ctx.SaveChangesAsync();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                loggingService.LogException(ex, "Exception saving user setting to database", category: StandardLoggingCategories.DataAccess);
+                return false;
+            }
+        }
+
+        [Authorize (Policy = "InRoleChangePermissions")]
         public async Task<bool> AddPrincipalToSecurityRole(Guid principalId, string role,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
@@ -207,8 +257,7 @@ namespace James.Data.Server.GraphQL.Mutations
             }
         }
 
-        //TODO: Restrict to people in the change permissions role
-        [Authorize]
+        [Authorize(Policy = "InRoleChangePermissions")]
         public async Task<bool> RemovePrincipalFromSecurityRole(Guid principalId, string role,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
@@ -229,8 +278,7 @@ namespace James.Data.Server.GraphQL.Mutations
             }
         }
 
-        //TODO: Restrict to people in the change permissions role
-        [Authorize]
+        [Authorize (Policy = "InRoleChangePermissions")]
         public async Task<bool> AddSecurityRole(string role, string description, int ord,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
@@ -241,7 +289,10 @@ namespace James.Data.Server.GraphQL.Mutations
                     throw new ArgumentException("role.Role cannot be null or whitespace.");
                 var newRole = new SecurityRole
                 {
-                    Id = Guid.NewGuid(), Role = role, Description = description, Ord = ord
+                    Id = Guid.NewGuid(),
+                    Role = role,
+                    Description = description,
+                    Ord = ord
                 };
                 var ctx = await contextFactory.CreateDbContextAsync();
                 var existing =
@@ -264,6 +315,68 @@ namespace James.Data.Server.GraphQL.Mutations
                 loggingService.LogException(ex, "Exception adding security role", category: StandardLoggingCategories.DataAccess);
                 return false;
             }
+        }
+
+        [Authorize(Policy = "InRoleCanManageEmployees")]
+        public async Task<bool> SetEmployeeIsActive(Guid employeeId, bool isActive,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        {
+            try
+            {
+                var ctx = await contextFactory.CreateDbContextAsync();
+                var existing =
+                    await ctx.Employees.FirstOrDefaultAsync(e =>e.Id == employeeId);
+                if (null == existing)
+                    return false;
+                existing.Active = isActive;
+                ctx.Employees.Update(existing);
+                await ctx.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                loggingService.LogException(ex, "Exception changing employee active flag", category: StandardLoggingCategories.DataAccess);
+                return false;
+            }
+        }
+
+        [Authorize(Policy = "InRoleCanManageEmployees")]
+        public async Task<bool> SetEmployeeEmail(Guid employeeId, string email,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var employee = await ctx.Employees.SingleOrDefaultAsync(e => e.Id == employeeId);
+            if (employee == null) return false;
+            employee.Email = email;
+            ctx.Employees.Update(employee);
+            await ctx.SaveChangesAsync();
+            return true;
+        }
+
+        [Authorize(Policy = "InRoleAddUser")]
+        public async Task<bool> CreateEmployee(string username, string fullName,
+            string initials, string title, string email,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var existing = await ctx.Employees.SingleOrDefaultAsync(e => e.ActiveDirectoryAccount == username && e.Active);
+            if (existing != null)
+            {
+                throw new Exception("An active user with this username already exists.");
+            }
+
+            var newEmployee = new Employee()
+            {
+                ActiveDirectoryAccount = username,
+                Active = true,
+                Email = email,
+                FullName = fullName,
+                Initials = initials,
+                Title = title
+            };
+            ctx.Employees.Add(newEmployee);
+            await ctx.SaveChangesAsync();
+            return true;
         }
 
     }

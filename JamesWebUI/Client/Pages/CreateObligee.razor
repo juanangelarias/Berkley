@@ -19,50 +19,50 @@
         <RadzenTemplateForm TItem="Obligee" Submit="@(async (Obligee args) => { await SubmitObligee(args);})" Data="NewObligee">
             <RadzenRow>
                 <RadzenColumn Size="6">
-                    <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
+                    <JamesFormField Text="Name" AllowFloatingLabel="true" Style="width:500px;">
                         <ChildContent>
                             <RadzenTextBox Name="ObligeeName" @bind-Value="@NewObligee.IdNavigation.FullName"  />
                         </ChildContent>
                         <Helper>
                             <RadzenRequiredValidator Component="ObligeeName" Text="Obligee Name is required." />
                         </Helper>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
-                    <RadzenFormField Text="Address 1" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
+                    <JamesFormField Text="Address 1" AllowFloatingLabel="true" Style="width:500px;">
                         <ChildContent>
                             <RadzenTextBox Name="Address1" @bind-Value="@NewAddress.Address1" />
                         </ChildContent>
                         <Helper>
                             <RadzenRequiredValidator Component="Address1" Text="Address 1 is required." />
                         </Helper>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
 
-                    <RadzenFormField Text="Address 2" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
+                    <JamesFormField Text="Address 2" AllowFloatingLabel="true" Style="width:500px;">
                         <ChildContent>
                             <RadzenTextBox Name="Address2" @bind-Value="@NewAddress.Address2" />
                         </ChildContent>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenFormField Text="City" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:250px;">
+                        <JamesFormField Text="City" AllowFloatingLabel="true" Style="width:250px;">
                             <ChildContent>
                                 <RadzenTextBox Name="City" @bind-Value="@NewAddress.City" />
                             </ChildContent>
                             <Helper>
                                 <RadzenRequiredValidator Component="City" Text="City is required." />
                             </Helper>
-                        </RadzenFormField>
-                        <RadzenFormField Text="State" AllowFloatingLabel="true" Variant="Variant.Text">
+                        </JamesFormField>
+                        <JamesFormField Text="State" AllowFloatingLabel="true" >
                             <ChildContent>
                                 <RadzenDropDown Name="State" TValue="String" @bind-Value="@NewAddress.StateCode"
                                                 Data="AllStates" ValueProperty="Code" TextProperty="Name" />
@@ -72,32 +72,32 @@
                             </Helper>
 
 
-                        </RadzenFormField>
-                        <RadzenFormField Text="Postal Code" AllowFloatingLabel="true" Variant="Variant.Text">
+                        </JamesFormField>
+                        <JamesFormField Text="Postal Code" AllowFloatingLabel="true" >
                             <ChildContent>
                                 <RadzenTextBox Name="Postal Code" @bind-Value="@NewAddress.PostalCode" />
                             </ChildContent>
                             <Helper>
                                 <RadzenRequiredValidator Component="Postal Code" Text="Postal Code is required." />
                             </Helper>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
-                    <RadzenFormField Text="Phone" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
+                    <JamesFormField Text="Phone" AllowFloatingLabel="true" Style="width:500px;">
                         <ChildContent>
                             <RadzenMask Name="Phone" @bind-Value="@NewPhoneNumber.MainNumber" Mask="(***) ***-****"
                                         CharacterPattern="[0-9]" Placeholder="(000) 000-0000" />
                         </ChildContent>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn>
                     <RadzenColumn Size="6">
-                        <RadzenFormField Text="Email" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
+                        <JamesFormField Text="Email" AllowFloatingLabel="true" Style="width:500px;">
                             <ChildContent>
                                 <RadzenTextBox Name="Email" @bind-Value="@NewEmail" />
                             </ChildContent>
@@ -105,16 +105,16 @@
                                 <RadzenCustomValidator Component="Email" Text="Email is invalid."
                                                        Validator="@(() => null == NewEmail ? true : Validators.ValidateEmail(NewEmail))" />
                             </Helper>
-                        </RadzenFormField>
+                        </JamesFormField>
                     </RadzenColumn>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <RadzenStack Orientation="Orientation.Vertical">
-                        <RadzenFormField Text="Type" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:500px;">
+                        <JamesFormField Text="Type" AllowFloatingLabel="true" Style="width:500px;">
                             <RadzenDropDown TValue="string" Name="Type" Data="ObligeeTypes" ValueProperty="Type" TextProperty="Type" @bind-Value="@NewObligee.Type" />
-                        </RadzenFormField>
+                        </JamesFormField>
                         <RadzenStack Orientation="Orientation.Horizontal">
                             <RadzenCheckBox Name="ReceiveLetters" TriState="false" TValue="bool" @bind-Value="@NewObligee.PrintStatusLetter" />
                             <RadzenText Text="Receive Status Letters" />

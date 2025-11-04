@@ -31,7 +31,7 @@
         <Template Context="detail">
             <RadzenRow Gap="0rem" RowGap="0rem" class="rz-m-0">
                 <RadzenStack class="rz-m-0" Style="max-width:50em">
-                    <RadzenFormField Text="Name" AllowFloatingLabel="true" Variant="Variant.Text">
+                    <JamesFormField Text="Name" AllowFloatingLabel="true" >
                         <ChildContent>
                             <RadzenTextBox Name="tbFileName" @bind-Value=@detail.FileName Style="width:25em" />
                         </ChildContent>
@@ -44,16 +44,16 @@
                             <RadzenCustomValidator Component="tbFileName" Text="File extension is not allowed by BTS"
                                                    Validator="@(() => !ClientBusinessLogic.Validators.ValidateFileName(detail.FileName) || SharedBusinessLogic.ImagingBusinessLogic.IsValidImagingFileName(detail.FileName))" />
                         </Helper>
-                    </RadzenFormField>
-                    <RadzenFormField Text="Description" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:25em">
+                    </JamesFormField>
+                    <JamesFormField Text="Description" AllowFloatingLabel="true" Style="width:25em">
                         <ChildContent>
                             <RadzenTextBox Name="tbDescription" @bind-Value=@detail.Description Style="width:100%" />
                         </ChildContent>
                         <Helper>
                             <RadzenRequiredValidator Component="tbDescription" Text="Description is required." />
                         </Helper>
-                    </RadzenFormField>
-                    <RadzenFormField Text="Document Type" AllowFloatingLabel="true" Variant="Variant.Text" Style="width:25em">
+                    </JamesFormField>
+                    <JamesFormField Text="Document Type" AllowFloatingLabel="true" Style="width:25em">
                         <ChildContent>
                             <RadzenDropDownDataGrid Name="ddDocType"
                                                     TValue="string"
@@ -78,7 +78,7 @@
                             <RadzenRegexValidator Component="ddDocType" Text="Must select a document type"
                                                   Pattern="\S+" />
                         </Helper>
-                    </RadzenFormField>
+                    </JamesFormField>
                 </RadzenStack>
             </RadzenRow>
         </Template>

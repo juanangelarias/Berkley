@@ -15,7 +15,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Runtime.CompilerServices;
+using James.Data.Imaging;
+using James.Shared.Server.Kong0;
+using JamesWebUI.Client.Test.Services;
 using JamesWebUI.Server.SharedServices;
+using Microsoft.AspNetCore.Http;
 using Xunit.Abstractions;
 
 namespace James.Data.Server.Test
@@ -166,7 +170,7 @@ ORDER BY cnt, a.Modified, a.Created");
             //    .Build();
             var scsb = new SqlConnectionStringBuilder
             {
-                DataSource = "usilg01-dwd057",
+                DataSource = "usilg01-dwd217",
                 InitialCatalog = "JamesDev",
                 TrustServerCertificate = true,
                 MultipleActiveResultSets = true,
@@ -192,6 +196,18 @@ ORDER BY cnt, a.Modified, a.Created");
 
             services.AddScoped<Query>();
             services.AddScoped<AgencyMutation>();
+            services.AddScoped<AccountMutation>();
+            services.AddScoped<ObligeeMutation>();
+            services.AddScoped<GeneralMutation>();
+            services.AddScoped<LoggingMutation>();
+            services.AddScoped<ServerImagingAccess>();
+            services.AddScoped<ImagingKong0Helper>();
+            services.AddScoped<IKongCredentialCache, KongCredentialCache>();
+            services.AddScoped<IHttpContextAccessor, TestHttpContextAccessor>();
+            services.AddScoped<IBrowserStorageCache, NoBrowserStorageCache>();
+            services.AddHttpClient("JamesAPI", client => client.BaseAddress = new Uri("https://usilg01-isd076.wrbts.ads.wrberkley.com/"));
+            services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
+                .CreateClient("JamesAPI")); ;
             services.AddSingleton(typeof(IUserShared), typeof(TestUserShared));
             services.AddSingleton(typeof(ILogger), typeof(NullLogger));
             services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));

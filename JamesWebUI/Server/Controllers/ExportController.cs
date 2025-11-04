@@ -63,9 +63,14 @@ namespace JamesWebUI.Server.Controllers
             }
 
             if (query.ContainsKey("$select"))
-            {
-                return items.Select($"new ({query["$select"].ToString()})");
-            }
+                try
+                {
+                    return items.Select($"new ({query["$select"].ToString()})");
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Generated select string is incorrect.  Check substitutions.", ex);
+                }
 
             return items;
         }

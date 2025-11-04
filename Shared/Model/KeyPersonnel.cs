@@ -32,6 +32,8 @@ public partial class KeyPersonnel
 
     public string? Profession { get; set; }
 
+    public bool Active { get; set; }
+
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;

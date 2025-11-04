@@ -112,22 +112,22 @@
     {
         _commercialCurrentRates = ConvertCommission(BondType.Commercial, CommissionType.Current,
             _commissionRates
-                .Where(r => r.BondType.ToLower() == "commercial" && r.Expires == null)
+                .Where(r => r.BondType.ToLower() == "commercial" && r.Expiration == null)
                 .ToList());
 
         _commercialScheduledRates = ConvertCommission(BondType.Commercial, CommissionType.Scheduled,
             _commissionRates
-                .Where(r => r.BondType.ToLower() == "commercial" && r.Expires != null)
+                .Where(r => r.BondType.ToLower() == "commercial" && r.Expiration != null)
                 .ToList());
 
         _contractCurrentRates = ConvertCommission(BondType.Contract, CommissionType.Current,
             _commissionRates
-                .Where(r => r.BondType.ToLower() == "contract" && r.Expires == null)
+                .Where(r => r.BondType.ToLower() == "contract" && r.Expiration == null)
                 .ToList());
 
         _contractScheduledRates = ConvertCommission(BondType.Contract, CommissionType.Scheduled,
             _commissionRates
-                .Where(r => r.BondType.ToLower() == "contract" && r.Expires != null)
+                .Where(r => r.BondType.ToLower() == "contract" && r.Expiration != null)
                 .ToList());
     }
 
@@ -136,13 +136,13 @@
         original.ForEach(f =>
         {
             f.Effective = f.Effective.Date;
-            f.Expires = f.Expires?.Date;
+            f.Expiration = f.Expiration?.Date;
         });
         
         var ranges = original
             .OrderBy(o => o.Effective)
-            .ThenBy(t => t.Expires)
-            .Select(s => new { s.Effective, s.Expires })
+            .ThenBy(t => t.Expiration)
+            .Select(s => new { s.Effective, s.Expiration })
             .Distinct()
             .ToList();
 
@@ -154,14 +154,14 @@
             id += 1;
             var newRanges = original
                 .OrderBy(o => o.Effective)
-                .ThenBy(t => t.Expires)
+                .ThenBy(t => t.Expiration)
                 .ThenBy(u => u.Minimum)
                 .ThenBy(v => v.Maximum)
                 .Where(r => r.Effective == range.Effective &&
-                            r.Expires == range.Expires)
+                            r.Expiration == range.Expiration)
                 .Select(item => new AgencyCommissionRateRange(item.Id, id, item.Minimum, item.Maximum, item.Rate, false))
                 .ToList();
-            output.Add(new AgencyCommissionRatePeriod(Agency.Id, bondType, commissionType, range.Effective, range.Expires, newRanges));
+            output.Add(new AgencyCommissionRatePeriod(Agency.Id, bondType, commissionType, range.Effective, range.Expiration, newRanges));
         }
 
         return output;

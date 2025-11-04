@@ -34,8 +34,6 @@ public partial class PowerOfAttorney
 
     public virtual Insurer Insurer { get; set; } = null!;
 
-    public virtual ICollection<OnlineBondSystem> OnlineBondSystems { get; set; } = new List<OnlineBondSystem>();
-
     public virtual ICollection<PowerOfAttorneyDocumentStatus> PowerOfAttorneyDocumentStatuses { get; set; } = new List<PowerOfAttorneyDocumentStatus>();
 
     public virtual PowerOfAttorneyStatusDm StatusNavigation { get; set; } = null!;

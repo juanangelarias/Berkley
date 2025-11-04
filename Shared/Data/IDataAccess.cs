@@ -92,7 +92,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencySearchDto>>> SearchAgencies(string? search, bool activeOnly);
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
         public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
-        public Task<IDataAccessResult<UserProfile>> GetUserProfileByUserName(string userName);
+        public Task<IDataAccessResult<Employee>> GetEmployeeByUserName(string userName);
         public Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
             string? businessType, string? priorSurety, int? estAnnualPremium);
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);
@@ -198,7 +198,13 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> AddPrincipalToSecurityRole(Guid principalId, string role);
         public Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role);
         public Task<ISaveDataResult> AddSecurityRole(SecurityRole role);
-        public Task<IDataAccessResult<List<Employee>>> GetAllEmployees();
+        public Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true);
+        public Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText);
+
+        public Task<ISaveDataResult> CreateEmployee(string username, string fullName,
+                                                    string initials, string title, string email);
+
+        public Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email);
 
         public Task<IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>>> GetPoaDocumentNames();
 

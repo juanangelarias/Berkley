@@ -92,7 +92,7 @@ namespace JamesWebUI.Client.Security
             new()
             {
                 Key = "Emp",
-                AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetAllEmployees(),
+                AsyncLoadTask = async () => _loadEmployeesResult = await DataAccess.GetEmployees(),
                 CacheLoadTask = cache => _loadEmployeesResult = new DataAccessResult<List<Employee>> { Data = (List<Employee>)cache! },
                 ResultVariable = () => _loadEmployeesResult,
                 AfterLoad = () => _employees = _loadEmployeesResult.Data!,

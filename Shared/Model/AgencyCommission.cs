@@ -24,7 +24,7 @@ public partial class AgencyCommission
 
     public DateTime Effective { get; set; }
 
-    public DateTime? Expires { get; set; }
+    public DateTime? Expiration { get; set; }
 
     public int ExpireIncluded { get; set; }
 }

@@ -46,11 +46,7 @@ mutation CreateAccountWatch($input: CreateAccountWatchInput!) {
             watchDate
             watchStatus
             reason
-            actionPlan
-            watchStatusNavigation {
-                id
-                watchStatus
-            }
+            actionPlan            
         }
     }
 }

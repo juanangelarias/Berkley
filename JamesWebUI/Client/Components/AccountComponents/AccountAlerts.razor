@@ -1,6 +1,7 @@
 ﻿@inject IDataAccess DataAccess
 @inject NavigationManager Navigation
 
+@using James.Shared.Constants
 @inherits JamesLayoutComponentBase
 
 <RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow: scroll; white-space: nowrap;">
@@ -23,7 +24,7 @@
                         <RadzenSplitterPane Style="height: 60%;">
                             <RadzenPanel Text="Alerts">
                                 <RadzenDataGrid Data="@_alerts" TItem="AccountAlertDto" @ref="_gridAlerts"
-                                                Style="max-height: 250px; border-radius: 10px;" AllowGrouping="false" 
+                                                Style="max-height: 250px; border-radius: 10px;" AllowGrouping="false"
                                                 AllGroupsExpanded="true" HideGroupedColumn="true"
                                                 Render="@OnAlertGridRender" ShowGroupExpandColumn="false"
                                                 Density="Density.Compact" IsLoading="@IsLoading">
@@ -86,10 +87,35 @@
     private AlertPeriod _alertPeriod = AlertPeriod.Last30Days;
     private AccountAlertPackageDto _allAlerts = new();
 
+    #region Loaders
+
+    private IDataAccessResult<AccountAlertPackageDto> _alertsResult = null!;
+
+    private LoadItem AlertsLoad => AddEventNotify(new LoadItem<AccountAlertPackageDto>
+    {
+        Key = CacheKeys.AccountAlerts(_alertPeriod.ToString(), AccountNum),
+        AsyncLoadTask = async () => _alertsResult = await DataAccess.GetAccountAlerts((int)_alertPeriod, AccountNum),
+        CacheLoadTask = cache => _alertsResult = new DataAccessResult<AccountAlertPackageDto>
+        {
+            Data = (AccountAlertPackageDto)cache!
+        },
+        ResultVariable = () => _alertsResult,
+        AfterLoad = () =>
+        {
+            _allAlerts = _alertsResult.Data!;
+
+            _alerts = _allAlerts.Alerts.OrderBy(s => s.Type).ToList();
+            _claims = _allAlerts.Claims;
+        },
+        CacheDuration = new TimeSpan(0,0,0,0,500)
+    }, "account alerts");
+
+    #endregion
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        
+
         var periods = (AlertPeriod[])Enum.GetValues(typeof(AlertPeriod));
         _periods = [];
         foreach (var period in periods)
@@ -110,17 +136,17 @@
 
     private void OnAlertGridRender(DataGridRenderEventArgs<AccountAlertDto> args)
     {
-        if (!args.FirstRender) 
+        if (!args.FirstRender)
             return;
-        
+
         args.Grid.Groups.Add(new() { Property = "Type", SortOrder = SortOrder.Ascending });
     }
 
     private async Task OnAlertPeriodChange()
     {
-        if(_alertPeriod == (AlertPeriod)SelectedPeriod)
+        if (_alertPeriod == (AlertPeriod)SelectedPeriod)
             return;
-        
+
         _alertPeriod = (AlertPeriod)SelectedPeriod;
 
         await LoadAlerts();
@@ -131,17 +157,7 @@
 
     private async Task LoadAlerts()
     {
-        var response = await DataAccess.GetAccountAlerts((int)_alertPeriod, AccountNum);
-        if (!response.Success)
-        {
-            NotifyLoadError(response.Errors, "account alerts");
-            return;
-        }
-
-        _allAlerts = response.Data!;
-        
-        _alerts = _allAlerts.Alerts.OrderBy(s=>s.Type).ToList();
-        _claims = _allAlerts.Claims;
+        await DataAccess.GetCacheOrLoadDataAsync(AlertsLoad);
     }
 
     private async Task OpenAlertDialog(AccountAlertDto alert)
@@ -162,4 +178,5 @@
             Navigation.NavigateTo(alert.Link);
         }
     }
+
 }

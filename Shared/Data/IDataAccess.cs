@@ -99,17 +99,18 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
         public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
         public Task<IDataAccessResult<Employee>> GetEmployeeByUserName(string userName);
-        public Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
-            string? businessType, string? priorSurety, int? estAnnualPremium);
+
+        public Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted,
+            string? currentManagementYear, string? businessClass, string? businessType, string? priorSurety,
+            int? estAnnualPremium);
 
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);
 
         public Task<ISaveDataResult> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity,
-            bool? corpIndemnity, bool? personalIndemnity,
-            bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell,
-            bool? multipleActiveOwners,
-            bool? trackCommAccount, bool? berkleyAffiliate, string? comments);
+            bool? corpIndemnity, bool? personalIndemnity, bool? keyManagementLifeInsurance, bool? managementIncentives,
+            bool? fundedBuySell, bool? multipleActiveOwners, bool? trackCommAccount, bool? berkleyAffiliate,
+            string? comments);
 
         public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type);
@@ -117,52 +118,45 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id);
 
         public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective,
-            DateTime expiration, int single, int aggregate,
-            string? comments, Guid statusId);
+            DateTime expiration, int single, int aggregate, string? comments, Guid statusId);
 
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,
-            string? referenceNumber,
-            DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
+            string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
 
         public Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId);
         public Task<ISaveDataResult> SetAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId);
         public Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
 
-        public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
-            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId,
-            string addressType, string identifier);
+        public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType,
+            string identifier);
 
         public Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier);
 
         public Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber,
-            string? extension,
-            Guid legalEntityId, string phoneType);
+            string? extension, Guid legalEntityId, string phoneType);
 
         public Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId);
         public Task<IDataAccessResult<List<CountryDm>>> GetAllCountries();
 
         public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective,
-            string oldStatus, string newStatus,
-            Guid changedBy, string? comments);
+            string oldStatus, string newStatus, Guid changedBy, string? comments);
 
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
-            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
-            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
+            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId,
+            bool isResident, string? licenseNumber, string state, bool isActive);
 
         public Task<IDataAccessResult<Obligee>> CreateObligee(Guid id, string fullName, string obligeeType,
-            bool printStatusLetter, string? notes,
-            string address1, string? address2, string city, string state, string postalCode, string? phoneNumber,
-            string? email);
+            bool printStatusLetter, string? notes, string address1, string? address2, string city, string state,
+            string postalCode, string? phoneNumber, string? email);
 
         public Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent,
-            int quantity, string documentType,
-            string addressee, string address1, string? address2, string? address3, string city, string? stateCode,
-            string? postalCode, Guid approverId);
+            int quantity, string documentType, string addressee, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode, Guid approverId);
 
         public Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit,
-            string? referenceNumber, DateOnly? firstIssued,
-            DateOnly? currentIssued, string? comments, string status);
+            string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
 
         public Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId);
         public Task<ISaveDataResult> AgencyLicenseBulkDelete(List<Guid> licenseIds);
@@ -170,18 +164,15 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses);
 
         public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId,
-            bool appointingState,
-            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+            bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
 
         public Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
-            string documentType, string? addressee,
-            Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode,
-            string? postalCode);
+            string documentType, string? addressee, Guid addressId, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode);
 
         public Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId,
-            string? taxId, string? npn, bool w9,
-            bool need1099, bool nasbp, string branchKey);
+            string? taxId, string? npn, bool w9, bool need1099, bool nasbp, string branchKey);
 
         public Task<ISaveDataResult> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing,
             int? profitSharingMinimumPremium);
@@ -219,8 +210,8 @@ namespace James.Shared.Data
         /// <param name="onComplete">handle to dispose of the subscription after all results are returned.</param>
         /// <returns>IDisposable reference to the subscription object</returns>
         public IDisposable SearchResultReady(string searchTerm,
-            Action<SubscriptionResult<List<JamesSearchResult>>> onNext,
-            Action<Exception>? onError = null, Action? onComplete = null);
+            Action<SubscriptionResult<List<JamesSearchResult>>> onNext, Action<Exception>? onError = null,
+            Action? onComplete = null);
 
         /// <summary>
         /// Call this after subscribing to the SearchResultsReady subscription
@@ -234,8 +225,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Agency>>> GetIdAgencyNumbers();
 
         public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id,
-            ImagingDocumentCategory docCategory,
-            bool useDocCategoryAsCriteria = true);
+            ImagingDocumentCategory docCategory, bool useDocCategoryAsCriteria = true);
 
         /// <summary>
         /// Returns metadata of documents contained in a given document class, document type and imaging id
@@ -245,8 +235,7 @@ namespace James.Shared.Data
         /// <param name="documentType">The document type to search for</param>
         /// <returns>List of the metadata for the <see cref="ImagingDocument" />s found</returns>
         public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId,
-            ImagingDocumentCategory docCategory,
-            string? documentType = null);
+            ImagingDocumentCategory docCategory, string? documentType = null);
 
         public Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(ImagingDocumentCategory docCategory,
             Guid documentId);
@@ -258,10 +247,12 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role);
         public Task<ISaveDataResult> AddSecurityRole(SecurityRole role);
         public Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true);
-        public Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText);
 
-        public Task<ISaveDataResult> CreateEmployee(string username, string fullName,
-                                                    string initials, string title, string email);
+        public Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(
+            string usernameSearchText);
+
+        public Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials, string title,
+            string email);
 
         public Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email);
 

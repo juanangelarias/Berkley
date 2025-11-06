@@ -1,4 +1,4 @@
-﻿namespace James.Shared.Model;
+﻿namespace James.Shared.Dto;
 
 public class AgencyDto
 {

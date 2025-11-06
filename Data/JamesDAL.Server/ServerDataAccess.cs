@@ -794,13 +794,7 @@ namespace James.Data.Server
         {
             var response = await ExecuteGet(async () => await accountMutation.DeleteAccountWatch(id, contextFactory));
 
-            return !response.Data
-                ? response
-                : new DataAccessResult<bool>
-                {
-                    Data = false,
-                    Errors = ["Account Watch not found"]
-                };
+            return response;
         }
 
         public async Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum)

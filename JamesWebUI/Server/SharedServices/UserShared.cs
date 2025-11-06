@@ -4,6 +4,7 @@ using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using James.Shared;
 using James.Shared.Server;
 using Microsoft.AspNetCore.Components.Authorization;
 

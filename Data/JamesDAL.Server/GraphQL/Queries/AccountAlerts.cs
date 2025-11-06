@@ -11,8 +11,6 @@ public partial class Query
     public async Task<AccountAlertPackageDto> GetAccountAlerts(int period, string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
-        var start = DateTime.Now;
-        
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var startDate = GetStartDate(DateTime.Today, (AlertPeriod)period);
@@ -86,17 +84,6 @@ public partial class Query
             Claims = claims
         };
 
-        var lapse = DateTime.Now - start;
-        Console.WriteLine("*** *** *** *** ***");
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine($"GetAccountAlerts took {lapse.TotalMilliseconds} ms");
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine("*** *** *** *** ***");
-        
         return notifications;
     }
 

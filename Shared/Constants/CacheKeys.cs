@@ -1,12 +1,19 @@
 ﻿namespace James.Shared.Constants;
 
+/// <summary>
+/// Provides a collection of keys used for caching operations across the application.
+/// This class contains both constant and dynamic methods for generating cache keys.
+/// </summary>
 public static class CacheKeys
 {
     // Calculated
     // A
-    public static string AccountKey(string accountNumber) => $"Account-{accountNumber}";
+    public static string Account(string accountNumber) => $"Account-{accountNumber}";
+    public static string AccountAlerts(string alertPeriod, string accountNumber) => $"AccountAlerts-{alertPeriod}-{accountNumber}";
     public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
+    public static string Agency(string agencyNumber) => $"Agency-{agencyNumber}";
     public static string AgencyAgents(string id) => $"AgencyAgents-{id}";
+
     // L
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";
     public static string LegalEntityEmails(Guid id) => $"LegalEntityPhoneEmails-{id}";
@@ -14,7 +21,6 @@ public static class CacheKeys
     
     // Fixed
     // A
-    public const string AccountAlerts = "AccountAlerts";
     public const string AddressTypes = "AddressTypes";
     public const string AgenciesDto = "AgenciesDto";
     public const string AgencyStatuses = "AgencyStatuses";

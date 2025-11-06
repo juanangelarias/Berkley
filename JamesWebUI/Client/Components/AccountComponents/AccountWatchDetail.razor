@@ -27,11 +27,4 @@
     [Parameter, EditorRequired] public AccountWatchDisplay AccountWatch { get; set; } = null!;
     [Parameter, EditorRequired] public bool InEdition { get; set; }
 
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-
-        StateHasChanged();
-    }
-
 }

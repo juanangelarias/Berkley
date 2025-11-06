@@ -353,7 +353,8 @@ else
             Width = "700px",
             Height = "550px",
             ShowClose = false,
-            CloseDialogOnOverlayClick = false
+            CloseDialogOnOverlayClick = false, 
+            CloseDialogOnEsc = false
         };
 
         var parameters = new Dictionary<string, object>
@@ -366,9 +367,12 @@ else
         var response = await DialogService
             .OpenAsync<AccountWatchesDialog>("Account Watches and Concerns", parameters, options);
 
-        _accountWatches.Clear();
-        _accountWatches = (List<AccountWatch>)response;
-        ReSortAccountWatches();
+        if(response != null)
+        {
+            _accountWatches.Clear();
+            _accountWatches = (List<AccountWatch>)response;
+            ReSortAccountWatches();
+        }
 
         StateHasChanged();
     }
@@ -435,5 +439,15 @@ else
             UnderwriterId = Account.UnderwriterId
         };
     }
-
+    
+    class AccountBasicInfoModel
+    {
+        public string AccountNum { get; set; } = "";
+        public string FullName { get; set; } = "";
+        public Guid? UnderwriterId { get; set; }
+        public string Branch { get; set; } = "";
+        public string HoLead { get; set; } = "";
+        public string Division { get; set; } = "";
+        public string SicCode { get; set; } = "";
+    }
 }

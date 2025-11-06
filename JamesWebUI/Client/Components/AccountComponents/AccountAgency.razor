@@ -41,7 +41,7 @@
                         <JamesFormField Text="Status">
                             <Start>
                                 <RadzenIcon Icon="fiber_manual_record" IconStyle="@AgencyStatusStyle"
-                                            Style="font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24"/>
+                                            class="filled-icon"/>
                             </Start>
                             <ChildContent>
                                 <RadzenTextBox Value="@AgencyStatus" ReadOnly="true"/>
@@ -121,7 +121,7 @@ else
                     <JamesFormField Text="Status">
                         <Start>
                             <RadzenIcon Icon="fiber_manual_record" IconStyle="@AgencyStatusStyle"
-                                        Style="font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24"/>
+                                        class="filled-icon"/>
                         </Start>
                         <ChildContent>
                             <RadzenTextBox Value="@AgencyStatus" ReadOnly="true"/>
@@ -155,15 +155,6 @@ else
     </RadzenCard>
 }
 
-<style>
-    .filled-icon {
-        font-variation-settings: 'FILL' 1,
-        'wght' 400,
-        'GRAD' 0,
-        'opsz' 24
-    }
-</style>
-
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
@@ -171,6 +162,7 @@ else
     private bool _isEditMode;
     private AccountAgencyAgentModel? _model;
     private Agency? _agency;
+    private string _agencyNumber = "";
     private Agent? _agent;
     private List<AgencyDto> _allAgencies = [];
     private List<Agent> _agencyAgents = [];
@@ -198,7 +190,7 @@ else
         .FirstOrDefault(f => f.Type.ToLower() == "main")?
         .EmailAddress ?? "";
 
-    private string AgencyStatus => _agency?.Status ?? "XXXX";
+    private string AgencyStatus => _agency?.Status ?? "";
 
     private string AgentName => _agent?.IdNavigation.FullName ?? "";
     private string AgentEmail => _agent?.IdNavigation.GetMainEmail() ?? "";
@@ -252,7 +244,29 @@ else
     }, "agencies");
 
     #endregion
+    
+    #region Agency
 
+    private IDataAccessResult<Agency?> _agencyResult = null!;
+
+    private LoadItem AgencyLoad => AddEventNotify(new LoadItem<Agency?>
+    {
+        Key = CacheKeys.Agency(_agencyNumber),
+        AsyncLoadTask = async () => _agencyResult = await DataAccess.GetAgencyByAgencyNumber(_agencyNumber),
+            CacheLoadTask = cache => _agencyResult = new DataAccessResult<Agency?>
+            {
+                Data = (Agency?)cache
+            },
+            ResultVariable = () => _agencyResult,
+            AfterLoad = () =>
+            {
+                _agency = _agencyResult.Data;
+            },
+            CacheDuration = new TimeSpan(0,0,0,0,500)
+    }, "agency");
+    
+    #endregion
+    
     #endregion
 
     protected override async Task OnParametersSetAsync()
@@ -266,15 +280,8 @@ else
 
     private async Task LoadAgency(string agencyNumber)
     {
-        var response = await DataAccess.GetAgencyByAgencyNumber(agencyNumber);
-        if (!response.Success)
-        {
-            NotifyLoadError(response.Errors, "agency", true);
-            _agency = null;
-            return;
-        }
-
-        _agency = response.Data;
+        _agencyNumber = agencyNumber;
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyLoad);
     }
 
     private async Task LoadAgencies()
@@ -317,9 +324,7 @@ else
             Draggable = true,
             Resizable = false,
             CloseDialogOnEsc = true,
-            ShowClose = true,
-            Width = "500px",
-            Height = "400px"
+            ShowClose = true
         };
 
         var dialogParameters = new Dictionary<string, object>
@@ -361,6 +366,8 @@ else
 
         if (success)
             NotifySuccessfulSave("Agency and Agent successfully updated");
+        else
+            NotifySaveError(["Agency and Agent could not be updated. Please try again later."], "agency and agent");
 
         _isEditMode = false;
     }
@@ -413,4 +420,9 @@ else
         StateHasChanged();
     }
 
+    class AccountAgencyAgentModel(string? agencyNumber, Guid? agentId)
+    {
+        public string? AgencyNumber { get; set; } = agencyNumber;
+        public Guid? AgentId { get; set; } = agentId;
+    }
 }

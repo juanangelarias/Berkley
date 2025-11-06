@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using James.Shared.Constants;
 using James.Shared.Data;
 
 namespace James.Shared

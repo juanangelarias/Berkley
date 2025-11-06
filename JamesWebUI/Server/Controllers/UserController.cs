@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
 using System.Diagnostics;
+using James.Shared;
 
 namespace JamesWebUI.Server.Controllers
 {

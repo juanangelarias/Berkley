@@ -1,6 +1,6 @@
 ﻿@page "/Account/{AccountNumber?}"
 
-@using JamesWebUI.Client.Model
+@using James.Shared.EnumTypes
 
 @inherits JamesLayoutComponentBase
 
@@ -121,4 +121,10 @@
         throw new NotImplementedException();
     }
 
+    enum AccountLayout
+    {
+        Default,
+        Commercial,
+        Contract
+    }
 }

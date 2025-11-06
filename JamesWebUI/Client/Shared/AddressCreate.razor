@@ -77,6 +77,31 @@
     private string AddressType { get; set; } = "";
     private List<AddressTypeDm> AddressTypes { get; set; } = [];
 
+    #region Loaders
+
+    #region AddressTypes
+
+    private IDataAccessResult<List<AddressTypeDm>> _addressTypesResult = null!;
+
+    private LoadItem AddressTypesLoad => AddEventNotify(new LoadItem
+    {
+        Key = "AddressTypes",
+        AsyncLoadTask = async () => _addressTypesResult = await DataAccess.GetAddressTypes(),
+        CacheLoadTask = cache => _addressTypesResult = new DataAccessResult<List<AddressTypeDm>>
+        {
+            Data = (List<AddressTypeDm>)cache!
+        },
+        ResultVariable = () => _addressTypesResult,
+        AfterLoad = () =>
+        {
+            AddressTypes = _addressTypesResult.Data!;
+        }
+    }, "address types");
+
+    #endregion
+
+    #endregion
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -100,6 +125,8 @@
                     NotifySaveError(result.Errors, "address");
                     return;
                 }
+                
+                NotifySuccessfulSave("address");
 
                 await AddressCreated.InvokeAsync(newAddress.Id);
             }
@@ -125,11 +152,7 @@
 
     private async Task LoadAddressTypes()
     {
-        //TODO: Disallow address types that already exist.
-        var result = await DataAccess.GetAddressTypes();
-        //TODO: Check for errors
-        if (result.Data != null)
-            AddressTypes = result.Data;
+        await DataAccess.GetCacheOrLoadDataAsync(AddressTypesLoad);
     }
 
 }

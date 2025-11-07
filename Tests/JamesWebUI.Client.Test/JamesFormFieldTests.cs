@@ -32,7 +32,7 @@ namespace JamesWebUI.Client.Test
             // Act
             var field = new JamesFormField
             {
-                Style = "color:red; width: 75%;"
+                Style = "color:red; Width: 75%;"
             };
 
             var contains75 = field.Style.Contains("width: 75%");
@@ -64,7 +64,7 @@ namespace JamesWebUI.Client.Test
             // Act
             var field = new JamesFormField
             {
-                Style = "color:red; min-width: 100px; max-width: 200px;"
+                Style = "color:red; min-width: 100px; MAX-width: 200px;"
             };
 
             var containsMin = field.Style.Contains("min-width: 100px");

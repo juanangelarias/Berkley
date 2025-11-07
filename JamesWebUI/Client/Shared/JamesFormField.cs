@@ -17,18 +17,20 @@ public sealed class JamesFormField : RadzenFormField
                 _style = "width: 100%";
                 return;
             }
+            
+            var lowValue = value.ToLower();
 
-            if (value.Contains("width") &&
-                !value.Contains("min-width") &&
-                !value.Contains("max-width"))
+            if (lowValue.Contains("width") &&
+                !lowValue.Contains("min-width") &&
+                !lowValue.Contains("max-width"))
             {
-                _style = value;
+                _style = lowValue;
                 return;
             }
 
             var count = 0;
             var index = 0;
-            while ((index = value.IndexOf("width", index, StringComparison.Ordinal)) != -1) 
+            while ((index = lowValue.IndexOf("width", index, StringComparison.Ordinal)) != -1) 
             {
                 count++;
                 index += "width".Length;
@@ -36,35 +38,35 @@ public sealed class JamesFormField : RadzenFormField
 
             if (count == 0)
             {
-                _style = value[value.Length - 1] == ';'
+                _style = value[lowValue.Length - 1] == ';'
                     ? _style = $"{value} width: 100%;"
-                    : $"{value}; width: 100%;";
+                    : $"{lowValue}; width: 100%;";
                 return;
             }
 
-            if (count == 1 && (value.Contains("min-width") || value.Contains("max-width")))
+            if (count == 1 && (lowValue.Contains("min-width") || lowValue.Contains("max-width")))
             {
-                _style = value[value.Length - 1] == ';'
-                    ? _style = $"{value} width: 100%;"
-                    : $"{value}; width: 100%;";
+                _style = value[lowValue.Length - 1] == ';'
+                    ? _style = $"{lowValue} width: 100%;"
+                    : $"{lowValue}; width: 100%;";
                 return;
             }
             
-            if (count == 1 && !value.Contains("min-width") && !value.Contains("max-width"))
+            if (count == 1 && !lowValue.Contains("min-width") && !lowValue.Contains("max-width"))
             {
-                _style = value;
+                _style = lowValue;
                 return;           
             }
             
-            if (count == 2 && value.Contains("min-width") && value.Contains("max-width"))
+            if (count == 2 && lowValue.Contains("min-width") && lowValue.Contains("max-width"))
             {
-                _style = value[value.Length - 1] == ';'
-                    ? _style = $"{value} width: 100%;"
-                    : $"{value}; width: 100%;";
+                _style = value[lowValue.Length - 1] == ';'
+                    ? _style = $"{lowValue} width: 100%;"
+                    : $"{lowValue}; width: 100%;";
             }
             else
             {
-                _style = value;
+                _style = lowValue;
             }
         }
     }

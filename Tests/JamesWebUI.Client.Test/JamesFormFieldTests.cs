@@ -17,15 +17,6 @@ namespace JamesWebUI.Client.Test
         }
 
         [Fact]
-        public void Constructor_Sets_Style_Including_Width100()
-        {
-            // Act
-            var field = new JamesFormField();
-            field.Style = "width: 100%";
-
-        }
-
-        [Fact]
         public void Constructor_Sets_Default_Style_Width100()
         {
             // Act
@@ -44,9 +35,11 @@ namespace JamesWebUI.Client.Test
                 Style = "color:red; width: 75%;"
             };
 
-            var contains = field.Style.Contains("width: 75%");
+            var contains75 = field.Style.Contains("width: 75%");
+            var notContains100 = !field.Style.Contains("width: 100%");
             // Assert
-            Assert.True(contains);
+            Assert.True(contains75);
+            Assert.True(notContains100);
         }
         
         [Fact]
@@ -55,12 +48,14 @@ namespace JamesWebUI.Client.Test
             // Act
             var field = new JamesFormField
             {
-                Style = "color:red;"
+                Style = "color: red;"
             };
 
             var contains100 = field.Style.Contains("width: 100%");
+            var containsColor = field.Style.Contains("color: red");
             // Assert
             Assert.True(contains100);
+            Assert.True(containsColor);
         }
     }
 }

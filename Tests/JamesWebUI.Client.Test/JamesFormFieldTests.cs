@@ -34,5 +34,33 @@ namespace JamesWebUI.Client.Test
             // Assert
             Assert.Equal("width: 100%", field.Style);
         }
+        
+        [Fact]
+        public void Constructor_Sets_User_Style_WithWidth()
+        {
+            // Act
+            var field = new JamesFormField
+            {
+                Style = "color:red; width: 75%;"
+            };
+
+            var contains = field.Style.Contains("width: 75%");
+            // Assert
+            Assert.True(contains);
+        }
+        
+        [Fact]
+        public void Constructor_Sets_User_Style_WithoutWidth()
+        {
+            // Act
+            var field = new JamesFormField
+            {
+                Style = "color:red;"
+            };
+
+            var contains100 = field.Style.Contains("width: 100%");
+            // Assert
+            Assert.True(contains100);
+        }
     }
 }

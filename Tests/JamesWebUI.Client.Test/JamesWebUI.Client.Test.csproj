@@ -33,12 +33,19 @@
   </ItemGroup>
 
   <ItemGroup>
+      <ProjectReference Include="..\..\Data\JamesDAL.Server\James.Data.Server.csproj" />
+      <ProjectReference Include="..\..\JamesWebUI\Server\JamesWebUI.Server.csproj" />
+      <ProjectReference Include="..\..\JApplicationLog\ApplicationLog.csproj" />
+      <ProjectReference Include="..\..\Test\James.Test.Shared\James.Test.Shared.csproj" />
       <ProjectReference Include="..\\..\\JamesWebUI\\Client\\JamesWebUI.Client.csproj" />
       <ProjectReference Include="..\\..\\Shared\\James.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="**\\*.cs" />
+    <Compile Include="Services\AddressPhoneFormatService.cs" />
+    <Compile Include="Services\TestHttpContextAccessor.cs" />
+    <Compile Include="Services\UserSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="JamesFormFieldTests.cs" />

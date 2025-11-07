@@ -2,6 +2,7 @@
 using James.Data.Server.Exceptions;
 using James.Shared.Constants;
 using James.Shared.Dto;
+using James.Shared.EnumTypes;
 
 namespace James.Data.Server.GraphQL.Queries;
 

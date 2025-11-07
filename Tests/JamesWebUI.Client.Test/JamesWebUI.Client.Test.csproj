@@ -33,11 +33,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Data\JamesDAL.Server\James.Data.Server.csproj" />
-    <ProjectReference Include="..\..\JamesWebUI\Client\JamesWebUI.Client.csproj" />
-    <ProjectReference Include="..\..\JamesWebUI\Server\JamesWebUI.Server.csproj" />
-    <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
-    <ProjectReference Include="..\..\Test\James.Test.Shared\James.Test.Shared.csproj" />
+      <ProjectReference Include="..\\..\\JamesWebUI\\Client\\JamesWebUI.Client.csproj" />
+      <ProjectReference Include="..\\..\\Shared\\James.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="**\\*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="JamesFormFieldTests.cs" />
   </ItemGroup>
 
 </Project>

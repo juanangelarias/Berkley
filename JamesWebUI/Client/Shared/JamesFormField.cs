@@ -7,6 +7,24 @@ public sealed class JamesFormField : RadzenFormField
 {
     private string? _style;
 
+    // Separates inline CSS style string into individual property segments, preserving original spacing around ':'
+    private static List<string> SeparatePropertySegments(string? style)
+    {
+        var segments = new List<string>();
+        if (string.IsNullOrWhiteSpace(style)) return segments;
+
+        var parts = style.Split(';');
+        foreach (var raw in parts)
+        {
+            var part = raw.Trim();
+            if (string.IsNullOrEmpty(part)) continue;
+            var colonIndex = part.IndexOf(':');
+            if (colonIndex <= 0 || colonIndex == part.Length - 1) continue;
+            segments.Add(part);
+        }
+        return segments;
+    }
+
     public override string? Style
     {
         get => _style;
@@ -17,57 +35,28 @@ public sealed class JamesFormField : RadzenFormField
                 _style = "width: 100%";
                 return;
             }
-            
-            var lowValue = value.ToLower();
 
-            if (lowValue.Contains("width") &&
-                !lowValue.Contains("min-width") &&
-                !lowValue.Contains("max-width"))
-            {
-                _style = lowValue;
-                return;
-            }
+            var segments = SeparatePropertySegments(value);
 
-            var count = 0;
-            var index = 0;
-            while ((index = lowValue.IndexOf("width", index, StringComparison.Ordinal)) != -1) 
+            var hasWidth = false;
+            foreach (var seg in segments)
             {
-                count++;
-                index += "width".Length;
+                var colonIndex = seg.IndexOf(':');
+                if (colonIndex <= 0) continue;
+                var name = seg.Substring(0, colonIndex).Trim();
+                if (name.Equals("width", StringComparison.OrdinalIgnoreCase))
+                {
+                    hasWidth = true;
+                    break;
+                }
             }
 
-            if (count == 0)
+            if (!hasWidth)
             {
-                _style = value[lowValue.Length - 1] == ';'
-                    ? _style = $"{value} width: 100%;"
-                    : $"{lowValue}; width: 100%;";
-                return;
+                segments.Add("width: 100%");
             }
 
-            if (count == 1 && (lowValue.Contains("min-width") || lowValue.Contains("max-width")))
-            {
-                _style = value[lowValue.Length - 1] == ';'
-                    ? _style = $"{lowValue} width: 100%;"
-                    : $"{lowValue}; width: 100%;";
-                return;
-            }
-            
-            if (count == 1 && !lowValue.Contains("min-width") && !lowValue.Contains("max-width"))
-            {
-                _style = lowValue;
-                return;           
-            }
-            
-            if (count == 2 && lowValue.Contains("min-width") && lowValue.Contains("max-width"))
-            {
-                _style = value[lowValue.Length - 1] == ';'
-                    ? _style = $"{lowValue} width: 100%;"
-                    : $"{lowValue}; width: 100%;";
-            }
-            else
-            {
-                _style = lowValue;
-            }
+            _style = string.Join("; ", segments).ToLowerInvariant();
         }
     }
 

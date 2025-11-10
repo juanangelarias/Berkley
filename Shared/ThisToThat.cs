@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using James.Shared.Constants;
 using James.Shared.Data;
 
 namespace James.Shared
@@ -30,7 +31,9 @@ namespace James.Shared
                 return null!;
             if (typeof(string) != destinationType && destinationType.GetInterfaces().Contains(typeof(IEnumerable)))
             {
-                return CopyIEnumerable((IEnumerable)source, destinationType);
+                return source is not IEnumerable enumerable 
+                    ? throw new Exception("Source type is not IEnumerable, perhaps your subproperty is wrong or missing. Check your 'ExecuteGet'") 
+                    : CopyIEnumerable(enumerable, destinationType);
             }
 
             var dConstructor = destinationType.GetConstructor([]) ??

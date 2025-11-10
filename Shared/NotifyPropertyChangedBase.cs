@@ -5,7 +5,7 @@ namespace James.Shared;
 
 public abstract class NotifyPropertyChangedBase: INotifyPropertyChanged
 {
-    public bool IsChanged { get; set; }
+    public virtual bool IsChanged { get; set; }
     
     /// Occurs when a property value changes.
     /// This event is triggered whenever the value of a property is modified
@@ -17,27 +17,19 @@ public abstract class NotifyPropertyChangedBase: INotifyPropertyChanged
 
     public virtual void ResetAll()
     {
-        IsChanged = false;
     }
     
     public virtual void ApplyChangesAll()
     {
-        IsChanged = false;
     }
 
     // Reset the main Level Only
     public virtual void Reset()
     {
-        IsChanged = false;
     }
     
     // Apply Changes for the main Level Only
     public virtual void ApplyChanges()
-    {
-        IsChanged = false;
-    }
-    
-    protected virtual void CheckIsChanged()
     {
     }
     

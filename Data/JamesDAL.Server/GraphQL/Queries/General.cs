@@ -93,6 +93,20 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result;
         }
+
+        [Authorize]
+        public async Task<List<LegalEntityEmail>> GetAllLegalEntityEmails(Guid legalEntityId,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var result = await ctx.LegalEntityEmails
+                .Where(a => a.LegalEntityId == legalEntityId)
+                .ToListAsync();
+            
+            return result;
+        }
+        
         [Authorize]
         public async Task<List<PhoneTypeDm>> GetPhoneTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -108,6 +122,7 @@ namespace James.Data.Server.GraphQL.Queries
                 throw new GraphQLException($"Error when retrieving Phone Types.", ex);
             }
         }
+        
         [Authorize]
         public async Task<List<AddressTypeDm>> GetAddressTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -123,6 +138,19 @@ namespace James.Data.Server.GraphQL.Queries
                 throw new GraphQLException($"Error when retrieving Address Types.", ex);
             }
         }
+
+        [Authorize]
+        public async Task<List<EmailTypeDm>> GetEmailTypes(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.EmailTypeDms
+                .OrderBy(o => o.Type)
+                .ToListAsync();
+            
+            return result;
+        }
+        
         [Authorize]
         public async Task<List<CountryDm>> GetAllCountries([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -139,6 +167,17 @@ namespace James.Data.Server.GraphQL.Queries
             }
         }
 
+        [Authorize]
+        public async Task<List<WatchStatusDm>> GetAllWatchStatuses(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.WatchStatusDms
+                .ToListAsync();
+            
+            return result;
+        }
+        
         [Authorize]
         public async Task<List<KeyValuePair<string, string>>> GetUserSettings([Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IHttpContextAccessor contextAccessor)
         {

@@ -1,4 +1,5 @@
-﻿using James.Shared.Model;
+﻿using James.Shared;
+using James.Shared.Model;
 using James.Shared.Server;
 
 namespace JamesWebUI.Server.SharedServices

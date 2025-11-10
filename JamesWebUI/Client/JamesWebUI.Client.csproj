@@ -44,6 +44,9 @@
   <ItemGroup>
     <_ContentIncludedByDefault Remove="BsgComponents\BsgColumnHeader.razor" />
     <_ContentIncludedByDefault Remove="Components\BsgComponents\JamesColumnHeader.razor" />
+    <_ContentIncludedByDefault Remove="Components\Notifications\NotificationPropertiesGrid.razor" />
+    <_ContentIncludedByDefault Remove="Components\GeneralUse\BusyDialog.razor" />
+    <_ContentIncludedByDefault Remove="Components\GeneralUse\EventConsole.razor" />
   </ItemGroup>
 
   <ItemGroup>

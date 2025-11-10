@@ -1,0 +1,385 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<Theme/>
+
+<RadzenColumn Size="12">
+    <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Start" Gap="0.5rem">
+        <RadzenRow>
+            <RadzenDataGrid TItem="AccountWatchDisplay" Data="@_watchStatusListDisplay" @ref="_watchGrid"
+                            AllowGrouping="false" AllowSorting="false" Style="height: 400px; border-radius: 10px;"
+                            AllowColumnResize="true" AllowColumnPicking="false" Density="Density.Compact"
+                            AllowFiltering="false" IsLoading="@IsLoading" SelectionMode="DataGridSelectionMode.Single"
+                            EditMode="DataGridEditMode.Single" RowUpdate="@OnRowUpdate" RowCreate="@OnRowCreate">
+                <HeaderTemplate>
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="2rem">
+                        <RadzenButton Text="Add Watch/Concern" Icon="add" Variant="Variant.Text"
+                                      Click="@OnAddRow" class="filled-icon"/>
+                    </RadzenStack>
+                </HeaderTemplate>
+                <Template Context="watch">
+                    <AccountWatchDetail AccountWatch="@watch" InEdition="@_inEdition"/>
+                </Template>
+                <Columns>
+                    <RadzenDataGridColumn Width="30px">
+                        <Template Context="watch">
+                            <RadzenIcon Icon="fiber_manual_record" IconStyle="@GetIconStyle(watch)" class="filled-icon"/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Title="Date" Property="WatchDate" Width="100px">
+                        <Template Context="watch">
+                            <RadzenText Text="@watch.WatchDate.ToString("MM/dd/yyyy")"/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Title="Status" Property="WatchStatus" Width="100px">
+                        <Template Context="watch">
+                            <RadzenText Text="@watch.WatchStatus"/>
+                        </Template>
+                        <EditTemplate Context="watch">
+                            <RadzenDropDown TValue="string" Data="@WatchStatuses"
+                                            @bind-Value="watch.WatchStatus" TextProperty="WatchStatus"
+                                            ValueProperty="WatchStatus" Style="width: 100%;" Name="WatchStatus"/>
+                            <RadzenRequiredValidator Text="Watch Status field is missing."
+                                                     Component="WatchStatus"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Title="Previous" Property="PreviousWatchStatus" Width="100px">
+                        <Template Context="watch">
+                            <RadzenText Text="@watch.PreviousWatchStatus"/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Context="watch" Filterable="false" Sortable="false"
+                                          TextAlign="TextAlign.Right"
+                                          Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="100px">
+                        <Template Context="watch">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                          Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1"
+                                          Click="@(_ => EditRow(watch))" @onclick:stopPropagation="true"/>
+                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                          Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1"
+                                          Click="@(_ => DeleteRow(watch))" @onclick:stopPropagation="true"/>
+                        </Template>
+                        <EditTemplate Context="watch">
+                            <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                          Size="ButtonSize.Medium" Click="@(_ => SaveRow(watch))" aria-label="Save"/>
+                            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                          Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1"
+                                          Click="@(_ => CancelEdit(watch))" aria-label="Cancel"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+                <RadzenButton Text="Close" Icon="close" Click="@Close" Disabled="@(_inEdition)"/>
+            </RadzenStack>
+        </RadzenRow>
+    </RadzenStack>
+</RadzenColumn>
+
+@code {
+    [Parameter, EditorRequired] public required string AccountNum { get; set; } = null!;
+    [Parameter, EditorRequired] public required List<AccountWatch> AccountWatches { get; set; } = [];
+    [Parameter, EditorRequired] public required List<WatchStatusDm> WatchStatuses { get; set; } = [];
+
+    private RadzenDataGrid<AccountWatchDisplay> _watchGrid = null!;
+    private bool _inEdition;
+    private List<AccountWatchDisplay> _watchStatusListDisplay = [];
+    private readonly List<AccountWatchDisplay> _watchesToInsert = [];
+    private readonly List<AccountWatchDisplay> _watchesToUpdate = [];
+    private bool _listIsChanged;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        if (AccountWatches.Any())
+            Load();
+    }
+
+    private void Load()
+    {
+        _watchStatusListDisplay = AccountWatches
+            .Select(s => new AccountWatchDisplay(s))
+            .ToList();
+        foreach (var status in _watchStatusListDisplay)
+        {
+            status.PreviousWatchStatus = _watchStatusListDisplay
+                .OrderByDescending(o => o.WatchDate)
+                .FirstOrDefault(f => f.WatchDate < status.WatchDate)?
+                .WatchStatus ?? "";
+        }
+    }
+
+    private async Task OnAddRow(MouseEventArgs obj)
+    {
+        await ShowLoading();
+        if (!_watchGrid.IsValid)
+            return;
+
+        _inEdition = true;
+
+        var previous = AccountWatches
+            .OrderByDescending(o => o.WatchDate)
+            .FirstOrDefault()?
+            .WatchStatus ?? "";
+
+        var newRecord = new AccountWatchDisplay(new()
+        {
+            Id = Guid.NewGuid(),
+            AccountNum = AccountNum,
+            WatchDate = DateTime.Now
+        })
+        {
+            PreviousWatchStatus = previous
+        };
+
+        _watchesToInsert.Add(newRecord);
+        await _watchGrid.InsertRow(newRecord);
+        await _watchGrid.ExpandRow(newRecord);
+
+        ReSort();
+    }
+
+    private async Task OnRowUpdate(AccountWatchDisplay watch)
+    {
+        await ShowLoading();
+
+        Reset(watch);
+
+        var record = AccountWatches
+            .FirstOrDefault(f => f.Id == watch.Id);
+
+        if (record != null)
+        {
+            var response = await DataAccess.UpdateAccountWatch(watch.Id, watch.WatchStatus, watch.Reason, watch.ActionPlan);
+            if (!response.Success)
+            {
+                NotifySaveError(response.Errors, "account status");
+                return;
+            }
+
+            NotifySuccessfulSave("account status");
+
+            record.WatchStatus = watch.WatchStatus;
+            record.Reason = watch.Reason;
+            record.ActionPlan = watch.ActionPlan;
+            _listIsChanged = true;
+        }
+        else
+        {
+            AccountWatches.Add(watch.GetAccountWatch());
+
+            var response = await DataAccess.CreateAccountWatch(watch.Id, watch.AccountNum, watch.WatchDate,
+                watch.WatchStatus, watch.Reason, watch.ActionPlan);
+
+            if (!response.Success)
+            {
+                NotifySaveError(response.Errors, "account status");
+                return;
+            }
+
+            NotifySuccessfulSave("account status update");
+            _listIsChanged = true;
+        }
+
+        ReSort();
+    }
+
+    private async Task OnRowCreate(AccountWatchDisplay watch)
+    {
+        await ShowLoading();
+
+        var response = await DataAccess.CreateAccountWatch(watch.Id, watch.AccountNum, watch.WatchDate,
+            watch.WatchStatus, watch.Reason, watch.ActionPlan);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "account status");
+            return;
+        }
+
+        NotifySuccessfulSave("account status create");
+
+        _watchStatusListDisplay.Add(watch);
+        AccountWatches.Add(watch.GetAccountWatch());
+
+        _watchesToInsert.Remove(watch);
+        _listIsChanged = true;
+
+        ReSort();
+    }
+
+    private async Task EditRow(AccountWatchDisplay watch)
+    {
+        if (!_watchGrid.IsValid)
+            return;
+
+        Reset();
+
+        await _watchGrid.ExpandRow(watch);
+        
+        _inEdition = true;
+        _watchesToUpdate.Add(watch);
+        await _watchGrid.EditRow(watch);
+    }
+
+    private void CancelEdit(AccountWatchDisplay watch)
+    {
+        Reset(watch);
+
+        _watchGrid.CancelEditRow(watch);
+
+        var original = AccountWatches
+            .FirstOrDefault(f => f.Id == watch.Id);
+
+        if (original == null)
+            return; // was a new watch
+
+        watch.WatchStatus = original.WatchStatus;
+        watch.Reason = original.Reason;
+        watch.ActionPlan = original.ActionPlan;
+
+        _inEdition = false;
+    }
+
+    private async Task DeleteRow(AccountWatchDisplay watch)
+    {
+        await ShowLoading();
+
+        Reset(watch);
+
+        var record = AccountWatches
+            .FirstOrDefault(f => f.Id == watch.Id);
+
+        if (record != null)
+        {
+            var response = await DataAccess.DeleteAccountWatch(record.Id);
+            if (!response.Success)
+            {
+                NotifySaveError(response.Errors, "account status delete");
+                return;
+            }
+
+            NotifySuccessfulSave("account status delete");
+
+            AccountWatches.Remove(record);
+        }
+
+        var existingWatch = _watchStatusListDisplay.FirstOrDefault(f => f.Id == watch.Id);
+        if (existingWatch != null)
+        {
+            _watchStatusListDisplay.Remove(existingWatch);
+        }
+
+        await _watchGrid.Reload();
+        
+        _listIsChanged = true;
+
+        ReSort();
+    }
+
+    private async Task SaveRow(AccountWatchDisplay watch)
+    {
+        var errors = Validate(watch);
+        if (errors.Count != 0)
+        {
+            NotificationService.Notify(new()
+            {
+                Detail = string.Join("\r\n", errors),
+                Severity = NotificationSeverity.Error,
+                Duration = 5000
+            });
+
+            return;
+        }
+
+        await _watchGrid.UpdateRow(watch);
+        _inEdition = false;
+    }
+
+    private void Reset()
+    {
+        _watchesToInsert.Clear();
+        _watchesToUpdate.Clear();
+    }
+
+    private void Reset(AccountWatchDisplay watch)
+    {
+        _watchesToInsert.Remove(watch);
+        _watchesToUpdate.Remove(watch);
+    }
+
+    private void Close()
+    {
+        if (IsChanged())
+            return;
+
+        if(_listIsChanged)
+            DialogService.Close(AccountWatches);
+        else
+            DialogService.Close();
+    }
+
+    private bool IsChanged()
+    {
+        if (AccountWatches.Count != _watchStatusListDisplay.Count)
+            return true;
+
+        foreach (var original in AccountWatches)
+        {
+            var actual = _watchStatusListDisplay
+                .FirstOrDefault(f => f.Id == original.Id);
+
+            if (actual == null ||
+                original.WatchStatus != actual.WatchStatus ||
+                original.Reason != actual.Reason ||
+                original.ActionPlan != actual.ActionPlan)
+                return true;
+        }
+
+        return false;
+    }
+
+    private void ReSort()
+    {
+        AccountWatches = AccountWatches
+            .OrderByDescending(o => o.WatchDate)
+            .ToList();
+    }
+
+    private IconStyle GetIconStyle(AccountWatchDisplay watch)
+    {
+        return watch.WatchStatus switch
+        {
+            "None" => IconStyle.Success,
+            "Concerns" => IconStyle.Warning,
+            "Watch" => IconStyle.Danger,
+            _ => IconStyle.Success
+        };
+    }
+
+    private List<string> Validate(AccountWatchDisplay watch)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrEmpty(watch.WatchStatus))
+            errors.Add("Watch Status field is missing.");
+
+        if (string.IsNullOrEmpty(watch.Reason))
+            errors.Add("Reason field is missing.");
+
+        if (string.IsNullOrEmpty(watch.ActionPlan))
+            errors.Add("Action Plan field is missing.");
+
+        if (watch.WatchDate == DateTime.MinValue &&
+            watch.WatchDate > DateTime.Now)
+            errors.Add("Invalid date.");
+
+        return errors;
+    }
+
+}
+

@@ -51,6 +51,7 @@ namespace James.Shared.Data
         /// If the key does not exist, a new cache entry is created.
         /// </remarks>
         public void UpdateCache(string key, object data, TimeSpan? cacheDuration = null);
+
         #endregion
 
         //DataAccess
@@ -73,12 +74,17 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Insurer>>> GetAllInsurers();
         public Task<IDataAccessResult<List<State>>> GetAllStates();
         public Task<IDataAccessResult<List<Branch>>> GetAllBranches();
+        public Task<IDataAccessResult<List<DivisionDm>>> GetDivisions();
+        public Task<IDataAccessResult<List<Underwriter>>> GetUnderwriters();
         public Task<IDataAccessResult<Address>> GetAddress(Guid addressId);
         public Task<IDataAccessResult<PhoneNumber>> GetPhoneNumber(Guid phoneId);
         public Task<IDataAccessResult<List<PhoneTypeDm>>> GetPhoneTypes();
         public Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes();
         public Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId);
         public Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId);
+        public Task<IDataAccessResult<List<LegalEntityEmail>>> GetAllLegalEntityEmails(Guid legalEntityId);
+        public Task<IDataAccessResult<List<EmailTypeDm>>> GetAllEmailTypes();
+        public Task<IDataAccessResult<List<WatchStatusDm>>> GetAllWatchStatuses();
         public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
@@ -93,67 +99,104 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
         public Task<IDataAccessResult<List<AgencyCommission>>> GetAgencyCommissionRates(Guid agencyId);
         public Task<IDataAccessResult<Employee>> GetEmployeeByUserName(string userName);
-        public Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted, string? currentManagementYear, string? businessClass,
-            string? businessType, string? priorSurety, int? estAnnualPremium);
-        public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem, string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);
-        public Task<ISaveDataResult> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity, bool? corpIndemnity, bool? personalIndemnity,
-            bool? keyManagementLifeInsurance, bool? managementIncentives, bool? fundedBuySell, bool? multipleActiveOwners,
-            bool? trackCommAccount, bool? berkleyAffiliate, string? comments);
-        public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective, DateTime expriration, int single, int aggregate,
-            string? comments, Guid statusId);
-        public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit, string? referenceNumber,
-            DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
+
+        public Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted,
+            string? currentManagementYear, string? businessClass, string? businessType, string? priorSurety,
+            int? estAnnualPremium);
+
+        public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
+            string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);
+
+        public Task<ISaveDataResult> SetAccountAdditionalInformation(Guid accountId, bool? fullIndemnity,
+            bool? corpIndemnity, bool? personalIndemnity, bool? keyManagementLifeInsurance, bool? managementIncentives,
+            bool? fundedBuySell, bool? multipleActiveOwners, bool? trackCommAccount, bool? berkleyAffiliate,
+            string? comments);
+
+        public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
+            string emailAddress, string type);
+
+        public Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id);
+
+        public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective,
+            DateTime expiration, int single, int aggregate, string? comments, Guid statusId);
+
+        public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,
+            string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
+
         public Task<ISaveDataResult> SetPowerOfAttorneyDocumentLink(Guid poaId, Guid? imagingDocumentId);
         public Task<ISaveDataResult> SetAgencyLicenseDocumentLink(Guid licenseId, Guid? imagingDocumentId);
         public Task<ISaveDataResult> SetAccountCreditReportDocumentLink(Guid? documentId, string accountNum);
         public Task<ISaveDataResult> SetAddress(Address address, string identifier);
-        public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2,
-            string? address3, string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType, string identifier);
+
+        public Task<ISaveDataResult> CreateAddress(Guid addressId, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode, Guid legalEntityId, string addressType,
+            string identifier);
+
         public Task<ISaveDataResult> DeleteAddress(Guid addressId, string identifier);
-        public Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
-            Guid legalEntityId, string phoneType);
+
+        public Task<ISaveDataResult> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber,
+            string? extension, Guid legalEntityId, string phoneType);
+
         public Task<ISaveDataResult> DeletePhoneNumber(Guid phoneId);
         public Task<IDataAccessResult<List<CountryDm>>> GetAllCountries();
-        public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective, string oldStatus, string newStatus,
-            Guid changedBy, string? comments);
+
+        public Task<ISaveDataResult> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective,
+            string oldStatus, string newStatus, Guid changedBy, string? comments);
+
         public Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
-            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
-            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
-        public Task<IDataAccessResult<Obligee>> CreateObligee(Guid id, string fullName, string obligeeType, bool printStatusLetter, string? notes,
-            string address1, string? address2, string city, string state, string postalCode, string? phoneNumber, string? email);
-        public Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent, int quantity, string documentType, 
-            string addressee, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode, Guid approverId);
-        public Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit, string? referenceNumber, DateOnly? firstIssued,
-            DateOnly? currentIssued, string? comments, string status);
+            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId,
+            bool isResident, string? licenseNumber, string state, bool isActive);
+
+        public Task<IDataAccessResult<Obligee>> CreateObligee(Guid id, string fullName, string obligeeType,
+            bool printStatusLetter, string? notes, string address1, string? address2, string city, string state,
+            string postalCode, string? phoneNumber, string? email);
+
+        public Task<ISaveDataResult> CreateAgencyInventory(Guid inventoryId, Guid agencyId, DateTime dateSent,
+            int quantity, string documentType, string addressee, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode, Guid approverId);
+
+        public Task<ISaveDataResult> CreateAgencyPOA(Guid poaId, Guid insurerId, Guid agencyId, int limit,
+            string? referenceNumber, DateOnly? firstIssued, DateOnly? currentIssued, string? comments, string status);
+
         public Task<ISaveDataResult> DeleteAgencyPOA(Guid poaId);
         public Task<ISaveDataResult> AgencyLicenseBulkDelete(List<Guid> licenseIds);
         public Task<ISaveDataResult> AgencyLicenseBulkInsert(List<AgencyLicenseBulk> licenses);
         public Task<ISaveDataResult> AgencyLicenseBulkUpdate(List<AgencyLicenseBulk> licenses);
-        public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId, bool appointingState,
-            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+
+        public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId,
+            bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
-        public Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity, string documentType, string? addressee,
-            Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode, string? postalCode);
-        public Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId, string? npn, bool w9,
-            bool need1099, bool nasbp, string branchKey);
+
+        public Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
+            string documentType, string? addressee, Guid addressId, string address1, string? address2, string? address3,
+            string city, string? stateCode, string? postalCode);
+
+        public Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId,
+            string? taxId, string? npn, bool w9, bool need1099, bool nasbp, string branchKey);
+
         public Task<ISaveDataResult> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing,
             int? profitSharingMinimumPremium);
+
         public Task<ISaveDataResult> DeleteLicense(Guid licenseId);
         public Task<ISaveDataResult> DeleteAgencyInventory(Guid inventoryId);
         public Task<ISaveDataResult> SetAgencyCommissionRate(AgencyCommission rate);
         public Task<ISaveDataResult> DeleteAgencyCommissionRate(Guid commRateId);
+        public Task<IDataAccessResult<List<AgencyDto>>> GetAllActiveAgencies();
         public Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber);
         public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
         public Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes();
         public Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes();
 
         #region UserSettings
+
         public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
         public Task<ISaveDataResult> SetUserSetting(string key, string? value);
         public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
+
         #endregion
 
-        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext, Action<Exception>? onError = null, Action? onComplete = null);
+        public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext,
+            Action<Exception>? onError = null, Action? onComplete = null);
 
         public IDisposable AddressCollectionModified(Guid legalEntityId, Action<SubscriptionResult<Guid>> onNext,
             Action<Exception>? onError = null, Action? onComplete = null);
@@ -167,8 +210,8 @@ namespace James.Shared.Data
         /// <param name="onComplete">handle to dispose of the subscription after all results are returned.</param>
         /// <returns>IDisposable reference to the subscription object</returns>
         public IDisposable SearchResultReady(string searchTerm,
-            Action<SubscriptionResult<List<JamesSearchResult>>> onNext,
-            Action<Exception>? onError = null, Action? onComplete = null);
+            Action<SubscriptionResult<List<JamesSearchResult>>> onNext, Action<Exception>? onError = null,
+            Action? onComplete = null);
 
         /// <summary>
         /// Call this after subscribing to the SearchResultsReady subscription
@@ -181,8 +224,8 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<Account>>> GetIdAccountNumbers();
         public Task<IDataAccessResult<List<Agency>>> GetIdAgencyNumbers();
 
-        public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
-            bool useDocCategoryAsCriteria = true);
+        public Task<IDataAccessResult<ImagingSearchCriteria>> GetImagingSearchCriteria(string id,
+            ImagingDocumentCategory docCategory, bool useDocCategoryAsCriteria = true);
 
         /// <summary>
         /// Returns metadata of documents contained in a given document class, document type and imaging id
@@ -191,8 +234,9 @@ namespace James.Shared.Data
         /// <param name="docCategory">The document category to search</param>
         /// <param name="documentType">The document type to search for</param>
         /// <returns>List of the metadata for the <see cref="ImagingDocument" />s found</returns>
-        public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId, ImagingDocumentCategory docCategory,
-            string? documentType = null);
+        public Task<IDataAccessResult<List<ImagingDocument>>> SearchDocuments(string imagingId,
+            ImagingDocumentCategory docCategory, string? documentType = null);
+
         public Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(ImagingDocumentCategory docCategory,
             Guid documentId);
 
@@ -203,10 +247,12 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> RemovePrincipalFromSecurityRole(Guid principalId, string role);
         public Task<ISaveDataResult> AddSecurityRole(SecurityRole role);
         public Task<IDataAccessResult<List<Employee>>> GetEmployees(bool activeOnly = true);
-        public Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText);
 
-        public Task<ISaveDataResult> CreateEmployee(string username, string fullName,
-                                                    string initials, string title, string email);
+        public Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(
+            string usernameSearchText);
+
+        public Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials, string title,
+            string email);
 
         public Task<ISaveDataResult> SetEmployeeEmail(Guid employeeId, string email);
 
@@ -214,6 +260,22 @@ namespace James.Shared.Data
 
         public Task<IDataAccessResult<PowerOfAttorneyDocumentStatus>> SetPowerOfAttorneyDocumentStatus(Guid id,
             DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
+
+        public Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, string accountNum, DateTime watchDate,
+            string watchStatus, string reason, string actionPlan);
+
+        public Task<IDataAccessResult<AccountWatch>> UpdateAccountWatch(Guid id, string watchStatus, string reason,
+            string actionPlan);
+
+        public Task<ISaveDataResult> SetAccountCommercialInfo(Guid accountId, string fullName, Guid underwriterId,
+            string branchKey, string divisionCode, Guid sicCodeId, Guid hoLead);
+
+        public Task<ISaveDataResult> SetAccountAgencyAndAgent(Guid accountId, string agencyNumber, Guid? agentId);
+        public Task<ISaveDataResult> DeleteAccountWatch(Guid id);
+
+        public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum);
+        public Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum);
+        public Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum);
     }
 
     public interface ISaveDataResult
@@ -226,17 +288,19 @@ namespace James.Shared.Data
     {
         public object? DataObject { get; }
     }
-    public interface IDataAccessResult<T>: IDataAccessResult
+
+    public interface IDataAccessResult<T> : IDataAccessResult
     {
         public T? Data { get; }
     }
-    
+
     public class SaveDataResult : ISaveDataResult
     {
         public string[] Errors { get; init; } = [];
 
-        public bool Success => Errors.Length==0;
+        public bool Success => Errors.Length == 0;
     }
+
     public class DataAccessResult<T> : IDataAccessResult<T>
     {
         public T? Data { get; init; }
@@ -246,6 +310,7 @@ namespace James.Shared.Data
 
         public bool Success => Errors.Length == 0;
     }
+
     public class DataAccessResultString : IDataAccessResult<string?>
     {
         public string? Data { get; init; }
@@ -261,6 +326,7 @@ namespace James.Shared.Data
         public Multisubscription()
         {
         }
+
         public Multisubscription(IEnumerable<IDisposable> subscriptions)
         {
             AddRange(subscriptions);
@@ -268,7 +334,7 @@ namespace James.Shared.Data
 
         public void Dispose()
         {
-            foreach(var subscription in this)
+            foreach (var subscription in this)
                 subscription.Dispose();
         }
     }

@@ -1,6 +1,6 @@
 ﻿using James.Shared.Model;
 
-namespace James.Shared.Server;
+namespace James.Shared;
 
 public interface ILoggingShared
 {

@@ -1,43 +1,55 @@
 ﻿query GetAgencyByAgencyNumber($agencyNumber: String!) {
-  agencyByAgencyNumber(agencyNumber: $agencyNumber) {
-    id
-    agencyNumber
-    branch
-    status
-    w9
-    nasbp
-    profitSharing
-    profitSharingMinimumPremium
-    nationalProducerNumber
-    idNavigation {
-      fullName
-      parentNavigation {
+    agencyByAgencyNumber(agencyNumber: $agencyNumber) {
         id
-        fullName
-        agencyIdNavigation {
-          agencyNumber
-        }
-      }
-      legalEntityAddresses {
-        type
-        address {
-          id
-          address1
-          address2
-          address3
-          city
-          stateCode
-          stateCodeNavigation {
-            countryCode
-            countryCodeNavigation {
-              name
+        agencyNumber
+        branch
+        status
+        w9
+        nasbp
+        profitSharing
+        profitSharingMinimumPremium
+        nationalProducerNumber
+        agentsInAgencies{
+            agentId
+            agent {
+                idNavigation {
+                    fullName
+                }
             }
-          }
-          postalCode
         }
-      }
+        idNavigation {
+            fullName
+            parentNavigation {
+                id
+                fullName
+                agencyIdNavigation {
+                    agencyNumber
+                }
+            }
+            legalEntityAddresses {
+                type
+                address {
+                    id
+                    address1
+                    address2
+                    address3
+                    city
+                    stateCode
+                    stateCodeNavigation {
+                        countryCode
+                        countryCodeNavigation {
+                            name
+                        }
+                    }
+                    postalCode
+                }
+            }
+            legalEntityEmails {
+                type
+                emailAddress
+            }
+        }
     }
-  }
 }
 
 query GetAgencyNameAndNumberById($agencyId: UUID!) {
@@ -119,31 +131,36 @@ query GetAgencyBonds($agencyId: UUID!) {
 
 query GetAgencyAgents($agencyId: UUID!){
 	agencyAgents(agencyId: $agencyId){
-        id,
-        fullName,
-        givenName,
-        middleInitial,
-        familyName,
-        mainEmailAddress,
-        nationalProducerNumber,
+        id
+        fullName
+        givenName
+        middleInitial
+        familyName
+        mainEmailAddress
+        nationalProducerNumber
         idNavigation{
-            givenName,
-            middleInitial,
-            familyName,
+            givenName
+            middleInitial
+            familyName
             fullName
+            legalEntityEmails {
+                id
+                type
+                emailAddress
+            }
         }
         agencyLicenses{
-            id,
-            licenseNumber,
-            comments,
-            appointment,
-            termination,
-            appointingState,
-            state,
-            isActive,
-            created,
+            id
+            licenseNumber
+            comments
+            appointment
+            termination
+            appointingState
+            state
+            isActive
+            created
             insurer{
-                id,
+                id
                 idNavigation{
                     fullName
                 }
@@ -313,4 +330,13 @@ query GetIdAgencyNumbers {
     id
     agencyNumber
   }
+}
+
+query GetAllActiveAgencies {
+    allActiveAgencies {
+        id
+        agencyNumber
+        fullName
+        status
+    }
 }

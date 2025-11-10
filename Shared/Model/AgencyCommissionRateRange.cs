@@ -18,7 +18,6 @@ public class AgencyCommissionRateRange : NotifyPropertyChangedBase
         set
         {
             _from = value;
-            CheckIsChanged();
             OnPropertyChanged();
         }
     }
@@ -36,7 +35,6 @@ public class AgencyCommissionRateRange : NotifyPropertyChangedBase
         set
         {
             _to = value;
-            CheckIsChanged();
             OnPropertyChanged();
         }
     }
@@ -54,13 +52,16 @@ public class AgencyCommissionRateRange : NotifyPropertyChangedBase
         set
         {
             _rate = value;
-            CheckIsChanged();
             OnPropertyChanged();
         }
     }
 
     #endregion
-    
+
+    public override bool IsChanged=> _from != _originalFrom ||
+                                     _to != _originalTo ||
+                                     Math.Abs(_rate - _originalRate) > 0.00001;
+
     public string FromText => From.ToString("C0");
     public string ToText => To?.ToString("C0") ?? "Unlimited";
     public string RateText => Rate.ToString("##.#0'%'");
@@ -92,8 +93,6 @@ public class AgencyCommissionRateRange : NotifyPropertyChangedBase
             _originalTo = to;
             _originalRate = rate;
         }
-
-        IsChanged = false;
     }
 
     public override void Reset()
@@ -101,8 +100,6 @@ public class AgencyCommissionRateRange : NotifyPropertyChangedBase
         From = _originalFrom;
         To = _originalTo;
         Rate = _originalRate;
-        
-        IsChanged = false;
     }
 
     public override void ApplyChanges()
@@ -110,14 +107,5 @@ public class AgencyCommissionRateRange : NotifyPropertyChangedBase
         _originalFrom = From;
         _originalTo = To;
         _originalRate = Rate;
-        
-        IsChanged = false;
-    }
-
-    protected override void CheckIsChanged()
-    {
-        IsChanged = _from != _originalFrom ||
-                    _to != _originalTo ||
-                    Math.Abs(_rate - _originalRate) > 0.00001;
     }
 }

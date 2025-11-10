@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace James.Shared.Data
+namespace James.Shared.Constants
 {
     /// <summary>
     /// Constants used by multiple assemblies

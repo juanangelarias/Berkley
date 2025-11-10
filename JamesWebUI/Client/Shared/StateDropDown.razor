@@ -10,7 +10,7 @@
     {
         <RadzenDropDown Multiple="true" Chips="true" SelectAllText="Select All" Disabled="@Disabled"
                         AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                        TValue="List<State>" Data="AllStates" @bind-Value="@SelectedStates"
+                        TValue="List<State>" Data="AllStates" @bind-Value="@SelectedStates" Name="@Name"
                         TextProperty="Name">
         </RadzenDropDown>
     }
@@ -24,7 +24,7 @@
         <RadzenDropDown Multiple="false" SelectAllText="Select All" Disabled="@Disabled"
                         AllowFiltering="true" FilterOperator="StringFilterOperator.Contains" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                         TValue="string" ValueProperty="Code" Data="AllStates" @bind-Value="@SelectedStateCode"
-                        TextProperty="Name">
+                        TextProperty="Name" Name="@Name">
             <Template Context="state">
                 <RadzenText Text="@state.Name" />
             </Template>
@@ -35,6 +35,7 @@
 @code {
     [Parameter] public bool MultiSelect { get; set; } = false;
     [Parameter] public bool Disabled { get; set; } = false;
+    [Parameter] public string Name { get; set; } = "State";
     
     private List<State> AllStates { get; set; } = new List<State>();
 

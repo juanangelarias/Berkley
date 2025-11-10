@@ -118,15 +118,6 @@
 
         await DataAccess.GetCacheOrLoadDataAsync(RelatedPartiesLoad);
     }
-    
-    protected async Task ShowLoading()
-    {
-        IsLoading = true;
-
-        await Task.Yield();
-
-        IsLoading = false;
-    }
 
     private void ExportGrid(ExportFormat format)
     {

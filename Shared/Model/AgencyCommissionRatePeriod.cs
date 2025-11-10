@@ -19,7 +19,6 @@ public class AgencyCommissionRatePeriod : NotifyPropertyChangedBase
         set
         {
             _start = value;
-            CheckIsChanged();
             OnPropertyChanged();
         }
     }
@@ -37,7 +36,6 @@ public class AgencyCommissionRatePeriod : NotifyPropertyChangedBase
         set
         {
             _finish = value;
-            CheckIsChanged();
             OnPropertyChanged();
         }
     }
@@ -61,6 +59,10 @@ public class AgencyCommissionRatePeriod : NotifyPropertyChangedBase
 
     #endregion
 
+    public override bool IsChanged => _start != _originalStart || 
+                                      _finish != _originalFinish || 
+                                      _ranges.Any(r => r.IsChanged);
+
     #endregion
 
     public AgencyCommissionRatePeriod(Guid agencyId, BondType bondType, CommissionType commissionType, DateTime start,
@@ -78,7 +80,6 @@ public class AgencyCommissionRatePeriod : NotifyPropertyChangedBase
         Ranges = ranges;
 
         _originalRanges = Ranges;
-        IsChanged = false;
     }
 
     public override void ResetAll()
@@ -86,8 +87,6 @@ public class AgencyCommissionRatePeriod : NotifyPropertyChangedBase
         Start = _originalStart;
         Finish = _originalFinish;
         Ranges = _originalRanges;
-
-        IsChanged = false;
     }
 
     public override void ApplyChangesAll()
@@ -100,15 +99,5 @@ public class AgencyCommissionRatePeriod : NotifyPropertyChangedBase
         }
 
         _originalRanges = Ranges;
-
-        IsChanged = false;
-    }
-
-    protected override void CheckIsChanged()
-    {
-        IsChanged = _start != _originalStart ||
-                    _finish != _originalFinish ||
-                    _ranges.Any(r => r.IsChanged) ||
-                    _ranges.Count != _originalRanges.Count;
     }
 }

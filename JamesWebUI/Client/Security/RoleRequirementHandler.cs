@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Diagnostics;
 using System.Security.Claims;
 using James.Shared;
+using James.Shared.Constants;
 
 namespace JamesWebUI.Client.Security
 {

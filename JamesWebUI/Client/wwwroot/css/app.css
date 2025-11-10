@@ -131,3 +131,10 @@ div:has(button.sidebar-expander){
     font-weight: bold;
     font-size: 2rem;
 }
+
+.filled-icon {
+    font-variation-settings: 'FILL' 1 !important;,
+'wght' 400 !important;,
+'GRAD' 0 !important;,
+'opsz' 24 !important;
+}

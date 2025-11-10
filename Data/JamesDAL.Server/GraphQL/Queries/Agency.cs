@@ -52,9 +52,14 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(a => a!.AgencyIdNavigation)
                 .Include(a => a.IdNavigation.LegalEntityAddresses)
                 .ThenInclude(a => a.Address)
+                .Include(i => i.IdNavigation.LegalEntityEmails)
                 .Include(a => a.AgencyErrorAndOmissions)
-
+                .Include(i => i.AgentsInAgencies)
+                .ThenInclude(i => i.Agent)
+                .ThenInclude(i => i.IdNavigation)
+                .AsSplitQuery()
                 .FirstOrDefaultAsync();
+            
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
 
@@ -72,8 +77,8 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.Agencies.Where(a => a.Id == agencyId)
                 .Include(a => a.IdNavigation)
-
                 .FirstOrDefaultAsync();
+            
             return result ?? throw new GraphQLException($"No agency exists with Id {agencyId}.");
         }
 
@@ -171,6 +176,7 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
         }
+        
         [Authorize]
         public async Task<List<AgencyInventory>> GetAgencyInventory(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -181,6 +187,7 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result ?? throw new GraphQLException($"No agency inventory exists with agencyId {agencyId}.");
         }
+        
         [Authorize]
         public async Task<List<AgencyStatusLog>> GetAgencyStatusLog(string agencyNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -198,6 +205,7 @@ namespace James.Data.Server.GraphQL.Queries
             }
 
         }
+        
         [Authorize]
         public async Task<List<Bond>> GetAgencyBonds(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -221,6 +229,7 @@ namespace James.Data.Server.GraphQL.Queries
             return await ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.IdNavigation)
+                .ThenInclude(agi=>agi.LegalEntityEmails)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.AgencyLicenses)
                 .ThenInclude(ag => ag.Insurer)
@@ -231,9 +240,34 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
+        public async Task<List<AgencyDto>> GetAllActiveAgencies(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var agencies = await ctx.Agencies
+                .Include(i => i.IdNavigation)
+                .Include(i => i.AgencyStatusLogs)
+                .AsSplitQuery()
+                .Where(a => a.Status == "Active")
+                .Select(s => new AgencyDto
+                {
+                    Id = s.Id,
+                    AgencyNumber = s.AgencyNumber,
+                    FullName = s.IdNavigation.FullName,
+                    Status = s.AgencyStatusLogs
+                        .OrderByDescending(o => o.Effective)
+                        .FirstOrDefault()!
+                        .NewStatus ?? ""
+                })
+                .ToListAsync();
+            
+            return agencies;
+        }
+        
+        [Authorize]
         public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            var ctx = contextFactory.CreateDbContext();
+            var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
                 .Include(lic => lic.Agency)
                 .Include(lic => lic.Insurer)

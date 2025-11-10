@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.RegularExpressions;
 using James.Shared;
+using James.Shared.Constants;
 using James.Shared.Data;
 using James.Shared.Model;
 using Microsoft.AspNetCore.Components;
@@ -72,7 +73,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     #region Fields & Properties
 
     protected bool IsLoading;
-
+    
     #endregion
 
     protected virtual async Task ShowLoading()
@@ -83,7 +84,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
 
         IsLoading = false;
     }
-
+    
     protected virtual async Task ShowLoading(Task toExecute)
     {
         IsLoading = true;
@@ -92,7 +93,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
 
         IsLoading = false;
     }
-
+    
     #region Common Client Actions
 
     /// <summary>
@@ -134,7 +135,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     }
 
     /// <summary>
-    /// Generates non-standard notification that a save event failed.
+    /// Generates a non-standard notification indicating that a save event has failed.
     /// </summary>
     /// <param name="errors">Errors that were returned.</param>
     /// <param name="notificationText">The item that didn't save, default is "changes".  Should NOT be title cased.</param>
@@ -211,7 +212,6 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         return loadItem;
     }
 
-
     private static string SubstitutePropertyIfNeeded(string original, ExportColumnSubstitutions substitutions) =>
         string.IsNullOrWhiteSpace(original)
             ? original
@@ -226,7 +226,7 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
         foreach (var substitution in substitutions)
         {
             originalFilter = Regex.Replace(originalFilter, $"(?<=[(\\s\\(^]){substitution.Original}(?=[\\s\\)])",
-                substitution.Property ?? "");
+                substitution.Property);
         }
 
         return originalFilter;
@@ -253,12 +253,12 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
             selectColumns
                 .Select(cSub => cSub with
                 {
-                    Title = cSub.Title?.Replace(".", "_")
+                    Title = cSub.Title.Replace(".", "_")
                 })
                 .Select(pt =>
                     pt.Property == pt.Title
                         ? pt.Property
-                        : $"{pt.Property} as {pt.Title?.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
+                        : $"{pt.Property} as {pt.Title.Replace(".", "_").Replace(' ', ExportColumnSubstitution.SpaceSubstitution)}"));
         var query = new Query()
         {
             OrderBy = SubstitutePropertyIfNeeded(dataGrid.Query.OrderBy, propertySubstitutions),

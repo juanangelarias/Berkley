@@ -1,35 +1,40 @@
-﻿@using James.Shared
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
 
-@inject IDataAccess _dataAccess
+@inject IDataAccess DataAccess
 
-<RadzenStack Orientation="Orientation.Horizontal">
-    <RadzenAutoComplete @ref="@autoComplete" MinLength="3" Style="width: 100%;"
-                        ValueChanged="ResultSelected"
-                        Placeholder="Search..." Data="@SearchResults" LoadData="SearchAccount"
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
+    <RadzenText Text="Search Account: " Style="margin-right: 0;" />
+    <RadzenAutoComplete @ref="@AutoComplete" MinLength="3" Style="width: 60%;" 
+                        Variant="Variant.Text" SelectedItemChanged="@ResultSelected"
+                        Placeholder="Account Name, Account No." Data="@SearchResults" LoadData="SearchAccount"
                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
         <Template Context="account">
-            <RadzenStack Orientation="Orientation.Horizontal" Style="width:500px;">
-                <RadzenIcon Icon="person" />
-                <RadzenText Text="@account.AccountNum" Style="width: 100px;" />
-                <RadzenText Text="@account.IdNavigation.FullName" Style="width: 400px;" />
+            <RadzenStack Orientation="Orientation.Horizontal" Style="width:70%;">
+                <RadzenIcon Icon="person"/>
+                <RadzenText Text="@account.AccountNum" Style="width: 20%;"/>
+                <RadzenText Text="@account.IdNavigation.FullName" Style="width: 70%;"/>
             </RadzenStack>
         </Template>
     </RadzenAutoComplete>
+    <RadzenIcon Icon="search" Style="margin-left: -5px;"/>
+    <RadzenButton Text="Create New Account" Click="CreateNewAccount" Icon="add" Style="margin-left: 15px;"/>
 </RadzenStack>
 
 @code {
+    [Parameter, EditorRequired] public EventCallback<string> SetAccount { get; set; }
+    [Parameter, EditorRequired] public EventCallback CreateNewAccount { get; set; }
+    
     private List<Account> SearchResults { get; set; } = new List<Account>();
     private Account SelectedAccount { get; set; } = new Account();
-    private RadzenAutoComplete autoComplete { get; set; } = null!;
+    private RadzenAutoComplete AutoComplete { get; set; } = null!;
 
 
     private async Task SearchAccount(LoadDataArgs args)
     {
-        var result = await _dataAccess.SearchAccounts(args.Filter);
+        var result = await DataAccess.SearchAccounts(args.Filter);
 
         if (result.Errors.Any())
         {
@@ -41,13 +46,13 @@
         }
     }
 
-    private async Task ResultSelected(dynamic args)
+    private void ResultSelected(dynamic args)
     {
-
-        if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Account))
-        {
-            NavigationManager.NavigateTo("/Account/" + ((Account)autoComplete.Value).AccountNum.ToString());
-            autoComplete.Value = "";
-        }
+        var account = (Account?)args;
+        if (account == null) 
+            return;
+        
+        NavigationManager.NavigateTo("/Account/" + ((Account)AutoComplete.Value).AccountNum);
+        AutoComplete.Value = "";
     }
 }

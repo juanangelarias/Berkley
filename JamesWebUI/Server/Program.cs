@@ -23,6 +23,7 @@ using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using James.Shared.Constants;
 using JamesWebUI.Client.Security;
 using JamesWebUI.Server.AuthenticationStateSyncer;
 using Microsoft.AspNetCore.Authorization;
@@ -93,8 +94,8 @@ try
         .AddSubscriptionType<Subscription>()
         .AddJamesGraphQlTypes()
         .AddMutationConventions()
-        .AddInMemorySubscriptions()
-        ;
+        .AddInMemorySubscriptions();
+    
     builder.Services.AddControllersWithViews();
     builder.Services.AddRazorPages();
     builder.Services.ConfigureApplicationCookie(options =>

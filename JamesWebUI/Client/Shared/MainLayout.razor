@@ -42,7 +42,7 @@
             <RadzenRow Gap="0.5rem" Style="@_headerStyle">
                 <RadzenColumn Size="5">
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenButton Icon="menu" Click="() => sidebarExpanded = !sidebarExpanded" 
+                        <RadzenButton Icon="menu" Click="() => _sidebarExpanded = !_sidebarExpanded" 
                                       ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"/>
                         <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040; margin-left: 7px; margin-top: 7px;"/>
                     </RadzenStack>
@@ -109,7 +109,7 @@
             </RadzenStack>
         </RadzenRow>
         <RadzenRow>
-            <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
+            <RadzenPanelMenu DisplayStyle="@(_sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
                              Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
                 <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard"/>
                 <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds"/>

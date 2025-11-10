@@ -619,13 +619,6 @@ namespace James.Data.Client
                 "AllImagingCategoryTabDivisionType");
         }
 
-        
-
-        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string value)
-        {
-            throw new NotImplementedException();
-        }
-
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext,
             Action<Exception>? onError = null, Action? onComplete = null)
         {

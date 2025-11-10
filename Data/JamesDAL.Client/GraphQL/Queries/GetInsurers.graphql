@@ -1,5 +1,5 @@
-﻿query allInsurers(){
-    allInsurers(){
+﻿query allInsurers{
+    allInsurers{
         id,
         lenumPeopleSoft,
         idNavigation{

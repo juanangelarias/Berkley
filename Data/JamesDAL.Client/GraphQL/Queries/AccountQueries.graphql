@@ -126,10 +126,6 @@
     }
 }
 
-query GetFirstIndemnity($input: String!) {
-    firstIndemnity(accountNum: $input)
-}
-
 query SearchAccounts($input: String!) {
     searchAccounts(searchString: $input) {
         accountNum
@@ -257,6 +253,10 @@ query GetIdAccountNumbers {
         id
         accountNum
     }
+}
+
+query GetFirstIndemnity($input: String!) {
+    firstIndemnity(accountNum: $input)
 }
 
 query GetAccountAlerts($input1: Int!, $input2: String!) {

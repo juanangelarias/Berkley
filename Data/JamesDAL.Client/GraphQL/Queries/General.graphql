@@ -118,13 +118,6 @@ query GetUserSettings {
         key
         value
     }
-query GetEmployeeByUserName($userName: String!){
-    employeeByUserName(userName: $userName){
-        id
-        activeDirectoryAccount
-        fullName
-        initials
-    }
 }
 
 query GetEmployees($activeOnly: Boolean!) {
@@ -168,6 +161,15 @@ mutation SetEmployeeEmail($input: SetEmployeeEmailInput!) {
 mutation CreateEmployee($input:CreateEmployeeInput!) {
     createEmployee(input: $input){
         boolean
+    }
+}
+
+query GetEmployeeByUserName($userName: String!){
+    employeeByUserName(userName: $userName){
+        id
+        activeDirectoryAccount
+        fullName
+        initials
     }
 }
 

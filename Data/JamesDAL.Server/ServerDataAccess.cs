@@ -152,17 +152,14 @@ namespace James.Data.Server
         }
 
         public async Task<IDataAccessResult<QueryCount>> GetAgencyBondsCount(Guid agencyId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyBondsCount(agencyId, contextFactory));
+        }
 
         public async Task<IDataAccessResult<List<WatchStatusDm>>> GetAllWatchStatuses()
         {
             return await ExecuteGet(async () => await query.GetAllWatchStatuses(contextFactory));
         }
-
-        public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
-        {
-            return await ExecuteGet(async () => await query.GetAgencyBondsCount(agencyId, contextFactory));
-        }
-        
 
         public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
         {

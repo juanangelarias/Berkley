@@ -57,6 +57,10 @@ type DeleteAgencyPOAPayload {
   boolean: Boolean
 }
 
+type SetLegalEntityEmailPayload {
+  legalEntityEmail: LegalEntityEmail
+}
+
 type WorkInProgressJob {
   id: UUID!
   created: DateTime!
@@ -285,6 +289,15 @@ type TaxBasisDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
+input CreateAccountWatchInput {
+  id: UUID!
+  accountNum: String!
+  watchDate: DateTime!
+  watchStatus: String!
+  reason: String!
+  actionPlan: String!
+}
+
 input SetDefaultUserSettingInput {
   key: String!
   value: String
@@ -361,6 +374,11 @@ type Agency {
   phoneNumbers: [LegalEntityPhone!]!
   mainEmailAddress: String
   emailAddresses: [LegalEntityEmail!]!
+}
+
+type AccountAlertPackageDto {
+  alerts: [AccountAlertDto!]!
+  claims: [AccountAlertClaimDto!]!
 }
 
 input SetAddressInput {
@@ -468,6 +486,7 @@ type WritingCompanyDm {
 
 type Query {
   accountByNumber(accountNumber: String): Account
+  firstIndemnity(accountNum: String!): LocalDate
   searchAccounts(searchString: String!): [Account!]!
   accountActiveLinesOfAuthority(accountNumber: String!): InforceAccountLOA!
   accountProgramHistory(accountNumber: String!): [AccountProgram!]!
@@ -476,6 +495,8 @@ type Query {
   idAccountNumbers: [Account!]!
   searchAccountsByAccountNumber(accountNumberFragment: String! activeOnly: Boolean!): [Account!]!
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
+  allAccountWatches(accountNum: String!): [AccountWatch!]!
+  accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
   agencyById(agencyId: UUID!): Agency
@@ -487,6 +508,7 @@ type Query {
   agencyBonds(agencyId: UUID! skip: Int! take: Int!): [Bond!]!
   agencyBondsCount(agencyId: UUID!): QueryCount!
   agencyAgents(agencyId: UUID!): [Agent!]!
+  allActiveAgencies: [AgencyDto!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
   agencyPOAs(agencyId: UUID!): [PowerOfAttorney!]!
@@ -510,9 +532,12 @@ type Query {
   allBranches: [Branch!]!
   allLegalEntityAddresses(legalEntityId: UUID!): [Address!]!
   allLegalEntityPhoneNumbers(legalEntityId: UUID!): [PhoneNumber!]!
+  allLegalEntityEmails(legalEntityId: UUID!): [LegalEntityEmail!]!
   phoneTypes: [PhoneTypeDm!]!
   addressTypes: [AddressTypeDm!]!
+  emailTypes: [EmailTypeDm!]!
   allCountries: [CountryDm!]!
+  allWatchStatuses: [WatchStatusDm!]!
   userSettings: [KeyValuePairOfStringAndString!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
@@ -533,6 +558,7 @@ type Query {
   employees(activeOnly: Boolean!): [Employee!]!
   activeDirectoryUsers(searchText: String!): [PotentialEmployeeActiveDirectoryInfo!]!
   allStates: [State!]!
+  underwriters: [Underwriter!]!
   allUserSettings: [KeyValuePairOfStringAndString!]!
   userSetting(key: String!): UserSetting
 }
@@ -565,6 +591,10 @@ input CreateAgencyPOAInput {
   currentIssued: LocalDate
   comments: String
   status: String!
+}
+
+type UpdateAccountWatchPayload {
+  accountWatch: AccountWatch
 }
 
 type CreateAgencyStatusLogPayload {
@@ -862,6 +892,10 @@ type Ratio {
   balanceSheets: [BalanceSheet!]!
 }
 
+type CreateAccountWatchPayload {
+  accountWatch: AccountWatch
+}
+
 type SetAccountProgramPayload {
   accountProgram: AccountProgram
 }
@@ -1074,6 +1108,14 @@ type SubscriptionResultOfGuid {
   result: UUID!
 }
 
+type AgencyDto {
+  id: UUID!
+  agencyNumber: String!
+  fullName: String!
+  fullNameDisplay: String!
+  status: String!
+}
+
 type StatementQualityDm {
   id: UUID!
   created: DateTime!
@@ -1161,6 +1203,13 @@ type SicratioTypeDm {
   sicratios: [Sicratio!]!
 }
 
+input SetLegalEntityEmailInput {
+  id: UUID!
+  legalEntityId: UUID!
+  emailAddress: String!
+  type: String!
+}
+
 type AccountProgramUserAuthority {
   id: UUID!
   created: DateTime!
@@ -1204,6 +1253,11 @@ type Mutation {
   setAccountSystems(input: SetAccountSystemsInput!): SetAccountSystemsPayload!
   setAccountAdditionalInformation(input: SetAccountAdditionalInformationInput!): SetAccountAdditionalInformationPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
+  createAccountWatch(input: CreateAccountWatchInput!): CreateAccountWatchPayload!
+  updateAccountWatch(input: UpdateAccountWatchInput!): UpdateAccountWatchPayload!
+  deleteAccountWatch(input: DeleteAccountWatchInput!): DeleteAccountWatchPayload!
+  setAccountCommercialInfo(input: SetAccountCommercialInfoInput!): SetAccountCommercialInfoPayload!
+  setAccountAgencyAndAgent(input: SetAccountAgencyAndAgentInput!): SetAccountAgencyAndAgentPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
   setAgencyInventory(input: SetAgencyInventoryInput!): SetAgencyInventoryPayload!
   setAgencyLicense(input: SetAgencyLicenseInput!): SetAgencyLicensePayload!
@@ -1230,6 +1284,8 @@ type Mutation {
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
   setAddress(input: SetAddressInput!): SetAddressPayload!
   deletePhoneNumber(input: DeletePhoneNumberInput!): DeletePhoneNumberPayload!
+  setLegalEntityEmail(input: SetLegalEntityEmailInput!): SetLegalEntityEmailPayload!
+  deleteLegalEntityEmail(input: DeleteLegalEntityEmailInput!): DeleteLegalEntityEmailPayload!
   setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
   setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
   addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
@@ -1258,6 +1314,10 @@ type AgentSystemDm {
   onlineBondSystems: [OnlineBondSystem!]!
 }
 
+type DeleteAccountWatchPayload {
+  boolean: Boolean
+}
+
 type AdditionalObligee {
   id: UUID!
   created: DateTime!
@@ -1275,6 +1335,12 @@ type ResponsibilityDm {
   modified: DateTime!
   responsibility: String!
   keyPersonnel: [KeyPersonnel!]!
+}
+
+type AccountAlertClaimDto {
+  claimId: String!
+  bondNumber: String!
+  classCode: String!
 }
 
 type Address {
@@ -1430,17 +1496,6 @@ type LegalEntityAddress {
   typeNavigation: AddressTypeDm!
 }
 
-type LegalEntityEmail {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  legalEntityId: UUID!
-  type: String!
-  emailAddress: String!
-  legalEntity: LegalEntity!
-  typeNavigation: EmailTypeDm!
-}
-
 type AgencyErrorAndOmission {
   id: UUID!
   created: DateTime!
@@ -1450,6 +1505,17 @@ type AgencyErrorAndOmission {
   expiration: LocalDate!
   coverageLimit: Int!
   agency: Agency!
+}
+
+type LegalEntityEmail {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  legalEntityId: UUID!
+  type: String!
+  emailAddress: String!
+  legalEntity: LegalEntity!
+  typeNavigation: EmailTypeDm!
 }
 
 input SetAccountSystemsInput {
@@ -1592,6 +1658,14 @@ type AccountStatusDm {
   accountStatusLogs: [AccountStatusLog!]!
 }
 
+type AccountAlertDto {
+  type: String!
+  alert: String!
+  date: DateTime
+  link: String!
+  dateText: String!
+}
+
 input SetEmployeeEmailInput {
   employeeId: UUID!
   email: String!
@@ -1649,6 +1723,12 @@ input AddSecurityRoleInput {
   role: String!
   description: String!
   ord: Int!
+}
+
+input SetAccountAgencyAndAgentInput {
+  accountId: UUID!
+  agencyNumber: String!
+  agentId: UUID
 }
 
 type UserSetting {
@@ -2061,6 +2141,13 @@ enum ImagingDocumentCategory {
   BILLING
 }
 
+input UpdateAccountWatchInput {
+  id: UUID!
+  watchStatus: String!
+  reason: String!
+  actionPlan: String!
+}
+
 type BidStatusDm {
   id: UUID!
   created: DateTime!
@@ -2340,6 +2427,14 @@ type ImagingDocument {
   documentType: String
 }
 
+type SetAccountAgencyAndAgentPayload {
+  boolean: Boolean
+}
+
+type DeleteLegalEntityEmailPayload {
+  boolean: Boolean
+}
+
 type SetCurrentCreditReportLinkPayload {
   boolean: Boolean
 }
@@ -2474,6 +2569,10 @@ type Sfaa {
   bondHolds: [BondHold!]!
   bondRequestCommercials: [BondRequestCommercial!]!
   bondTransactions: [BondTransaction!]!
+}
+
+input DeleteLegalEntityEmailInput {
+  id: UUID!
 }
 
 type SaveCommissionRatesPayload {
@@ -2645,6 +2744,10 @@ type DivisionDm {
   profitCenters: [ProfitCenter!]!
 }
 
+type SetAccountCommercialInfoPayload {
+  boolean: Boolean
+}
+
 type LogUserPayload {
   string: String
 }
@@ -2744,6 +2847,16 @@ type ImagingCategory {
   imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
 }
 
+input SetAccountCommercialInfoInput {
+  accountId: UUID!
+  fullName: String!
+  underwriterId: UUID!
+  branchKey: String!
+  divisionCode: String!
+  hoLead: UUID!
+  sicCodeId: UUID!
+}
+
 input CreateAgencyLicenseDocumentLinkInput {
   licenseId: UUID!
   imagingDocumentId: UUID
@@ -2779,6 +2892,10 @@ type BidSubcontractor {
   amount: Int
   bonded: Boolean!
   bidNumberNavigation: BondRequest!
+}
+
+input DeleteAccountWatchInput {
+  id: UUID!
 }
 
 type AddSecurityRolePayload {

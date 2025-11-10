@@ -87,7 +87,6 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<LegalEntityEmail>>> GetAllLegalEntityEmails(Guid legalEntityId);
         public Task<IDataAccessResult<List<EmailTypeDm>>> GetAllEmailTypes();
         public Task<IDataAccessResult<List<WatchStatusDm>>> GetAllWatchStatuses();
-        public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
         public Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId);

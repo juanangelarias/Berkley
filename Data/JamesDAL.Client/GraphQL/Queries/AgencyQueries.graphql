@@ -120,6 +120,12 @@ query GetAgencyBonds($agencyId: UUID!, $skip: Int!, $take: Int!) {
   }
 }
 
+query GetAgencyBondsCount($agencyId: UUID!) {
+    agencyBondsCount(agencyId: $agencyId) {
+        count
+    }
+}
+
 query GetAgencyAgents($agencyId: UUID!){
 	agencyAgents(agencyId: $agencyId){
         id,

@@ -50,7 +50,7 @@ namespace James.Data.Server.GraphQL.Queries
                             a.City.ToLower().Contains(filter) ||
                             a.Branch.ToLower().Contains(filter))
                 .ToList();
-            
+
             return results;
         }
 
@@ -238,6 +238,16 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
+        public async Task<QueryCount> GetAgencyBondsCount(Guid agencyId,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.Bonds.CountAsync(a => a.AgencyId == agencyId);
+            
+            return new QueryCount{Count = result};
+        }
+
+        [Authorize]
         public async Task<List<Agent>> GetAgencyAgents(Guid agencyId,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -320,7 +330,7 @@ namespace James.Data.Server.GraphQL.Queries
 
             var relatedPartyIds = await ctx.VAgencyParents.Where(a => a.Parent == topParent.Parent).Select(a => a.Id)
                 .ToListAsync();
-            
+
             var relatedAgencies = await ctx.Agencies.Where(a => relatedPartyIds.Contains(a.Id))
                 .Include(a => a.AgencyLicenses)
                 .ThenInclude(al => al.Agent)
@@ -336,8 +346,8 @@ namespace James.Data.Server.GraphQL.Queries
                     Agency = s
                 })
                 .ToList();
-                
-            return result.OrderByDescending(o=>o.IsTopParent).ThenBy(t=>t.Agency.IdNavigation.FamilyName).ToList();
+
+            return result.OrderByDescending(o => o.IsTopParent).ThenBy(t => t.Agency.IdNavigation.FamilyName).ToList();
         }
 
         [Authorize]

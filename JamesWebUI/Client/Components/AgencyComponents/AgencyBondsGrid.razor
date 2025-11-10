@@ -8,7 +8,7 @@
 
 <Theme/>
 
-<RadzenDataGrid TItem="Bond" @ref="@AgencyBondGrid" Data="@_agencyBonds" LoadData="@LoadAgencyBonds"
+<RadzenDataGrid TItem="Bond" @ref="@AgencyBondGrid" Data="@_agencyBonds" Count="@_count" LoadData="@LoadAgencyBonds"
                 AllowVirtualization="true" @bind-Settings="@GridSettings" AllowColumnReorder="true"
                 Density="Density.Compact" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
                 AllowColumnPicking="true">
@@ -107,6 +107,12 @@
 @code {
     [Parameter] public Guid AgencyId { get; set; }
 
+    // ***
+    //
+    // ToDo: We need to add filters and orders to the virtualization!!!
+    //
+    // ***
+    
     private List<Bond> _agencyBonds = [];
     private RadzenDataGrid<Bond> AgencyBondGrid { get; set; } = null!;
     private List<string>? _statusFilter;
@@ -115,7 +121,7 @@
     
     private int _skip;
     private int _take;
-    private int _count;
+    private int _count = 1000;
     private string _lastFilter;
     
     private string _message = "";
@@ -147,6 +153,8 @@
     private RadzenDropDown<List<string>> ClassFilterDropDown { get; set; } = null!;
     private RadzenDropDown<List<string>> BondTypeFilterDropDown { get; set; } = null!;
 
+    #region Loaders
+
     private IDataAccessResult<List<Bond>> _agencyBondsResult = null!;
 
     private LoadItem AgencyBondsLoad => AddEventNotify(new LoadItem
@@ -161,6 +169,8 @@
         AfterLoad = () => { _agencyBonds = _agencyBondsResult.Data!; }
     }, "agency bond grid");
 
+    #endregion
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
@@ -168,31 +178,30 @@
         await ShowLoading();
         
         await GetGridSettings();
+
+        await LoadAgencyBonds(null);
     }
 
-    private async Task LoadAgencyBonds(LoadDataArgs args)
+    private async Task LoadAgencyBonds(LoadDataArgs? args)
     {
         if (AgencyId == Guid.Empty)
             return;
 
-        if (!string.IsNullOrEmpty(args.Filter) && _lastFilter != args.Filter)
+        var countResult = await DataAccess.GetAgencyBondsCount(AgencyId);
+        if (countResult.Success)
+            _count = countResult.Data!.Count;
+        
+        if (!string.IsNullOrEmpty(args?.Filter) && _lastFilter != args.Filter)
         {
             args.Skip = 0;
         }
         
-        _message = $"Skip: {args.Skip}, Top: {args.Top}\r\n";
-        _message += $"Filter 0: {args.Filter}";
-        var f = 0;
-        foreach (var filter in args.Filters)
-        {
-            f += 1;
-            _message += $"Filter {f}: {filter}";
-        }
-
-        _skip = args.Skip!.Value;
-        _take = args.Top!.Value;
+        _skip = args == null ? 0 : args.Skip!.Value;
+        _take = args == null ? 15 : args.Top!.Value;
         
         await DataAccess.GetCacheOrLoadDataAsync(AgencyBondsLoad);
+
+        _message = $"Count: {_count} - Skip: {_skip} - Take: {_take}";
     }
 
     private async Task StatusFilterChange()

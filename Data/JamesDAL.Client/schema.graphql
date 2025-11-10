@@ -485,6 +485,7 @@ type Query {
   agencyInventory(agencyId: UUID!): [AgencyInventory!]!
   agencyStatusLog(agencyNumber: String!): [AgencyStatusLog!]!
   agencyBonds(agencyId: UUID! skip: Int! take: Int!): [Bond!]!
+  agencyBondsCount(agencyId: UUID!): QueryCount!
   agencyAgents(agencyId: UUID!): [Agent!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
@@ -935,6 +936,10 @@ type CountryDm {
   flagImageBase64: String
   insurers: [Insurer!]!
   states: [State!]!
+}
+
+type QueryCount {
+  count: Int!
 }
 
 input SetPowerOfAttorneyDocumentStatusInput {

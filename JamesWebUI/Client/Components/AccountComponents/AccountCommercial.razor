@@ -1,0 +1,201 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject TooltipService TooltipService
+
+<Theme/>
+
+@if (IsAccountLoaded)
+{
+    <RadzenColumn Size="12">
+        <RadzenPanel Style="border-radius: 10px;" class="rz-shadow-7 rz-p-2" Collapsed="@_summaryView">
+            <HeaderTemplate>
+                <RadzenCard Variant="Variant.Text" Style="width: 100%;" class="rz-p-0">
+                    <RadzenRow JustifyContent="JustifyContent.SpaceBetween" class="rz-text-align-center" Gap="1rem">
+                        <RadzenColumn Size="8">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center"
+                                         Style="padding: 0.5rem;">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" Style="margin-right: 20px;"
+                                            Text="@Account?.IdNavigation.FullName"/>
+                                <RadzenIcon Icon="fiber_manual_record" IconStyle="@AccountStatusStyle" 
+                                            class="filled-icon"/>
+                                <RadzenText Text="@AccountStatus" TextStyle="TextStyle.Body2"/>
+                            </RadzenStack>
+                        </RadzenColumn>
+                        <RadzenColumn Size="4">
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                                         JustifyContent="JustifyContent.End">
+                                <RadzenText Text="@(FirstIndemnityDate)"
+                                            Style="margin-top: 10px; margin-right: 10px;"/>
+                                <RadzenIcon Icon="@_notificationIcon" Style="@_iconStyle1" class="icon-hover-effect"
+                                            IconStyle="@_iconStyle" @onclick="@NotificationToggle"
+                                            MouseEnter="@(args => NotificationTooltip(args))"/>
+                            </RadzenStack>
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow Visible="_summaryView">
+                        <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center"
+                                     Style="width: 100%">
+                            <RadzenButton Icon="expand_more" Variant="Variant.Text"
+                                          Click="@(() => _summaryView = !_summaryView)"/>
+                        </RadzenStack>
+                    </RadzenRow>
+                </RadzenCard>
+            </HeaderTemplate>
+            <ChildContent>
+                <RadzenRow JustifyContent="JustifyContent.End" Gap="0.5rem">
+                    <RadzenColumn Size="@_columnSize">
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
+                            <AccountBasicInfo Account="@Account" OnAccountNameChange="@AccountNameChanged"/>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn Size="@_columnSize">
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
+                            <AccountAgencyAndAddresses Account="@Account"/>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn Size="@_columnSize" Visible="@(_isNotificationVisible)">
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
+                            <AccountAlerts AccountNum="@Account.AccountNum"
+                                           OnAlertOrClaimExist="@SetIsAlertOrClaimExist"/>
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+            </ChildContent>
+            <FooterTemplate>
+                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center"
+                             Style="width: 100%">
+                    <RadzenButton Icon="expand_less" Variant="Variant.Text"
+                                  Click="@(() => _summaryView = !_summaryView)"/>
+                </RadzenStack>
+            </FooterTemplate>
+        </RadzenPanel>
+    </RadzenColumn>
+}
+
+<style>
+    .icon-hover-effect:hover {
+        cursor: pointer;
+    }
+</style>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private string AccountStatus;
+    private bool IsAccountLoaded;
+    private string FirstIndemnityDate;
+    private bool IsAccountActive;
+    private IconStyle AccountStatusStyle { get; set; }
+    private bool _summaryView;
+    private bool _isNotificationVisible = true;
+    private int _columnSize = 4;
+    private string _notificationIcon = "notifications_off";
+    private string _iconStyle1 = "margin-left: 40px;";
+    private IconStyle _iconStyle = IconStyle.Info;
+    private Variant _variant = Variant.Flat;
+    private ButtonStyle _notificationStyle = ButtonStyle.Info;
+    private bool _alertOrClaimExist;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var statusLog = Account.AccountStatusLogs
+            .OrderByDescending(o => o.Effective)
+            .FirstOrDefault();
+
+        var accountStatus = statusLog?.AccountStatus ?? "";
+        AccountStatus = accountStatus.ToLower() switch
+        {
+            "active" => "Active",
+            "term. agent" => "Terminated",
+            "term. comp." => "Terminated",
+            "declined" => "Terminated",
+            "lost" => "Terminated",
+            "prospect" => "Prospect",
+            "pending" => "Prospect",
+            "on hold" => "Prospect",
+            _ => "Not Defined"
+        };
+
+        AccountStatusStyle = AccountStatus switch
+        {
+            "Active" => IconStyle.Success,
+            "Prospect" => IconStyle.Warning,
+            "Terminated" => IconStyle.Danger,
+            _ => IconStyle.Base
+        };
+
+        IsAccountActive = statusLog?.AccountStatusNavigation.Active ?? false;
+
+        var firstIndemnityResult = await DataAccess.GetFirstIndemnityDate(Account.AccountNum);
+
+        var firstIndemnity = firstIndemnityResult.Success
+            ? firstIndemnityResult.Data
+            : null;
+
+        FirstIndemnityDate = firstIndemnity == null
+            ? "First indemnity: None"
+            : $"First indemnity: {firstIndemnity:MM/dd/yyyy}";
+
+        IsAccountLoaded = true;
+    }
+
+    private void NotificationToggle()
+    {
+        _isNotificationVisible = !_isNotificationVisible;
+        _columnSize = _isNotificationVisible
+            ? 4
+            : 6;
+
+        _notificationIcon = _isNotificationVisible
+            ? "notifications_off"
+            : "notifications";
+
+        _iconStyle = _isNotificationVisible
+            ? IconStyle.Info
+            : IconStyle.Danger;
+
+        _iconStyle1 = _isNotificationVisible
+            ? "margin-left: 40px;"
+            : "margin-left: 40px; font-variation-settings: 'FILL' 1;";
+
+        _variant = _isNotificationVisible
+            ? Variant.Outlined
+            : Variant.Filled;
+
+        _notificationStyle = _isNotificationVisible
+            ? ButtonStyle.Info
+            : _alertOrClaimExist
+                ? ButtonStyle.Danger
+                : ButtonStyle.Info;
+    }
+
+    private void SetIsAlertOrClaimExist(bool exist)
+    {
+        _alertOrClaimExist = exist;
+        StateHasChanged();
+    }
+
+    private void NotificationTooltip(ElementReference elementReference)
+    {
+        var options = new TooltipOptions
+        {
+            Position = TooltipPosition.Left,
+            Duration = 2000
+        };
+
+        var msg = _isNotificationVisible
+            ? "Hide Notifications Panel"
+            : "Show Notifications Panel";
+
+        TooltipService.Open(elementReference, msg, options);
+    }
+
+    private void AccountNameChanged(string newName)
+    {
+        Account.IdNavigation.FullName = newName;
+    }
+
+}

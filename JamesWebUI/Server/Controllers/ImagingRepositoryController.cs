@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using James.Shared.Constants;
 
 namespace JamesWebUI.Server.Controllers
 {

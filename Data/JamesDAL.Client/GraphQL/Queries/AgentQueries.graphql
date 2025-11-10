@@ -1,74 +1,69 @@
 ﻿query agentByAgentId($agentId: UUID!) {
-  agentByAgentId(agentId: $agentId) {
-    id
-    idNavigation {
-      created
-      entityType
-      familyName
-      fullName
-      givenName
-      id
-      isIndividual
-      middleInitial
-      modified
-      parent
-      taxIdEncrypted
-      website
-    }
-    nationalProducerNumber
-    agentsInAgencies {
-      active
-      agencyId
-      agentId
-      attorneyInFact
-      comments
-      created
-      id
-      modified
-      portalUser
-    }
-    agencyLicenses {
-      agencyId
-      agentId
-      appointingState
-      appointment
-      comments
-      created
-      expiration
-      id
-      isActive
-      isResident
-      licenseNumber
-      modified
-      state
-      termination
-      insurer {
-        active
-        created
-        currencyCountry
-        defaultRateGroup
-        fullName
+    agentByAgentId(agentId: $agentId) {
         id
-        lenumPeopleSoft
-        mainEmailAddress
-        modified
         idNavigation {
-          created
-          entityType
-          familyName
-          fullName
-          givenName
-          id
-          isIndividual
-          middleInitial
-          modified
-          parent
-          taxIdEncrypted
-          website
+            entityType
+            familyName
+            fullName
+            givenName
+            id
+            isIndividual
+            middleInitial
+            parent
+            taxIdEncrypted
+            website
         }
-      }
+        nationalProducerNumber
+        agentsInAgencies {
+            active
+            agencyId
+            agentId
+            attorneyInFact
+            comments
+            id
+            portalUser
+        }
+        agencyLicenses {
+            agencyId
+            agentId
+            appointingState
+            appointment
+            comments
+            expiration
+            id
+            isActive
+            isResident
+            licenseNumber
+            state
+            termination
+            insurer {
+                active
+                currencyCountry
+                defaultRateGroup
+                fullName
+                id
+                lenumPeopleSoft
+                mainEmailAddress
+                idNavigation {
+                    entityType
+                    familyName
+                    fullName
+                    givenName
+                    id
+                    isIndividual
+                    middleInitial
+                    parent
+                    taxIdEncrypted
+                    website
+                }
+            }
+        }
+        emailAddresses {
+            id
+            type
+            emailAddress
+        }
     }
-  }
 }
 
 query SearchAgents($input: String!) {

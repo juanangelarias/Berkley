@@ -1,4 +1,5 @@
 ﻿using ClientBusinessLogic;
+using James.Shared.Constants;
 using James.Shared.Data;
 using James.Shared.Imaging;
 using James.Shared.Model;

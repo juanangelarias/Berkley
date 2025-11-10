@@ -147,7 +147,7 @@ public partial class Account
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
-
+    
     public virtual ICollection<AccountWatch> AccountWatches { get; set; } = new List<AccountWatch>();
 
     public virtual ICollection<AdditionalRelatedParty> AdditionalRelatedParties { get; set; } = new List<AdditionalRelatedParty>();

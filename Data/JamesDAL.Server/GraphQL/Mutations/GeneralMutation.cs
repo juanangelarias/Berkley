@@ -1,6 +1,7 @@
 ﻿using HotChocolate.Authorization;
 using HotChocolate.Subscriptions;
 using James.Shared;
+using James.Shared.Constants;
 using James.Shared.Data;
 using James.Shared.Model;
 using James.Shared.Server;
@@ -55,6 +56,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+        
         [Authorize]
         public async Task<bool> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
             Guid legalEntityId, string phoneType, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -89,6 +91,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
         }
+
         [Authorize]
         public async Task<bool> DeleteAddress(Guid addressId, string identifier,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
@@ -156,6 +159,7 @@ namespace James.Data.Server.GraphQL.Mutations
 
             return oldAddress;
         }
+        
         [Authorize]
         public async Task<bool> DeletePhoneNumber(Guid phoneId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -185,6 +189,54 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         //TODO: Restrict to people in the change permissions role
+        [Authorize]
+        public async Task<LegalEntityEmail> SetLegalEntityEmail(Guid id, Guid legalEntityId, string emailAddress,
+            string type, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var oldRecord = await ctx.LegalEntityEmails
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (oldRecord == null)
+            {
+                var newRecord = new LegalEntityEmail
+                {
+                    Id = id,
+                    LegalEntityId = legalEntityId,
+                    EmailAddress = emailAddress,
+                    Type = type
+                };
+                ctx.LegalEntityEmails.Add(newRecord);
+                await ctx.SaveChangesAsync();
+                
+                return newRecord;
+            }
+
+            oldRecord.EmailAddress = emailAddress;
+            oldRecord.Type = type;
+            ctx.Update(oldRecord);
+            await ctx.SaveChangesAsync();
+            
+            return oldRecord;
+        }
+
+        [Authorize]
+        public async Task<bool> DeleteLegalEntityEmail(Guid id,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var oldRecord = await ctx.LegalEntityEmails
+                .FirstOrDefaultAsync(r => r.Id == id);
+            if (oldRecord == null)
+                return false;
+            
+            ctx.LegalEntityEmails.Remove(oldRecord);
+            await ctx.SaveChangesAsync();
+            
+            return true;
+        }
+
         [Authorize]
         public async Task<bool> SetUserSetting(string key, string? value, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared, [Service] ILoggingService loggingService)
         {

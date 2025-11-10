@@ -1,0 +1,182 @@
+﻿@inject IDataAccess DataAccess
+@inject NavigationManager Navigation
+
+@using James.Shared.Constants
+@inherits JamesLayoutComponentBase
+
+<RadzenCard Style="border-radius: 10px; width: 100%; height: 100%; overflow: scroll; white-space: nowrap;">
+    <RadzenColumn Size="12">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem" Style="height: 100%;">
+            <RadzenRow>
+                <RadzenStack Style="width: 100%" Orientation="Orientation.Horizontal"
+                             JustifyContent="JustifyContent.SpaceBetween">
+                    <RadzenText Text="Account - Alerts"/>
+                    <RadzenDropDown Data="@_periods"
+                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                    Style="width: 175px;" Name="NotificationPeriod" TextProperty="Value"
+                                    ValueProperty="Key" @bind-Value="@SelectedPeriod"
+                                    Change="OnAlertPeriodChange"/>
+                </RadzenStack>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenCard Style="height: 405px">
+                    <RadzenSplitter Orientation="Orientation.Vertical" class="rz-m-0" Style="height: 100%; border: 0">
+                        <RadzenSplitterPane Style="height: 60%;">
+                            <RadzenPanel Text="Alerts">
+                                <RadzenDataGrid Data="@_alerts" TItem="AccountAlertDto" @ref="_gridAlerts"
+                                                Style="max-height: 250px; border-radius: 10px;" AllowGrouping="false"
+                                                AllGroupsExpanded="true" HideGroupedColumn="true"
+                                                Render="@OnAlertGridRender" ShowGroupExpandColumn="false"
+                                                Density="Density.Compact" IsLoading="@IsLoading">
+                                    <Columns>
+                                        <RadzenDataGridColumn Property="Type" Width="125px"
+                                                              Title="Type"/>
+                                        <RadzenDataGridColumn Property="DateText" Width="125px"
+                                                              Title="Date" Groupable="false"/>
+                                        <RadzenDataGridColumn Property="Alert" Width="100%"
+                                                              Title="Alert" Groupable="false">
+                                            <Template Context="alert">
+                                                <a href="@(alert.Link)">@alert.Alert</a>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn Width="35px" Frozen="true" Groupable="false"
+                                                              FrozenPosition="FrozenColumnPosition.Right">
+                                            <Template Context="alert">
+                                                <RadzenButton Icon="pin_invoke" ButtonStyle="ButtonStyle.Info"
+                                                              Variant="Variant.Flat" Size="ButtonSize.ExtraSmall"
+                                                              Click="@(() => OpenAlertDialog(alert))"/>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </RadzenPanel>
+                        </RadzenSplitterPane>
+                        <RadzenSplitterPane Style="height: 40%;">
+                            <RadzenPanel Text="Claims Activity">
+                                <RadzenDataGrid Data="@_claims" TItem="AccountAlertClaimDto" @ref="_gridClaims"
+                                                Style="max-height: 250px; border-radius: 10px;"
+                                                Density="Density.Compact" IsLoading="@IsLoading">
+                                    <Columns>
+                                        <RadzenDataGridColumn Property="ClaimId" Width="125px"
+                                                              Title="Claim Id"/>
+                                        <RadzenDataGridColumn Property="BondNumber" Width="125px"
+                                                              Title="Bond No."/>
+                                        <RadzenDataGridColumn Property="ClassCode" Width="100%"
+                                                              Title="Class Code"/>
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </RadzenPanel>
+                        </RadzenSplitterPane>
+                    </RadzenSplitter>
+                </RadzenCard>
+            </RadzenRow>
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenCard>
+
+@code {
+    [Parameter, EditorRequired] public required string AccountNum { get; set; }
+    [Parameter] public EventCallback<bool> OnAlertOrClaimExist { get; set; }
+
+    private RadzenDataGrid<AccountAlertDto> _gridAlerts = null!;
+    private RadzenDataGrid<AccountAlertClaimDto> _gridClaims = null!;
+    private Dictionary<int, string> _periods = [];
+    private int SelectedPeriod { get; set; }
+    private List<AccountAlertDto> _alerts = [];
+    private List<AccountAlertClaimDto> _claims = [];
+    private AlertPeriod _alertPeriod = AlertPeriod.Last30Days;
+    private AccountAlertPackageDto _allAlerts = new();
+
+    #region Loaders
+
+    private IDataAccessResult<AccountAlertPackageDto> _alertsResult = null!;
+
+    private LoadItem AlertsLoad => AddEventNotify(new LoadItem<AccountAlertPackageDto>
+    {
+        Key = CacheKeys.AccountAlerts(_alertPeriod.ToString(), AccountNum),
+        AsyncLoadTask = async () => _alertsResult = await DataAccess.GetAccountAlerts((int)_alertPeriod, AccountNum),
+        CacheLoadTask = cache => _alertsResult = new DataAccessResult<AccountAlertPackageDto>
+        {
+            Data = (AccountAlertPackageDto)cache!
+        },
+        ResultVariable = () => _alertsResult,
+        AfterLoad = () =>
+        {
+            _allAlerts = _alertsResult.Data!;
+
+            _alerts = _allAlerts.Alerts.OrderBy(s => s.Type).ToList();
+            _claims = _allAlerts.Claims;
+        },
+        CacheDuration = new TimeSpan(0,0,0,0,500)
+    }, "account alerts");
+
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var periods = (AlertPeriod[])Enum.GetValues(typeof(AlertPeriod));
+        _periods = [];
+        foreach (var period in periods)
+        {
+            _periods.Add((int)period, period.GetDisplayDescription());
+        }
+
+        _alertPeriod = AlertPeriod.Last30Days;
+        SelectedPeriod = (int)_alertPeriod;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadAlerts();
+    }
+
+    private void OnAlertGridRender(DataGridRenderEventArgs<AccountAlertDto> args)
+    {
+        if (!args.FirstRender)
+            return;
+
+        args.Grid.Groups.Add(new() { Property = "Type", SortOrder = SortOrder.Ascending });
+    }
+
+    private async Task OnAlertPeriodChange()
+    {
+        if (_alertPeriod == (AlertPeriod)SelectedPeriod)
+            return;
+
+        _alertPeriod = (AlertPeriod)SelectedPeriod;
+
+        await LoadAlerts();
+
+        if (_alerts.Any() || _claims.Any())
+            await OnAlertOrClaimExist.InvokeAsync(true);
+    }
+
+    private async Task LoadAlerts()
+    {
+        await DataAccess.GetCacheOrLoadDataAsync(AlertsLoad);
+    }
+
+    private async Task OpenAlertDialog(AccountAlertDto alert)
+    {
+        var parameters = new Dictionary<string, object> { { "Alert", alert } };
+        var options = new DialogOptions
+        {
+            Height = "335px",
+            Width = "600px",
+            ShowClose = false,
+            Resizable = false
+        };
+
+        var result = await DialogService.OpenAsync<AccountAlertDialog>("Account Alert", parameters, options);
+
+        if ((bool)result)
+        {
+            Navigation.NavigateTo(alert.Link);
+        }
+    }
+
+}

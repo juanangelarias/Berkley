@@ -1,98 +1,106 @@
-﻿@using James.Shared
-@inherits JamesLayoutComponentBase
-
-@inject NavigationManager NavigationManager
-
-
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
 <RadzenTemplateForm TItem="Address" Data="@NewAddress" Submit="@SubmitNewAddress">
-        <RadzenRow>
-            <RadzenColumn>
-                <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
-                    <ChildContent>
-                        <RadzenTextBox @bind-Value="@NewAddress.Address1" Name="Address1" AutoComplete="false" />
-                    </ChildContent>
-                    <Helper>
-                        <RadzenRequiredValidator Component="Address1" Text="Address 1 is required"/>
-                    </Helper>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenFormField Variant="Variant.Text" Text="Address 1" Style="width:90%" AllowFloatingLabel="false">
+                <RadzenTextBox @bind-Value="@NewAddress.Address1" Name="Address1" AutoComplete="false"/>
+                <RadzenRequiredValidator Component="Address1" Text="Address 1 is required"/>
+                <RadzenLengthValidator Min="2" Max="60" Text="Address 1 should have between 2 and 60 characters."
+                                       Component="Address1"/>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
+            <RadzenTextBox @bind-Value="@NewAddress.Address2" Name="Address2" AutoComplete="false"/>
+            <RadzenLengthValidator Max="60" Text="Address 2 cannot have more than 60 characters."
+                                   Component="Address2"/>
+        </RadzenFormField>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false">
+                <RadzenTextBox @bind-Value="@NewAddress.Address3" Name="Address3" AutoComplete="false"/>
+                <RadzenLengthValidator Max="60" Text="Address 3 cannot have more than 60 characters."
+                                       Component="Address3"/>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <RadzenFormField Variant="Variant.Text" Text="City" Style="width:90%" AllowFloatingLabel="false">
+                <RadzenTextBox @bind-Value="@NewAddress.City" Name="City" AutoComplete="false"/>
+                <RadzenRequiredValidator Component="City" Text="City is required"/>
+            </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
+                <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@NewAddress.StateCode" Name="StateCode"/>
+                <RadzenRequiredValidator Text="State is required" Component="StateCode"/>
+            </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenFormField Variant="Variant.Text" Text="Postal Code" Style="width:90%" AllowFloatingLabel="false">
+                <RadzenTextBox @bind-Value="@NewAddress.PostalCode" Name="PostalCode" AutoComplete="false"/>
+                <RadzenRequiredValidator Component="PostalCode" Text="Postal Code is required"/>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenFormField Variant="Variant.Text" Text="Type" AllowFloatingLabel="false" Style="width: 50%">
+                    <RadzenDropDown TValue="string" @bind-Value="@AddressType" Data="AddressTypes" ValueProperty="Type"
+                                    TextProperty="Type" Name="AddressType"/>
+                    <RadzenRequiredValidator Component="AddressType" Text="Address type is required"/>
                 </RadzenFormField>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-                <RadzenFormField Variant="Variant.Text" Text="Address 2" Style="width:90%" AllowFloatingLabel="false">
-                    <ChildContent>
-                        <RadzenTextBox @bind-Value="@NewAddress.Address2" Name="Address2" AutoComplete="false" />
-                    </ChildContent>
-                </RadzenFormField>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn>
-                <RadzenFormField Variant="Variant.Text" Text="Address 3" Style="width:90%" AllowFloatingLabel="false">
-                    <ChildContent>
-                        <RadzenTextBox @bind-Value="@NewAddress.Address3" Name="Address3" AutoComplete="false" />
-                    </ChildContent>
-                </RadzenFormField>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="4">
-                <RadzenFormField Variant="Variant.Text" Text="City" Style="width:90%" AllowFloatingLabel="false">
-                    <ChildContent>
-                        <RadzenTextBox @bind-Value="@NewAddress.City" Name="City" AutoComplete="false" />
-                    </ChildContent>
-                    <Helper>
-                        <RadzenRequiredValidator Component="City" Text="City is required"/>
-                    </Helper>
-                </RadzenFormField>
-            </RadzenColumn>
-            <RadzenColumn Size="3">
-                <RadzenFormField Variant="Variant.Text" Text="State" AllowFloatingLabel="false" Style="width:90%">
-                    <ChildContent>
-                        <StateDropDown MultiSelect="false" @bind-SelectedStateCode="@NewAddress.StateCode" />
-                    </ChildContent>
-                </RadzenFormField>
-            </RadzenColumn>
-            <RadzenColumn Size="3">
-                <RadzenFormField Variant="Variant.Text" Text="Postal Code" Style="width:90%" AllowFloatingLabel="false">
-                    <ChildContent>
-                        <RadzenTextBox @bind-Value="@NewAddress.PostalCode" Name="PostalCode" AutoComplete="false" />
-                    </ChildContent>
-                    <Helper>
-                        <RadzenRequiredValidator Component="PostalCode" Text="Postal Code is required"/>
-                    </Helper>
-                </RadzenFormField>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn>
-                <RadzenStack Orientation="Orientation.Horizontal">
-                    <RadzenFormField Variant="Variant.Text" Text="Type" AllowFloatingLabel="false" Style="width: 50%">
-                        <RadzenDropDown @ref="addressTypeDropDown" TValue="string" @bind-Value="@addressType" Data="AddressTypes" ValueProperty="Type" TextProperty="Type"/>
-                    </RadzenFormField>
-                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End" JustifyContent="JustifyContent.End">
-                        <RadzenButton Icon="save" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit" />
-                        <RadzenButton Icon="cancel" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Secondary" Click="@Cancel" />
-                    </RadzenStack>
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.End">
+                    <RadzenButton Icon="cancel" Size="ButtonSize.Small" Text="Cancel" ButtonStyle="ButtonStyle.Light" 
+                                  Click="@Cancel"/>
+                    <RadzenButton Icon="save" Size="ButtonSize.Small" Text="Save" ButtonType="ButtonType.Submit"/>
                 </RadzenStack>
-            </RadzenColumn>
-        </RadzenRow>
-    </RadzenTemplateForm>
-
+            </RadzenStack>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenTemplateForm>
 
 @code {
     [Parameter] public Guid LegalEntityId { get; set; }
     [Parameter] public EventCallback<Guid> AddressCreated { get; set; }
     private string EditorIdentifier { get; } = Guid.NewGuid().ToString();
 
-    private Address NewAddress { get; set; } = new Address()
+    private Address NewAddress { get; } = new() { Id = Guid.NewGuid() };
+    private string AddressType { get; set; } = "";
+    private List<AddressTypeDm> AddressTypes { get; set; } = [];
+
+    #region Loaders
+
+    #region AddressTypes
+
+    private IDataAccessResult<List<AddressTypeDm>> _addressTypesResult = null!;
+
+    private LoadItem AddressTypesLoad => AddEventNotify(new LoadItem
     {
-        Id = Guid.NewGuid()
-    };
-    private RadzenDropDown<string> addressTypeDropDown { get; set;} = null!;
-    private string addressType { get; set; } = "";
-    private List<AddressTypeDm> AddressTypes { get; set; } = new List<AddressTypeDm>();
+        Key = "AddressTypes",
+        AsyncLoadTask = async () => _addressTypesResult = await DataAccess.GetAddressTypes(),
+        CacheLoadTask = cache => _addressTypesResult = new DataAccessResult<List<AddressTypeDm>>
+        {
+            Data = (List<AddressTypeDm>)cache!
+        },
+        ResultVariable = () => _addressTypesResult,
+        AfterLoad = () =>
+        {
+            AddressTypes = _addressTypesResult.Data!;
+        }
+    }, "address types");
+
+    #endregion
+
+    #endregion
 
     protected override async Task OnParametersSetAsync()
     {
@@ -100,39 +108,51 @@
 
         await LoadAddressTypes();
     }
-    async Task SubmitNewAddress(Address NewAddress)
+
+    private async Task SubmitNewAddress(Address newAddress)
     {
-        if (ClientBusinessLogic.Validators.ValidateAddress(NewAddress))
+        if (Validators.ValidateAddress(newAddress))
         {
             //TODO:Confirm that the address type is unique for the legal entity
             try
             {
-                var result = await DataAccess.CreateAddress(NewAddress.Id, NewAddress.Address1, NewAddress.Address2, NewAddress.Address3,
-                NewAddress.City, NewAddress.StateCode, NewAddress.PostalCode,
-                LegalEntityId, addressType, EditorIdentifier);
-                await AddressCreated.InvokeAsync(NewAddress.Id);
+                var result = await DataAccess.CreateAddress(newAddress.Id, newAddress.Address1, newAddress.Address2, newAddress.Address3,
+                    newAddress.City, newAddress.StateCode, newAddress.PostalCode,
+                    LegalEntityId, AddressType, EditorIdentifier);
+
+                if (!result.Success)
+                {
+                    NotifySaveError(result.Errors, "address");
+                    return;
+                }
+                
+                NotifySuccessfulSave("address");
+
+                await AddressCreated.InvokeAsync(newAddress.Id);
             }
             catch
             {
-                //TODO: Error handling
+                NotifySaveError(["Internal error while saving address"]);
             }
         }
         else
         {
-            //TODO: Pop an error
+            NotificationService.Notify(new NotificationMessage
+            {
+                Detail = "There are validation errors. Please correct them and try again.",
+                Severity = NotificationSeverity.Error,
+                Duration = 5000
+            });
         }
-        return;
     }
-    async Task Cancel()
-    {
 
-    }
-    async Task LoadAddressTypes()
+    private void Cancel()
     {
-        //TODO: Disallow address types that already exist.
-        var result = await DataAccess.GetAddressTypes();
-        //TODO: Check for errors
-        if(result.Data != null)
-            AddressTypes = result.Data;
     }
+
+    private async Task LoadAddressTypes()
+    {
+        await DataAccess.GetCacheOrLoadDataAsync(AddressTypesLoad);
+    }
+
 }

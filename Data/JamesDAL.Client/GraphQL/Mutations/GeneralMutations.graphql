@@ -20,3 +20,23 @@ mutation DeletePhoneNumber($input: DeletePhoneNumberInput!) {
 	boolean
 	}
 }
+
+mutation SetEmailAddress($input: SetLegalEntityEmailInput!) {
+    setLegalEntityEmail(input: $input) {
+        legalEntityEmail {
+            emailAddress
+            id
+            legalEntityId
+            type
+            legalEntity {
+                fullName
+            }
+        }
+    }
+}
+
+mutation DeleteEmailAddress($input: DeleteLegalEntityEmailInput!) {
+    deleteLegalEntityEmail(input: $input) {
+        boolean
+    }
+}

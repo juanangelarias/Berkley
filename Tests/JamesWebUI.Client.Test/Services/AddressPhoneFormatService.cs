@@ -23,6 +23,8 @@ using System.Data.SqlClient;
 using System.Net.Http.Headers;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Xunit;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 

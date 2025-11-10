@@ -37,4 +37,48 @@ mutation SetAccountProgram($input: SetAccountProgramInput!) {
       statusId
     }
   }
-} 
+}
+
+mutation CreateAccountWatch($input: CreateAccountWatchInput!) {
+    createAccountWatch(input: $input) {
+        accountWatch {
+            id
+            watchDate
+            watchStatus
+            reason
+            actionPlan            
+        }
+    }
+}
+
+mutation  UpdateAccountWatch($input: UpdateAccountWatchInput!) {
+    updateAccountWatch(input: $input) {
+        accountWatch {
+            id
+            watchDate
+            watchStatus
+            reason
+            actionPlan
+        }
+    }
+}
+
+mutation DeleteAccountWatch($input: DeleteAccountWatchInput!) {
+    deleteAccountWatch(input: $input) {
+        boolean
+    }
+}
+
+mutation SetAccountCommercialInfo($input: SetAccountCommercialInfoInput!) {
+    setAccountCommercialInfo(input: $input){
+        boolean
+    }
+}
+
+mutation SetAccountAgencyAndAgent($input: SetAccountAgencyAndAgentInput!) {
+    setAccountAgencyAndAgent(input: $input) {
+        boolean
+    }
+}
+
+

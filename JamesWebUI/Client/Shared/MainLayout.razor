@@ -15,6 +15,7 @@
 <Theme />
 
 <PageTitle>BasisTNG</PageTitle>
+
 <style>
     .rz-sidebar {
         background: #FCFCFC !important;
@@ -31,16 +32,21 @@
         border-color: #F1F1F1 !important;
     }
 </style>
+
 <RadzenLayout Style="width:100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader class="rz-shadow-0">
         <ChildContent>
             <RadzenRow Style="@_headerStyle">
                 <RadzenColumn Size="5">
-                    <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040; margin-left: 7px; margin-top: 7px;" />
+                    <RadzenStack Orientation="Orientation.Horizontal">
+                        <RadzenButton Icon="menu" Click="() => sidebarExpanded = !sidebarExpanded" 
+                                      ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"/>
+                        <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040; margin-left: 7px; margin-top: 7px;"/>
+                    </RadzenStack>
                 </RadzenColumn>
                 <RadzenColumn Size="7">
                     <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
-                        <RadzenButton Icon="Search" Variant="Variant.Outlined" Click="SuperSearchClicked" />
+                        <RadzenButton Icon="Search" Variant="Variant.Outlined" Click="SuperSearchClicked"/>
                         <RadzenDropDown Class="rz-mx-0 rz-mx-lg-4" id="themes" style="width: 220px;"
                                         TValue="string" TextProperty="Text" ValueProperty="Value" Data="@ThemeService.Themes"
                                         Value="@JamesThemeService.CurrentTheme" Change="@ChangeTheme">
@@ -51,16 +57,16 @@
                                 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="1rem">
                                     @*Theme example graphic*@
                                     <svg width="80" height="60" viewBox="0 0 80 60" fill="none" xmlns="http://www.w3.org/2000/svg" style="border-radius: 4px; outline: var(--rz-input-border); min-width: 80px;">
-                                        <rect width="80" height="60" fill="@context.Base" />
-                                        <rect x="0" y="4" width="16" height="56" fill="@context.Sidebar" />
-                                        <rect x="24" y="17" width="48" height="32" rx="2" fill="@context.Content" />
-                                        <rect x="43" y="41" width="12" height="4" rx="1" fill="@context.Secondary" />
-                                        <rect x="28" y="21" width="16" height="2" rx="1" fill="@context.TitleText" />
-                                        <rect x="28" y="27" width="40" height="2" rx="1" fill="@context.ContentText" />
-                                        <rect x="28" y="31" width="40" height="2" rx="1" fill="@context.ContentText" />
-                                        <rect x="28" y="35" width="16" height="2" rx="1" fill="@context.ContentText" />
-                                        <rect x="28" y="41" width="12" height="4" rx="1" fill="@context.Primary" />
-                                        <rect width="80" height="6" fill="@context.Header" />
+                                        <rect width="80" height="60" fill="@context.Base"/>
+                                        <rect x="0" y="4" width="16" height="56" fill="@context.Sidebar"/>
+                                        <rect x="24" y="17" width="48" height="32" rx="2" fill="@context.Content"/>
+                                        <rect x="43" y="41" width="12" height="4" rx="1" fill="@context.Secondary"/>
+                                        <rect x="28" y="21" width="16" height="2" rx="1" fill="@context.TitleText"/>
+                                        <rect x="28" y="27" width="40" height="2" rx="1" fill="@context.ContentText"/>
+                                        <rect x="28" y="31" width="40" height="2" rx="1" fill="@context.ContentText"/>
+                                        <rect x="28" y="35" width="16" height="2" rx="1" fill="@context.ContentText"/>
+                                        <rect x="28" y="41" width="12" height="4" rx="1" fill="@context.Primary"/>
+                                        <rect width="80" height="6" fill="@context.Header"/>
                                     </svg>
                                     @context.Text
                                     @if (context.Premium)
@@ -76,25 +82,25 @@
         </ChildContent>
     </RadzenHeader>
     <RadzenSidebar Style="width: max-content" Responsive="false">
-        <RadzenRow>
+        <RadzenRow JustifyContent="JustifyContent.Center">
             <AccessControl />
         </RadzenRow>
-        <RadzenRow AlignItems="AlignItems.End">
-            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
-        </RadzenRow>
-        <RadzenRow>
-
-            <RadzenStack Orientation="@(sidebarExpanded? Orientation.Horizontal: Orientation.Vertical)" AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center">
-                <RadzenButton Variant="Variant.Text" Icon="note" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)" />
-                <RadzenButton Variant="Variant.Text" Icon="notifications" Size="ButtonSize.Small" Click="@(() => notebookExpanded = !notebookExpanded)">
-                    <RadzenBadge Variant="Variant.Outlined" BadgeStyle="BadgeStyle.Secondary" Text="15" title="You have new notifications." />
+        <RadzenRow JustifyContent="JustifyContent.Center">
+            <RadzenStack Orientation="@(sidebarExpanded? Orientation.Horizontal: Orientation.Vertical)"
+                         AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" Gap="0.2rem">
+                <RadzenButton Variant="Variant.Text" Icon="note" Size="ButtonSize.Small" 
+                              Click="@(() => notebookExpanded = !notebookExpanded)" />
+                <RadzenButton Variant="Variant.Text" Icon="notifications" Size="ButtonSize.Small" 
+                              Click="@(() => notebookExpanded = !notebookExpanded)">
+                    <RadzenBadge Variant="Variant.Outlined" BadgeStyle="BadgeStyle.Secondary" Text="15" 
+                                 Title="You have new notifications." />
                 </RadzenButton>
                 <RadzenButton Variant="Variant.Text" Icon="mail" Size="ButtonSize.Small" />
             </RadzenStack>
         </RadzenRow>
-        <RadzenRow>
+        @*<RadzenRow>
             <RadzenButton Icon="logout" Text="Logout" Click="BeginSignOut" Variant="Variant.Text" Size="ButtonSize.Small" />
-        </RadzenRow>
+        </RadzenRow>*@
         <RadzenRow>
             <RadzenPanelMenu DisplayStyle="@(sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
                              Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">

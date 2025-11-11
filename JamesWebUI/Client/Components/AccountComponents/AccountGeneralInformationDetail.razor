@@ -1,0 +1,18 @@
+﻿<RadzenFieldset Text="General Information" Style="width: 100%">
+    @if (_isEditMode)
+    {
+        <RadzenTemplateForm>
+            
+        </RadzenTemplateForm>
+    }
+    @else
+    {
+        
+    }
+</RadzenFieldset>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; } = null!;
+
+    private bool _isEditMode;
+}

@@ -20,7 +20,7 @@ namespace James.Data.Server
         ObligeeMutation obligeeMutation,
         GeneralMutation generalMutation,
         ServerImagingAccess imagingAccess,
-        UserSettingsMutation userSettingsMutation,
+        GeneralMutation userSettingsMutation,
         ITopicEventSender eventSender,
         ITopicEventReceiver eventReceiver,
         ILoggingService loggingService,

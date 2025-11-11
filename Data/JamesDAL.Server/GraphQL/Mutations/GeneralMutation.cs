@@ -9,7 +9,7 @@ using James.Shared.Server;
 namespace James.Data.Server.GraphQL.Mutations
 {
     [MutationType]
-    public class GeneralMutation
+    public partial class GeneralMutation
     {
         [Authorize]
         public async Task<bool> CreateAddress(Guid addressId, string address1, string? address2,

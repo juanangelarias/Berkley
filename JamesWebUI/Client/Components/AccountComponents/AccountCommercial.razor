@@ -17,7 +17,7 @@
                                          Style="padding: 0.5rem;">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" Style="margin-right: 20px;"
                                             Text="@Account?.IdNavigation.FullName"/>
-                                <RadzenIcon Icon="fiber_manual_record" IconStyle="@AccountStatusStyle" 
+                                <RadzenIcon Icon="fiber_manual_record" IconStyle="@AccountStatusStyle"
                                             class="filled-icon"/>
                                 <RadzenText Text="@AccountStatus" TextStyle="TextStyle.Body2"/>
                             </RadzenStack>
@@ -61,6 +61,47 @@
                         </RadzenCard>
                     </RadzenColumn>
                 </RadzenRow>
+                <RadzenRow>
+                    <PositionSavingTabs @ref="@MainTabs" @bind-SelectedIndex="@MainTabs.SelectedIndex"
+                                        TabControlName="MainTabs">
+                        <Tabs>
+                            <PositionSavingTabsItem Text="Account Info" TabName="AccountInfo">
+                                <PositionSavingTabs @ref="@GeneralInfoTabs" TabControlName="GeneralInfoTabs"
+                                                    @bind-SelectedIndex="@GeneralInfoTabs.SelectedIndex">
+                                    <Tabs>
+                                        <PositionSavingTabsItem Text="General Information" TabName="GeneralInformation">
+                                            <AccountGeneralInformation/>@* Account="@Account"/>*@
+                                        </PositionSavingTabsItem>
+                                        <PositionSavingTabsItem Text="Credit Rating" TabName="CreditRating">
+                                            
+                                        </PositionSavingTabsItem>
+                                        <PositionSavingTabsItem Text="Bonded Principle" TabName="BondedPrinciple">
+                                            
+                                        </PositionSavingTabsItem>
+                                    </Tabs>
+                                </PositionSavingTabs>
+                            </PositionSavingTabsItem>
+                            <PositionSavingTabsItem Text="Line of Authority" TabName="LineOfAuthority">
+
+                            </PositionSavingTabsItem>
+                            <PositionSavingTabsItem Text="Bond Requests" TabName="BondRequests">
+
+                            </PositionSavingTabsItem>
+                            <PositionSavingTabsItem Text="Financials" TabName="Financials">
+
+                            </PositionSavingTabsItem>
+                            <PositionSavingTabsItem Text="WIP" TabName="Wip">
+
+                            </PositionSavingTabsItem>
+                            <PositionSavingTabsItem Text="Bank and Security" TabName="BankAndSecurity">
+
+                            </PositionSavingTabsItem>
+                            <PositionSavingTabsItem Text="Virtual File" TabName="VirtualFile">
+
+                            </PositionSavingTabsItem>
+                        </Tabs>
+                    </PositionSavingTabs>
+                </RadzenRow>
             </ChildContent>
             <FooterTemplate>
                 <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center"
@@ -96,6 +137,8 @@
     private Variant _variant = Variant.Flat;
     private ButtonStyle _notificationStyle = ButtonStyle.Info;
     private bool _alertOrClaimExist;
+    private PositionSavingTabs MainTabs { get; set; } = null!;
+    private PositionSavingTabs GeneralInfoTabs { get; set; } = null!;
 
     protected override async Task OnParametersSetAsync()
     {

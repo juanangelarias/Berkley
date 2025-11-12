@@ -205,3 +205,24 @@ query GetAllEmailTypes {
         type
     }
 }
+
+query GetAllBusinessTypes {
+    allBusinessTypes {
+        businessType
+    }
+}
+
+query GetAllBusinessTypeClassCodee {
+    allBusinessTypeClassCodes {
+        businessType
+        classCode
+        isContract
+    }
+}
+
+query GetAllSicCodes {
+    allSicCodes {
+        code
+        name
+    }
+}

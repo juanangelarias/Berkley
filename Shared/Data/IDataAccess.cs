@@ -55,6 +55,9 @@ namespace James.Shared.Data
         #endregion
 
         //DataAccess
+        public Task<IDataAccessResult<List<BusinessTypeClassCodeDm>>> GetAllBusinessTypeClassCodes();
+        public Task<IDataAccessResult<List<BusinessTypeDm>>> GetAllBusinessTypes();
+        public Task<IDataAccessResult<List<Sic>>> GetAllSicCodes();
         public Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber);
         public Task<IDataAccessResult<List<AccountProgram>>> GetAccountProgramHistory(string accountNumber);
         public Task<IDataAccessResult<InforceAccountLOA>> GetInforceAccountLOAsByAccountNumber(string accountNumber);
@@ -104,6 +107,10 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetAccountGeneralInfo(Guid accountId, string? yearStarted,
             string? currentManagementYear, string? businessClass, string? businessType, string? priorSurety,
             int? estAnnualPremium);
+
+        public Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
+            string? fiscalYearEnd, string? businessType, string? sicCode, string? priorSuretyCompany,
+            bool? isSharedSurety, string? privateEquity, string? snapshotHistoricData);
 
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);

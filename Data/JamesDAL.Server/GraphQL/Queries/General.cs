@@ -202,5 +202,29 @@ namespace James.Data.Server.GraphQL.Queries
                 throw new GraphQLException($"Error when retrieving user settings.", ex);
             }
         }
+        
+        [Authorize]
+        public async Task<List<BusinessTypeClassCodeDm>> GetAllBusinessTypeClassCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.BusinessTypeClassCodeDms.ToListAsync();
+        }
+        
+        [Authorize]
+        public async Task<List<BusinessTypeDm>> GetAllBusinessTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.BusinessTypeDms.ToListAsync();
+        }
+        
+        [Authorize]
+        public async Task<List<Sic>> GetAllSicCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.Sics.ToListAsync();
+        }
     }
 }

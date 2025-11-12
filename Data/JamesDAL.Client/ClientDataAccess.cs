@@ -26,6 +26,24 @@ namespace James.Data.Client
             return await Task.FromResult( new DataAccessResult<List<Agent>>());
         }
 
+        public async Task<IDataAccessResult<List<BusinessTypeClassCodeDm>>> GetAllBusinessTypeClassCodes()
+        {
+            return await ExecuteGet<List<BusinessTypeClassCodeDm>>(async () =>
+                await jamesClient.GetAllBusinessTypeClassCodee.ExecuteAsync());
+        }
+
+        public async Task<IDataAccessResult<List<BusinessTypeDm>>> GetAllBusinessTypes()
+        {
+            return await ExecuteGet<List<BusinessTypeDm>>(async () =>
+                await jamesClient.GetAllBusinessTypes.ExecuteAsync()); 
+        }
+
+        public async Task<IDataAccessResult<List<Sic>>> GetAllSicCodes()
+        {
+            return await ExecuteGet<List<Sic>>(async () =>
+                await jamesClient.GetAllSicCodes.ExecuteAsync());
+        }
+
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
             return await ExecuteGet<Account>(
@@ -417,6 +435,25 @@ namespace James.Data.Client
                 PriorSurety = priorSurety,
                 EstAnnualPremium = estAnnualPremium
             });
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
+            string? fiscalYearEnd, string? businessType, string? sicCode, string? priorSuretyCompany,
+            bool? isSharedSurety, string? privateEquity, string? snapshotHistoricData)
+        {
+            var result = await jamesClient.SetAccountGeneralInfoPanel.ExecuteAsync(new SetAccountGeneralInfoPanelInput
+            {
+                AccountId = accountId,
+                GiaExecutionDate = giaExecutionDate,
+                FiscalYearEnd = fiscalYearEnd,
+                BusinessType = businessType,
+                SicCode = sicCode,
+                PriorSuretyCompany = priorSuretyCompany,
+                IsSharedSurety = isSharedSurety,
+                PrivateEquity = privateEquity,
+            });
+            
             return GraphQLSaveResult(result);
         }
 

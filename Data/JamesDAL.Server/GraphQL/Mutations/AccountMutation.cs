@@ -1,5 +1,6 @@
 ﻿using HotChocolate.Authorization;
 using HotChocolate.Subscriptions;
+using James.Data.Server.Exceptions;
 
 namespace James.Data.Server.GraphQL.Mutations;
 
@@ -37,6 +38,33 @@ public class AccountMutation
         account.BusinessType = businessType;
         account.PriorSuretyCompany = priorSurety;
 
+        await ctx.SaveChangesAsync();
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
+        string? fiscalYearEnd, string? businessType, string? sicCode, string? priorSuretyCompany, bool? isSharedSurety,
+        string? privateEquity, string? snapshotHistoricData,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var account = await ctx.Accounts
+            .FirstOrDefaultAsync(a => a.Id == accountId);
+        
+        if(account == null)
+            throw new NotFoundException("Account not found");
+        
+        //account.GIAExecutionDate = giaExecutionDate;
+        account.FiscalYearEnd = fiscalYearEnd;
+        account.BusinessType = businessType;
+        //account.SicCode = sicCode;
+        account.PriorSuretyCompany = priorSuretyCompany;
+        //account.IsSharedSurety = isSharedSurety;
+        //account.PrivateEquity = privateEquity;
+        //account.SnapshotHistoricData = snapshotHistoricData;
+        
         await ctx.SaveChangesAsync();
         return true;
     }

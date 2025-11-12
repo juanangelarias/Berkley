@@ -26,6 +26,8 @@ public static class CacheKeys
     public const string AgencyStatuses = "AgencyStatuses";
     // B
     public const string Branches = "Branches";
+    public const string BusinessClasses = "BusinessClasses";
+    public const string BusinessTypes = "BusinessTypes";
     // C
     public const string Countries = "Countries";
     // D
@@ -35,6 +37,7 @@ public static class CacheKeys
     // P
     public const string PhoneTypes = "PhoneTypes";
     // S
+    public const string SicCodes = "SicCodes";
     public const string States = "States";
     // U
     public const string Underwriters = "Underwriters";

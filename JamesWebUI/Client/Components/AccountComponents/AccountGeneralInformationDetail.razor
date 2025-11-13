@@ -2,174 +2,173 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenFieldset Text="General Information" Style="width: 100%">
-    @if (_isEditMode)
-    {
-        <RadzenTemplateForm TItem="AccountGeneralInfoModel" Data="@GeneralInfoModel" Submit="OnSubmit" @ref="@Form">
-            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem;">
-                <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
-                    <RadzenText Style="height: 30px;"/>
-                </RadzenRow>
-                <RadzenRow>
-                    <RadzenColumn Size="6">
-                        <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
-                            <RadzenDatePicker @bind-Value=@GeneralInfoModel.GIAExecutionDate DateFormat="MM/dd/yyyy"
-                                              Name="GIAExecutionDate"/>
-                            <RadzenRequiredValidator Text="GIA Execution Date is required."
-                                                     Component="GIAExecutionDate"/>
-                        </JamesFormField>
-                    </RadzenColumn>
-                    <RadzenColumn Size="6">
-                        <JamesFormField Text="Account FYE Date" Variant="Variant.Text">
-                            <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.FiscalYearEnd"
-                                            Data="@_endFiscalYearList" AllowClear="true" Name="FiscalYearEnd"/>
-                        </JamesFormField>
-                    </RadzenColumn>
-                </RadzenRow>
-                <RadzenRow>
-                    <RadzenColumn Size="12">
-                        <JamesFormField Text="Business Type" Variant="Variant.Text">
-                            <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.BusinessType"
-                                            ValueProperty="@nameof(BusinessTypeClassCodeDm.BusinessType)"
-                                            TextProperty="@nameof(BusinessTypeClassCodeDm.BusinessType)"
-                                            AllowFiltering="true" Data="@_businessClasses" AllowClear="false"
-                                            Name="BusinessType"/>
-                            <RadzenRequiredValidator Text="Business Type is required." Component="BusinessType"/>
-                        </JamesFormField>
-                    </RadzenColumn>
-                </RadzenRow>
-                <RadzenRow>
-                    <RadzenColumn Size="12">
-                        <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                            <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.AccountIndustry"
-                                            ValueProperty="@nameof(Sic.Code)"
-                                            TextProperty="@nameof(Sic.Name)"
-                                            AllowFiltering="true" Data="@_sicCodes" AllowClear="false"
-                                            Name="SicCode"/>
-                            <RadzenRequiredValidator Text="Account Industry is required." Component="SicCode"/>
-                        </JamesFormField>
-                    </RadzenColumn>
-                </RadzenRow>
-                <RadzenRow>
-                    <RadzenColumn Size="6">
-                        <JamesFormField Text="Prior Surety" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PriorSuretyCompany" Name="PriorSurety"/>
-                        </JamesFormField>
-                    </RadzenColumn>
-                    <RadzenColumn Size="6">
-                        <JamesFormField Text="Shared Surety" Variant="Variant.Text">
-                            <RadzenRadioButtonList @bind-Value="@GeneralInfoModel.IsSharedSurety" TValue="bool"
-                                                   Name="IsSharedSurety">
-                                <Items>
-                                    <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
-                                    <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
-                                </Items>
-                            </RadzenRadioButtonList>
-                            <RadzenRequiredValidator Text="Shared surety is required." Component="IsSharedSurety"/>
-                        </JamesFormField>
-                    </RadzenColumn>
-                </RadzenRow>
-                <RadzenRow>
-                    <RadzenColumn Size="8">
-                        <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityText" Name="PrivateEquityText"/>
-                        </JamesFormField>
-                    </RadzenColumn>
-                    <RadzenColumn Size="4">
-                        <JamesFormField Text="Year" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityDate" Name="PrivateEquityYear"/>
-                            <RadzenRegexValidator Text="The Year should contain 4 digits" Pattern="@RegExs.Year"/>
-                            <RadzenLengthValidator Text="The Year should contain 4 digits" Max="4"/>
-                        </JamesFormField>
-                    </RadzenColumn>
-                </RadzenRow>
-                <RadzenRow JustifyContent="JustifyContent.End">
-                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="1rem;">
-                        <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary"
-                                      ButtonType="ButtonType.Submit" Disabled="@(!Form.IsValid)"/>
-                        <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
-                                      ButtonType="ButtonType.Reset"/>
-                    </RadzenStack>
-                </RadzenRow>
-            </RadzenStack>
-        </RadzenTemplateForm>
-    }
-    else
-    {
+
+@if (_isEditMode)
+{
+    <RadzenTemplateForm TItem="AccountGeneralInfoModel" Data="@GeneralInfoModel" Submit="OnSubmit" @ref="@Form">
         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem;">
             <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
-                <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
-                              Click="@ToggleEditMode" Style="height: 30px;"/>
+                <RadzenText Style="height: 30px;"/>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;" Value="11/12/2025"/>
+                        <RadzenDatePicker @bind-Value=@GeneralInfoModel.GIAExecutionDate DateFormat="MM/dd/yyyy"
+                                          Name="GIAExecutionDate"/>
+                        <RadzenRequiredValidator Text="GIA Execution Date is required."
+                                                 Component="GIAExecutionDate"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="Account FYE Date" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.FiscalYearEnd"/>
+                        <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.FiscalYearEnd"
+                                        Data="@_endFiscalYearList" AllowClear="true" Name="FiscalYearEnd"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="12">
                     <JamesFormField Text="Business Type" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.BusinessType"/>
+                        <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.BusinessType"
+                                        ValueProperty="@nameof(BusinessTypeClassCodeDm.BusinessType)"
+                                        TextProperty="@nameof(BusinessTypeClassCodeDm.BusinessType)"
+                                        AllowFiltering="true" Data="@_businessClasses" AllowClear="false"
+                                        Name="BusinessType"/>
+                        <RadzenRequiredValidator Text="Business Type is required." Component="BusinessType"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="12">
                     <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;"/> @*Value="@Account.AccountIndustry"/>*@
+                        <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.AccountIndustry"
+                                        ValueProperty="@nameof(Sic.Code)"
+                                        TextProperty="@nameof(Sic.Name)"
+                                        AllowFiltering="true" Data="@_sicCodes" AllowClear="false"
+                                        Name="SicCode"/>
+                        <RadzenRequiredValidator Text="Account Industry is required." Component="SicCode"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="Prior Surety" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.PriorSuretyCompany"/>
+                        <RadzenTextBox @bind-Value="@GeneralInfoModel.PriorSuretyCompany" Name="PriorSurety"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="Shared Surety" Variant="Variant.Text">
-                        <RadzenRadioButtonList Value="false" TValue="bool"
-                                               Name="IsSharedSurety" Disabled="true" Style="color: black;">
+                        <RadzenRadioButtonList @bind-Value="@GeneralInfoModel.IsSharedSurety" TValue="bool"
+                                               Name="IsSharedSurety">
                             <Items>
                                 <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
                                 <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
                             </Items>
                         </RadzenRadioButtonList>
-                        @*Value="@(GeneralInfoModel.IsSharedSurety ? "Yes" : "No" )"/>*@
+                        <RadzenRequiredValidator Text="Shared surety is required." Component="IsSharedSurety"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="8">
                     <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                        <RadzenTextBox Value="Private Equity text" Name="PrivateEquityText" Disabled="true"
-                                       Style="color: black;"/>
+                        <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityText" Name="PrivateEquityText"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="4">
                     <JamesFormField Text="Year" Variant="Variant.Text">
-                        <RadzenTextBox Value="2025" Name="PrivateEquityYear" Disabled="true" Style="color: black;"/>
+                        <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityDate" Name="PrivateEquityYear"/>
+                        <RadzenRegexValidator Text="The Year should contain 4 digits" Pattern="@RegExs.Year"/>
+                        <RadzenLengthValidator Text="The Year should contain 4 digits" Max="4"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
-            <RadzenRow>
-                <RadzenColumn Size="12">
-                    <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;"
-                                       Value="Created by {USER} on {CREATION DATE}"/>
-                    </JamesFormField>
-                </RadzenColumn>
+            <RadzenRow JustifyContent="JustifyContent.End">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="1rem;">
+                    <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary"
+                                  ButtonType="ButtonType.Submit" Disabled="@(!Form.IsValid)"/>
+                    <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
+                                  ButtonType="ButtonType.Reset"/>
+                </RadzenStack>
             </RadzenRow>
         </RadzenStack>
-    }
-</RadzenFieldset>
+    </RadzenTemplateForm>
+}
+else
+{
+    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem;">
+        <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
+            <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
+                          Click="@ToggleEditMode" Style="height: 30px;"/>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
+                    <RadzenTextBox Disabled="true" Style="color: black;" Value="11/12/2025"/>
+                </JamesFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <JamesFormField Text="Account FYE Date" Variant="Variant.Text">
+                    <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.FiscalYearEnd"/>
+                </JamesFormField>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="12">
+                <JamesFormField Text="Business Type" Variant="Variant.Text">
+                    <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.BusinessType"/>
+                </JamesFormField>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="12">
+                <JamesFormField Text="Account Industry" Variant="Variant.Text">
+                    <RadzenTextBox Disabled="true" Style="color: black;"/> @*Value="@Account.AccountIndustry"/>*@
+                </JamesFormField>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <JamesFormField Text="Prior Surety" Variant="Variant.Text">
+                    <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.PriorSuretyCompany"/>
+                </JamesFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <JamesFormField Text="Shared Surety" Variant="Variant.Text">
+                    <RadzenRadioButtonList Value="false" TValue="bool"
+                                           Name="IsSharedSurety" Disabled="true" Style="color: black;">
+                        <Items>
+                            <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
+                            <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
+                        </Items>
+                    </RadzenRadioButtonList>
+                    @*Value="@(GeneralInfoModel.IsSharedSurety ? "Yes" : "No" )"/>*@
+                </JamesFormField>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="8">
+                <JamesFormField Text="Private Equity" Variant="Variant.Text">
+                    <RadzenTextBox Value="Private Equity text" Name="PrivateEquityText" Disabled="true"
+                                   Style="color: black;"/>
+                </JamesFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="4">
+                <JamesFormField Text="Year" Variant="Variant.Text">
+                    <RadzenTextBox Value="2025" Name="PrivateEquityYear" Disabled="true" Style="color: black;"/>
+                </JamesFormField>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="12">
+                <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
+                    <RadzenTextBox Disabled="true" Style="color: black;"
+                                   Value="Created by {USER} on {CREATION DATE}"/>
+                </JamesFormField>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenStack>
+}
 
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; } = null!;

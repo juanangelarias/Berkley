@@ -1,0 +1,69 @@
+﻿<RadzenAccordion Multiple="true">
+    <Items>
+        <RadzenAccordionItem Text="Current Account Program Limits" Selected="true">
+            <RadzenRow>
+                <RadzenColumn Size="3"></RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="Single"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="Aggregate"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="Expiration"/>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="Contract" Style="font-weight: bold;"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="$123,456" Style="background-color: lightgray;" TextAlign="TextAlign.End"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="$123,456" Style="background-color: lightgray;" TextAlign="TextAlign.End"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="$123,456" Style="background-color: lightgray;" TextAlign="TextAlign.End"/>
+                </RadzenColumn>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="Commercial" Style="font-weight: bold;"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="" Style="background-color: lightgray;"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="" Style="background-color: lightgray;"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="" Style="background-color: lightgray;"/>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenAccordionItem>
+        <RadzenAccordionItem Text="Active and Current Account/Agency LOAs">
+
+        </RadzenAccordionItem>
+        <RadzenAccordionItem Text="Remaining LOA Balance Available">
+
+        </RadzenAccordionItem>
+    </Items>
+</RadzenAccordion>
+
+
+
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private bool _isEditMode;
+    private RadzenAccordionItem _defaultItem;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        _defaultItem.Selected = true;
+    }
+}

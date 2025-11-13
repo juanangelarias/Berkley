@@ -44,27 +44,24 @@ public class AccountMutation
 
     [Authorize]
     public async Task<bool> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
-        string? fiscalYearEnd, string? businessType, string? sicCode, string? priorSuretyCompany, bool? isSharedSurety,
-        string? privateEquity, string? snapshotHistoricData,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        string? fiscalYearEnd, string? businessType, string? accountIndustry, string? priorSuretyCompany,
+        bool? isSharedSurety, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var account = await ctx.Accounts
             .FirstOrDefaultAsync(a => a.Id == accountId);
-        
-        if(account == null)
+
+        if (account == null)
             throw new NotFoundException("Account not found");
-        
+
         //account.GIAExecutionDate = giaExecutionDate;
         account.FiscalYearEnd = fiscalYearEnd;
         account.BusinessType = businessType;
-        //account.SicCode = sicCode;
+        //account.AccountIndustry = accountIndustry;
         account.PriorSuretyCompany = priorSuretyCompany;
         //account.IsSharedSurety = isSharedSurety;
-        //account.PrivateEquity = privateEquity;
-        //account.SnapshotHistoricData = snapshotHistoricData;
-        
+
         await ctx.SaveChangesAsync();
         return true;
     }

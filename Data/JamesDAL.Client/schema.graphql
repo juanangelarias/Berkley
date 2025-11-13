@@ -169,11 +169,9 @@ input SetAccountGeneralInfoPanelInput {
   giaExecutionDate: DateTime
   fiscalYearEnd: String
   businessType: String
-  sicCode: String
+  accountIndustry: String
   priorSuretyCompany: String
   isSharedSurety: Boolean
-  privateEquity: String
-  snapshotHistoricData: String
 }
 
 type Subscription {

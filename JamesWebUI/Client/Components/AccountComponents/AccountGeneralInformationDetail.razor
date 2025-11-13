@@ -41,7 +41,7 @@
                 <RadzenRow>
                     <RadzenColumn Size="12">
                         <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                            <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.SicCode"
+                            <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.AccountIndustry"
                                             ValueProperty="@nameof(Sic.Code)"
                                             TextProperty="@nameof(Sic.Name)"
                                             AllowFiltering="true" Data="@_sicCodes" AllowClear="false"
@@ -58,29 +58,28 @@
                     </RadzenColumn>
                     <RadzenColumn Size="6">
                         <JamesFormField Text="Shared Surety" Variant="Variant.Text">
-                            <RadzenRadioButtonList @bind-Value="@GeneralInfoModel.IsSharedSurety" TValue="bool?"
+                            <RadzenRadioButtonList @bind-Value="@GeneralInfoModel.IsSharedSurety" TValue="bool"
                                                    Name="IsSharedSurety">
                                 <Items>
                                     <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
                                     <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
                                 </Items>
                             </RadzenRadioButtonList>
-                            <RadzenRequiredValidator Text="Is shared surety is required." Component="IsSharedSurety"/>
+                            <RadzenRequiredValidator Text="Shared surety is required." Component="IsSharedSurety"/>
                         </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
                 <RadzenRow>
-                    <RadzenColumn Size="12">
+                    <RadzenColumn Size="8">
                         <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquity" Name="PrivateEquity"/>
+                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityText" Name="PrivateEquityText"/>
                         </JamesFormField>
                     </RadzenColumn>
-                </RadzenRow>
-                <RadzenRow>
-                    <RadzenColumn Size="12">
-                        <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@GeneralInfoModel.SnapshotHistoricData"
-                                           Name="SnapshotHistoricData"/>
+                    <RadzenColumn Size="4">
+                        <JamesFormField Text="Year" Variant="Variant.Text">
+                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityDate" Name="PrivateEquityYear"/>
+                            <RadzenRegexValidator Text="The Year should contain 4 digits" Pattern="@RegExs.Year"/>
+                            <RadzenLengthValidator Text="The Year should contain 4 digits" Max="4"/>
                         </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
@@ -124,7 +123,7 @@
             <RadzenRow>
                 <RadzenColumn Size="12">
                     <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;"/> @*Value="@Account.SicCode"/>*@
+                        <RadzenTextBox Disabled="true" Style="color: black;"/> @*Value="@Account.AccountIndustry"/>*@
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -136,22 +135,35 @@
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="Shared Surety" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;" Value="No"/>
-                                       @*Value="@(GeneralInfoModel.IsSharedSurety ? "Yes" : "No" )"/>*@
+                        <RadzenRadioButtonList Value="false" TValue="bool"
+                                               Name="IsSharedSurety" Disabled="true" Style="color: black;">
+                            <Items>
+                                <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
+                                <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
+                            </Items>
+                        </RadzenRadioButtonList>
+                        @*Value="@(GeneralInfoModel.IsSharedSurety ? "Yes" : "No" )"/>*@
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
-                <RadzenColumn Size="12">
+                <RadzenColumn Size="8">
                     <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;" Value=""/>
+                        <RadzenTextBox Value="Private Equity text" Name="PrivateEquityText" Disabled="true"
+                                       Style="color: black;"/>
+                    </JamesFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="4">
+                    <JamesFormField Text="Year" Variant="Variant.Text">
+                        <RadzenTextBox Value="2025" Name="PrivateEquityYear" Disabled="true" Style="color: black;"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="12">
                     <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;" Value=""/>
+                        <RadzenTextBox Disabled="true" Style="color: black;"
+                                       Value="Created by {USER} on {CREATION DATE}"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -232,11 +244,13 @@
             GIAExecutionDate = null, // Account.GIAExecutionDate
             PriorSuretyCompany = Account.PriorSuretyCompany,
             IsSharedSurety = false, // Account.IsSharedSurety
-            SicCode = "", // Account.SicCode
-            PrivateEquity = "", // Account.PrivateEquity
-            SnapshotHistoricData = "" // Account.SnapshotHistoricData
+            AccountIndustry = "", // Account.Account Industry
+            PrivateEquityText = "", // From the last Private Equity Log field
+            PrivateEquityDate = null, // From the last Private Equity Log field
+            SnapshotHistoricData = "Created by {USER} on {CREATION DATE}"
+            // From the last Private Equity Log field
         };
-        
+
         _isEditMode = !_isEditMode;
     }
 
@@ -248,25 +262,28 @@
     private async Task OnSubmit(AccountGeneralInfoModel model)
     {
         var result = await DataAccess.SetAccountGeneralInfoPanel(Account.Id, model.GIAExecutionDate, model.FiscalYearEnd,
-            model.BusinessType, model.SicCode, model.PriorSuretyCompany, model.IsSharedSurety, model.PrivateEquity,
-            model.SnapshotHistoricData);
+            model.BusinessType, model.AccountIndustry, model.PriorSuretyCompany, model.IsSharedSurety);
 
-        if(!result.Success)
+        if (!result.Success)
         {
             NotifySaveError(result.Errors, "account general information");
             return;
         }
-        
+
         NotifySuccessfulSave("account general information");
+
+        /*if (model.PrivateEquityDate != original.PrivateEquityDate ||
+            model.PrivateEquityText != original.PrivateEquityText)
+        {
+            // Create a new log in the PrivateEquityLog table
+        }*/
 
         //Account.GiaExecutionDate = model.GIAExecutionDate;
         Account.FiscalYearEnd = model.FiscalYearEnd;
         Account.BusinessType = model.BusinessType;
-        //Account.SicCode = model.SicCode;
+        //Account.AccountIndustry = model.AccountIndustry;
         Account.PriorSuretyCompany = model.PriorSuretyCompany;
         //Account.IsSharedSurety = model.IsSharedSurety;
-        //Account.PrivateEquity = model.PrivateEquity;
-        //Account.SnapshotHistoricData = model.SnapshotHistoricData;
 
         _isEditMode = false;
     }

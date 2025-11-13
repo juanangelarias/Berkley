@@ -439,8 +439,8 @@ namespace James.Data.Client
         }
 
         public async Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
-            string? fiscalYearEnd, string? businessType, string? sicCode, string? priorSuretyCompany,
-            bool? isSharedSurety, string? privateEquity, string? snapshotHistoricData)
+            string? fiscalYearEnd, string? businessType, string? accountIndustry, string? priorSuretyCompany,
+            bool? isSharedSurety)
         {
             var result = await jamesClient.SetAccountGeneralInfoPanel.ExecuteAsync(new SetAccountGeneralInfoPanelInput
             {
@@ -448,10 +448,9 @@ namespace James.Data.Client
                 GiaExecutionDate = giaExecutionDate,
                 FiscalYearEnd = fiscalYearEnd,
                 BusinessType = businessType,
-                SicCode = sicCode,
+                AccountIndustry = accountIndustry,
                 PriorSuretyCompany = priorSuretyCompany,
                 IsSharedSurety = isSharedSurety,
-                PrivateEquity = privateEquity,
             });
             
             return GraphQLSaveResult(result);

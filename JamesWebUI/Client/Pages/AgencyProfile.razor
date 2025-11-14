@@ -9,12 +9,11 @@
 
 @inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
-@inject ILoggingService Logging
 
 @attribute [Authorize]
 
 <Theme />
-<RenderModeBackground></RenderModeBackground>
+
 <PageTitle>BasisTNG - Agency Profile</PageTitle>
 
 @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
@@ -181,7 +180,7 @@
                     <AgencyInventoryGrid AgencyId="@_agencyToDisplay.Id" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Accounts and Bonds" TabName="tabAccountsBonds">
-                    <AgencyAccountsAndBonds agencyToDisplay="@_agencyToDisplay" />
+                    <AgencyAccountsAndBonds Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Commission Rates" TabName="tabCommissionRates">
                     <AgencyCommissionRates Agency="@_agencyToDisplay" AgencyStatus="@_agencyToDisplay?.Status" />

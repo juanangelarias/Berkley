@@ -1,18 +1,14 @@
-﻿@using ClientBusinessLogic
-@using James.Shared.Constants
-@using James.Shared.Imaging
-@using Newtonsoft.Json
+﻿@using James.Shared.Imaging
 @using SharedBusinessLogic
 
-@inherits JamesLayoutComponentBase
+@inherits JamesGridLayoutComponentBase<PowerOfAttorney>
 
 @inject NavigationManager NavigationManager
-@inject IDataAccess DataAccess
 @inject TooltipService TooltipService
 
 <Theme/>
 
-<RadzenDataGrid @ref="POAGrid" TItem="PowerOfAttorney" Data="PowerOfAttorneys" GridLines="DataGridGridLines.Vertical"
+<RadzenDataGrid @ref="Grid" TItem="PowerOfAttorney" Data="PowerOfAttorneys" GridLines="DataGridGridLines.Vertical"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
                 AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true" Density="Density.Compact"
                 RowCreate="@OnPoaCreate" RowUpdate="@UpdatePoaRow" EditMode="DataGridEditMode.Single"
@@ -28,10 +24,10 @@
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
                 <RadzenButton Icon="settings" Click="SaveGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
-                              Visible="@_userSettingsChanged"/>
+                              Visible="@UserSettingsChanged"/>
                 <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
-                              Visible="@_userSettingsLoaded"/>
+                              Visible="@UserSettingsLoaded"/>
             </RadzenStack>
         </RadzenStack>
     </HeaderTemplate>
@@ -165,8 +161,6 @@
 
     private string AgencyPOAKey => $"AgencyPOAs{Agency.Id}";
 
-    private RadzenDataGrid<PowerOfAttorney> POAGrid { get; set; } = null!;
-
     private List<PowerOfAttorney> PowerOfAttorneys { get; set; } = [];
 
     private List<Insurer> AllInsurers { get; set; } = [];
@@ -179,27 +173,6 @@
     private List<string> _statusList = [];
     private ExportFormat _defaultExportFormat;
     
-    #region Grid User Settings
-
-    private DataGridSettings? _dataGridSettings;
-    private DataGridSettings? GridSettings
-    {
-        get => _dataGridSettings;
-        set
-        {
-            if (_dataGridSettings == value)
-                return;
-
-            _dataGridSettings = value;
-            _userSettingsChanged = true;
-        }
-    }
-
-    private bool _userSettingsLoaded;
-    private bool _userSettingsChanged;
-
-    #endregion
-
     #region Loaders
 
     private IDataAccessResult<List<PowerOfAttorney>> _poas = null!;
@@ -299,7 +272,7 @@
             return;
 
         await ShowLoading();
-        await POAGrid.UpdateRow(powerOfAttorney);
+        await Grid.UpdateRow(powerOfAttorney);
         await LoadPOAs();
     }
 
@@ -320,7 +293,7 @@
             }
         };
 
-        await POAGrid.InsertRow(newPoa);
+        await Grid.InsertRow(newPoa);
     }
 
     //Enable row edit mode for a POA record.
@@ -330,7 +303,7 @@
             poaToEdit.AgencyId = Agency.Id;
 
         await ShowLoading();
-        await POAGrid.EditRow(poaToEdit);
+        await Grid.EditRow(poaToEdit);
     }
 
     //Save changes to a POA row, disable edit mode for that row.
@@ -353,7 +326,7 @@
         if (result.Success)
         {
             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
-            await POAGrid.Reload();
+            await Grid.Reload();
         }
         else
         {
@@ -426,7 +399,7 @@
             }
 
             NotifySuccessfulSave("agency POA deleted");
-            await POAGrid.Reload();
+            await Grid.Reload();
         }
         else
             NotifySaveError(result.Errors, "agency POA deletion");
@@ -436,7 +409,7 @@
     {
         await ShowLoading();
 
-        POAGrid.CancelEditRow(poa);
+        Grid.CancelEditRow(poa);
     }
 
     private async Task PoaDocumentUploaded(Guid? documentId, Guid poaId)
@@ -470,7 +443,7 @@
         substitutions.AddSubstitution("FirstIssued", "FirstIssued", "First Issued");
         substitutions.AddSubstitution("CurrentIssued", "CurrentIssued", "Current Issued");
         substitutions.AddSubstitution("Limit", "Limit", "Limit");
-        NavigationManager.NavigateTo(ExportDataGridUrl(POAGrid,
+        NavigationManager.NavigateTo(ExportDataGridUrl(Grid,
                 $"/export/AgencyPOAs/{Agency.Id}", format, substitutions),
             true);
     }
@@ -486,74 +459,8 @@
         var list = (EnumerableQuery<Insurer>)args;
 
         _insurerFilter = list.Select(s => s).ToList();
-        POAGrid.Reload();
+        Grid.Reload();
     }
-    
-        #region Grid User Settings
-
-    private async Task SaveGridSettings()
-    {
-        await ShowLoading();
-        
-        var userGridSettings = new GridSettings
-        {
-            DefaultExportFormat = _defaultExportFormat,
-            Settings = GridSettings
-        };
-
-        var value = JsonConvert.SerializeObject(userGridSettings);
-        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyPoaGrid, value);
-
-        if (!response.Success)
-        {
-            NotifySaveError(response.Errors, "user settings");
-            return;
-        }
-
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-        StateHasChanged();
-    }
-
-    private async Task GetGridSettings()
-    {
-        await ShowLoading();
-        
-        var response = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyPoaGrid);
-        if (!response.Success || response is { Success: true, Data: null })
-        {
-            if (!response.Success)
-                NotifyLoadError(response.Errors, "user settings");
-
-            _userSettingsLoaded = false;
-            return;
-        }
-
-        var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(response.Data!.Value);
-
-        if (userGridSettings == null)
-            return;
-
-        _defaultExportFormat = userGridSettings.DefaultExportFormat;
-        GridSettings = userGridSettings.Settings;
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-    }
-
-    private async Task ResetGridSettings()
-    {
-        await ShowLoading();
-        
-        GridSettings = null;
-        _defaultExportFormat = ExportFormat.Excel;
-        await POAGrid.ReloadSettings();
-
-        await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyPoaGrid);
-        _userSettingsLoaded = false;
-        _userSettingsChanged = false;
-    }
-
-    #endregion
 
     private void ShowTooltip(ElementReference element, string type)
     {

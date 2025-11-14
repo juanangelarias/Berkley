@@ -13,7 +13,7 @@ namespace JamesWebUI.Client.Services
         Task<ISaveDataResult> SetDefaultUserSettingAsync(string key, string? value);
     }
 
-    public class UserSettingService(IDataAccess dataAccess,
+    public class UserSettingsService(IDataAccess dataAccess,
         ILocalStorageService localStorageService) : IUserSettingService
     {
         #region Constants for used keys

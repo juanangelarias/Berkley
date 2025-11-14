@@ -63,11 +63,11 @@
                 @{
                     if (license.IsActive)
                     {
-                        <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success"/>
+                        <JamesStatusIcon Color="green"/>
                     }
                     else
                     {
-                        <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger"/>
+                        <JamesStatusIcon Color="red"/>
                     }
                 }
             </Template>
@@ -651,9 +651,9 @@
             Draggable = true
         };
 
-        var response = await DialogService.OpenAsync<AgencyLicensesBulkEditConfirmationDialog>("Confirm Bulk Edit", null, options);
+        var response = await DialogService.Confirm("Are you sure ou want to save these changes?", "Bulk Edit Confirmation");
 
-        if ((bool?)response is null or false)
+        if (response is null or false)
             return;
 
         await ShowLoading();

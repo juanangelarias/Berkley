@@ -1,0 +1,12 @@
+﻿
+<RadzenIcon Icon="circle" class="filled-icon" Style="@_style" />
+
+@code {
+    [Parameter, EditorRequired] public string Color { get; set; }
+    private string _style = "color: green";
+
+    protected override void OnParametersSet()
+    {
+        _style = $"color: {Color}; font-size: 1.0rem;";
+    }
+}

@@ -40,7 +40,8 @@ namespace James.Data.Server.GraphQL.Queries
                         .FirstOrDefault(f => f.Type == "Main")!.Address.StateCode,
                     Branch = s.Branch,
                     Status = s.Status,
-                    ParentChild = s.Id == s.IdNavigation.Parent ? "P" : "C"
+                    ParentChild = s.Id == s.IdNavigation.Parent ? "P" : "C",
+                    IdNavigation = s.IdNavigation
                 })
                 .ToListAsync();
 

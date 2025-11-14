@@ -4,9 +4,9 @@
 
 <Theme />
 
-<PositionSavingTabs Change="@HandleChangeDirection" TabControlName="AgGenInfoGrids" TabPosition="TabPosition.Left" >
+<PositionSavingTabs Change="@HandleChangeDirection" TabControlName="AgGenInfoGrids" TabPosition="TabPosition.Top" >
     <Tabs>
-        <PositionSavingTabsItem Text="Licenses" TabName="Licenses">
+        <PositionSavingTabsItem Text="Agency Licenses" TabName="Licenses">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
                 <AgencyLicenseGrid Agency="Agency" />
             </Animate>

@@ -1,16 +1,11 @@
-﻿@using System.ComponentModel.DataAnnotations
-@using James.Shared.Constants
-@using Newtonsoft.Json
-
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesGridLayoutComponentBase<AgencyInventory>
 
 @inject NavigationManager NavigationManager
-@inject IDataAccess DataAccess
 @inject TooltipService TooltipService
 
 <Theme/>
 
-<RadzenDataGrid TItem="AgencyInventory" @ref="@InventoryGrid" Data="@AgencyInventories"
+<RadzenDataGrid TItem="AgencyInventory" @ref="@Grid" Data="@AgencyInventories"
                 Style="border-radius: 10px; height: 400px;" Density="Density.Compact" EmptyText="No records to display" AllowColumnResize="true"
                 AllowSorting="true" AllowGrouping="true" EditMode="DataGridEditMode.Single" AllowColumnPicking="true"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" SelectionMode="DataGridSelectionMode.Single"
@@ -26,10 +21,10 @@
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
                 <RadzenButton Icon="settings" Click="SaveGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
-                              Visible="@_userSettingsChanged"/>
+                              Visible="@UserSettingsChanged"/>
                 <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
-                              Visible="@_userSettingsLoaded"/>
+                              Visible="@UserSettingsLoaded"/>
             </RadzenStack>
         </RadzenStack>
     </HeaderTemplate>
@@ -163,31 +158,9 @@
 @code {
     [Parameter, Required] public Guid AgencyId { get; set; }
 
-    private RadzenDataGrid<AgencyInventory> InventoryGrid { get; set; } = null!;
     private List<AgencyInventory> AgencyInventories { get; set; } = [];
     private List<AgencyInventory> InventoriesToInsert { get; set; } = [];
     private List<AgencyInventory> InventoriesToUpdate { get; set; } = [];
-    
-    #region Grid User Settings
-
-    private DataGridSettings? _dataGridSettings;
-    private DataGridSettings? GridSettings
-    {
-        get => _dataGridSettings;
-        set
-        {
-            if (_dataGridSettings == value)
-                return;
-
-            _dataGridSettings = value;
-            _userSettingsChanged = true;
-        }
-    }
-
-    private bool _userSettingsLoaded;
-    private bool _userSettingsChanged;
-
-    #endregion
     
     private ExportFormat _defaultExportFormat;
 
@@ -199,6 +172,8 @@
     private IDataAccessResult<List<AgencyInventory>> _inventoryResult = null!;
     private IDataAccessResult<List<State>> _states = null!;
     private IDataAccessResult<List<InventoryDocumentDm>> _docTypes = null!;
+
+    #region Loaders
 
     private LoadItem InventoryLoad => AddEventNotify(new LoadItem<List<AgencyInventory>>
     {
@@ -235,6 +210,8 @@
         ResultVariable = () => _docTypes,
         AfterLoad = () => { AllDocTypes = _docTypes.Data!; }
     }, "document types");
+
+    #endregion
 
     protected override async Task OnParametersSetAsync()
     {
@@ -276,7 +253,7 @@
         await ShowLoading();
         Reset();
         InventoriesToUpdate.Add(inventory);
-        await InventoryGrid.EditRow(inventory);
+        await Grid.EditRow(inventory);
     }
 
     private async Task DeleteInventoryRow(AgencyInventory inventory)
@@ -294,7 +271,7 @@
             DataAccess.UpdateCache($"Inventory{AgencyId}", AgencyInventories);
 
             NotifySuccessfulSave("agency inventory deleted");
-            await InventoryGrid.Reload();
+            await Grid.Reload();
         }
         else
         {
@@ -305,7 +282,7 @@
     private async Task SaveInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
-        await InventoryGrid.UpdateRow(inventory);
+        await Grid.UpdateRow(inventory);
         await LoadInventory();
     }
 
@@ -313,7 +290,7 @@
     {
         await ShowLoading();
         Reset(inventory);
-        InventoryGrid.CancelEditRow(inventory);
+        Grid.CancelEditRow(inventory);
         await LoadInventory();
     }
 
@@ -328,7 +305,7 @@
             Address = new Address() { Id = Guid.NewGuid() }
         };
         InventoriesToInsert.Add(newInventory);
-        await InventoryGrid.InsertRow(newInventory);
+        await Grid.InsertRow(newInventory);
     }
 
     private async Task UpdateInventoryRow(AgencyInventory inventory)
@@ -391,76 +368,10 @@
         substitutions.AddSubstitution("Address.City", title: "City");
         substitutions.AddSubstitution("Address.StateCode", title: "State");
         substitutions.AddSubstitution("Address.PostalCode", title: "Zip Code");
-        NavigationManager.NavigateTo(ExportDataGridUrl(InventoryGrid,
+        NavigationManager.NavigateTo(ExportDataGridUrl(Grid,
                 $"/export/AgencyInventory/{AgencyId}", format, substitutions),
             true);
     }
-
-    #region Grid User Settings
-
-    private async Task SaveGridSettings()
-    {
-        await ShowLoading();
-        
-        var userGridSettings = new GridSettings
-        {
-            DefaultExportFormat = _defaultExportFormat,
-            Settings = GridSettings
-        };
-
-        var value = JsonConvert.SerializeObject(userGridSettings);
-        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyInventoryGrid, value);
-
-        if (!response.Success)
-        {
-            NotifySaveError(response.Errors, "user settings");
-            return;
-        }
-
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-        StateHasChanged();
-    }
-
-    private async Task GetGridSettings()
-    {
-        await ShowLoading();
-        
-        var response = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyInventoryGrid);
-        if (!response.Success || response is { Success: true, Data: null })
-        {
-            if (!response.Success)
-                NotifyLoadError(response.Errors, "user settings");
-
-            _userSettingsLoaded = false;
-            return;
-        }
-
-        var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(response.Data!.Value);
-
-        if (userGridSettings == null)
-            return;
-
-        _defaultExportFormat = userGridSettings.DefaultExportFormat;
-        GridSettings = userGridSettings.Settings;
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-    }
-
-    private async Task ResetGridSettings()
-    {
-        await ShowLoading();
-        
-        GridSettings = null;
-        _defaultExportFormat = ExportFormat.Excel;
-        await InventoryGrid.ReloadSettings();
-
-        await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyInventoryGrid);
-        _userSettingsLoaded = false;
-        _userSettingsChanged = false;
-    }
-
-    #endregion
 
     private void ShowTooltip(ElementReference element, string type)
     {

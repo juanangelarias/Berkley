@@ -20,7 +20,6 @@ namespace James.Data.Server
         ObligeeMutation obligeeMutation,
         GeneralMutation generalMutation,
         ServerImagingAccess imagingAccess,
-        GeneralMutation userSettingsMutation,
         ITopicEventSender eventSender,
         ITopicEventReceiver eventReceiver,
         ILoggingService loggingService,
@@ -896,13 +895,13 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> SetUserSettings(string key, string value)
         {
             return await ExecuteSave(async () =>
-                await userSettingsMutation.SetUserSetting(key, value, contextFactory, contextAccessor));
+                await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor));
         }
         
         public async Task<ISaveDataResult> ResetUserSettings()
         {
             return await ExecuteSave(async () =>
-                await userSettingsMutation.ResetUserSettings(contextFactory, contextAccessor));
+                await generalMutation.ResetUserSettings(contextFactory, contextAccessor));
         }
         
         public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
@@ -912,17 +911,17 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
         {
-            return await ExecuteSave(async () => await userSettingsMutation.SetUserSetting(key, value, contextFactory, contextAccessor));
+            return await ExecuteSave(async () => await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor));
         }
 
         public async Task<ISaveDataResult> ResetUserSetting(string key)
         {
-            return await ExecuteSave(async () => await userSettingsMutation.ResetUserSetting(key, contextFactory, contextAccessor));
+            return await ExecuteSave(async () => await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
         }
         
         public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
         {
-            return await ExecuteSave(async () => await userSettingsMutation.SetDefaultUserSetting(key, value, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory));
         }
 
         #endregion

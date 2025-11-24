@@ -225,6 +225,19 @@ type SetAgencyProfitSharingInfoPayload {
   boolean: Boolean
 }
 
+input SetBondBlockInput {
+  bondBlockId: UUID!
+  insurerId: UUID
+  prefix: String!
+  firstNumber: Int!
+  lastNumber: Int!
+  agencyRestricted: Boolean!
+  issuedBy: UUID
+  comments: String
+  agencyId: UUID
+  enabled: Boolean!
+}
+
 input SetCurrentCreditReportLinkInput {
   accountNum: String!
   imagingDocumentId: UUID
@@ -508,6 +521,7 @@ type Query {
   agencyBonds(agencyId: UUID! skip: Int! take: Int!): [Bond!]!
   agencyBondsCount(agencyId: UUID!): QueryCount!
   agencyAgents(agencyId: UUID!): [Agent!]!
+  agencyAgentLicenses(agencyId: UUID! agentId: UUID!): [AgencyLicense!]!
   allActiveAgencies: [AgencyDto!]!
   agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
@@ -523,6 +537,9 @@ type Query {
   bondRequestNumberType(bondNumber: String!): BondRequestNumberType
   bondNumber(bondRequestNumber: String!): String
   searchBondsByBondNumber(bondNumberFragment: String! activeOnly: Boolean!): [Bond!]!
+  bondBlocksByAgency(agencyId: UUID! start: DateTime! end: DateTime! filter: String!): [BondBlock!]!
+  bondsByBlock(bondBlockId: UUID!): [Bond!]!
+  nextBondBlockInitialNumber(prefix: String!): Int!
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
@@ -706,6 +723,10 @@ enum SearchResultType {
   OBLIGEE
   FILE
   PERSON
+}
+
+type SetBondBlockPayload {
+  boolean: Boolean
 }
 
 input SetAccountAdditionalInformationInput {
@@ -935,6 +956,10 @@ type PhoneTypeDm {
   type: String!
   order: Int!
   legalEntityPhones: [LegalEntityPhone!]!
+}
+
+type DeleteBondBlockPayload {
+  boolean: Boolean
 }
 
 input SetAccountGeneralInfoInput {
@@ -1189,6 +1214,7 @@ type AgencySearchDto {
   branch: String!
   status: String!
   parentChild: String!
+  idNavigation: LegalEntity!
 }
 
 type CreateAgencyLicenseDocumentLinkPayload {
@@ -1294,12 +1320,14 @@ type Mutation {
   setEmployeeIsActive(input: SetEmployeeIsActiveInput!): SetEmployeeIsActivePayload!
   setEmployeeEmail(input: SetEmployeeEmailInput!): SetEmployeeEmailPayload!
   createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
+  setBondBlock(input: SetBondBlockInput!): SetBondBlockPayload!
+  deleteBondBlock(input: DeleteBondBlockInput!): DeleteBondBlockPayload!
+  resetUserSettings: ResetUserSettingsPayload!
+  resetUserSetting(input: ResetUserSettingInput!): ResetUserSettingPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
   createObligee(input: CreateObligeeInput!): CreateObligeePayload!
-  resetUserSettings: ResetUserSettingsPayload!
-  resetUserSetting(input: ResetUserSettingInput!): ResetUserSettingPayload!
 }
 
 type SetDefaultUserSettingPayload {
@@ -2929,6 +2957,10 @@ input AgencyLicenseBulkDeleteInput {
 
 type CreateObligeePayload {
   obligee: Obligee
+}
+
+input DeleteBondBlockInput {
+  bondBlockId: UUID!
 }
 
 type AgentsInAgency {

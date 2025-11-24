@@ -13,7 +13,7 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "Agency/322?tabsAgencyProfile=tabGenInfo",
+      "launchUrl": "https://localhost:7017/Agency/322?tabsAgencyProfile=tabAgents",
       //"launchUrl": "account/67239",
       //"launchUrl": "Agency/322?tabsAgencyProfile=tabAccountsBonds",
       //"launchUrl": "Agency/322?tabsAgencyProfile=tabCommissionRates",

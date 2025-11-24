@@ -1,17 +1,16 @@
-﻿@using James.Shared.Constants
-@using Newtonsoft.Json
+﻿@using System.Text.RegularExpressions
 @inherits JamesGridLayoutComponentBase<Agent>
 
 @inject NavigationManager NavigationManager
-
 @inject TooltipService TooltipService
 
 <Theme/>
 
 <RadzenDataGrid TItem="Agent" Data="@Agents" @ref="@Grid" Density="Density.Compact"
-                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" @bind-Settings="@GridSettings" AllowColumnReorder="true"
-                GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single" 
-                AllowRowSelectOnRowClick="true" AllowPaging="true" PageSize="10" AllowSorting="true" 
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
+                @bind-Settings="@GridSettings" AllowColumnReorder="true"
+                GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single"
+                AllowRowSelectOnRowClick="true" AllowPaging="true" PageSize="10" AllowSorting="true"
                 AllowColumnResize="true" AllowFiltering="true" FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
@@ -27,47 +26,7 @@
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
-        <RadzenDataGrid Data="agent.AgencyLicenses" TItem="AgencyLicense" AllowColumnResize="true"
-                        Style="height:300px;" AllowVirtualization="true" GridLines="DataGridGridLines.Vertical"
-                        AllowFiltering="true">
-            <HeaderTemplate>
-                <RadzenText Style="font-weight: bold"
-                            Text="@("Name: " + agent.IdNavigation.GivenName + " " + agent.IdNavigation.MiddleInitial + " " + agent.IdNavigation.FamilyName)"/>
-            </HeaderTemplate>
-            <Columns>
-                <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Width="125px" Property="LicenseNumber">
-                    <Template Context="license">
-                        <RadzenText Text="@license.LicenseNumber"/>
-                    </Template>
-
-                </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Width="100px">
-                    <Template Context="license">
-                        <RadzenText Text="@license.State"/>
-                    </Template>
-                </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyLicense" Title="Resident" Width="125px">
-                    <Template Context="license">
-                        <RadzenCheckBox Value="@license.IsResident"/>
-                    </Template>
-                </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" Width="125px">
-                    <Template Context="license">
-                        <RadzenCheckBox Value="@license.AppointingState"/>
-                    </Template>
-                </RadzenDataGridColumn>
-                <RadzenDataGridColumn TItem="AgencyLicense" Title="Insurer">
-                    <Template Context="license">
-                        <RadzenText Text="@license.Insurer.IdNavigation.FullName"/>
-                    </Template>
-                    <EditTemplate Context="license">
-                        <RadzenDropDown TValue="Guid" Data="AllInsurers" Style="width:95%"
-                                        TextProperty="IdNavigation.FullName" ValueProperty="Id"
-                                        @bind-Value="@license.InsurerId"/>
-                    </EditTemplate>
-                </RadzenDataGridColumn>
-            </Columns>
-        </RadzenDataGrid>
+        <AgencyAgentLicenseGrid Agency="Agency" Agent="agent"/>
     </Template>
     <Columns>
         <RadzenDataGridColumn TItem="Agent" Title="First Name" Property="IdNavigation.GivenName" Width="200px">
@@ -85,9 +44,24 @@
                 <RadzenText Text="@agent.IdNavigation.FamilyName"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agent" Title="NPN" Property="NationalProducerNumber">
+        <RadzenDataGridColumn TItem="Agent" Title="NPN" Property="NationalProducerNumber" Width="125px">
             <Template Context="agent">
                 <RadzenText Text="@agent.NationalProducerNumber"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Email" Width="300px">
+            <Template Context="agent">
+                <RadzenText Text="@GetEmail(agent)"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Phone Number" Width="125px">
+            <Template Context="agent">
+                <RadzenText Text="@GetPhoneNumber(agent)"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Ext." Width="100px">
+            <Template Context="agent">
+                <RadzenText Text="@GetPhoneNumber(agent, true)"/>
             </Template>
         </RadzenDataGridColumn>
     </Columns>
@@ -95,18 +69,18 @@
 
 
 @code {
-    [Parameter, EditorRequired] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public Agency Agency { get; set; }
 
     private List<Agent> Agents { get; set; } = [];
-    private List<Insurer> AllInsurers { get; set; } = [];
+
+    #region Loaders
 
     private IDataAccessResult<List<Agent>> _agentsResult = null!;
-    private IDataAccessResult<List<Insurer>> _insurersResult = null!;
 
     private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<Agent>>
     {
-        Key = $"AgencyContacts{AgencyId}",
-        AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(AgencyId),
+        Key = $"AgencyContacts{Agency.Id}",
+        AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(Agency.Id),
         CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<Agent>>
         {
             Data = (List<Agent>)cache!
@@ -114,24 +88,19 @@
         ResultVariable = () => _agentsResult,
         AfterLoad = void () =>
         {
-            if (_agentsResult.Success)
-                Agents = _agentsResult.Data!;
+            Agents = _agentsResult.Data!;
+
+            foreach (var agent in Agents)
+            {
+                foreach (var lic in agent.AgencyLicenses)
+                {
+                    Console.WriteLine($"Agent: {agent.IdNavigation.FullName} - License: {lic.LicenseNumber} - {lic.Appointment}");
+                }
+            }
         }
     }, "agency contacts");
 
-
-    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
-    {
-        Key = "Insurers",
-        AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
-        CacheLoadTask = cache => _insurersResult = new DataAccessResult<List<Insurer>> { Data = (List<Insurer>)cache! },
-        ResultVariable = () => _insurersResult,
-        AfterLoad = void () =>
-        {
-            if (_insurersResult.Success)
-                AllInsurers = _insurersResult.Data!;
-        }
-    }, "insurers");
+    #endregion
 
     protected override async Task OnInitializedAsync()
     {
@@ -152,10 +121,10 @@
 
     private async Task LoadData()
     {
-        if (AgencyId == Guid.Empty)
+        if (Agency.Id == Guid.Empty)
             return;
 
-        await DataAccess.ParallelGetCacheOrDataAsync(AgencyContactsLoad, InsurersLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyContactsLoad);
     }
 
     private void ExportGrid(ExportFormat format)
@@ -173,7 +142,7 @@
         substitutions.AddSubstitution("NationalProducerNumber", "NationalProducerNumber", "NationalProducerNumber");
 
         NavigationManager.NavigateTo(ExportDataGridUrl(Grid,
-                $"/export/AgencyContacts/{AgencyId}", format, substitutions),
+                $"/export/AgencyContacts/{Agency.Id}", format, substitutions),
             true);
     }
 
@@ -191,5 +160,27 @@
             Duration = 2000
         };
         TooltipService.Open(element, message, options);
+    }
+
+    private string GetEmail(Agent agent)
+    {
+        return agent.IdNavigation.LegalEntityEmails
+            .FirstOrDefault(f => f.Type.ToLower() == "main")?
+            .EmailAddress ?? "";
+    }
+
+    private string GetPhoneNumber(Agent agent, bool extension = false)
+    {
+        var record = agent.IdNavigation.LegalEntityPhones
+            .FirstOrDefault(f => f.Type.ToLower() == "main");
+
+        if (extension)
+            return record?.PhoneNumber.Extension ?? "";
+
+        var number = record?.PhoneNumber.MainNumber ?? "";
+
+        return string.IsNullOrEmpty(number)
+            ? ""
+            : Regex.Replace(number, @"(\d{3})(\d{3})(\d{4})", "($1) $2-$3");
     }
 }

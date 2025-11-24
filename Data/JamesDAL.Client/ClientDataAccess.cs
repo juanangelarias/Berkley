@@ -340,6 +340,11 @@ namespace James.Data.Client
             return await ExecuteGet<List<Agent>>(
                 async () => await jamesClient.GetAgencyAgents.ExecuteAsync(agencyId), "AgencyAgents");
         }
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId)
+        {
+            return await ExecuteGet<List<AgencyLicense>>(async () => 
+                await jamesClient.GetAgencyAgentLicenses.ExecuteAsync(agencyId, agentId), "AgencyAgentLicenses");
+        }
 
         public async Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber)
         {
@@ -604,6 +609,20 @@ namespace James.Data.Client
             //return await ExecuteGetString(async () =>
             //    await jamesClient.GetBondNumber.ExecuteAsync(bondRequestNumber));
         }
+        
+        public async Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start, 
+            DateTime end, string filter)
+        {
+            return await ExecuteGet<List<BondBlock>>(async () => 
+                await jamesClient.GetBondBlocksByAgency.ExecuteAsync(agencyId, start, end, filter),         
+                "BondBlocksByAgency");
+        }
+
+        public async Task<IDataAccessResult<List<Bond>>> GetBondsByBlock(Guid bondBlockId)
+        {
+            return await ExecuteGet<List<Bond>>(async () =>
+                await jamesClient.GetBondsByBlock.ExecuteAsync(bondBlockId), "BondsByBlock");
+        }
 
         public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
         {
@@ -764,23 +783,25 @@ namespace James.Data.Client
             return result;
         }
 
-        public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(string usernameSearchText)
+        public async Task<IDataAccessResult<List<PotentialEmployeeActiveDirectoryInfo>>> GetActiveDirectoryUsers(
+            string usernameSearchText)
         {
-            var result = await ExecuteGet < List<PotentialEmployeeActiveDirectoryInfo>>(
+            var result = await ExecuteGet<List<PotentialEmployeeActiveDirectoryInfo>>(
                 async () => await jamesClient.GetActiveDirectoryUsers.ExecuteAsync(usernameSearchText),
                 "ActiveDirectoryUsers");
             return result;
         }
 
-        public async Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials, string title, string email)
+        public async Task<ISaveDataResult> CreateEmployee(string username, string fullName, string initials,
+            string title, string email)
         {
             return await ExecuteSave(async () => await jamesClient.CreateEmployee.ExecuteAsync(
                 new CreateEmployeeInput
                 {
-                    Username = username, 
-                    FullName = fullName, 
-                    Initials = initials, 
-                    Title = title, 
+                    Username = username,
+                    FullName = fullName,
+                    Initials = initials,
+                    Title = title,
                     Email = email
                 }));
         }
@@ -790,8 +811,8 @@ namespace James.Data.Client
             return await ExecuteSave(async () => await jamesClient.SetEmployeeEmail.ExecuteAsync(
                 new SetEmployeeEmailInput
                 {
-                   EmployeeId = employeeId, 
-                   Email = email
+                    EmployeeId = employeeId,
+                    Email = email
                 }));
         }
 
@@ -816,6 +837,11 @@ namespace James.Data.Client
                     }));
         }
 
+        public async Task<IDataAccessResult<int>> NextBondBlockInitialNumber(string prefix)
+        {
+            return await ExecuteGet<int>(async () => await jamesClient.NextBondBlockInitialNumber.ExecuteAsync(prefix));
+        }
+        
         public async Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, string accountNum,
             DateTime watchDate,
             string watchStatus, string reason, string actionPlan)
@@ -1210,8 +1236,7 @@ namespace James.Data.Client
         }
 
         public async Task<ISaveDataResult> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId,
-            string? taxId, string? npn, bool w9,
-            bool need1099, bool nasbp, string branchKey)
+            string? taxId, string? npn, bool w9, bool need1099, bool nasbp, string branchKey)
         {
             var saveResult = await jamesClient.SetAgencyGeneralInfo.ExecuteAsync(new SetAgencyGeneralInfoInput
             {
@@ -1264,9 +1289,9 @@ namespace James.Data.Client
                     IsActive = isActive
                 }), "SetAgencyLicense");
         }
-        
+
         #region User Settings
-        
+
         public async Task<IDataAccessResult<UserSetting?>> GetUserSetting(string key)
         {
             return await ExecuteGet<UserSetting?>(async () =>
@@ -1282,7 +1307,7 @@ namespace James.Data.Client
                 { Data = settingList.Data?.ToDictionary(), Errors = settingList.Errors };
         }
 
-        public async Task<ISaveDataResult> SetUserSetting(string key, string value)
+        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
         {
             return await ExecuteSave(async () =>
                 await jamesClient.SetUserSetting.ExecuteAsync(new()
@@ -1315,6 +1340,37 @@ namespace James.Data.Client
                     Key = key,
                     Value = value ?? ""
                 }), "SetDefaultUserSetting");
+        }
+
+        #endregion
+        
+        #region BondBlock
+
+        public async Task<ISaveDataResult> SetBondBlock(BondBlock block)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.SetBondBlock.ExecuteAsync(new()
+                {
+                    BondBlockId = block.Id,
+                    // ToDo: Add Insurer Id
+                    InsurerId = null,
+                    AgencyId = block.AgencyId,
+                    AgencyRestricted = block.AgencyRestricted,
+                    FirstNumber = block.FirstNumber,
+                    LastNumber = block.LastNumber,
+                    IssuedBy = block.IssuedBy,
+                    Comments = block.Comments,
+                    Enabled = block.Enabled
+                }), "SetBondBlock");
+        }
+        
+        public async Task<ISaveDataResult> DeleteBondBlock(Guid id)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.DeleteBondBlock.ExecuteAsync(new()
+                {
+                    BondBlockId = id
+                }), "DeleteBondBlock");
         }
 
         #endregion

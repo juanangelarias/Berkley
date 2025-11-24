@@ -1,19 +1,15 @@
 ﻿@using Blazorise
-@using Newtonsoft.Json
+@using SharedBusinessLogic
 @using JustifyContent = Radzen.JustifyContent
 @using Orientation = Radzen.Orientation
-@using ImagingDocumentCategory = James.Shared.Imaging.ImagingDocumentCategory
-@using SharedBusinessLogic
 
-@inherits JamesLayoutComponentBase
+@inherits JamesGridLayoutComponentBase<AgencyLicense>
 
-@inject NavigationManager NavigationManager
-@inject IDataAccess DataAccess
 @inject TooltipService TooltipService
 
 <Theme/>
 
-<RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@AgencyLicenses" ColumnWidth="125px"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@Licenses" ColumnWidth="125px"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" @bind-Settings="@GridSettings" AllowColumnReorder="true"
                 GridLines="DataGridGridLines.Vertical" AllowSorting="true" Density="Density.Compact"
                 SelectionMode="DataGridSelectionMode.Multiple" AllowFiltering="true" FilterMode="FilterMode.Advanced"
@@ -25,7 +21,6 @@
             <AuthorizeView Policy="InRoleCanAddAgencyLicense">
                 <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow"/>
             </AuthorizeView>
-            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="_defaultExportFormat"/>
             <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End"
                          Style="margin-left: 10rem">
                 <AuthorizeView Policy="InRoleAgencyLicenseWorkInBulkMode">
@@ -46,10 +41,10 @@
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
                     <RadzenButton Icon="settings" Click="SaveGridSettings"
                                   MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
-                                  Visible="@_userSettingsChanged"/>
+                                  Visible="@UserSettingsChanged"/>
                     <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
                                   MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
-                                  Visible="@_userSettingsLoaded"/>
+                                  Visible="@UserSettingsLoaded"/>
                 </RadzenStack>
             </RadzenStack>
         </RadzenStack>
@@ -128,7 +123,7 @@
         <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" MinWidth="10px"
                               Width="170px" FormatString="{0:d}">
             <Template Context="license">
-                <RadzenText Text="@license.Appointment.ToString()"/>
+                <RadzenText Text="@(license.Appointment == null ? "" :license.Appointment.Value.ToString("MM/dd/yyyy"))"/>
             </Template>
             <EditTemplate Context="license">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Appointment"/>
@@ -142,19 +137,6 @@
             <EditTemplate Context="license">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Termination"/>
             </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Certificate" MinWidth="10px" TextAlign="TextAlign.Center" Filterable="false"
-                              Width="175px">
-            <Template Context="lic">
-                @*ToDo: Add Security in InlineImagingDocument to only allow uploading/viewing of documents that the user has access to*@
-                <InlineImagingDocument DocumentShortName="License Certificate"
-                                       DocumentCategory="ImagingDocumentCategory.Agency"
-                                       DocumentId="@lic.ImagingId"
-                                       DocumentType="AGALIC"
-                                       ImagingId="@lic.Agency.AgencyNumber"
-                                       UploadAction=@(async void (guid) => await CertificateUploaded(guid, lic.Id))
-                                       UploadErrorAction=@(msg => LogUploadError(msg, lic))/>
-            </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" MinWidth="75px" TItem="AgencyLicense" Filterable="false" Sortable="false"
                               TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right"
@@ -218,32 +200,12 @@
 
 @code {
     [Parameter, EditorRequired] public required Agency Agency { get; set; }
+    [Parameter, EditorRequired] public Agent Agent { get; set; }
 
     private RadzenDataGrid<AgencyLicense> LicenseGrid { get; set; } = null!;
 
-    #region Grid User Settings
-
-    private DataGridSettings? _dataGridSettings;
-    private DataGridSettings? GridSettings
-    {
-        get => _dataGridSettings;
-        set
-        {
-            if (_dataGridSettings == value)
-                return;
-
-            _dataGridSettings = value;
-            _userSettingsChanged = true;
-        }
-    }
-
-    private bool _userSettingsLoaded;
-    private bool _userSettingsChanged;
-
-    #endregion
-    
     private ExportFormat _defaultExportFormat;
-    private List<AgencyLicense> AgencyLicenses { get; set; } = [];
+    private List<AgencyLicense> Licenses { get; set; } = [];
     private List<AgencyLicense> _agencyLicensesBeforeBulkEdit = [];
     private List<AgencyLicense> _toInsert = [];
     private static List<Insurer> AllInsurers { get; set; } = [];
@@ -251,7 +213,7 @@
 
     private readonly DataGridEditMode _editMode = DataGridEditMode.Multiple;
     private bool _bulkMode;
-    private string LicensesKey => CacheKeys.AgencyLicenses(Agency.Id.ToString());
+    private string LicensesKey => CacheKeys.AgencyAgentLicenses(Agency.Id.ToString(), Agent.Id.ToString());
 
     #region Loaders
 
@@ -262,13 +224,16 @@
     private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem<List<AgencyLicense>>
     {
         Key = LicensesKey,
-        AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyLicenses(Agency.Id),
+        AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyAgentLicenses(Agency.Id, Agent.Id),
         CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
         {
             Data = (List<AgencyLicense>)cache!
         },
         ResultVariable = () => _licenses,
-        AfterLoad = () => { AgencyLicenses = _licenses.Data!; }
+        AfterLoad = () =>
+        {
+            Licenses = _licenses.Data!;
+        }
     }, "agency licenses");
 
     #endregion
@@ -279,7 +244,7 @@
 
     private LoadItem StatesLoad => AddEventNotify(new LoadItem<List<State>>
     {
-        Key = "States",
+        Key = CacheKeys.States,
         AsyncLoadTask = async () => _states = await DataAccess.GetAllStates(),
         CacheLoadTask = cache => _states = new DataAccessResult<List<State>>
         {
@@ -301,7 +266,7 @@
 
     private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
-        Key = "Insurers",
+        Key = CacheKeys.Insurers,
         AsyncLoadTask = async () => _insurers = await DataAccess.GetAllInsurers(),
         CacheLoadTask = cache => _insurers = new DataAccessResult<List<Insurer>>
         {
@@ -326,7 +291,7 @@
         await GetGridSettings();
         await LoadData();
     }
-
+    
     private async Task LoadData()
     {
         if (Agency.Id == Guid.Empty)
@@ -399,11 +364,11 @@
 
         if (result.Success)
         {
-            var toDelete = AgencyLicenses.FirstOrDefault(f => f.Id == license.Id);
+            var toDelete = Licenses.FirstOrDefault(f => f.Id == license.Id);
             if (toDelete != null)
             {
-                AgencyLicenses.Remove(toDelete);
-                DataAccess.UpdateCache(LicensesKey, AgencyLicenses);
+                Licenses.Remove(toDelete);
+                DataAccess.UpdateCache(LicensesKey, Licenses);
             }
 
             await LicenseGrid.Reload();
@@ -463,7 +428,7 @@
         var result = await DataAccess.CreateLicense(
             license.Id,
             Agency.Id,
-            null,
+            Agent.Id,
             license.AppointingState,
             license.Comments,
             license.Appointment,
@@ -481,9 +446,9 @@
         else
         {
             license.InsurerId = license.Insurer.Id;
-            AgencyLicenses.Add(license);
+            Licenses.Add(license);
 
-            DataAccess.UpdateCache(LicensesKey, AgencyLicenses);
+            DataAccess.UpdateCache(LicensesKey, Licenses);
         }
     }
 
@@ -522,61 +487,14 @@
         if (!result.Success)
             await HandleError("Error Setting Agency License", result.Errors);
         else
-            DataAccess.UpdateCache(LicensesKey, AgencyLicenses);
-    }
-
-    private async Task CertificateUploaded(Guid? certificateId, Guid licenseId)
-    {
-        //Set the document link
-        var saveResult = await DataAccess.SetAgencyLicenseDocumentLink(licenseId, certificateId);
-        if (saveResult.Success)
-            NotifySuccessfulSave("License certificate");
-        else
-            NotifySaveError(saveResult.Errors, "license certificate");
-    }
-
-    private void LogUploadError(string message, AgencyLicense license)
-    {
-        LoggingService.LogError("Upload failed",
-            "Uploading a file to imaging returned an error",
-            "Imaging",
-            data: new Dictionary<string, string>
-            {
-                { "Error Message", message },
-                { "AgencyNumber", license.Agency.AgencyNumber },
-                { "License Id", license.Id.ToString() }
-            });
-        NotifySaveError([message], "license certificate");
-    }
-
-    private async Task ExportGrid(ExportFormat format)
-    {
-        if (format != _defaultExportFormat)
-        {
-            _defaultExportFormat = format;
-            await SaveGridSettings();
-        }
-
-        var substitutions = new ExportColumnSubstitutions();
-        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Insurer");
-        substitutions.AddSubstitution("IsActive", "IsActive", "Is_Active");
-        substitutions.AddSubstitution("IsResident", "IsResident", "Is_Resident");
-        substitutions.AddSubstitution("AppointingState", "AppointingState", "Appointing_State");
-        substitutions.AddSubstitution("State", "State", "State");
-        substitutions.AddSubstitution("LicenseNumber", "LicenseNumber", "License_Number");
-        substitutions.AddSubstitution("Appointment", "Appointment", "Appointment");
-        substitutions.AddSubstitution("Termination", "Termination", "Termination");
-
-        NavigationManager.NavigateTo(ExportDataGridUrl(LicenseGrid,
-                $"/export/AgencyLicenses/{Agency.Id}", format, substitutions),
-            true);
+            DataAccess.UpdateCache(LicensesKey, Licenses);
     }
 
     private async Task SetBulkEdit()
     {
         await ShowLoading();
 
-        _agencyLicensesBeforeBulkEdit = AgencyLicenses
+        _agencyLicensesBeforeBulkEdit = Licenses
             .Select(s => new AgencyLicense
             {
                 Id = s.Id,
@@ -603,7 +521,7 @@
             .ToList();
 
         IsLoading = true;
-        await LicenseGrid.EditRows(AgencyLicenses);
+        await LicenseGrid.EditRows(Licenses);
         _bulkMode = true;
         IsLoading = false;
     }
@@ -614,9 +532,9 @@
 
         IsLoading = true;
 
-        LicenseGrid.CancelEditRows(AgencyLicenses);
+        LicenseGrid.CancelEditRows(Licenses);
 
-        AgencyLicenses = _agencyLicensesBeforeBulkEdit
+        Licenses = _agencyLicensesBeforeBulkEdit
             .Select(s => new AgencyLicense
             {
                 Id = s.Id,
@@ -651,17 +569,8 @@
 
     private async Task SaveBulkChanges()
     {
-        var options = new DialogOptions
-        {
-            Height = "200px",
-            Width = "400px",
-            Resizable = false,
-            CloseDialogOnEsc = true,
-            ShowClose = false,
-            Draggable = true
-        };
-
-        var response = await DialogService.Confirm("Are you sure ou want to save these changes?", "Bulk Edit Confirmation");
+        var response = await DialogService.Confirm("Are you sure ou want to save these changes?", 
+            "Bulk Edit Confirmation");
 
         if (response is null or false)
             return;
@@ -697,10 +606,10 @@
 
         await Task.WhenAll(tasks);
 
-        AgencyLicenses.AddRange(_toInsert);
+        Licenses.AddRange(_toInsert);
         _toInsert = [];
 
-        LicenseGrid.CancelEditRows(AgencyLicenses);
+        LicenseGrid.CancelEditRows(Licenses);
         _agencyLicensesBeforeBulkEdit = [];
         _bulkMode = false;
         IsLoading = false;
@@ -801,72 +710,6 @@
 
         return false;
     }
-
-    #region Grid User Settings
-
-    private async Task SaveGridSettings()
-    {
-        await ShowLoading();
-        
-        var userGridSettings = new GridSettings
-        {
-            DefaultExportFormat = _defaultExportFormat,
-            Settings = GridSettings
-        };
-
-        var value = JsonConvert.SerializeObject(userGridSettings);
-        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyLicenseGrid, value);
-
-        if (!response.Success)
-        {
-            NotifySaveError(response.Errors, "user settings");
-            return;
-        }
-
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-        StateHasChanged();
-    }
-
-    private async Task GetGridSettings()
-    {
-        await ShowLoading();
-        
-        var response = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyLicenseGrid);
-        if (!response.Success || response is { Success: true, Data: null })
-        {
-            if (!response.Success)
-                NotifyLoadError(response.Errors, "user settings");
-
-            _userSettingsLoaded = false;
-            return;
-        }
-
-        var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(response.Data!.Value);
-
-        if (userGridSettings == null)
-            return;
-
-        _defaultExportFormat = userGridSettings.DefaultExportFormat;
-        GridSettings = userGridSettings.Settings;
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-    }
-
-    private async Task ResetGridSettings()
-    {
-        await ShowLoading();
-        
-        GridSettings = null;
-        _defaultExportFormat = ExportFormat.Excel;
-        await LicenseGrid.ReloadSettings();
-
-        await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyLicenseGrid);
-        _userSettingsLoaded = false;
-        _userSettingsChanged = false;
-    }
-
-    #endregion
 
     private void ShowTooltip(ElementReference element, string type)
     {

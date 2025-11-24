@@ -164,6 +164,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAgencyAgents(agencyId, contextFactory));
         }
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyAgentLicenses(agencyId, agentId, contextFactory));
+        }
 
         public async Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses()
         {
@@ -645,6 +649,14 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetBondNumber(bondRequestNumber, contextFactory));
         }
+        public async Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start, DateTime end, string filter)
+        {
+            return await ExecuteGet(async () => await query.GetBondBlocksByAgency(agencyId, start, end, filter, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<Bond>>> GetBondsByBlock(Guid bondBlockId)
+        {
+            return await ExecuteGet(async () => await query.GetBondsByBlock(bondBlockId, contextFactory));
+        }
 
         public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
         {
@@ -922,6 +934,27 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
         {
             return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory));
+        }
+
+        #endregion
+        
+        #region BondBlock
+
+        public async Task<ISaveDataResult> SetBondBlock(BondBlock block)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetBondBlock(block.Id, null, block.Prefix,
+                block.FirstNumber, block.LastNumber, block.AgencyRestricted, block.IssuedBy, block.Comments, 
+                block.AgencyId, block.Enabled, contextFactory));
+        }
+        
+        public async Task<ISaveDataResult> DeleteBondBlock(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteBondBlock(id, contextFactory));
+        }
+
+        public Task<IDataAccessResult<int>> NextBondBlockInitialNumber(string prefix)
+        {
+            return ExecuteGet(async () => await query.GetNextBondBlockInitialNumber(prefix, contextFactory));
         }
 
         #endregion

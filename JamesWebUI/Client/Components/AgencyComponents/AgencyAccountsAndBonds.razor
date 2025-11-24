@@ -4,7 +4,7 @@
 
 <Theme />
 
-<RadzenTabs Change="@HandleChangeDirection" TabPosition="TabPosition.Left" >
+<RadzenTabs Change="@HandleChangeDirection" TabPosition="TabPosition.Top" >
     <Tabs>
         <RadzenTabsItem Text="Accounts">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
@@ -14,6 +14,11 @@
         <RadzenTabsItem Text="Bonds">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
                 <AgencyBondsGrid AgencyId="@Agency.Id" />
+            </Animate>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Bond Record History">
+            <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
+                <AgencyBondRecordHistory AgencyId="@Agency.Id"/>
             </Animate>
         </RadzenTabsItem>
     </Tabs>

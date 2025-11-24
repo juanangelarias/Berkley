@@ -1,0 +1,389 @@
+﻿@inherits JamesGridLayoutComponentBase<BondBlock>
+
+@inject TooltipService TooltipService
+
+<RadzenTemplateForm TItem="Filter" Data="_filter" Submit="OnSearch" @ref="@_form">
+    <RadzenCard Variant="Variant.Filled" Style="border-radius: 20px;">
+        <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenColumn Size="2">
+                <JamesFormField Text="Begin Date:" Variant="Variant.Outlined">
+                    <RadzenDatePicker @bind-Value="@_filter.StartDate" DateFormat="MM-dd-yyyy"/>
+                    <RadzenCustomValidator Text="Start date must be before end date"
+                                           Validator="() => _filter.StartDate <= _filter.EndDate"/>
+                </JamesFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="2">
+                <JamesFormField Text="End Date:" Variant="Variant.Outlined">
+                    <RadzenDatePicker @bind-Value="@_filter.EndDate" DateFormat="MM-dd-yyyy"/>
+                    <RadzenCustomValidator Text="End date must be after start date"
+                                           Validator="() => _filter.StartDate <= _filter.EndDate"/>
+                </JamesFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="4">
+                <JamesFormField Text="Search:" Variant="Variant.Outlined">
+                    <RadzenTextBox @bind-Value="@_filter.Search" Placeholder="Bond No., Principal, Obligee"/>
+                </JamesFormField>
+            </RadzenColumn>
+            <RadzenColumn Size="2">
+                <RadzenButton Text="Search" Icon="search" ButtonType="ButtonType.Submit"/>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenCard>
+</RadzenTemplateForm>
+
+<RadzenRow class="mt-4">
+    <RadzenDataGrid TItem="BondBlock" Data="@_blocks" Style="height: 400px; border-radius: 10px;" @ref="@Grid"
+                    AllowSorting="true"
+                    EmptyText="No records to display" @bind-Settings="@GridSettings" AllowColumnReorder="true"
+                    GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single"
+                    AllowRowSelectOnRowClick="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    EditMode="DataGridEditMode.Single" AllowColumnResize="true" AllowFiltering="true"
+                    FilterMode="FilterMode.Advanced" Sort="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading"
+                    IsLoading="@IsLoading" RowUpdate="@OnBondBlockUpdate" RowCreate="@OnBondBlockCreate">
+        <HeaderTemplate>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+                <AuthorizeView Policy="InRoleCanAddBondBlock">
+                    <RadzenButton Text="Issue new Bond numbers" Icon="add" ButtonStyle="ButtonStyle.Primary"
+                                  Click="@CreateRecord"/>
+                </AuthorizeView>
+                <RadzenButton Icon="settings" Click="SaveGridSettings" Style="margin-left: 50px;"
+                              MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                              Visible="@UserSettingsChanged"/>
+                <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                              Visible="@UserSettingsLoaded"/>
+            </RadzenStack>
+        </HeaderTemplate>
+        <Template Context="block">
+            <AgencyBondsInBlock BondBlockId="@block.Id"/>
+        </Template>
+        <Columns>
+            <RadzenDataGridColumn Title="Issue Date" Property="Created" FormatString="{0:MM/dd/yyyy}" Width="100px"/>
+            <RadzenDataGridColumn Title="Insurer Name" Width="250px">
+                <Template>
+                    <RadzenText Text=""/>
+                </Template>
+                @*<EditTemplate>
+                    <RadzenDropDown TValue="Guid" Data="_insurers" @bind-Value="@_selectedBondBlock!.IssuedBy"
+                                    ValueProperty="@nameof(Insurer.Id)"
+                                    TextProperty="@nameof(Insurer.IdNavigation.FullName)"
+                                    AllowFiltering="true"/>
+                </EditTemplate>*@
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Agency Restricted" Property="AgencyRestricted" Width="150px" 
+                                  TextAlign="TextAlign.Center">
+                <Template Context="block">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+                        <RadzenCheckBox Value="@block.AgencyRestricted" Disabled="true"
+                                        Style="color: black; text-align: left;"/>
+                    </RadzenStack>
+                </Template>
+                <EditTemplate Context="block">
+                    <RadzenCheckBox TValue="bool" @bind-Value="@block.AgencyRestricted" Style="text-align: left;"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Prefix" Property="Prefix" Width="100px">
+                <Template Context="block">
+                    <RadzenText Text="@block.Prefix"/>
+                </Template>
+                <EditTemplate Context="block">
+                    <RadzenTextBox @bind-Value="@block.Prefix" Change="@(() => FindNextSegment(block))"
+                                   Style="width: 100px;"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="From No." Width="120px" TextAlign="TextAlign.Right">
+                <Template Context="block">
+                    <RadzenText Text="@block.FirstNumber.ToString("000000000")" Style="text-align: right;"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="To No." Width="120px" TextAlign="TextAlign.Right">
+                <Template Context="block">
+                    <RadzenText Text="@block.LastNumber.ToString("000000000")" Style="text-align: right;"/>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Title="Comments" Property="Comments" Width="200px">
+                <Template Context="block">
+                    <RadzenText Text="@block.Comments"/>
+                </Template>
+                <EditTemplate Context="block">
+                    <RadzenTextBox @bind-Value="block.Comments"></RadzenTextBox>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Width="75px" MinWidth="75px" TItem="BondBlock" Filterable="false" Sortable="false"
+                                  TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right"
+                                  Resizable="false">
+                <Template Context="block">
+                    <AuthorizeView Policy="InRoleCanEditBondBlock">
+                        <RadzenButton Icon="edit"
+                                      ButtonStyle="ButtonStyle.Light"
+                                      Variant="Variant.Flat"
+                                      Size="ButtonSize.Small"
+                                      Click="@(_ => UpdateRecord(block))"
+                                      @onclick:stopPropagation="true"/>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="InRoleCanDeleteBondBlock">
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                      Icon="delete"
+                                      Variant="Variant.Flat"
+                                      Shade="Shade.Lighter"
+                                      Size="ButtonSize.Small"
+                                      class="my-1 ms-1"
+                                      Click="@(_ => DeleteRecord(block))"
+                                      @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </AuthorizeView>
+                </Template>
+                <EditTemplate Context="license">
+                    <RadzenButton Icon="check"
+                                  ButtonStyle="ButtonStyle.Success"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  Click="@(_ => SaveBondBlock(license))"/>
+                    <RadzenButton Icon="close"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => CancelBondBlockEdit(license))"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+
+</RadzenRow>
+
+@code {
+    [Parameter, EditorRequired] public required Guid AgencyId { get; set; }
+
+    private RadzenTemplateForm<Filter> _form = new();
+    private List<BondBlock> _blocks = [];
+    private BondBlock? _selectedBondBlock;
+    private List<Insurer> _insurers = [];
+    private readonly Filter _filter = new();
+
+    #region Loaders
+
+    #region BondBlocks Load
+
+    private IDataAccessResult<List<BondBlock>> _bondBlocksResult = null!;
+
+    private LoadItem BondBlocksLoad => AddEventNotify(new LoadItem
+    {
+        Key = CacheKeys.BondBlocks,
+        AsyncLoadTask = async () => _bondBlocksResult = await DataAccess.GetBondBlocksByAgency(AgencyId, _filter.StartDate, _filter.EndDate, _filter.Search),
+        CacheLoadTask = cache => _bondBlocksResult = new DataAccessResult<List<BondBlock>>
+        {
+            Data = (List<BondBlock>)cache!
+        },
+        ResultVariable = () => _bondBlocksResult,
+        AfterLoad = () => { _blocks = _bondBlocksResult.Data!; }
+    }, "bond blocks");
+
+    #endregion
+
+    #region Insures Load
+
+    private IDataAccessResult<List<Insurer>> _insuresResult = null!;
+
+    private LoadItem InsuresLoad => AddEventNotify(new LoadItem
+    {
+        Key = CacheKeys.Insurers,
+        AsyncLoadTask = async () => _insuresResult = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insuresResult = new DataAccessResult<List<Insurer>>
+        {
+            Data = (List<Insurer>)cache!
+        },
+        ResultVariable = () => _insuresResult,
+        AfterLoad = () => { }
+    }, "insures");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        _filter.StartDate = DateTime.Today.AddYears(-1);
+        _filter.EndDate = DateTime.Today.AddDays(1).AddMilliseconds(-1);
+
+        await DataAccess.GetCacheOrLoadDataAsync(InsuresLoad);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadBlocks();
+    }
+
+    private async Task LoadBlocks()
+    {
+        if (AgencyId == Guid.Empty)
+            return;
+
+        await DataAccess.GetCacheOrLoadDataAsync(BondBlocksLoad);
+    }
+
+    private async Task OnSearch()
+    {
+        if (!_form.IsValid)
+            return;
+
+        DataAccess.Clear(CacheKeys.BondBlocks);
+        await LoadBlocks();
+        await Grid.Reload();
+    }
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
+    }
+
+    private async Task UpdateRecord(BondBlock bondBlock)
+    {
+        await ShowLoading();
+        await Grid.EditRow(bondBlock);
+    }
+
+    private async Task DeleteRecord(BondBlock bondBlock)
+    {
+        await DataAccess.DeleteBondBlock(bondBlock.Id);
+        _blocks.Remove(bondBlock);
+    }
+
+    private async Task CreateRecord()
+    {
+        // ToDo: This table should be pointing to Employee instead of UserProfile
+        //       Once this is fixed IssueBy should be filled with the Employee Id
+        //       of the user that is creating the new record.
+        var newBondBlock = new BondBlock
+        {
+            Id = Guid.NewGuid(),
+            Created = DateTime.Now,
+            Modified = DateTime.Now,
+            Prefix = string.Empty,
+            FirstNumber = 0,
+            LastNumber = 0,
+            Enabled = true,
+            AgencyRestricted = false,
+            IssuedBy = null,
+            Comments = null,
+            AgencyId = AgencyId
+        };
+
+        await ShowLoading();
+        await Grid.InsertRow(newBondBlock);
+    }
+
+    private async Task OnBondBlockCreate(BondBlock block)
+    {
+        await ShowLoading();
+        await DataAccess.SetBondBlock(block);
+    }
+
+    private async Task OnBondBlockUpdate(BondBlock block)
+    {
+        await ShowLoading();
+        await DataAccess.SetBondBlock(block);
+    }
+
+    private async Task SaveBondBlock(BondBlock block)
+    {
+        if (!ValidateBondBlock(block))
+            return;
+        
+        await Grid.UpdateRow(block);
+    }
+
+    private async Task CancelBondBlockEdit(BondBlock block)
+    {
+        await ShowLoading();
+        Grid.CancelEditRow(block);
+    }
+
+    private bool ValidateBondBlock(BondBlock block)
+    {
+        var flag = true;
+        if (block.FirstNumber == 0 || block.LastNumber == 0)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "The first number nor the last number can be zero.",
+                Duration = 2000
+            });
+            flag = false;
+        }
+        
+        if (block.LastNumber < block.FirstNumber)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "The first number cannot be greater than the last number.",
+                Duration = 2000
+            });
+            flag = false;
+        }
+
+        var samePrefix = _blocks
+            .Where(r => r.Id != block.Id &&
+                        r.Prefix.ToLower() == block.Prefix.ToLower())
+            .ToList();
+
+        for (var i = block.FirstNumber; i <= block.LastNumber; i++)
+        {
+            if (!samePrefix.Any(a => i >= a.FirstNumber && i <= a.LastNumber)) 
+                continue;
+            
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "At least one bond number already exists in the selected prefix range.",
+                Duration = 2000
+            });
+            
+            flag = false;
+            break;
+        }
+
+        return flag;
+    }
+
+    private async Task FindNextSegment(BondBlock block)
+    {
+        block.Prefix = block.Prefix.ToUpper();
+        var result = await DataAccess.NextBondBlockInitialNumber(block.Prefix);
+        if (!result.Success)
+        {
+            NotifyLoadError(result.Errors, "next bond block number");
+            return;
+        }
+
+            block.FirstNumber = result.Data;
+            block.LastNumber = result.Data + 24;
+    }
+
+    //
+
+    class Filter
+    {
+        public DateTime StartDate { get; set; } = new(DateTime.Today.Year, 1, 1);
+        public DateTime EndDate { get; set; } = new(DateTime.Today.Year, 12, 31);
+        public string Search { get; set; } = string.Empty;
+    }
+
+}

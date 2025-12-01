@@ -32,8 +32,7 @@
 </RadzenTemplateForm>
 
 <RadzenRow class="mt-4">
-    <RadzenDataGrid TItem="BondBlock" Data="@_blocks" Style="height: 400px; border-radius: 10px;" @ref="@Grid"
-                    AllowSorting="true"
+    <RadzenDataGrid TItem="BondBlock" Data="@_blocks" Style="height: 400px; border-radius: 10px;" @ref="@Grid" AllowSorting="true"
                     EmptyText="No records to display" @bind-Settings="@GridSettings" AllowColumnReorder="true"
                     GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single"
                     AllowRowSelectOnRowClick="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
@@ -204,6 +203,8 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        
+        UserSettingsKey = "AgencyBondRecordHistory";
         
         _filter.StartDate = DateTime.Today.AddYears(-1);
         _filter.EndDate = DateTime.Today.AddDays(1).AddMilliseconds(-1);

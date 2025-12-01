@@ -5,11 +5,11 @@
 
 <Theme/>
 
-<RadzenDataGrid @ref="Grid" Data="RelatedParties" TItem="AgencyLocationsDto"
-                GridLines="DataGridGridLines.Vertical" @bind-Settings="@GridSettings" AllowColumnReorder="true"
-                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed" 
-                Density="Density.Compact" Style="@_style" IsLoading="@IsLoading" FilterMode="FilterMode.Advanced" 
-                AllowColumnResize="true" CellRender="RenderGridCell" AllowFiltering="true">
+<RadzenDataGrid @ref="Grid" Data="RelatedParties" TItem="AgencyLocationsDto" GridLines="DataGridGridLines.Vertical" 
+                @bind-Settings="@GridSettings" AllowColumnReorder="true" AllowSorting="true" AllowGrouping="@NotResumed" 
+                AllowColumnPicking="@NotResumed" Density="Density.Compact" Style="@_style" IsLoading="@IsLoading" 
+                FilterMode="FilterMode.Advanced" AllowColumnResize="true" CellRender="RenderGridCell" 
+                AllowFiltering="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Visible="@NotResumed"
                      Gap="2rem">
@@ -118,6 +118,8 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        
+        UserSettingsKey = "AgencyLocationsGrid";
 
         _style = NotResumed
             ? "height: 400px; border-radius: 10px;"

@@ -146,6 +146,8 @@
     {
         await base.OnParametersSetAsync();
 
+        UserSettingsKey = "AgencyBondsGrid";
+        
         await ShowLoading();
         
         await GetGridSettings();

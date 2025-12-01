@@ -216,6 +216,9 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        
+        UserSettingsKey = "AgencyInventoryGrid";
+        
         await ShowLoading();
         await GetGridSettings(); 
         await LoadData();

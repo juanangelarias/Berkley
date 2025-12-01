@@ -523,9 +523,9 @@ type Query {
   agencyAgents(agencyId: UUID!): [Agent!]!
   agencyAgentLicenses(agencyId: UUID! agentId: UUID!): [AgencyLicense!]!
   allActiveAgencies: [AgencyDto!]!
-  agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
+  agencyLicenses(agencyId: UUID! producers: Boolean!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
-  agencyPOAs(agencyId: UUID!): [PowerOfAttorney!]!
+  agencyPOAs(agencyId: UUID! activeOnly: Boolean!): [PowerOfAttorney!]!
   poaDocumentNames: [PowerOfAttorneyDocumentNameDm!]!
   allPoaStatuses: [PowerOfAttorneyStatusDm!]!
   agencyRelatedParties(agencyId: UUID!): [AgencyLocationsDto!]!
@@ -1997,6 +1997,7 @@ type SetAgencyInventoryPayload {
 input AgencyLicenseBulkInput {
   id: UUID!
   agencyId: UUID!
+  agentId: UUID
   state: String!
   licenseNumber: String
   isResident: Boolean!

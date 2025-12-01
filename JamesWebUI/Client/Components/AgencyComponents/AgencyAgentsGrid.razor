@@ -89,14 +89,6 @@
         AfterLoad = void () =>
         {
             Agents = _agentsResult.Data!;
-
-            foreach (var agent in Agents)
-            {
-                foreach (var lic in agent.AgencyLicenses)
-                {
-                    Console.WriteLine($"Agent: {agent.IdNavigation.FullName} - License: {lic.LicenseNumber} - {lic.Appointment}");
-                }
-            }
         }
     }, "agency contacts");
 
@@ -105,7 +97,9 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
+        
+        UserSettingsKey = "AgencyAgentsGrid";
+        
         await GetGridSettings();
         IsLoading = false;
     }

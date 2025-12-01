@@ -2,10 +2,9 @@
 
 @inherits JamesGridLayoutComponentBase<Bond>
 
-<RadzenDataGrid TItem="Bond" Data="@_bonds" Style="height: 400px; border-radius: 10px;"
-                EmptyText="No records to display" @bind-Settings="@GridSettings" AllowColumnReorder="true"
-                GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single"
-                AllowRowSelectOnRowClick="true" AllowSorting="true" AllowFiltering="true" 
+<RadzenDataGrid TItem="Bond" Data="@_bonds" Style="height: 400px; border-radius: 10px;" EmptyText="No records to display" @bind-Settings="@GridSettings" 
+                AllowColumnReorder="true" GridLines="DataGridGridLines.Vertical" AllowFiltering="true" @ref="Grid"
+                SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true" AllowSorting="true" 
                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowColumnResize="true" 
                 FilterMode="FilterMode.Advanced" IsLoading="@IsLoading">
     <HeaderTemplate>
@@ -77,13 +76,14 @@
     {
         await base.OnParametersSetAsync();
 
+        UserSettingsKey = "AgencyBondsInBlock";
+
+        await ShowLoading();
         await LoadBonds();
     }
 
     private async Task LoadBonds()
     {
-        Console.WriteLine($"Loading Bonds for Block Id: {BondBlockId}");
-        
         if(BondBlockId == Guid.Empty)
             return;
         

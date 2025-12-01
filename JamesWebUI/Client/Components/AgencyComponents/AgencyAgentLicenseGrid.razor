@@ -9,7 +9,7 @@
 
 <Theme/>
 
-<RadzenDataGrid TItem="AgencyLicense" @ref="@LicenseGrid" Data="@Licenses" ColumnWidth="125px"
+<RadzenDataGrid TItem="AgencyLicense" @ref="@Grid" Data="@Licenses" ColumnWidth="125px"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" @bind-Settings="@GridSettings" AllowColumnReorder="true"
                 GridLines="DataGridGridLines.Vertical" AllowSorting="true" Density="Density.Compact"
                 SelectionMode="DataGridSelectionMode.Multiple" AllowFiltering="true" FilterMode="FilterMode.Advanced"
@@ -202,9 +202,6 @@
     [Parameter, EditorRequired] public required Agency Agency { get; set; }
     [Parameter, EditorRequired] public Agent Agent { get; set; }
 
-    private RadzenDataGrid<AgencyLicense> LicenseGrid { get; set; } = null!;
-
-    private ExportFormat _defaultExportFormat;
     private List<AgencyLicense> Licenses { get; set; } = [];
     private List<AgencyLicense> _agencyLicensesBeforeBulkEdit = [];
     private List<AgencyLicense> _toInsert = [];
@@ -288,6 +285,8 @@
     {
         await base.OnParametersSetAsync();
 
+        UserSettingsKey = "AgencyAgentGrid";
+        
         await GetGridSettings();
         await LoadData();
     }
@@ -341,13 +340,13 @@
             _toInsert.Add(newLicense);
         }
 
-        await LicenseGrid.InsertRow(newLicense);
+        await Grid.InsertRow(newLicense);
     }
 
     private async Task EditLicenseRow(AgencyLicense license)
     {
         await ShowLoading();
-        await LicenseGrid.EditRow(license);
+        await Grid.EditRow(license);
     }
 
     private async Task DeleteLicenseRow(AgencyLicense license)
@@ -371,7 +370,7 @@
                 DataAccess.UpdateCache(LicensesKey, Licenses);
             }
 
-            await LicenseGrid.Reload();
+            await Grid.Reload();
 
             await LoadLicenses();
         }
@@ -387,7 +386,7 @@
         if (!ValidateLicenseFields(license))
             return;
 
-        var task = LicenseGrid.UpdateRow(license);
+        var task = Grid.UpdateRow(license);
         await ShowLoading(task);
     }
 
@@ -455,7 +454,7 @@
     private async Task CancelLicenseEdit(AgencyLicense license)
     {
         await ShowLoading();
-        LicenseGrid.CancelEditRow(license);
+        Grid.CancelEditRow(license);
     }
 
     private async Task CancelLicenseEditBulkMode(AgencyLicense license)
@@ -463,7 +462,7 @@
         _toInsert.Remove(license);
 
         await ShowLoading();
-        LicenseGrid.CancelEditRow(license);
+        Grid.CancelEditRow(license);
     }
 
     private async Task UpdateLicenseRow(AgencyLicense license)
@@ -521,7 +520,7 @@
             .ToList();
 
         IsLoading = true;
-        await LicenseGrid.EditRows(Licenses);
+        await Grid.EditRows(Licenses);
         _bulkMode = true;
         IsLoading = false;
     }
@@ -532,7 +531,7 @@
 
         IsLoading = true;
 
-        LicenseGrid.CancelEditRows(Licenses);
+        Grid.CancelEditRows(Licenses);
 
         Licenses = _agencyLicensesBeforeBulkEdit
             .Select(s => new AgencyLicense
@@ -562,7 +561,7 @@
 
         _agencyLicensesBeforeBulkEdit = [];
 
-        await LicenseGrid.Reload();
+        await Grid.Reload();
         _bulkMode = false;
         IsLoading = false;
     }
@@ -580,7 +579,7 @@
         IsLoading = true;
 
         var toInsert = _toInsert;
-        var toUpdate = (from edited in LicenseGrid.Data
+        var toUpdate = (from edited in Grid.Data
                 let original = _agencyLicensesBeforeBulkEdit.FirstOrDefault(f => f.Id == edited.Id)
                 where !AreLicensesEqual(original, edited)
                 select edited)
@@ -609,7 +608,7 @@
         Licenses.AddRange(_toInsert);
         _toInsert = [];
 
-        LicenseGrid.CancelEditRows(Licenses);
+        Grid.CancelEditRows(Licenses);
         _agencyLicensesBeforeBulkEdit = [];
         _bulkMode = false;
         IsLoading = false;

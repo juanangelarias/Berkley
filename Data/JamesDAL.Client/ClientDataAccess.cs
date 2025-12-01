@@ -129,10 +129,10 @@ namespace James.Data.Client
             return result!;
         }
 
-        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool producers)
         {
             return await ExecuteGet<List<AgencyLicense>>(
-                async () => await jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId),
+                async () => await jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId, producers),
                 subProperty: "AgencyLicenses");
         }
 
@@ -375,11 +375,12 @@ namespace James.Data.Client
                 async () => await jamesClient.SearchAgencies.ExecuteAsync(search, activeOnly), "SearchAgencies");
         }
 
-        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
+        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly)
         {
-            return await ExecuteGet<List<PowerOfAttorney>>(
-                async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId),
-                "AgencyPOAs");
+            var result =  await ExecuteGet<List<PowerOfAttorney>>(
+                async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId, activeOnly), "AgencyPOAs");
+
+            return result;
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()

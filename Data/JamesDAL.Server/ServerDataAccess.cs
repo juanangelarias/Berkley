@@ -111,9 +111,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAgencyInventory(agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool producers)
         {
-            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, producers, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<Insurer>>> GetAllInsurers()
@@ -239,9 +239,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetEmailTypes(contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
+        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly)
         {
-            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, activeOnly, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()

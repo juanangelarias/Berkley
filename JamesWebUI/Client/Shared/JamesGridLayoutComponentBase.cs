@@ -34,8 +34,9 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
         }
     }
 
+    protected string UserSettingsKey { get; set; } = string.Empty;
     protected RadzenDataGrid<T> Grid { get; set; } = null!;
-
+    
     #endregion
 
     #region Loaders
@@ -46,9 +47,9 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
 
     private LoadItem UserSettingsLoad => AddEventNotify(new LoadItem<UserSetting>
     {
-        Key = "UserSettings",
+        Key = UserSettingsKey,
         AsyncLoadTask = async () =>
-            _userSettingsResult = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyAccountGrid),
+            _userSettingsResult = await DataAccess.GetUserSetting(UserSettingsKey),
         CacheLoadTask = cache => _userSettingsResult = new DataAccessResult<UserSetting?>
         {
             Data = (UserSetting?)cache!
@@ -69,7 +70,7 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
             UserSettingsLoaded = true;
             UserSettingsChanged = false;
         },
-        CacheDuration = new TimeSpan(0, 0, 0, 0, 500)
+        CacheDuration = new TimeSpan(0, 0, 0, 0, 0,1)
     }, "user settings");
 
     #endregion
@@ -87,7 +88,7 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
         };
 
         var value = JsonConvert.SerializeObject(userGridSettings);
-        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyBondGrid, value);
+        var response = await DataAccess.SetUserSetting(UserSettingsKey, value);
 
         if (!response.Success)
         {
@@ -105,7 +106,7 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
     protected async Task GetGridSettings()
     {
         await ShowLoading();
-
+        DataAccess.Clear(UserSettingsKey);
         await DataAccess.GetCacheOrLoadDataAsync(UserSettingsLoad);
     }
 

@@ -153,6 +153,8 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        
+        UserSettingsKey = "AgencyAccountsGrid";
 
         await GetGridSettings();
         await Task.Delay(100);

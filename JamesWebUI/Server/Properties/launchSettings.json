@@ -13,10 +13,8 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "https://localhost:7017/Agency/322?tabsAgencyProfile=tabAgents",
+      "launchUrl": "https://localhost:7017/Agency/322?tabsAgencyProfile=tabGenInfo",
       //"launchUrl": "account/67239",
-      //"launchUrl": "Agency/322?tabsAgencyProfile=tabAccountsBonds",
-      //"launchUrl": "Agency/322?tabsAgencyProfile=tabCommissionRates",
       //"launchUrl": "Admin/SecurityRoles",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

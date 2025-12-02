@@ -111,9 +111,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAgencyInventory(agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool producers)
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool agents)
         {
-            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, producers, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, agents, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<Insurer>>> GetAllInsurers()

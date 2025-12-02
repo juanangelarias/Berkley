@@ -247,8 +247,8 @@ query GetAgencyStatusLog($agencyNumber: String!){
   }
 } 
 
-query GetAgencyLicenses($agencyId: UUID!, $producers: Boolean!) {
-  agencyLicenses(agencyId: $agencyId, producers: $producers) {
+query GetAgencyLicenses($agencyId: UUID!, $agents: Boolean!) {
+  agencyLicenses(agencyId: $agencyId, agents: $agents) {
     id
     isActive
     state

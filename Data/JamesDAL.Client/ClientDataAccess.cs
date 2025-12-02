@@ -129,10 +129,10 @@ namespace James.Data.Client
             return result!;
         }
 
-        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool producers)
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool agents)
         {
             return await ExecuteGet<List<AgencyLicense>>(
-                async () => await jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId, producers),
+                async () => await jamesClient.GetAgencyLicenses.ExecuteAsync(agencyId, agents),
                 subProperty: "AgencyLicenses");
         }
 

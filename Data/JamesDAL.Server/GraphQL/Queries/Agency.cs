@@ -314,11 +314,11 @@ namespace James.Data.Server.GraphQL.Queries
         }
         
         [Authorize]
-        public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, bool producers,
+        public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, bool agents,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = producers
+            var result = agents
                 ? await ctx.AgencyLicenses
                     .Where(lic => lic.AgencyId == agencyId && lic.AgentId != null)
                     .Include(i => i.Agency)

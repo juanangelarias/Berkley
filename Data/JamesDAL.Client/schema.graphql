@@ -523,7 +523,7 @@ type Query {
   agencyAgents(agencyId: UUID!): [Agent!]!
   agencyAgentLicenses(agencyId: UUID! agentId: UUID!): [AgencyLicense!]!
   allActiveAgencies: [AgencyDto!]!
-  agencyLicenses(agencyId: UUID! producers: Boolean!): [AgencyLicense!]!
+  agencyLicenses(agencyId: UUID! agents: Boolean!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
   agencyPOAs(agencyId: UUID! activeOnly: Boolean!): [PowerOfAttorney!]!
   poaDocumentNames: [PowerOfAttorneyDocumentNameDm!]!

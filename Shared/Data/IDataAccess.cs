@@ -73,7 +73,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<ObligeeTypeDm>>> GetObligeeTypes();
         public Task<IDataAccessResult<List<Bond>>> GetObligeePrimaryBonds(Guid obligeeId);
         public Task<IDataAccessResult<List<Bond>>> GetObligeeSecondaryBonds(Guid obligeeId);
-        public Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId);
+        public Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool agents);
         public Task<IDataAccessResult<List<Insurer>>> GetAllInsurers();
         public Task<IDataAccessResult<List<State>>> GetAllStates();
         public Task<IDataAccessResult<List<Branch>>> GetAllBranches();
@@ -93,9 +93,10 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
         public Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId);
+        public Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId);
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);
-        public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId);
+        public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly);
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
         public Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString);
         public Task<IDataAccessResult<List<AgencyLocationsDto>>> GetAgencyRelatedParties(Guid agencyId);
@@ -192,6 +193,9 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyDto>>> GetAllActiveAgencies();
         public Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber);
         public Task<IDataAccessResult<string?>> GetBondNumber(string bondRequestNumber);
+        public Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start,
+            DateTime end, string filter);
+        public Task<IDataAccessResult<List<Bond>>> GetBondsByBlock(Guid bondBlockId);
         public Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes();
         public Task<IDataAccessResult<List<VImagingCategoryTabDivisionType>>> GetAllImagingCategoryTabDivisionTypes();
         public IDisposable AddressModified(Guid addressId, Action<SubscriptionResult<Address>> onNext,
@@ -268,6 +272,14 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> ResetUserSettings();
         public Task<ISaveDataResult> ResetUserSetting(string key);
         public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
+
+        #endregion
+
+        #region BondBlock
+
+        public Task<ISaveDataResult> SetBondBlock(BondBlock block);
+        public Task<ISaveDataResult> DeleteBondBlock(Guid id);
+        public Task<IDataAccessResult<int>> NextBondBlockInitialNumber(string prefix);
 
         #endregion
 

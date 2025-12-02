@@ -147,7 +147,7 @@ query GetAgencyAgents($agencyId: UUID!){
         familyName
         mainEmailAddress
         nationalProducerNumber
-        idNavigation{
+        idNavigation {
             givenName
             middleInitial
             familyName
@@ -157,8 +157,16 @@ query GetAgencyAgents($agencyId: UUID!){
                 type
                 emailAddress
             }
+            legalEntityPhones {
+                type
+                phoneNumber {
+                    countryCode
+                    mainNumber
+                    extension
+                }
+            }
         }
-        agencyLicenses{
+        agencyLicenses {
             id
             licenseNumber
             comments
@@ -167,12 +175,36 @@ query GetAgencyAgents($agencyId: UUID!){
             appointingState
             state
             isActive
-            created
-            insurer{
+            isResident
+            insurerId
+            expiration
+            insurer {
                 id
-                idNavigation{
+                idNavigation {
                     fullName
                 }
+            }
+        }
+    }
+}
+
+query GetAgencyAgentLicenses($agencyId: UUID!, $agentId: UUID!){
+    agencyAgentLicenses(agencyId: $agencyId, agentId: $agentId) {
+        id
+        appointingState
+        appointment
+        comments
+        expiration
+        isActive
+        isResident
+        licenseNumber
+        state
+        termination
+        imagingId
+        insurerId
+        insurer {
+            idNavigation {
+                fullName
             }
         }
     }
@@ -215,8 +247,8 @@ query GetAgencyStatusLog($agencyNumber: String!){
   }
 } 
 
-query GetAgencyLicenses($agencyId: UUID!) {
-  agencyLicenses(agencyId: $agencyId) {
+query GetAgencyLicenses($agencyId: UUID!, $agents: Boolean!) {
+  agencyLicenses(agencyId: $agencyId, agents: $agents) {
     id
     isActive
     state
@@ -236,6 +268,11 @@ query GetAgencyLicenses($agencyId: UUID!) {
     agency {
       agencyNumber
     }
+      agent {
+          idNavigation {
+              fullName
+          }
+      }
     imagingId
   }
 }
@@ -258,8 +295,8 @@ query GetAgencyInventory($agencyId: UUID!){
     }
 }
 
-query GetAgencyPOAs($agencyId: UUID!) {
-  agencyPOAs(agencyId: $agencyId) {
+query GetAgencyPOAs($agencyId: UUID!, $activeOnly: Boolean!) {
+  agencyPOAs(agencyId: $agencyId, activeOnly: $activeOnly) {
     id
     comments
     status

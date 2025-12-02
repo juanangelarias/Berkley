@@ -9,12 +9,11 @@
 
 @inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
-@inject ILoggingService Logging
 
 @attribute [Authorize]
 
 <Theme />
-<RenderModeBackground></RenderModeBackground>
+
 <PageTitle>BasisTNG - Agency Profile</PageTitle>
 
 @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
@@ -168,20 +167,20 @@
             </RadzenRow>
         </ChildContent>
     </RadzenPanel>
-    <RadzenPanel Style="border-radius: 20px">
+    <RadzenPanel Style="border-radius: 20px;">
         <PositionSavingTabs @ref="@TabsAgencyProfile" @bind-SelectedIndex="@TabsAgencyProfile.NewSelectedIndex" TabControlName="tabsAgencyProfile">
             <Tabs>
                 <PositionSavingTabsItem Text="General Info" TabName="tabGenInfo">
                     <AgencyGeneralInfoGrids Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Agents" TabName="tabAgents">
-                    <AgencyAgentsGrid AgencyId="@_agencyToDisplay.Id" />
+                    <AgencyAgentsGrid Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Inventory" TabName="tabInventory">
                     <AgencyInventoryGrid AgencyId="@_agencyToDisplay.Id" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Accounts and Bonds" TabName="tabAccountsBonds">
-                    <AgencyAccountsAndBonds agencyToDisplay="@_agencyToDisplay" />
+                    <AgencyAccountsAndBonds Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Commission Rates" TabName="tabCommissionRates">
                     <AgencyCommissionRates Agency="@_agencyToDisplay" AgencyStatus="@_agencyToDisplay?.Status" />

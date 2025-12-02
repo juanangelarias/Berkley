@@ -1,12 +1,11 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@inherits JamesGridLayoutComponentBase<AgencyStatusLog>
 
-@inject IDataAccess DataAccess
 
 <Theme/>
 
 <AuthorizeView>
     <Authorized Context="authCtx">
-        <RadzenDataGrid @ref="StatusLogGrid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
+        <RadzenDataGrid @ref="Grid" TItem="AgencyStatusLog" Data="AgencyStatusLogs"
                         Style="border-radius: 20px;" GridLines="DataGridGridLines.Vertical" AllowColumnResize="true"
                         RowCreate="@OnStatusCreate">
             <HeaderTemplate>
@@ -81,8 +80,6 @@
     [Parameter, EditorRequired] public string CurrentStatus { get; set; } = null!;
 
     private List<AgencyStatusLog> AgencyStatusLogs { get; set; } = new();
-    private bool IsLoading { get; set; }
-    private RadzenDataGrid<AgencyStatusLog> StatusLogGrid { get; set; } = null!;
     private List<AgencyStatusLog> StatusLogsToInsert { get; set; } = [];
     private RadzenText TxtUserName { get; set; } = null!;
 
@@ -129,6 +126,8 @@
     {
         await base.OnParametersSetAsync();
 
+        UserSettingsKey = "AgencyStatusGrid";
+
         await LoadData();
     }
 
@@ -166,7 +165,7 @@
         //TODO:  Need to update the below to a load item
         var userProfile = await DataAccess.GetEmployeeByUserName(TxtUserName.Text);
         statusLog.ChangedByNavigation = userProfile.Data;
-        await StatusLogGrid.UpdateRow(statusLog);
+        await Grid.UpdateRow(statusLog);
         await LoadAgencyStatusLog();
     }
 
@@ -180,7 +179,7 @@
             Effective = DateTime.Today
         };
         StatusLogsToInsert.Add(newStatusLog);
-        await StatusLogGrid.InsertRow(newStatusLog);
+        await Grid.InsertRow(newStatusLog);
     }
 
     private async Task OnStatusCreate(AgencyStatusLog statusLog)
@@ -204,14 +203,4 @@
 
         StatusLogsToInsert.Remove(statusLog);
     }
-
-    protected async Task ShowLoading()
-    {
-        IsLoading = true;
-
-        await Task.Yield();
-
-        IsLoading = false;
-    }
-
 }

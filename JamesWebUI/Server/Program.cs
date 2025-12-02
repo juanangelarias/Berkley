@@ -124,7 +124,7 @@ try
                     .AddScoped<ServerImagingAccess>()
                     .AddScoped<IDataAccess, ServerDataAccess>()
                     .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
-                    .AddScoped<IUserSettingService, UserSettingService>()
+                    .AddScoped<IUserSettingService, UserSettingsService>()
                     .AddScoped<IAuthorizationHandler, RoleRequirementHandler>()
                     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>()
                     .AddSingleton<IAppEnvironment, ServerAppEnvironment>();
@@ -144,7 +144,6 @@ try
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
     builder.Services.AddScoped<GeneralMutation>();
-    builder.Services.AddScoped<UserSettingsMutation>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents()

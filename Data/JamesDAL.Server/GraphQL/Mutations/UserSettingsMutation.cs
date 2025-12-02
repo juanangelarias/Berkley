@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 namespace James.Data.Server.GraphQL.Mutations;
 
 [MutationType]
-public class UserSettingsMutation
+public partial class GeneralMutation
 {
     [Authorize]
     public async Task<bool> SetUserSetting(string key, string? value,

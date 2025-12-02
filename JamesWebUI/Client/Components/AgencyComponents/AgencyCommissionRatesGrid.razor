@@ -210,7 +210,7 @@
 
         _canAddEditRange = period.End == null
             ? _selectedPeriod != null && _selectedPeriod.Start >= DateTime.Today
-            : _canAddEditRange = _selectedPeriod != null && _selectedPeriod.End >= DateTime.Today;
+            : _selectedPeriod != null && _selectedPeriod.End >= DateTime.Today;
 
         _ranges = Rates
             .FirstOrDefault(r => r.Start == period.Start &&

@@ -29,7 +29,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<BusinessTypeClassCodeDm>>> GetAllBusinessTypeClassCodes()
         {
             return await ExecuteGet<List<BusinessTypeClassCodeDm>>(async () =>
-                await jamesClient.GetAllBusinessTypeClassCodee.ExecuteAsync());
+                await jamesClient.GetAllBusinessTypeClassCodes.ExecuteAsync(), "AllBusinessTypeClassCodes");
         }
 
         public async Task<IDataAccessResult<List<BusinessTypeDm>>> GetAllBusinessTypes()
@@ -41,7 +41,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<Sic>>> GetAllSicCodes()
         {
             return await ExecuteGet<List<Sic>>(async () =>
-                await jamesClient.GetAllSicCodes.ExecuteAsync());
+                await jamesClient.GetAllSicCodes.ExecuteAsync(), "AllSicCodes");
         }
 
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)

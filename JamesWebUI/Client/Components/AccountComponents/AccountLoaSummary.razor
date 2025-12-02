@@ -1,69 +1,184 @@
-﻿<RadzenAccordion Multiple="true">
+﻿<RadzenAccordion Multiple="true" Expand="@(args => OnExpand(args))" Collapse="@(args => OnCollapse(args))"
+                 @ref="@Accordion">
     <Items>
-        <RadzenAccordionItem Text="Current Account Program Limits" Selected="true">
-            <RadzenRow>
-                <RadzenColumn Size="3"></RadzenColumn>
+        <RadzenAccordionItem Text="Current Account Program Limits" Selected="@_currentSelected">
+            <RadzenRow Visible="@(!_isEditModeCurrent)" JustifyContent="JustifyContent.Right">
+                <RadzenButton Icon="edit" Click="@SetEditModeCurrent" class="rz-p-0 rz-m-0"  Variant="Variant.Text"/>
+            </RadzenRow>
+            <RadzenRow Gap="0" AlignItems="AlignItems.End">
                 <RadzenColumn Size="3">
-                    <RadzenText Text="Single"/>
+                    <RadzenText Text="Single" TextAlign="TextAlign.End"/>
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenText Text="Aggregate"/>
+                    <RadzenText Text="Aggregate" TextAlign="TextAlign.End"/>
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenText Text="Expiration"/>
+                    <RadzenText Text="Expiration" TextAlign="TextAlign.End"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
                 </RadzenColumn>
             </RadzenRow>
-            <RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.Left" class="rz-mt-1 rz-mb-0">
+                <RadzenButton Text="Commercial" class="rz-p-0 rz-m-0" Variant="Variant.Text" 
+                              Click="@(_ => ExpandDetails("Commercial"))" Style="height: 25px;"/>
+            </RadzenRow>
+            <RadzenRow Gap="0" AlignItems="AlignItems.End">
                 <RadzenColumn Size="3">
-                    <RadzenText Text="Contract" Style="font-weight: bold;"/>
+                    <RadzenText Text="$123,456,789" TextAlign="TextAlign.End"/>
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenText Text="$123,456" Style="background-color: lightgray;" TextAlign="TextAlign.End"/>
+                    <RadzenText Text="$123,456,789" TextAlign="TextAlign.End"/>
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenText Text="$123,456" Style="background-color: lightgray;" TextAlign="TextAlign.End"/>
+                    <RadzenText Text="01/01/2025" TextAlign="TextAlign.End"/>
                 </RadzenColumn>
                 <RadzenColumn Size="3">
-                    <RadzenText Text="$123,456" Style="background-color: lightgray;" TextAlign="TextAlign.End"/>
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Right" 
+                                 AlignItems="AlignItems.Start" Gap="0.1rem">
+                        <AuthorizeView Policy="InRoleAddCurrentAccountProgramLimits">
+                            <RadzenButton Icon="add" Click="@(_ => AddAccountProgramLimit("Contract"))"
+                                          class="rz-my-0 rz-py-0"
+                                          Variant="Variant.Text" Style="height: 20px;"/>
+                        </AuthorizeView>
+                        <AuthorizeView Policy="InRoleApprovePendingAccountProgramLimits">
+                            <RadzenButton Icon="order_approve" Variant="Variant.Text"  Style="height: 20px;"
+                                          class="rz-my-0 rz-py-0"
+                                          Click="@(_ => ApproveAccountProgramLimit("Contract"))"/>
+                        </AuthorizeView>
+                    </RadzenStack>
+                </RadzenColumn>
+
+            </RadzenRow>
+            <RadzenRow JustifyContent="JustifyContent.Left" class="rz-mt-1 rz-mb-0">
+                <RadzenButton Text="Contract" class="rz-p-0 rz-m-0" Variant="Variant.Text" 
+                              Style="height: 25px;" Click="@(_ => ExpandDetails("Commercial"))"/>
+            </RadzenRow>
+            <RadzenRow Gap="0" AlignItems="AlignItems.End">
+                <RadzenColumn Size="3">
+                    <RadzenText Text="$123,456,789" TextAlign="TextAlign.End"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="$123,456,789" TextAlign="TextAlign.End"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenText Text="01/01/2025" TextAlign="TextAlign.End"/>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Right" Gap="0.2rem"
+                                 AlignItems="AlignItems.Start">
+                        <AuthorizeView Policy="InRoleAddCurrentAccountProgramLimits">
+                            <RadzenButton Icon="add" Click="@(_ => AddAccountProgramLimit("Commercial"))" 
+                                          Variant="Variant.Text" Style="height: 15px;" class="rz-my-0 rz-py-0"/>
+                        </AuthorizeView>
+                        <AuthorizeView Policy="InRoleApprovePendingAccountProgramLimits">
+                            <RadzenButton Icon="order_approve" Click="@(_=>ApproveAccountProgramLimit("Contract"))" 
+                                          Variant="Variant.Text" Style="height: 15px;" class="rz-my-0 rz-py-0"/>
+                        </AuthorizeView>
+                    </RadzenStack>
                 </RadzenColumn>
             </RadzenRow>
-            <RadzenRow>
-                <RadzenColumn Size="3">
-                    <RadzenText Text="Commercial" Style="font-weight: bold;"/>
-                </RadzenColumn>
-                <RadzenColumn Size="3">
-                    <RadzenText Text="" Style="background-color: lightgray;"/>
-                </RadzenColumn>
-                <RadzenColumn Size="3">
-                    <RadzenText Text="" Style="background-color: lightgray;"/>
-                </RadzenColumn>
-                <RadzenColumn Size="3">
-                    <RadzenText Text="" Style="background-color: lightgray;"/>
-                </RadzenColumn>
+            <RadzenRow Visible="@_isEditModeCurrent" JustifyContent="JustifyContent.Right">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+                    <RadzenButton Text="Save" Icon="save" Click="@SaveCurrent" ButtonStyle="ButtonStyle.Primary"/>
+                    <RadzenButton Text="Cancel" Icon="close" Click="@CancelCurrent" ButtonStyle="ButtonStyle.Light"/>
+                </RadzenStack>
             </RadzenRow>
         </RadzenAccordionItem>
-        <RadzenAccordionItem Text="Active and Current Account/Agency LOAs">
+        <RadzenAccordionItem Text="Active and Current Account/Agency LOAs" Selected="@_activeSelected">
 
         </RadzenAccordionItem>
-        <RadzenAccordionItem Text="Remaining LOA Balance Available">
+        <RadzenAccordionItem Text="Remaining LOA Balance Available" Selected="@_remainingSelected">
 
         </RadzenAccordionItem>
     </Items>
 </RadzenAccordion>
 
-
-
-
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
-    private bool _isEditMode;
-    private RadzenAccordionItem _defaultItem;
+    private bool _isEditModeCurrent;
+    private bool _isEditModeActive;
+    private bool _currentSelected = true;
+    private bool _activeSelected = false;
+    private bool _remainingSelected = false;
+    private RadzenAccordion Accordion { get; set; } = null!;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    /*protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+        
+        if(firstRender)
+        {
+            _currentSelected = true;
+            _activeSelected = false;
+            _remainingSelected = false;
+        }
+    }*/
 
-        _defaultItem.Selected = true;
+    private void OnExpand(int args)
+    {
+        switch (args)
+        {
+            case 0:
+                _currentSelected = true;
+                break;
+            case 1:
+                _activeSelected = true;
+                break;
+            case 2:
+                _remainingSelected = true;
+                break;
+        }
+    }
+
+    private void OnCollapse(int args)
+    {
+        switch (args)
+        {
+            case 0:
+                _currentSelected = false;
+                break;
+            case 1:
+                _activeSelected = false;
+                break;
+            case 2:
+                _remainingSelected = false;
+                break;
+        }
+    }
+
+    private void SetEditModeCurrent()
+    {
+        _isEditModeCurrent = true;
+    }
+
+    private void ToggleEditModeActive()
+    {
+        _isEditModeActive = !_isEditModeActive;
+    }
+
+    private async Task SaveCurrent(MouseEventArgs arg)
+    {
+        _isEditModeCurrent = false;
+    }
+
+    private void CancelCurrent(MouseEventArgs arg)
+    {
+        _isEditModeCurrent = false;
+    }
+
+    private void ExpandDetails(string type)
+    {
+        
+    }
+
+    private async Task AddAccountProgramLimit(string type)
+    {
+        
+    }
+    
+    private async Task ApproveAccountProgramLimit(string type)
+    {
+        
     }
 }

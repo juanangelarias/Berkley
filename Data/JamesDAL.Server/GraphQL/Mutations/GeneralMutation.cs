@@ -59,35 +59,28 @@ public partial class GeneralMutation
     public async Task<bool> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
         Guid legalEntityId, string phoneType, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
-        try
+        PhoneNumber newNumber = new PhoneNumber()
         {
-            PhoneNumber newNumber = new PhoneNumber()
-            {
-                Id = phoneId,
-                CountryCode = countryCode ?? "US",
-                MainNumber = mainNumber,
-                Extension = extension
-            };
+            Id = phoneId,
+            CountryCode = countryCode ?? "US",
+            MainNumber = mainNumber,
+            Extension = extension
+        };
 
-            LegalEntityPhone lePhone = new LegalEntityPhone()
-            {
-                LegalEntityId = legalEntityId,
-                PhoneNumberId = phoneId,
-                Type = phoneType
-            };
-
-            var ctx = await contextFactory.CreateDbContextAsync();
-
-            ctx.PhoneNumbers.Add(newNumber);
-            ctx.LegalEntityPhones.Add(lePhone);
-            await ctx.SaveChangesAsync();
-
-            return true;
-        }
-        catch (Exception)
+        LegalEntityPhone lePhone = new LegalEntityPhone()
         {
-            return false;
-        }
+            LegalEntityId = legalEntityId,
+            PhoneNumberId = phoneId,
+            Type = phoneType
+        };
+
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        ctx.PhoneNumbers.Add(newNumber);
+        ctx.LegalEntityPhones.Add(lePhone);
+        await ctx.SaveChangesAsync();
+
+        return true;
     }
 
     [Authorize]
@@ -468,7 +461,7 @@ public partial class GeneralMutation
             var newBlock = new BondBlock
             {
                 Id = bondBlockId,
-                // InsurerId = insurerId,
+                // InsurerId = insurerId, ToDo: When the field is created in the DB this should be uncommented
                 Prefix = prefix,
                 FirstNumber = firstNumber,
                 LastNumber = lastNumber,

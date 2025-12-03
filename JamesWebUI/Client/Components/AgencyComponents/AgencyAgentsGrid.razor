@@ -1,8 +1,10 @@
 ﻿@using System.Text.RegularExpressions
+@using SharedBusinessLogic
 @inherits JamesGridLayoutComponentBase<Agent>
 
 @inject NavigationManager NavigationManager
 @inject TooltipService TooltipService
+@inject IDataAccess DataAccess
 
 <Theme/>
 
@@ -19,7 +21,7 @@
                 <RadzenButton Icon="settings" Click="SaveGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
                               Visible="@UserSettingsChanged"/>
-                <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
                               Visible="@UserSettingsLoaded"/>
             </RadzenStack>
@@ -158,20 +160,17 @@
 
     private string GetEmail(Agent agent)
     {
-        return agent.IdNavigation.LegalEntityEmails
-            .FirstOrDefault(f => f.Type.ToLower() == "main")?
-            .EmailAddress ?? "";
+        return LegalEntityGetMains.GetMainEmail(agent.IdNavigation) ?? "";
     }
 
     private string GetPhoneNumber(Agent agent, bool extension = false)
     {
-        var record = agent.IdNavigation.LegalEntityPhones
-            .FirstOrDefault(f => f.Type.ToLower() == "main");
+        var phoneNumber = LegalEntityGetMains.GetMainPhoneNumber(agent.IdNavigation);
 
         if (extension)
-            return record?.PhoneNumber.Extension ?? "";
+            return phoneNumber?.Extension ?? "";
 
-        var number = record?.PhoneNumber.MainNumber ?? "";
+        var number = phoneNumber?.MainNumber ?? "";
 
         return string.IsNullOrEmpty(number)
             ? ""

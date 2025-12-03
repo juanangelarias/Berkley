@@ -1,11 +1,13 @@
 ﻿@using Blazorise
 @using SharedBusinessLogic
+@using IconStyle = Radzen.IconStyle
 @using JustifyContent = Radzen.JustifyContent
 @using Orientation = Radzen.Orientation
 
 @inherits JamesGridLayoutComponentBase<AgencyLicense>
 
 @inject TooltipService TooltipService
+@inject IDataAccess DataAccess
 
 <Theme/>
 
@@ -42,7 +44,7 @@
                     <RadzenButton Icon="settings" Click="SaveGridSettings"
                                   MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
                                   Visible="@UserSettingsChanged"/>
-                    <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                    <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
                                   MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
                                   Visible="@UserSettingsLoaded"/>
                 </RadzenStack>
@@ -56,11 +58,11 @@
                 @{
                     if (license.IsActive)
                     {
-                        <JamesStatusIcon Color="green"/>
+                        <JamesStatusIcon IconStyle="IconStyle.Success"/>
                     }
                     else
                     {
-                        <JamesStatusIcon Color="red"/>
+                        <JamesStatusIcon IconStyle="IconStyle.Danger"/>
                     }
                 }
             </Template>

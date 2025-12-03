@@ -1,10 +1,11 @@
-﻿@using James.Shared.Imaging
-@using SharedBusinessLogic
+﻿@using SharedBusinessLogic
+@using James.Shared.Imaging
 
 @inherits JamesGridLayoutComponentBase<PowerOfAttorney>
 
 @inject NavigationManager NavigationManager
 @inject TooltipService TooltipService
+@inject IDataAccess DataAccess
 
 <Theme/>
 
@@ -25,7 +26,7 @@
                 <RadzenButton Icon="settings" Click="SaveGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
                               Visible="@UserSettingsChanged"/>
-                <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
                               Visible="@UserSettingsLoaded"/>
             </RadzenStack>
@@ -57,13 +58,13 @@
                         switch (poa.Status)
                         {
                             case "Active":
-                                <JamesStatusIcon Color="green"/>
+                                <JamesStatusIcon IconStyle="IconStyle.Success"/>
                                 break;
                             case "In Process":
-                                <JamesStatusIcon Color="Yellow"/>
+                                <JamesStatusIcon IconStyle="IconStyle.Warning"/>
                                 break;
                             case "Terminated":
-                                <JamesStatusIcon Color="Red"/>
+                                <JamesStatusIcon IconStyle="IconStyle.Danger"/>
                                 break;
                         }
                     }
@@ -246,8 +247,7 @@
         ResultVariable = () => _statuses,
         AfterLoad = void () =>
         {
-            if (_statuses.Success)
-                AllStatuses = _statuses.Data!;
+            AllStatuses = _statuses.Data!;
         }
     }, "statuses");
 
@@ -268,8 +268,7 @@
         ResultVariable = () => _poADocumentsResult,
         AfterLoad = () =>
         {
-            if (_poADocumentsResult.Success)
-                DocTypes = _poADocumentsResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
+            DocTypes = _poADocumentsResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
         }
     }, "POA documents");
 
@@ -418,8 +417,7 @@
     private async Task DeletePoaRow(PowerOfAttorney powerOfAttorney)
     {
         var deleteConfirmed = await DialogService.Confirm("Are you sure?",
-            "Agency POA Deletion",
-            new ConfirmOptions { OkButtonText = "Yes", CancelButtonText = "No" });
+            "Agency POA Deletion", new ConfirmOptions { OkButtonText = "Yes", CancelButtonText = "No" });
 
         if (deleteConfirmed == false)
             return;
@@ -435,11 +433,11 @@
                 DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
             }
 
-            NotifySuccessfulSave("agency POA deleted");
+            NotifyDeleteSuccessful("agency POA deleted");
             await Grid.Reload();
         }
         else
-            NotifySaveError(result.Errors, "agency POA deletion");
+            NotifyDeleteError(result.Errors, "agency POA deletion");
     }
 
     private async Task CancelPoaEdit(PowerOfAttorney poa)

@@ -1,19 +1,34 @@
-﻿using James.Shared.Constants;
-using James.Shared.Data;
-using James.Shared.Model;
+﻿using James.Shared.Model;
 using JamesWebUI.Client.Model;
+using JamesWebUI.Client.Services;
 using Microsoft.AspNetCore.Components;
-using Newtonsoft.Json;
 using Radzen;
 using Radzen.Blazor;
 
 namespace JamesWebUI.Client.Shared;
 
+/// <summary>
+/// Represents the base class for a grid layout component within the JamesWebUI application.
+/// Provides functionality for managing data grid settings, user preferences, and configurations.
+/// </summary>
+/// <typeparam name="T">
+/// The type of the data model displayed in the grid. Must be a class.
+/// </typeparam>
+/// <remarks>
+/// This abstract class extends the <see cref="JamesLayoutComponentBase"/> and provides reusable
+/// functionality for handling grid-specific operations such as loading, saving, and resetting user settings,
+/// as well as setting default export formats for data operations.
+/// </remarks>
+///
+
+// HACK: This is valid for a component with a SINGLE grid. If more than one grid is needed, then a component
+// for each grid should be created
 public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
     where T : class
 {
-    [Inject] public required IDataAccess DataAccess { get; set; }
-    
+    [Inject]
+    public IUserSettingService UserSettingService { get; set; } = null!;
+
     #region Fields & Properties
 
     protected ExportFormat DefaultExportFormat = ExportFormat.Excel;
@@ -39,44 +54,6 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
     
     #endregion
 
-    #region Loaders
-
-    #region UserSettings Load
-
-    private IDataAccessResult<UserSetting?> _userSettingsResult = null!;
-
-    private LoadItem UserSettingsLoad => AddEventNotify(new LoadItem<UserSetting>
-    {
-        Key = UserSettingsKey,
-        AsyncLoadTask = async () =>
-            _userSettingsResult = await DataAccess.GetUserSetting(UserSettingsKey),
-        CacheLoadTask = cache => _userSettingsResult = new DataAccessResult<UserSetting?>
-        {
-            Data = (UserSetting?)cache!
-        },
-        ResultVariable = () => _userSettingsResult,
-        AfterLoad = () =>
-        {
-            if (_userSettingsResult.Data == null)
-                return;
-
-            var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(_userSettingsResult.Data!.Value);
-
-            if (userGridSettings == null)
-                return;
-
-            DefaultExportFormat = userGridSettings.DefaultExportFormat;
-            GridSettings = userGridSettings.Settings;
-            UserSettingsLoaded = true;
-            UserSettingsChanged = false;
-        },
-        CacheDuration = new TimeSpan(0, 0, 0, 0, 0,1)
-    }, "user settings");
-
-    #endregion
-
-    #endregion
-
     protected async Task SaveGridSettings()
     {
         await ShowLoading();
@@ -87,16 +64,15 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
             Settings = GridSettings
         };
 
-        var value = JsonConvert.SerializeObject(userGridSettings);
-        var response = await DataAccess.SetUserSetting(UserSettingsKey, value);
-
+        var response = await UserSettingService.SetGridSettings(userGridSettings);
+        
         if (!response.Success)
         {
-            NotifySaveError(response.Errors, "user settings");
+            NotifySaveError(response.Errors, "user grid settings");
             return;
         }
 
-        NotifySuccessfulSave("user settings");
+        NotifySuccessfulSave("user grid settings");
 
         UserSettingsLoaded = true;
         UserSettingsChanged = false;
@@ -106,11 +82,17 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
     protected async Task GetGridSettings()
     {
         await ShowLoading();
-        DataAccess.Clear(UserSettingsKey);
-        await DataAccess.GetCacheOrLoadDataAsync(UserSettingsLoad);
+        var response = await UserSettingService.GetGridSettings();
+        if (response == null)
+            return;
+
+        DefaultExportFormat = response.DefaultExportFormat;
+        GridSettings = response.Settings;
+        UserSettingsLoaded = true;
+        UserSettingsChanged = false;
     }
 
-    protected async Task ResetGridSettings()
+    protected async Task ClearGridSettings()
     {
         await ShowLoading();
 
@@ -118,14 +100,14 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
         DefaultExportFormat = ExportFormat.Excel;
         await Grid.ReloadSettings();
 
-        var response = await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyBondGrid);
+        var response = await UserSettingService.ResetUserSettings();
         if (!response.Success)
         {
-            NotifySaveError(response.Errors, "user settings");
+            NotifySaveError(response.Errors, "user grid settings");
             return;
         }
 
-        NotifySuccessfulSave("user settings");
+        NotifySuccessfulSave("user grid settings");
 
         UserSettingsLoaded = false;
         UserSettingsChanged = false;

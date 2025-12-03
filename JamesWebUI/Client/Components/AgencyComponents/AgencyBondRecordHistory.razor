@@ -1,6 +1,7 @@
 ﻿@inherits JamesGridLayoutComponentBase<BondBlock>
 
 @inject TooltipService TooltipService
+@inject IDataAccess DataAccess
 
 <RadzenTemplateForm TItem="Filter" Data="_filter" Submit="OnSearch" @ref="@_form">
     <RadzenCard Variant="Variant.Filled" Style="border-radius: 20px;">
@@ -48,7 +49,7 @@
                 <RadzenButton Icon="settings" Click="SaveGridSettings" Style="margin-left: 50px;"
                               MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
                               Visible="@UserSettingsChanged"/>
-                <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
                               Visible="@UserSettingsLoaded"/>
             </RadzenStack>
@@ -166,7 +167,7 @@
 
     private IDataAccessResult<List<BondBlock>> _bondBlocksResult = null!;
 
-    private LoadItem BondBlocksLoad => AddEventNotify(new LoadItem
+    private LoadItem BondBlocksLoad => AddEventNotify(new LoadItem<List<BondBlock>>
     {
         Key = CacheKeys.BondBlocks,
         AsyncLoadTask = async () => _bondBlocksResult = await DataAccess.GetBondBlocksByAgency(AgencyId, _filter.StartDate, _filter.EndDate, _filter.Search),
@@ -184,7 +185,7 @@
 
     private IDataAccessResult<List<Insurer>> _insuresResult = null!;
 
-    private LoadItem InsuresLoad => AddEventNotify(new LoadItem
+    private LoadItem InsuresLoad => AddEventNotify(new LoadItem<List<Insurer>>
     {
         Key = CacheKeys.Insurers,
         AsyncLoadTask = async () => _insuresResult = await DataAccess.GetAllInsurers(),

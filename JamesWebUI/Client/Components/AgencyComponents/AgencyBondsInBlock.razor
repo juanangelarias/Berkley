@@ -2,6 +2,8 @@
 
 @inherits JamesGridLayoutComponentBase<Bond>
 
+@inject IDataAccess DataAccess
+
 <RadzenDataGrid TItem="Bond" Data="@_bonds" Style="height: 400px; border-radius: 10px;" EmptyText="No records to display" @bind-Settings="@GridSettings" 
                 AllowColumnReorder="true" GridLines="DataGridGridLines.Vertical" AllowFiltering="true" @ref="Grid"
                 SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true" AllowSorting="true" 
@@ -52,7 +54,7 @@
 
     private IDataAccessResult<List<Bond>> _bondsByBlockResult = null!;
 
-    private LoadItem BondsByBlockLoad => AddEventNotify(new LoadItem
+    private LoadItem BondsByBlockLoad => AddEventNotify(new LoadItem<List<Bond>>
     {
         Key = CacheKeys.BondByBlock(BondBlockId),
         AsyncLoadTask = async () => _bondsByBlockResult = await DataAccess.GetBondsByBlock(BondBlockId),

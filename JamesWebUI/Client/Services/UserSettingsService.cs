@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace JamesWebUI.Client.Services;
 
-public interface IUserSettingService
+public interface IUserSettingService: IDisposable
 {
     string? GridKey { get; set; }
     Task<Dictionary<string, string>> GetAllUserSettingsAsync(bool forceReload = false);
@@ -196,5 +196,11 @@ public class UserSettingsService(IDataAccess dataAccess, ILocalStorageService lo
         dataAccess.Clear(GridKey);
         
         return response;
+    }
+    
+    public void Dispose()
+    {
+        _userSettingsLoadTask?.Dispose();
+        _semaphore.Dispose();
     }
 }

@@ -356,7 +356,6 @@
 
         var type = AgentsLicenses ? "Agents" : "Agency";
         UserSettingsKey = $"AgencyLicensesGrid-{type}";
-        UserSettingService.GridKey = UserSettingsKey;
         
         await LoadData();
     }
@@ -860,5 +859,4 @@
         };
         TooltipService.Open(element, message, options);
     }
-
 }

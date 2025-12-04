@@ -23,7 +23,7 @@ namespace JamesWebUI.Client.Shared;
 
 // HACK: This is valid for a component with a SINGLE grid. If more than one grid is needed, then a component
 // for each grid should be created
-public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
+public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase, IDisposable
     where T : class
 {
     [Inject]
@@ -49,7 +49,17 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
         }
     }
 
-    protected string UserSettingsKey { get; set; } = string.Empty;
+    private string _userSettingsKey = string.Empty;
+    protected string UserSettingsKey
+    {
+        get => _userSettingsKey;
+        set
+        {
+            _userSettingsKey = value;
+            UserSettingService.GridKey = value;
+        }
+    }
+
     protected RadzenDataGrid<T> Grid { get; set; } = null!;
     
     #endregion
@@ -111,5 +121,11 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
 
         UserSettingsLoaded = false;
         UserSettingsChanged = false;
+    }
+    
+    public void Dispose()
+    {
+        UserSettingService.Dispose();
+        Grid.Dispose();
     }
 }

@@ -1,6 +1,7 @@
 ﻿@inherits JamesGridLayoutComponentBase<Bond>
 
 @inject TooltipService TooltipService
+@inject IDataAccess DataAccess
 
 <Theme/>
 
@@ -19,7 +20,7 @@
             <RadzenButton Icon="settings" Click="SaveGridSettings"
                           MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
                           Visible="@UserSettingsChanged"/>
-            <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+            <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
                           MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
                           Visible="@UserSettingsLoaded"/>
         </RadzenStack>
@@ -33,14 +34,14 @@
                     if (bond.Status.Trim() == "Open")
                     {
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <JamesStatusIcon Color="green"/>
+                            <JamesStatusIcon IconStyle="IconStyle.Success"/>
                             <RadzenText Text="@bond.Status"/>
                         </RadzenStack>
                     }
                     else
                     {
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <JamesStatusIcon Color="red"/>
+                            <JamesStatusIcon IconStyle="IconStyle.Danger"/>
                             <RadzenText Text="@bond.Status"/>
                         </RadzenStack>
                     }

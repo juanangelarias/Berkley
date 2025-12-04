@@ -124,7 +124,7 @@ try
                     .AddScoped<ServerImagingAccess>()
                     .AddScoped<IDataAccess, ServerDataAccess>()
                     .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
-                    .AddScoped<IUserSettingService, UserSettingsService>()
+                    .AddTransient<IUserSettingService, UserSettingsService>()
                     .AddScoped<IAuthorizationHandler, RoleRequirementHandler>()
                     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>()
                     .AddSingleton<IAppEnvironment, ServerAppEnvironment>();

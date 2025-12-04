@@ -192,7 +192,7 @@ else
 
     private IDataAccessResult<List<AccountWatch>> _accountWatchesResult = null!;
 
-    private LoadItem AccountWatchesLoad => AddEventNotify(new LoadItem
+    private LoadItem AccountWatchesLoad => AddEventNotify(new LoadItem<List<AccountWatch>>
     {
         Key = CacheKeys.AccountWatches(Account.AccountNum),
         AsyncLoadTask = async () => _accountWatchesResult = await DataAccess.GetAccountWatches(Account.AccountNum),
@@ -210,7 +210,7 @@ else
 
     private IDataAccessResult<List<WatchStatusDm>> _watchStatusesResult = null!;
 
-    private LoadItem WatchStatusesLoad => AddEventNotify(new LoadItem
+    private LoadItem WatchStatusesLoad => AddEventNotify(new LoadItem<List<WatchStatusDm>>
     {
         Key = CacheKeys.WatchStatuses,
         AsyncLoadTask = async () => _watchStatusesResult = await DataAccess.GetAllWatchStatuses(),
@@ -228,7 +228,7 @@ else
 
     private IDataAccessResult<List<Branch>> _branchesResult = null!;
 
-    private LoadItem BranchesLoad => AddEventNotify(new LoadItem
+    private LoadItem BranchesLoad => AddEventNotify(new LoadItem<List<Branch>>
     {
         Key = CacheKeys.Branches,
         AsyncLoadTask = async () => _branchesResult = await DataAccess.GetAllBranches(),
@@ -256,7 +256,7 @@ else
 
     private IDataAccessResult<List<DivisionDm>> _divisionsResult = null!;
 
-    private LoadItem DivisionsLoad => AddEventNotify(new LoadItem
+    private LoadItem DivisionsLoad => AddEventNotify(new LoadItem<List<DivisionDm>>
     {
         Key = CacheKeys.Divisions,
         AsyncLoadTask = async () => _divisionsResult = await DataAccess.GetDivisions(),
@@ -284,7 +284,7 @@ else
 
     private IDataAccessResult<List<Underwriter>> _underwritersResult = null!;
 
-    private LoadItem UnderwritersLoad => AddEventNotify(new LoadItem
+    private LoadItem UnderwritersLoad => AddEventNotify(new LoadItem<List<Underwriter>>
     {
         Key = CacheKeys.Underwriters,
         AsyncLoadTask = async () => _underwritersResult = await DataAccess.GetUnderwriters(),

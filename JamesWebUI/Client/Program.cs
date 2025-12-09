@@ -46,7 +46,7 @@ builder.Services
     .AddSingleton<ILoggingService, LoggingService>()
     .AddScoped<IDataAccess, ClientDataAccess>()
     .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
-    .AddTransient<IUserSettingService, UserSettingsService>()
+    .AddScoped<IUserSettingService, UserSettingService>()
     .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>()
     .AddSingleton<IAppEnvironment, ClientAppEnvironment>();

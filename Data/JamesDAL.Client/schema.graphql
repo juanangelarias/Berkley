@@ -576,7 +576,7 @@ type Query {
   activeDirectoryUsers(searchText: String!): [PotentialEmployeeActiveDirectoryInfo!]!
   allStates: [State!]!
   underwriters: [Underwriter!]!
-  allUserSettings: [KeyValuePairOfStringAndString!]!
+  allUserSettings: [KeyValue!]!
   userSetting(key: String!): UserSetting
 }
 
@@ -1766,6 +1766,11 @@ type UserSetting {
   username: String!
   key: String!
   value: String!
+}
+
+type KeyValue {
+    key: String!
+    value: String!
 }
 
 type ImagingChoice {

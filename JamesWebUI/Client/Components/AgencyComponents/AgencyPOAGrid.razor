@@ -281,7 +281,7 @@
         await base.OnParametersSetAsync();
 
         var type = ActiveOnly ? "Active" : "Terminated";
-        UserSettingsKey = $"AgencyPOAGrid-{type}";
+        GridSettingsKey = $"AgencyPOAGrid-{type}";
 
         await ShowLoading();
 

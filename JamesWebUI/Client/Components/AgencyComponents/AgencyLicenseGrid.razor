@@ -355,7 +355,7 @@
         await base.OnParametersSetAsync();
 
         var type = AgentsLicenses ? "Agents" : "Agency";
-        UserSettingsKey = $"AgencyLicensesGrid-{type}";
+        GridSettingsKey = $"AgencyLicensesGrid-{type}";
         
         await LoadData();
     }

@@ -257,9 +257,8 @@ namespace James.Shared.Data
             DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
 
         #region User Settings
-
-        public Task<IDataAccessResult<UserSetting?>> GetUserSetting(string key);
-        public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
+        
+        public Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings();
         
         public Task<ISaveDataResult> SetUserSetting(string key, string? value);
         public Task<ISaveDataResult> ResetUserSettings();

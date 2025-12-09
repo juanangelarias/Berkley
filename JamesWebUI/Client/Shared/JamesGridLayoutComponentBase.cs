@@ -2,6 +2,7 @@
 using JamesWebUI.Client.Model;
 using JamesWebUI.Client.Services;
 using Microsoft.AspNetCore.Components;
+using Newtonsoft.Json;
 using Radzen;
 using Radzen.Blazor;
 
@@ -23,7 +24,7 @@ namespace JamesWebUI.Client.Shared;
 
 // HACK: This is valid for a component with a SINGLE grid. If more than one grid is needed, then a component
 // for each grid should be created
-public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase, IDisposable
+public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
     where T : class
 {
     [Inject]
@@ -49,16 +50,7 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
         }
     }
 
-    private string _userSettingsKey = string.Empty;
-    protected string UserSettingsKey
-    {
-        get => _userSettingsKey;
-        set
-        {
-            _userSettingsKey = value;
-            UserSettingService.GridKey = value;
-        }
-    }
+    protected string GridSettingsKey { get; set; } = "";
 
     protected RadzenDataGrid<T> Grid { get; set; } = null!;
     
@@ -74,13 +66,18 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
             Settings = GridSettings
         };
 
-        var response = await UserSettingService.SetGridSettings(userGridSettings);
+        var json = JsonConvert.SerializeObject(userGridSettings);
+        var response = await UserSettingService.SetUserSettingAsync(GridSettingsKey,json);
         
         if (!response.Success)
         {
             NotifySaveError(response.Errors, "user grid settings");
             return;
         }
+        
+        // Forcing the refresh of the user settings
+        await UserSettingService.GetUserSettingAsync(GridSettingsKey, true);
+        
 
         NotifySuccessfulSave("user grid settings");
 
@@ -92,12 +89,14 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
     protected async Task GetGridSettings()
     {
         await ShowLoading();
-        var response = await UserSettingService.GetGridSettings();
+        var response = await UserSettingService.GetUserSettingAsync(GridSettingsKey);
         if (response == null)
             return;
 
-        DefaultExportFormat = response.DefaultExportFormat;
-        GridSettings = response.Settings;
+        var gridSettings = JsonConvert.DeserializeObject<GridSettings>(response) ?? new();
+        
+        DefaultExportFormat = gridSettings.DefaultExportFormat;
+        GridSettings = gridSettings.Settings;
         UserSettingsLoaded = true;
         UserSettingsChanged = false;
     }
@@ -110,7 +109,7 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
         DefaultExportFormat = ExportFormat.Excel;
         await Grid.ReloadSettings();
 
-        var response = await UserSettingService.ResetUserSettings();
+        var response = await UserSettingService.SetUserSettingAsync(GridSettingsKey, null);
         if (!response.Success)
         {
             NotifySaveError(response.Errors, "user grid settings");
@@ -121,11 +120,5 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
 
         UserSettingsLoaded = false;
         UserSettingsChanged = false;
-    }
-    
-    public void Dispose()
-    {
-        UserSettingService.Dispose();
-        Grid.Dispose();
     }
 }

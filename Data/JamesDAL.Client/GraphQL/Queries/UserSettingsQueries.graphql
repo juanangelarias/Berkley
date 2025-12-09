@@ -1,10 +1,4 @@
-﻿query GetUserSetting($input: String!) {
-    userSetting(key: $input) {
-        value
-    }
-}
-
-query GetAllUserSettings {
+﻿query GetAllUserSettings {
     allUserSettings {
         key
         value

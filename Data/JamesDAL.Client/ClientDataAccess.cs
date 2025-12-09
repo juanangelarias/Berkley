@@ -1293,19 +1293,13 @@ namespace James.Data.Client
 
         #region User Settings
 
-        public async Task<IDataAccessResult<UserSetting?>> GetUserSetting(string key)
+        public async Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings()
         {
-            return await ExecuteGet<UserSetting?>(async () =>
-                await jamesClient.GetUserSetting.ExecuteAsync(key), "UserSetting");
-        }
-
-        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
-        {
+            
             var settingList =
-                await ExecuteGet<List<KeyValuePair<string, string>>>(
-                    async () => await jamesClient.GetAllUserSettings.ExecuteAsync(), "UserSettings");
-            return new DataAccessResult<Dictionary<string, string>>
-                { Data = settingList.Data?.ToDictionary(), Errors = settingList.Errors };
+                await ExecuteGet<List<KeyValue>>(
+                    async () => await jamesClient.GetAllUserSettings.ExecuteAsync(), "AllUserSettings");
+            return settingList;
         }
 
         public async Task<ISaveDataResult> SetUserSetting(string key, string? value)

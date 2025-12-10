@@ -1,55 +1,79 @@
-﻿@using ClientBusinessLogic
+﻿@using SharedBusinessLogic
 @using James.Shared.Imaging
-@using SharedBusinessLogic
 
-@inherits JamesLayoutComponentBase
+@inherits JamesGridLayoutComponentBase<PowerOfAttorney>
 
 @inject NavigationManager NavigationManager
+@inject TooltipService TooltipService
 @inject IDataAccess DataAccess
 
 <Theme/>
 
-<RadzenDataGrid @ref="POAGrid" TItem="PowerOfAttorney" Data="PowerOfAttorneys" GridLines="DataGridGridLines.Vertical"
-                AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
-                AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true" Density="Density.Compact"
-                RowCreate="@OnPoaCreate" RowUpdate="@UpdatePoaRow" EditMode="DataGridEditMode.Single"
-                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
-                Filter="@ShowLoading">
+<RadzenDataGrid @ref="Grid" TItem="PowerOfAttorney" Data="PowerOfAttorneys" GridLines="DataGridGridLines.Vertical"
+                AllowFiltering="true" FilterMode="FilterMode.Advanced" Style="height: 400px; border-radius: 10px;"
+                AllowColumnResize="true" AllowSorting="true" AllowGrouping="true" AllowColumnPicking="true"
+                Density="Density.Compact" RowCreate="@OnPoaCreate" RowUpdate="@UpdatePoaRow"
+                EditMode="DataGridEditMode.Single" IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading"
+                Group="@ShowLoading" Filter="@ShowLoading" ColumnWidth="150px" AllowColumnReorder="true"
+                @bind-Settings="@GridSettings">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <AuthorizeView Policy="InRoleCanAddAgencyPOA">
                 <RadzenButton Icon="add" Text="New POA" Variant="Variant.Text" Click="@InsertPOARow"/>
             </AuthorizeView>
-            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="DefaultExportFormat"/>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
+                <RadzenButton Icon="settings" Click="SaveGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                              Visible="@UserSettingsChanged"/>
+                <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                              Visible="@UserSettingsLoaded"/>
+            </RadzenStack>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="poa">
         <RadzenDataList TItem="PowerOfAttorneyDocumentStatus" Data="poa.PowerOfAttorneyDocumentStatuses"
-                        Density="Density.Compact"
-                        Style="max-height:400px; overflow:auto; width:100%" AllowVirtualization="true" WrapItems="false"
+                        Density="Density.Compact" Style="max-height:400px; overflow:auto; width:100%" WrapItems="false"
                         AllowPaging="false">
             <Template Context="poaDocStatus">
-                <PowerOfAttorneyDocumentStatusCard PoaDocumentStatus="@poaDocStatus"/>
+                <PowerOfAttorneyDocumentStatusCard PoaDocumentStatus="@poaDocStatus" DocTypes="@DocTypes"/>
             </Template>
         </RadzenDataList>
     </Template>
     <Columns>
         <RadzenDataGridColumn Title="Status" Property="Status" Type="typeof(string)"
-                              FilterValue="@_statusFilter" FilterProperty="Status"
+                              FilterValue="@_statusFilter" FilterProperty="Status" Width="150px" MinWidth="150px"
                               FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@_statusFilter" AllowClear="true" Style="width:95%"
-                                Multiple="true" TValue="List<string>" Data="@_statusList"/>
+                                Multiple="true" TValue="List<string>" Data="@AllStatuses"/>
             </FilterTemplate>
             <EditTemplate Context="poa">
-                <RadzenDropDown TValue="string" @bind-Value="poa.Status" Data="@_statusList" Style="width: 95%"/>
+                <RadzenDropDown TValue="string" @bind-Value="poa.Status" Data="@AllStatuses" Style="width: 95%"/>
             </EditTemplate>
             <Template Context="poa">
-                <RadzenText Text="@poa.Status"/>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.2rem">
+                    @{
+                        switch (poa.Status)
+                        {
+                            case "Active":
+                                <JamesStatusIcon IconStyle="IconStyle.Success"/>
+                                break;
+                            case "In Process":
+                                <JamesStatusIcon IconStyle="IconStyle.Warning"/>
+                                break;
+                            case "Terminated":
+                                <JamesStatusIcon IconStyle="IconStyle.Danger"/>
+                                break;
+                        }
+                    }
+                    <RadzenText Text="@poa.Status"/>
+                </RadzenStack>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Insurer" Property="Insurer" Width="300px"
-                              FilterValue="@_insurerFilter" FilterProperty="Insurer.IdNavigation.FullName"
+        <RadzenDataGridColumn TItem="PowerOfAttorney" Title="Writing Company" Property="Insurer" Width="350px"
+                              MinWidth="350px" FilterProperty="Insurer.IdNavigation.FullName"
                               FilterOperator="FilterOperator.Contains" LogicalFilterOperator="LogicalFilterOperator.Or">
             <Template Context="poa">
                 <RadzenText Text="@poa.Insurer.IdNavigation.FullName"/>
@@ -60,28 +84,31 @@
                 <RadzenRequiredValidator Text="Insurer is required" Component="CmbInsurer" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px">
+        <RadzenDataGridColumn Title="Limit" Property="Limit" FormatString="{0:c0}" Filterable="false" Width="175px"
+                              MinWidth="175px">
             <EditTemplate Context="poa">
                 <RadzenNumeric @bind-Value="poa.Limit" Format="c0" Style="width: 95%" ShowUpDown="false"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Ref No." Property="ReferenceNumber">
+        <RadzenDataGridColumn Title="Ref No." Property="ReferenceNumber" Width="150px" MinWidth="150px">
             <EditTemplate Context="poa">
                 <RadzenTextBox @bind-Value="poa.ReferenceNumber" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" Width="200px">
+        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" Width="200px"
+                              MinWidth="200px" TextAlign="TextAlign.Center">
             <EditTemplate Context="poa">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.FirstIssued" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}"
-                              SortOrder="SortOrder.Descending" Width="200px">
+                              SortOrder="SortOrder.Descending" Width="240px" MinWidth="240px"
+                              TextAlign="TextAlign.Center">
             <EditTemplate Context="poa">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.CurrentIssued" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="POA Document">
+        <RadzenDataGridColumn Title="POA Document" Width="150px" MinWidth="150px" Filterable="false">
             <Template Context="poa">
                 <InlineImagingDocument DocumentShortName="POA Document"
                                        DocumentCategory="ImagingDocumentCategory.Agency"
@@ -94,7 +121,8 @@
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
-                              Filterable="false" Sortable="false" TextAlign="TextAlign.Right">
+                              Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="75px"
+                              MinWidth="80px">
             <Template Context="poa">
                 <AuthorizeView Policy="InRoleCanEditAgencyPOA">
                     <RadzenButton Variant="Variant.Flat"
@@ -145,54 +173,44 @@
 @code
 {
     [Parameter, EditorRequired] public required Agency Agency { get; set; }
-
-    private string AgencyPOAKey => $"AgencyPOAs{Agency.Id}";
-
-    private RadzenDataGrid<PowerOfAttorney> POAGrid { get; set; } = null!;
+    [Parameter, EditorRequired] public required bool ActiveOnly { get; set; }
 
     private List<PowerOfAttorney> PowerOfAttorneys { get; set; } = [];
 
     private List<Insurer> AllInsurers { get; set; } = [];
     private List<PowerOfAttorneyStatusDm> AllStatuses { get; set; } = [];
+    private List<PowerOfAttorneyDocumentNameDm>? DocTypes { get; set; }
 
-    private List<Insurer>? _insurerFilter;
     private List<string>? _statusFilter;
 
-    private List<Insurer> _insurerList = [];
-    private List<string> _statusList = [];
-    private ExportFormat _defaultExportFormat;
-
     #region Loaders
+
+    #region POAs
 
     private IDataAccessResult<List<PowerOfAttorney>> _poas = null!;
 
     private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem<List<PowerOfAttorney>>
     {
-        Key = AgencyPOAKey,
-        AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id),
+        Key = AgencyPOAKey(),
+        AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id, ActiveOnly),
         CacheLoadTask = cache => _poas = new DataAccessResult<List<PowerOfAttorney>>
         {
             Data = (List<PowerOfAttorney>)cache!
         },
         ResultVariable = () => _poas,
-        AfterLoad = () =>
-        {
-            PowerOfAttorneys = _poas.Data!;
-
-            _statusList = PowerOfAttorneys
-                .OrderBy(p => p.Status)
-                .GroupBy(p => p.Status)
-                .Select(p => p.FirstOrDefault()?.Status ?? "")
-                .ToList();
-
-            _insurerList = PowerOfAttorneys
-                .OrderBy(p => p.Insurer.IdNavigation.FullName)
-                .GroupBy(p => p.Insurer.IdNavigation.FullName)
-                .Select(p => p.FirstOrDefault()?.Insurer
-                             ?? new Insurer { IdNavigation = new LegalEntity { FullName = "No Insurer Defined" } })
-                .ToList();
-        }
+        AfterLoad = () => { PowerOfAttorneys = _poas.Data!; }
     }, "agency POAs");
+
+    #endregion
+
+    private string AgencyPOAKey()
+    {
+        var type = ActiveOnly ? "Active" : "Terminated";
+        var key = $"AgencyPOAs{Agency.Id}-{type}";
+        return key;
+    }
+
+    #region Insurers
 
     private IDataAccessResult<List<Insurer>> _insurers = null!;
 
@@ -212,6 +230,10 @@
         }
     }, "insurers");
 
+    #endregion
+
+    #region Statuses
+
     private IDataAccessResult<List<PowerOfAttorneyStatusDm>> _statuses = null!;
 
     private LoadItem StatusesLoad => AddEventNotify(new LoadItem<List<PowerOfAttorneyStatusDm>>
@@ -225,10 +247,32 @@
         ResultVariable = () => _statuses,
         AfterLoad = void () =>
         {
-            if (_statuses.Success)
-                AllStatuses = _statuses.Data!;
+            AllStatuses = _statuses.Data!;
         }
     }, "statuses");
+
+    #endregion
+
+    #region POA Documents
+
+    private IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>> _poADocumentsResult = null!;
+
+    private LoadItem PoADocumentsLoad => AddEventNotify(new LoadItem<List<PowerOfAttorneyDocumentNameDm>>
+    {
+        Key = "POADocumentName",
+        AsyncLoadTask = async () => _poADocumentsResult = await DataAccess.GetPoaDocumentNames(),
+        CacheLoadTask = cache => _poADocumentsResult = new DataAccessResult<List<PowerOfAttorneyDocumentNameDm>>
+        {
+            Data = (List<PowerOfAttorneyDocumentNameDm>)cache!
+        },
+        ResultVariable = () => _poADocumentsResult,
+        AfterLoad = () =>
+        {
+            DocTypes = _poADocumentsResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
+        }
+    }, "POA documents");
+
+    #endregion
 
     #endregion
 
@@ -236,8 +280,12 @@
     {
         await base.OnParametersSetAsync();
 
+        var type = ActiveOnly ? "Active" : "Terminated";
+        GridSettingsKey = $"AgencyPOAGrid-{type}";
+
         await ShowLoading();
 
+        await GetGridSettings();
         await LoadData();
     }
 
@@ -246,7 +294,7 @@
         if (Agency.Id == Guid.Empty)
             return;
 
-        await DataAccess.ParallelGetCacheOrDataAsync(AgencyPoasLoad, InsurersLoad, StatusesLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(AgencyPoasLoad, InsurersLoad, StatusesLoad, PoADocumentsLoad);
     }
 
     private async Task LoadPOAs()
@@ -260,7 +308,7 @@
             return;
 
         await ShowLoading();
-        await POAGrid.UpdateRow(powerOfAttorney);
+        await Grid.UpdateRow(powerOfAttorney);
         await LoadPOAs();
     }
 
@@ -281,7 +329,7 @@
             }
         };
 
-        await POAGrid.InsertRow(newPoa);
+        await Grid.InsertRow(newPoa);
     }
 
     //Enable row edit mode for a POA record.
@@ -291,7 +339,7 @@
             poaToEdit.AgencyId = Agency.Id;
 
         await ShowLoading();
-        await POAGrid.EditRow(poaToEdit);
+        await Grid.EditRow(poaToEdit);
     }
 
     //Save changes to a POA row, disable edit mode for that row.
@@ -314,14 +362,14 @@
         if (result.Success)
         {
             NotificationService.Notify(new NotificationMessage { Severity = NotificationSeverity.Info, Summary = "Changes saved successfully.", Duration = 5000 });
-            await POAGrid.Reload();
+            await Grid.Reload();
         }
         else
         {
             LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
         }
 
-        DataAccess.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+        DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
     }
 
     private async Task OnPoaCreate(PowerOfAttorney powerOfAttorney)
@@ -343,7 +391,7 @@
         {
             powerOfAttorney.InsurerId = powerOfAttorney.Insurer.Id;
             PowerOfAttorneys.Add(powerOfAttorney);
-            DataAccess.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+            DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
         }
         else
             NotifySaveError(result.Errors, "Agency POA");
@@ -369,8 +417,7 @@
     private async Task DeletePoaRow(PowerOfAttorney powerOfAttorney)
     {
         var deleteConfirmed = await DialogService.Confirm("Are you sure?",
-            "Agency POA Deletion",
-            new ConfirmOptions { OkButtonText = "Yes", CancelButtonText = "No" });
+            "Agency POA Deletion", new ConfirmOptions { OkButtonText = "Yes", CancelButtonText = "No" });
 
         if (deleteConfirmed == false)
             return;
@@ -383,21 +430,21 @@
             if (toDelete != null)
             {
                 PowerOfAttorneys.Remove(toDelete);
-                DataAccess.UpdateCache(AgencyPOAKey, PowerOfAttorneys);
+                DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
             }
 
-            NotifySuccessfulSave("agency POA deleted");
-            await POAGrid.Reload();
+            NotifyDeleteSuccessful("agency POA deleted");
+            await Grid.Reload();
         }
         else
-            NotifySaveError(result.Errors, "agency POA deletion");
+            NotifyDeleteError(result.Errors, "agency POA deletion");
     }
 
     private async Task CancelPoaEdit(PowerOfAttorney poa)
     {
         await ShowLoading();
 
-        POAGrid.CancelEditRow(poa);
+        Grid.CancelEditRow(poa);
     }
 
     private async Task PoaDocumentUploaded(Guid? documentId, Guid poaId)
@@ -426,27 +473,30 @@
     {
         var substitutions = new ExportColumnSubstitutions();
         substitutions.AddSubstitution("Status", "Status", "Status");
-        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Insurer");
+        substitutions.AddSubstitution("Insurer", "Insurer.IdNavigation.FullName", "Writing Company");
         substitutions.AddSubstitution("ReferenceNumber", "ReferenceNumber", "Reference Number");
         substitutions.AddSubstitution("FirstIssued", "FirstIssued", "First Issued");
         substitutions.AddSubstitution("CurrentIssued", "CurrentIssued", "Current Issued");
         substitutions.AddSubstitution("Limit", "Limit", "Limit");
-        NavigationManager.NavigateTo(ExportDataGridUrl(POAGrid,
-                $"/export/AgencyPOAs/{Agency.Id}", format, substitutions),
+        NavigationManager.NavigateTo(ExportDataGridUrl(Grid,
+                $"/export/AgencyPOAs/{Agency.Id}/{ActiveOnly}", format, substitutions),
             true);
     }
 
-    private void InsurerFilterChanged(object? args)
+    private void ShowTooltip(ElementReference element, string type)
     {
-        if (args == null)
+        var message = type switch
         {
-            _insurerFilter = null;
-            return;
-        }
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
 
-        var list = (EnumerableQuery<Insurer>)args;
-
-        _insurerFilter = list.Select(s => s).ToList();
-        POAGrid.Reload();
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
     }
+
 }

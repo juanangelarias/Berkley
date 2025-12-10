@@ -26,8 +26,12 @@
                     <HeaderTemplate>
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
                             <AuthorizeView Policy="InRoleCanAddAgencyCommissionRates">
-                                <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
-                                              Variant="Variant.Text" Disabled="@(!APeridosIsSelected)"/></AuthorizeView>
+                                @if(_canAddEditRange)
+                                {
+                                    <RadzenButton Icon="add" Text="Add New Commission Range" Click="@InsertRange"
+                                                  Variant="Variant.Text" Disabled="@(!APeridosIsSelected)"/>
+                                }
+                            </AuthorizeView>
                         </RadzenStack>
                     </HeaderTemplate>
                     <Columns>
@@ -87,26 +91,33 @@
                                     <RadzenColumn Size="1"/>
                                     <RadzenColumn Size="5">
                                         <AuthorizeView Policy="InRoleCanEditAgencyCommissionRates">
-                                            <RadzenButton Variant="Variant.Flat"
-                                                          Icon="edit"
-                                                          ButtonStyle="ButtonStyle.Light"
-                                                          Size="ButtonSize.Small"
-                                                          Click="@(_ => EditRate(rate))"
-                                                          Visible="@(CanEditDelete(rate))"
-                                                          @onclick:stopPropagation="true"/>
+                                            @if (_canAddEditRange)
+                                            {
+                                                <RadzenButton Variant="Variant.Flat"
+                                                              Icon="edit"
+                                                              ButtonStyle="ButtonStyle.Light"
+                                                              Size="ButtonSize.Small"
+                                                              Click="@(_ => EditRate(rate))"
+                                                              Visible="@(CanEditDelete(rate))"
+                                                              @onclick:stopPropagation="true"/>
+                                            }
                                         </AuthorizeView>
                                     </RadzenColumn>
                                     <RadzenColumn Size="5">
                                         <AuthorizeView Policy="InRoleCanDeleteAgencyCommissionRates">
-                                            <RadzenButton ButtonStyle="ButtonStyle.Danger"
-                                                          Icon="delete"
-                                                          Variant="Variant.Flat"
-                                                          Shade="Shade.Lighter"
-                                                          Size="ButtonSize.Small"
-                                                          class="my-1 ms-1"
-                                                          Visible="@(CanEditDelete(rate))"
-                                                          Click="@(_ => DeleteRate(rate))"
-                                                          @onclick:stopPropagation="true"/></AuthorizeView>
+                                            @if (_canAddEditRange)
+                                            {
+                                                <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                                              Icon="delete"
+                                                              Variant="Variant.Flat"
+                                                              Shade="Shade.Lighter"
+                                                              Size="ButtonSize.Small"
+                                                              class="my-1 ms-1"
+                                                              Visible="@(CanEditDelete(rate))"
+                                                              Click="@(_ => DeleteRate(rate))"
+                                                              @onclick:stopPropagation="true"/>
+                                            }
+                                        </AuthorizeView >
                                     </RadzenColumn>
                                 </RadzenRow>
                             </Template>
@@ -134,7 +145,7 @@
                             <RadzenText Text="Messages" TextAlign="TextAlign.Start"/>
                             @foreach (var error in _errorMessages)
                             {
-                                <RadzenLabel Text="@(error.Key??"Error")" Style="color: red"/>
+                                <RadzenLabel Text="@(error.Key ?? "Error")" Style="color: red"/>
                             }
                         </RadzenStack>
                     </RadzenCard>
@@ -156,6 +167,7 @@
     private RadzenDataGrid<AgencyCommissionRateRange> RangeGrid { get; set; } = null!;
     private List<DateRange> _periods = [];
     private DateRange? _selectedPeriod;
+    private bool _canAddEditRange = false;
     private List<AgencyCommissionRateRange> _ranges = [];
     private Dictionary<string, bool> _errorMessages = [];
     private bool _aGapExist;
@@ -195,6 +207,10 @@
     private void PeriodChanged(object obj)
     {
         var period = (DateRange)obj;
+
+        _canAddEditRange = period.End == null
+            ? _selectedPeriod != null && _selectedPeriod.Start >= DateTime.Today
+            : _selectedPeriod != null && _selectedPeriod.End >= DateTime.Today;
 
         _ranges = Rates
             .FirstOrDefault(r => r.Start == period.Start &&
@@ -399,11 +415,11 @@
     {
         if (rate.To == null || rate.Id == 0)
             return true;
-        
-        var nullExist = _ranges.Any(a=>a.To == null);
-        
+
+        var nullExist = _ranges.Any(a => a.To == null);
+
         var max = _ranges.Max(m => m.To);
-        
+
         return !nullExist && rate.To == max;
     }
 }

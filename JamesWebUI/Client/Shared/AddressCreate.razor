@@ -83,7 +83,7 @@
 
     private IDataAccessResult<List<AddressTypeDm>> _addressTypesResult = null!;
 
-    private LoadItem AddressTypesLoad => AddEventNotify(new LoadItem
+    private LoadItem AddressTypesLoad => AddEventNotify(new LoadItem<List<AddressTypeDm>>
     {
         Key = "AddressTypes",
         AsyncLoadTask = async () => _addressTypesResult = await DataAccess.GetAddressTypes(),

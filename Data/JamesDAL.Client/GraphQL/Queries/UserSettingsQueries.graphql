@@ -1,0 +1,6 @@
+﻿query GetAllUserSettings {
+    allUserSettings {
+        key
+        value
+    }
+}

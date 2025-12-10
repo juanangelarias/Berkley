@@ -10,7 +10,7 @@ namespace JamesWebUI.Client.Test
         public void NoSubstitutionsGridUrl()
         {
             var format = ExportFormat.CSV;
-            var testComponent = new AgencyContactsGrid
+            var testComponent = new AgencyAgentsGrid
             {
                 JamesThemeService = null,
                 LoggingService = null,
@@ -30,7 +30,7 @@ namespace JamesWebUI.Client.Test
         public void TitleSubstitutionsGridUrl()
         {
             var format = ExportFormat.CSV;
-            var testComponent = new AgencyContactsGrid
+            var testComponent = new AgencyAgentsGrid
             {
                 JamesThemeService = null,
                 LoggingService = null,
@@ -54,7 +54,7 @@ namespace JamesWebUI.Client.Test
         public void PropertyChangeSubstitutionsGridUrl()
         {
             var format = ExportFormat.CSV;
-            var testComponent = new AgencyContactsGrid
+            var testComponent = new AgencyAgentsGrid
             {
                 JamesThemeService = null,
                 LoggingService = null,
@@ -78,7 +78,7 @@ namespace JamesWebUI.Client.Test
         public void AddColumnsSubstitutionsGridUrl()
         {
             var format = ExportFormat.CSV;
-            var testComponent = new AgencyContactsGrid
+            var testComponent = new AgencyAgentsGrid
             {
                 JamesThemeService = null,
                 LoggingService = null,

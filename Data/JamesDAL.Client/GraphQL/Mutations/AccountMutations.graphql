@@ -46,7 +46,7 @@ mutation CreateAccountWatch($input: CreateAccountWatchInput!) {
             watchDate
             watchStatus
             reason
-            actionPlan            
+            actionPlan
         }
     }
 }
@@ -80,5 +80,3 @@ mutation SetAccountAgencyAndAgent($input: SetAccountAgencyAndAgentInput!) {
         boolean
     }
 }
-
-

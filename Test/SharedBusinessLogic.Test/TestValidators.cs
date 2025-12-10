@@ -308,7 +308,7 @@ public class TestValidators
         var existing = new List<AgencyCommissionRateRange>();
 
         var negativeRate = new AgencyCommissionRateRange { Id = 1, From = 1, To = 2, Rate = -0.01d };
-        var overOneRate  = new AgencyCommissionRateRange { Id = 2, From = 3, To = 4, Rate = 1.01d };
+        var overOneRate  = new AgencyCommissionRateRange { Id = 2, From = 3, To = 4, Rate = 100.01d };
 
         var e1 = Validators.ValidateAgencyCommissionRange(existing, negativeRate);
         var e2 = Validators.ValidateAgencyCommissionRange(existing, overOneRate);

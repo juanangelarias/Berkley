@@ -1,0 +1,23 @@
+﻿mutation SetUserSetting($input: SetUserSettingInput!) {
+    setUserSetting(input: $input) {
+        boolean
+    }
+}
+
+mutation ResetUserSettings {
+    resetUserSettings {
+        boolean
+    }
+}
+
+mutation ResetUserSetting($input: ResetUserSettingInput!) {
+    resetUserSetting(input: $input) {
+        boolean
+    }
+}
+
+mutation SetDefaultUserSetting($input:SetDefaultUserSettingInput! ) {
+    setDefaultUserSetting(input: $input){
+        boolean
+    }
+}

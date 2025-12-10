@@ -225,6 +225,19 @@ type SetAgencyProfitSharingInfoPayload {
   boolean: Boolean
 }
 
+input SetBondBlockInput {
+  bondBlockId: UUID!
+  insurerId: UUID
+  prefix: String!
+  firstNumber: Int!
+  lastNumber: Int!
+  agencyRestricted: Boolean!
+  issuedBy: UUID
+  comments: String
+  agencyId: UUID
+  enabled: Boolean!
+}
+
 input SetCurrentCreditReportLinkInput {
   accountNum: String!
   imagingDocumentId: UUID
@@ -322,6 +335,11 @@ type CreateLicensePayload {
 "The `DateTime` scalar represents an ISO-8601 compliant date time type."
 scalar DateTime
 
+type AgencyLocationsDto {
+  isTopParent: Boolean!
+  agency: Agency!
+}
+
 input SetEmployeeIsActiveInput {
   employeeId: UUID!
   isActive: Boolean!
@@ -360,7 +378,6 @@ type Agency {
   mainAddress: Address
   billingContact: LegalEntity
   agents: [Agent!]!
-  onlineBondSystems: [OnlineBondSystem!]!
   inventories: [AgencyInventory!]!
   errorAndOmissions: [AgencyErrorAndOmission!]!
   competition: [AgencyCompetition!]!
@@ -493,7 +510,7 @@ type Query {
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
   allAccountWatches(accountNum: String!): [AccountWatch!]!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
-  searchAgencies(stringToSearch: String activeOnly: Boolean!): [Agency!]!
+  searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
   agencyById(agencyId: UUID!): Agency
   agencyAccounts(agencyNumber: String!): [AgencyAccountDto!]!
@@ -501,15 +518,17 @@ type Query {
   agencyParent(agencyId: UUID!): Agency!
   agencyInventory(agencyId: UUID!): [AgencyInventory!]!
   agencyStatusLog(agencyNumber: String!): [AgencyStatusLog!]!
-  agencyBonds(agencyId: UUID!): [Bond!]!
+  agencyBonds(agencyId: UUID! skip: Int! take: Int!): [Bond!]!
+  agencyBondsCount(agencyId: UUID!): QueryCount!
   agencyAgents(agencyId: UUID!): [Agent!]!
+  agencyAgentLicenses(agencyId: UUID! agentId: UUID!): [AgencyLicense!]!
   allActiveAgencies: [AgencyDto!]!
-  agencyLicenses(agencyId: UUID!): [AgencyLicense!]!
+  agencyLicenses(agencyId: UUID! agents: Boolean!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
-  agencyPOAs(agencyId: UUID!): [PowerOfAttorney!]!
+  agencyPOAs(agencyId: UUID! activeOnly: Boolean!): [PowerOfAttorney!]!
   poaDocumentNames: [PowerOfAttorneyDocumentNameDm!]!
   allPoaStatuses: [PowerOfAttorneyStatusDm!]!
-  agencyRelatedParties(agencyId: UUID!): [Agency!]!
+  agencyRelatedParties(agencyId: UUID!): [AgencyLocationsDto!]!
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   idAgencyNumbers: [Agency!]!
   agentByAgentId(agentId: UUID!): Agent!
@@ -518,6 +537,9 @@ type Query {
   bondRequestNumberType(bondNumber: String!): BondRequestNumberType
   bondNumber(bondRequestNumber: String!): String
   searchBondsByBondNumber(bondNumberFragment: String! activeOnly: Boolean!): [Bond!]!
+  bondBlocksByAgency(agencyId: UUID! start: DateTime! end: DateTime! filter: String!): [BondBlock!]!
+  bondsByBlock(bondBlockId: UUID!): [Bond!]!
+  nextBondBlockInitialNumber(prefix: String!): Int!
   branches: [Branch!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
@@ -554,6 +576,8 @@ type Query {
   activeDirectoryUsers(searchText: String!): [PotentialEmployeeActiveDirectoryInfo!]!
   allStates: [State!]!
   underwriters: [Underwriter!]!
+  allUserSettings: [KeyValue!]!
+  userSetting(key: String!): UserSetting
 }
 
 type AgencyCommission {
@@ -701,6 +725,10 @@ enum SearchResultType {
   PERSON
 }
 
+type SetBondBlockPayload {
+  boolean: Boolean
+}
+
 input SetAccountAdditionalInformationInput {
   accountId: UUID!
   fullIndemnity: Boolean
@@ -798,88 +826,88 @@ type Ratio {
   statementBasis: String
   statementTaxBasis: String
   statementQuality: String
-  workingCapitalStated: Int
-  totalAssetsStated: Int
-  retainedEarningsStated: Int
-  earningsBeforeTaxesStated: Int
-  netWorthStated: Int
-  totalLiabilitiesStated: Int
-  totalEquityStated: Int
-  totalRevenueStated: Int
-  totalCostOfGoodsSoldStated: Int
-  currentAssetsStated: Int
-  currentLiabilitiesStated: Int
-  netIncomeStated: Int
-  inventoryStated: Int
-  fixedAssetsStated: Int
-  accountsReceivableStated: Int
-  accountsPayableStated: Int
-  subordinatedNotesStated: Int
-  retainageReceivedStated: Int
-  retainagePayableStated: Int
-  cashPlusEarningsGreaterThanBillingsStated: Int
-  billingsGreaterThanCostsPlusEarningsStated: Int
-  prepaidExpensesStated: Int
-  cashInventoryStated: Int
-  otherCurrentAssetsStated: Int
-  bankDebtStated: Int
-  gaexpensesStated: Int
-  operatingProfitStated: Int
-  incomeAfterTaxesStated: Int
-  cashStated: Int
-  notesStated: Int
-  qscoreStated: Int
-  qprofitStated: Int
-  qnetworthStated: Int
-  qleverageStated: Int
-  qworkingCapitalStated: Int
-  qcratioStated: Int
-  workingCapitalAllowed: Int
-  totalAssetsAllowed: Int
-  retainedEarningsAllowed: Int
-  earningsBeforeTaxesAllowed: Int
-  netWorthAllowed: Int
-  totalLiabilitiesAllowed: Int
-  totalEquityAllowed: Int
-  totalRevenueAllowed: Int
-  totalCostOfGoodsSoldAllowed: Int
-  currentAssetsAllowed: Int
-  currentLiabilitiesAllowed: Int
-  netIncomeAllowed: Int
-  inventoryAllowed: Int
-  fixedAssetsAllowed: Int
-  accountsReceivableAllowed: Int
-  accountsPayableAllowed: Int
-  subordinatedNotesAllowed: Int
-  retainageReceivedAllowed: Int
-  retainagePayableAllowed: Int
-  cashPlusEarningsGreaterThanBillingsAllowed: Int
-  billingsGreaterThanCostsPlusEarningsAllowed: Int
-  prepaidExpensesAllowed: Int
-  cashInventoryAllowed: Int
-  otherCurrentAssetsAllowed: Int
-  bankDebtAllowed: Int
-  gaexpensesAllowed: Int
-  operatingProfitAllowed: Int
-  incomeAfterTaxesAllowed: Int
-  cashAllowed: Int
-  notesAllowed: Int
-  qscoreAllowed: Int
-  qprofitAllowed: Int
-  qnetworthAllowed: Int
-  qleverageAllowed: Int
-  qworkingCapitalAllowed: Int
-  qcratioAllowed: Int
+  workingCapitalStated: Long
+  totalAssetsStated: Long
+  retainedEarningsStated: Long
+  earningsBeforeTaxesStated: Long
+  netWorthStated: Long
+  totalLiabilitiesStated: Long
+  totalEquityStated: Long
+  totalRevenueStated: Long
+  totalCostOfGoodsSoldStated: Long
+  currentAssetsStated: Long
+  currentLiabilitiesStated: Long
+  netIncomeStated: Long
+  inventoryStated: Long
+  fixedAssetsStated: Long
+  accountsReceivableStated: Long
+  accountsPayableStated: Long
+  subordinatedNotesStated: Long
+  retainageReceivedStated: Long
+  retainagePayableStated: Long
+  cashPlusEarningsGreaterThanBillingsStated: Long
+  billingsGreaterThanCostsPlusEarningsStated: Long
+  prepaidExpensesStated: Long
+  cashInventoryStated: Long
+  otherCurrentAssetsStated: Long
+  bankDebtStated: Long
+  gaexpensesStated: Long
+  operatingProfitStated: Long
+  incomeAfterTaxesStated: Long
+  cashStated: Long
+  notesStated: Long
+  qscoreStated: Long
+  qprofitStated: Long
+  qnetworthStated: Long
+  qleverageStated: Decimal
+  qworkingCapitalStated: Long
+  qcratioStated: Decimal
+  workingCapitalAllowed: Long
+  totalAssetsAllowed: Long
+  retainedEarningsAllowed: Long
+  earningsBeforeTaxesAllowed: Long
+  netWorthAllowed: Long
+  totalLiabilitiesAllowed: Long
+  totalEquityAllowed: Long
+  totalRevenueAllowed: Long
+  totalCostOfGoodsSoldAllowed: Long
+  currentAssetsAllowed: Long
+  currentLiabilitiesAllowed: Long
+  netIncomeAllowed: Long
+  inventoryAllowed: Long
+  fixedAssetsAllowed: Long
+  accountsReceivableAllowed: Long
+  accountsPayableAllowed: Long
+  subordinatedNotesAllowed: Long
+  retainageReceivedAllowed: Long
+  retainagePayableAllowed: Long
+  cashPlusEarningsGreaterThanBillingsAllowed: Long
+  billingsGreaterThanCostsPlusEarningsAllowed: Long
+  prepaidExpensesAllowed: Long
+  cashInventoryAllowed: Long
+  otherCurrentAssetsAllowed: Long
+  bankDebtAllowed: Long
+  gaexpensesAllowed: Long
+  operatingProfitAllowed: Long
+  incomeAfterTaxesAllowed: Long
+  cashAllowed: Long
+  notesAllowed: Long
+  qscoreAllowed: Long
+  qprofitAllowed: Long
+  qnetworthAllowed: Long
+  qleverageAllowed: Decimal
+  qworkingCapitalAllowed: Long
+  qcratioAllowed: Decimal
   scaling: String
-  singleLoa: Int
-  aggregateLoa: Int
-  largestJob: Int
-  largestBacklog: Int
-  cashFromOperations: Int
-  cashFromInvestments: Int
-  cashFromFinancing: Int
+  singleLoa: Long
+  aggregateLoa: Long
+  largestJob: Long
+  largestBacklog: Long
+  cashFromOperations: Long
+  cashFromInvestments: Long
+  cashFromFinancing: Long
   comments: String
-  netChangeCash: Int
+  netChangeCash: Long
   imagingId: UUID
   accountNumNavigation: Account!
   balanceSheets: [BalanceSheet!]!
@@ -930,6 +958,10 @@ type PhoneTypeDm {
   legalEntityPhones: [LegalEntityPhone!]!
 }
 
+type DeleteBondBlockPayload {
+  boolean: Boolean
+}
+
 input SetAccountGeneralInfoInput {
   accountId: UUID!
   yearStarted: String
@@ -963,6 +995,10 @@ type CountryDm {
   flagImageBase64: String
   insurers: [Insurer!]!
   states: [State!]!
+}
+
+type QueryCount {
+  count: Int!
 }
 
 input SetPowerOfAttorneyDocumentStatusInput {
@@ -1170,6 +1206,17 @@ type InforceAccountLOA {
   commercialLOA: LineOfAuthorityLog
 }
 
+type AgencySearchDto {
+  id: UUID!
+  agencyNumber: String!
+  agencyName: String!
+  city: String!
+  branch: String!
+  status: String!
+  parentChild: String!
+  idNavigation: LegalEntity!
+}
+
 type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
 }
@@ -1273,6 +1320,10 @@ type Mutation {
   setEmployeeIsActive(input: SetEmployeeIsActiveInput!): SetEmployeeIsActivePayload!
   setEmployeeEmail(input: SetEmployeeEmailInput!): SetEmployeeEmailPayload!
   createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
+  setBondBlock(input: SetBondBlockInput!): SetBondBlockPayload!
+  deleteBondBlock(input: DeleteBondBlockInput!): DeleteBondBlockPayload!
+  resetUserSettings: ResetUserSettingsPayload!
+  resetUserSetting(input: ResetUserSettingInput!): ResetUserSettingPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1708,6 +1759,20 @@ input SetAccountAgencyAndAgentInput {
   agentId: UUID
 }
 
+type UserSetting {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  username: String!
+  key: String!
+  value: String!
+}
+
+type KeyValue {
+    key: String!
+    value: String!
+}
+
 type ImagingChoice {
   displayValue: String!
   value: String!
@@ -1736,6 +1801,10 @@ type AgencyLicenseBulkInsertPayload {
 }
 
 type DeletePhoneNumberPayload {
+  boolean: Boolean
+}
+
+type ResetUserSettingsPayload {
   boolean: Boolean
 }
 
@@ -1895,6 +1964,34 @@ type VoidedBond {
   voidedByNavigation: UserProfile!
 }
 
+type CommercialFinancial {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  period: String!
+  cash: Long
+  totalAssets: Long
+  currentLiabilities: Long
+  longTermLiabilities: Long
+  longTermDebt: Long
+  revenue: Long
+  costOfGoodsSold: Long
+  interest: Long
+  taxes: Long
+  netIncome: Long
+  depreciation: Long
+  amortization: Long
+  capitalExpenditures: Long
+  netCashFromOperations: Long
+  grossProfit: Long
+  totalLiabilities: Long
+  totalDebt: Long
+  scaling: String!
+  complete: Boolean!
+  scalingNavigation: ScalingDm!
+}
+
 "The `LocalDate` scalar type represents a ISO date string, represented as UTF-8 character sequences YYYY-MM-DD. The scalar follows the specification defined in RFC3339"
 scalar LocalDate
 
@@ -1905,6 +2002,7 @@ type SetAgencyInventoryPayload {
 input AgencyLicenseBulkInput {
   id: UUID!
   agencyId: UUID!
+  agentId: UUID
   state: String!
   licenseNumber: String
   isResident: Boolean!
@@ -2050,6 +2148,10 @@ type AdditionalRelatedParty {
   comments: String
   accountNumNavigation: Account!
   idNavigation: LegalEntity!
+}
+
+type ResetUserSettingPayload {
+  boolean: Boolean
 }
 
 input SetUserSettingInput {
@@ -2863,6 +2965,10 @@ type CreateObligeePayload {
   obligee: Obligee
 }
 
+input DeleteBondBlockInput {
+  bondBlockId: UUID!
+}
+
 type AgentsInAgency {
   id: UUID!
   created: DateTime!
@@ -2957,6 +3063,10 @@ type AccountProgramStatusDm {
   accountPrograms: [AccountProgram!]!
 }
 
+input ResetUserSettingInput {
+  key: String!
+}
+
 type CreateAgencyPOADocumentLinkPayload {
   boolean: Boolean
 }
@@ -3045,6 +3155,7 @@ type ScalingDm {
   modified: DateTime!
   scaling: String!
   cashFlowStatements: [CashFlowStatement!]!
+  commercialFinancials: [CommercialFinancial!]!
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 

@@ -1314,6 +1314,7 @@ namespace James.Data.Client
 
         public async Task<ISaveDataResult> ResetUserSettings()
         {
+            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
             return await ExecuteSave(async () =>
                 await jamesClient.ResetUserSettings.ExecuteAsync(), "ResetUserSettings");
         }

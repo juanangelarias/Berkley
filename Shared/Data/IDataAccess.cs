@@ -261,7 +261,9 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings();
         
         public Task<ISaveDataResult> SetUserSetting(string key, string? value);
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSettings();
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSetting(string key);
         public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
 

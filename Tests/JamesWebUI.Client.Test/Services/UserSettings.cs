@@ -44,6 +44,9 @@ namespace JamesWebUI.Client.Test.Services
             var uss = GetUserSettingsService();
             //var dataAccess = _lazyServiceProvider!.Value.GetService<IDataAccess>();
             //Get user settings as baseline
+            var testKey = "UnitTest12345";
+            var testValue = "UnitTest12345Value";
+            await uss.SetUserSettingAsync(testKey, testValue);
             var settings = await uss.GetAllUserSettingsAsync();
             Assert.NotNull(settings);
             Assert.True(settings.Any());

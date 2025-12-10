@@ -24,8 +24,7 @@ namespace James.Data.Server
         ITopicEventReceiver eventReceiver,
         ILoggingService loggingService,
         IHttpContextAccessor contextAccessor,
-        IUserShared userShared,
-        IBrowserStorageCache browserStorageCache)
+        IUserShared userShared, IBrowserStorageCache browserStorageCache) 
         : BaseDataAccess(browserStorageCache, loggingService), IDataAccess
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     {
@@ -112,9 +111,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAgencyInventory(agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool agents)
         {
-            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, agents, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<Insurer>>> GetAllInsurers()
@@ -146,20 +145,28 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllInventoryDocTypes(contextFactory));
         }
+        public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, skip, take, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<QueryCount>> GetAgencyBondsCount(Guid agencyId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyBondsCount(agencyId, contextFactory));
+        }
 
         public async Task<IDataAccessResult<List<WatchStatusDm>>> GetAllWatchStatuses()
         {
             return await ExecuteGet(async () => await query.GetAllWatchStatuses(contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId)
-        {
-            return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, contextFactory));
-        }
-
         public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyAgents(agencyId, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyAgentLicenses(agencyId, agentId, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses()
@@ -181,13 +188,12 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.SearchAgents(searchString, contextFactory));
         }
-
-        public async Task<IDataAccessResult<List<Agency>>> GetAgencyRelatedParties(Guid agencyId)
+        public async Task<IDataAccessResult<List<AgencyLocationsDto>>> GetAgencyRelatedParties(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyRelatedParties(agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<Agency>>> SearchAgencies(string? search, bool activeOnly)
+        public async Task<IDataAccessResult<List<AgencySearchDto>>> SearchAgencies(string? search, bool activeOnly)
         {
             return await ExecuteGet(async () => await query.SearchAgencies(search, activeOnly, contextFactory));
         }
@@ -233,9 +239,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetEmailTypes(contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
+        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly)
         {
-            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, activeOnly, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
@@ -643,6 +649,14 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetBondNumber(bondRequestNumber, contextFactory));
         }
+        public async Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start, DateTime end, string filter)
+        {
+            return await ExecuteGet(async () => await query.GetBondBlocksByAgency(agencyId, start, end, filter, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<Bond>>> GetBondsByBlock(Guid bondBlockId)
+        {
+            return await ExecuteGet(async () => await query.GetBondsByBlock(bondBlockId, contextFactory));
+        }
 
         public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
         {
@@ -653,24 +667,6 @@ namespace James.Data.Server
             GetAllImagingCategoryTabDivisionTypes()
         {
             return await ExecuteGet(async () => await query.GetAllImagingCategoryTabDivisionType(contextFactory));
-        }
-
-        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
-        {
-            return await ExecuteGet(async () =>
-                new Dictionary<string, string>(await query.GetUserSettings(contextFactory, contextAccessor)));
-        }
-
-        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
-        {
-            return await ExecuteSave(async () =>
-                await generalMutation.SetUserSetting(key, value, contextFactory, userShared, loggingService));
-        }
-
-        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
-        {
-            return await ExecuteSave(async () =>
-                await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService));
         }
 
         public async Task<IDataAccessResult<ImagingDocument?>> GetImagingDocumentsDetails(
@@ -900,6 +896,63 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await ImagingSearchCriteria(id, docCategory, useDocCategoryAsCriteria));
         }
+        
+        #region User Settings
+
+        public async Task<ISaveDataResult> SetUserSettings(string key, string value)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor, loggingService));
+        }
+        
+        public async Task<ISaveDataResult> ResetUserSettings()
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.ResetUserSettings(contextFactory, contextAccessor));
+        }
+        
+        public async Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings()
+        {
+            return await ExecuteGet(async () => new List<KeyValue>(await query.GetAllUserSettings(contextFactory, contextAccessor)));
+        }
+
+        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor, loggingService));
+        }
+
+        public async Task<ISaveDataResult> ResetUserSetting(string key)
+        {
+            return await ExecuteSave(async () => await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
+        }
+        
+        public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService ));
+        }
+
+        #endregion
+        
+        #region BondBlock
+
+        public async Task<ISaveDataResult> SetBondBlock(BondBlock block)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetBondBlock(block.Id, null, block.Prefix,
+                block.FirstNumber, block.LastNumber, block.AgencyRestricted, block.IssuedBy, block.Comments, 
+                block.AgencyId, block.Enabled, contextFactory));
+        }
+        
+        public async Task<ISaveDataResult> DeleteBondBlock(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteBondBlock(id, contextFactory));
+        }
+
+        public Task<IDataAccessResult<int>> NextBondBlockInitialNumber(string prefix)
+        {
+            return ExecuteGet(async () => await query.GetNextBondBlockInitialNumber(prefix, contextFactory));
+        }
+
+        #endregion
 
         private async Task<ImagingSearchCriteria> ImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true)

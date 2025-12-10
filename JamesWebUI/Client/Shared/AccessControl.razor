@@ -11,20 +11,21 @@
                 </RadzenGravatar>
             </Template>
             <ChildContent>
-                <RadzenProfileMenuItem Text="@("Hello, " + context.User.Identity?.Name)" />
-                <RadzenProfileMenuItem Text="My Profile" Path="profile" Icon="account_circle" />
-                <RadzenProfileMenuItem Text="My Dashboard" Path="" Icon="home" />
-                <RadzenProfileMenuItem Text="Logout" Icon="logout" />
+                <RadzenProfileMenuItem Text="@("Hello, " + context.User.Identity?.Name)"/>
+                <RadzenProfileMenuItem Text="My Profile" Path="profile" Icon="account_circle"/>
+                <RadzenProfileMenuItem Text="My Dashboard" Path="" Icon="home"/>
+                <RadzenProfileMenuItem Text="Logout" Icon="logout"/>
             </ChildContent>
         </RadzenProfileMenu>
     </Authorized>
     <NotAuthorized>
-        <RadzenButton Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary" 
-                      Text="Log in" Click="BeginLogin" />
+        <RadzenButton Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
+                      Text="Log in" Click="BeginLogin"/>
     </NotAuthorized>
 </AuthorizeView>
 
 @code {
+
     private async Task ProfileItemClicked(RadzenProfileMenuItem item)
     {
         if (item.Text == "Logout")

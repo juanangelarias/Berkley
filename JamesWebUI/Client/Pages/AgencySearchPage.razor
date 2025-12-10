@@ -1,9 +1,7 @@
 ﻿@page "/AgencySearch"
 
-@*
 @using James.Data.Client.GraphQL;
 @using James.Data.Client.GraphQL.Components;
-@using James.Shared
 @using StrawberryShake;
 @using SearchOptions = James.Shared.Model.SearchOptions
 
@@ -14,16 +12,13 @@
 @inject IDataAccess DataAccess
 @inject ILoggingService _logging;
 @inject AuthenticationStateProvider _context;
-$1$ @attribute [Authorize] #1#
 
 <Theme />
-
 
 <PageTitle>Agency Profile</PageTitle>
 
 <RadzenLayout>
     <RadzenHeader>
-
     </RadzenHeader>
     <RadzenBody>
         <RadzenRow Gap="2" JustifyContent="JustifyContent.Right">
@@ -35,7 +30,7 @@ $1$ @attribute [Authorize] #1#
             </RadzenColumn>
             <RadzenColumn Size="4">
                 <RadzenTextBox Placeholder="Name" Style="width: 100%" @ref="@_txtAgencyNameSearch" Change="@OnAgencySearchChange" />
-                $1$ <RadzenAutoComplete @ref="@txtAgencyNameSearch" Placeholder="Name" Style="width: 100%;" ValueChanged="@OnAgencySearchChange" FilterDelay="200" /> #1#
+                @* <RadzenAutoComplete @ref="@txtAgencyNameSearch" Placeholder="Name" Style="width: 100%;" ValueChanged="@OnAgencySearchChange" FilterDelay="200" /> *@
             </RadzenColumn>
             <RadzenColumn Style="vertical-align: middle">
                 <RadzenButton Icon="search" Size="ButtonSize.Small" Click="SearchAgencies" />
@@ -64,7 +59,7 @@ $1$ @attribute [Authorize] #1#
                                         <RadzenDataGridColumn Filterable="true"
                                                               TItem="ISearchAgencies_SearchAgencies" Title="City">
                                             <Template Context="agency">
-                                                @(agency?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address.City + ", " + agency?.IdNavigation?.LegalEntityAddresses?.FirstOrDefault(a => a.Type == "Main")?.Address.StateCode)
+                                                @(agency.City)
                                             </Template>
                                         </RadzenDataGridColumn>
                                         <RadzenDataGridColumn Width="150px" Type="typeof(IEnumerable<String>)"
@@ -116,7 +111,7 @@ $1$ @attribute [Authorize] #1#
     string[] _dropDownValues = { "Test1", "Test2", "Test3" };
 
     //DropDown Data
-    private IReadOnlyList<Agency> _agencyResults = null!;
+    private IReadOnlyList<AgencySearchDto> _agencyResults = null!;
     private RadzenTextBox _txtAgencyNameSearch = null!;
     private string _agencySearchString = null!;
     private readonly SearchOptions _searchOptions = new() {Agency=true};
@@ -125,13 +120,13 @@ $1$ @attribute [Authorize] #1#
     public List<string>? StatusFilter;
     public RadzenDataGrid<ISearchAgencies_SearchAgencies> AgencyResultsGrid = null!;
     
-    private IDataAccessResult<List<Agency>> _agenciesResult = null!;
+    private IDataAccessResult<List<AgencySearchDto>> _agenciesResult = null!;
 
-    private LoadItem AgenciesLoad => AddEventNotify(new LoadItem<List<Agency>>
+    private LoadItem AgenciesLoad => AddEventNotify(new LoadItem<List<AgencySearchDto>>
     {
         Key = "SearchAgencies",
         AsyncLoadTask = async () => _agenciesResult = await DataAccess.SearchAgencies(_txtAgencyNameSearch.Value, _searchOptions.ActiveOnly),
-        CacheLoadTask = cache => _agenciesResult = new DataAccessResult<List<Agency>> { Data = (List<Agency>)cache! },
+        CacheLoadTask = cache => _agenciesResult = new DataAccessResult<List<AgencySearchDto>> { Data = (List<AgencySearchDto>)cache! },
         ResultVariable = () => _agenciesResult,
         AfterLoad = () => { _agencyResults = _agenciesResult.Data!; },
         CacheDuration = TimeSpan.FromSeconds(1)
@@ -182,5 +177,4 @@ $1$ @attribute [Authorize] #1#
         await AgencyResultsGrid.Reload();
     }
 }
-*@
 

@@ -4,22 +4,25 @@
 
 <Theme />
 
-<RadzenTabs Change="@HandleChangeDirection" TabPosition="TabPosition.Left" >
+<RadzenTabs Change="@HandleChangeDirection" TabPosition="TabPosition.Top" >
     <Tabs>
         <RadzenTabsItem Text="Accounts">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyAccountsGrid AgencyNumber="@agencyToDisplay.AgencyNumber" />
+                <AgencyAccountsGrid AgencyNumber="@Agency.AgencyNumber" />
             </Animate>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Bonds">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyBondsGrid AgencyId="@agencyToDisplay.Id" />
+                <AgencyBondsGrid AgencyId="@Agency.Id" />
+            </Animate>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Bond Record History">
+            <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
+                <AgencyBondRecordHistory AgencyId="@Agency.Id"/>
             </Animate>
         </RadzenTabsItem>
     </Tabs>
 </RadzenTabs>
 @code {
-    [Parameter] public Agency agencyToDisplay { get; set; } = new Agency();
-    List<string> blankList = new List<string>();
-
+    [Parameter, EditorRequired] public required Agency Agency { get; set; }
 }

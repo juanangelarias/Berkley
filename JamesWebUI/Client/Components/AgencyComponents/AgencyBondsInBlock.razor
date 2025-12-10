@@ -1,0 +1,105 @@
+﻿@using Radzen.Blazor.Rendering
+
+@inherits JamesGridLayoutComponentBase<Bond>
+
+@inject IDataAccess DataAccess
+
+<RadzenDataGrid TItem="Bond" Data="@_bonds" Style="height: 400px; border-radius: 10px;" EmptyText="No records to display" @bind-Settings="@GridSettings" 
+                AllowColumnReorder="true" GridLines="DataGridGridLines.Vertical" AllowFiltering="true" @ref="Grid"
+                SelectionMode="DataGridSelectionMode.Single" AllowRowSelectOnRowClick="true" AllowSorting="true" 
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowColumnResize="true" 
+                FilterMode="FilterMode.Advanced" IsLoading="@IsLoading">
+    <HeaderTemplate>
+    </HeaderTemplate>
+    <Columns>
+        <RadzenDataGridColumn Width="150px" Property="BondNumber">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center">
+                    <RadzenText Text="Bond"/>
+                    <RadzenText Text="Number"/>
+                </RadzenStack>
+            </HeaderTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Property="Obligee.FullName">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End">
+                    <RadzenText Text="Principal ; Obligee"/>
+                </RadzenStack>
+            </HeaderTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="200px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End" 
+                             JustifyContent="JustifyContent.Right">
+                    <RadzenText Text="Bond Amount as"/>
+                    <RadzenText Text="@($"of {DateTime.Today.EndOfMonth():MM/dd/yyyy}")"/>
+                </RadzenStack>
+            </HeaderTemplate>
+            <Template Context="bond">
+                <RadzenText Text="@(GetBondAmount(bond))" Style="text-align: right;"/>
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter, EditorRequired] public required Guid BondBlockId { get; set; }
+
+    private List<Bond> _bonds = [];
+
+    #region Loaders
+
+    #region BondsByBlock Load
+
+    private IDataAccessResult<List<Bond>> _bondsByBlockResult = null!;
+
+    private LoadItem BondsByBlockLoad => AddEventNotify(new LoadItem<List<Bond>>
+    {
+        Key = CacheKeys.BondByBlock(BondBlockId),
+        AsyncLoadTask = async () => _bondsByBlockResult = await DataAccess.GetBondsByBlock(BondBlockId),
+        CacheLoadTask = cache => _bondsByBlockResult = new DataAccessResult<List<Bond>>
+        {
+            Data = (List<Bond>)cache!
+        },
+        ResultVariable = () => _bondsByBlockResult,
+        AfterLoad = () =>
+        {
+            _bonds = _bondsByBlockResult.Data!;
+        },
+        CacheDuration = TimeSpan.FromMilliseconds(500)
+    }, "bonds by block");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        GridSettingsKey = "AgencyBondsInBlock";
+
+        await ShowLoading();
+        await LoadBonds();
+    }
+
+    private async Task LoadBonds()
+    {
+        if(BondBlockId == Guid.Empty)
+            return;
+        
+        await ShowLoading();
+        await DataAccess.GetCacheOrLoadDataAsync(BondsByBlockLoad);
+    }
+    
+    private string GetBondAmount(Bond bond)
+    {
+        var amount = bond.BondTransactions
+            .OrderByDescending(o => o.Effective)
+            .FirstOrDefault()?
+            .BondAmount ?? 0;
+        
+        return amount.ToString("C0");
+    }
+}

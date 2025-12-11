@@ -2,18 +2,42 @@
 
 @inherits SlidingComponent
 
-<Theme />
+<Theme/>
 
-<PositionSavingTabs Change="@HandleChangeDirection" TabControlName="AgGenInfoGrids" TabPosition="TabPosition.Left" >
+<PositionSavingTabs Change="@HandleChangeDirection" TabControlName="AgGenInfoGrids" TabPosition="TabPosition.Top">
     <Tabs>
-        <PositionSavingTabsItem Text="Licenses" TabName="Licenses">
+        <PositionSavingTabsItem Text="Agency Licenses" TabName="Licenses">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyLicenseGrid Agency="Agency" />
+                <RadzenStack Orientation="Orientation.Vertical">
+                    <RadzenRow>
+                        <RadzenText Text="Agency Licenses" Style="font-weight: bold;"/>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <AgencyLicenseGrid Agency="Agency" AgentsLicenses="false"/>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <RadzenText Text="Agents Licenses" Style="font-weight: bold; margin-top: 1rem;"/>
+                    </RadzenRow>
+                    <RadzenRow>
+                        <AgencyLicenseGrid Agency="Agency" AgentsLicenses="true"/>
+                    </RadzenRow>
+                </RadzenStack>
             </Animate>
         </PositionSavingTabsItem>
         <PositionSavingTabsItem Text="POAs" TabName="POAs">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
-                <AgencyPOAGrid Agency="Agency" />
+                <RadzenRow>
+                    <RadzenText Text="Active POAs" Style="font-weight: bold;"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <AgencyPOAGrid Agency="Agency" ActiveOnly="true"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenText Text="Terminated POAs" Style="font-weight: bold; margin-top: 1rem;"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <AgencyPOAGrid Agency="Agency" ActiveOnly="false"/>
+                </RadzenRow>
             </Animate>
         </PositionSavingTabsItem>
         <PositionSavingTabsItem Text="Locations" TabName="Locations">

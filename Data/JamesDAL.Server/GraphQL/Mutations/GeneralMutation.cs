@@ -1,435 +1,566 @@
 ﻿using HotChocolate.Authorization;
 using HotChocolate.Subscriptions;
+using James.Data.Server.Exceptions;
 using James.Shared;
 using James.Shared.Constants;
-using James.Shared.Data;
-using James.Shared.Model;
-using James.Shared.Server;
+using Microsoft.AspNetCore.Http;
 
-namespace James.Data.Server.GraphQL.Mutations
+namespace James.Data.Server.GraphQL.Mutations;
+
+[MutationType]
+public partial class GeneralMutation
 {
-    [MutationType]
-    public class GeneralMutation
+    [Authorize]
+    public async Task<bool> CreateAddress(Guid addressId, string address1, string? address2,
+        string? address3, string city, string? stateCode, string? postalCode,
+        Guid legalEntityId, string addressType, string identifier,
+        [Service] ITopicEventSender eventSender,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
     {
-        [Authorize]
-        public async Task<bool> CreateAddress(Guid addressId, string address1, string? address2,
-            string? address3, string city, string? stateCode, string? postalCode,
-            Guid legalEntityId, string addressType, string identifier,
-            [Service] ITopicEventSender eventSender,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        try
         {
-            try
+            Address NewAddress = new Address()
             {
-                Address NewAddress = new Address()
-                {
-                    Id = addressId,
-                    Address1 = address1,
-                    Address2 = address2,
-                    Address3 = address3,
-                    City = city,
-                    StateCode = stateCode,
-                    PostalCode = postalCode
-                };
+                Id = addressId,
+                Address1 = address1,
+                Address2 = address2,
+                Address3 = address3,
+                City = city,
+                StateCode = stateCode,
+                PostalCode = postalCode
+            };
 
-                var ctx = await contextFactory.CreateDbContextAsync();
-
-                ctx.Addresses.Add(NewAddress);
-
-                var newLEAddress = new LegalEntityAddress
-                {
-                    LegalEntityId = legalEntityId,
-                    AddressId = addressId,
-                    Type = addressType
-                };
-
-                ctx.LegalEntityAddresses.Add(newLEAddress);
-                await ctx.SaveChangesAsync();
-                eventSender.SendAsync($"{nameof(Subscription.OnAddressCollectionModified)}_{legalEntityId}",
-                    new SubscriptionResult<string>() { Identifier = identifier, Result = addressId.ToString() });
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-
-                loggingService.LogException(ex, "Exception saving created address to database", category: StandardLoggingCategories.DataAccess);
-                return false;
-            }
-        }
-        
-        [Authorize]
-        public async Task<bool> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
-            Guid legalEntityId, string phoneType, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-        {
-            try
-            {
-                PhoneNumber newNumber = new PhoneNumber()
-                {
-                    Id = phoneId,
-                    CountryCode = countryCode ?? "US",
-                    MainNumber = mainNumber,
-                    Extension = extension
-                };
-
-                LegalEntityPhone lePhone = new LegalEntityPhone()
-                {
-                    LegalEntityId = legalEntityId,
-                    PhoneNumberId = phoneId,
-                    Type = phoneType
-                };
-
-                var ctx = await contextFactory.CreateDbContextAsync();
-
-                ctx.PhoneNumbers.Add(newNumber);
-                ctx.LegalEntityPhones.Add(lePhone);
-                await ctx.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        [Authorize]
-        public async Task<bool> DeleteAddress(Guid addressId, string identifier,
-            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            try
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-
-                var address = await ctx.Addresses.SingleOrDefaultAsync(x => x.Id == addressId);
-                var leAddress = await ctx.LegalEntityAddresses.SingleOrDefaultAsync(x => x.AddressId == addressId);
-
-                if (leAddress != null)
-                {
-                    ctx.LegalEntityAddresses.Remove(leAddress);
-                }
-                if (address != null)
-                {
-                    ctx.Addresses.Remove(address);
-                }
-
-                await ctx.SaveChangesAsync();
-                await eventSender.SendAsync($"{nameof(Subscription.OnAddressCollectionModified)}_{leAddress?.LegalEntityId}",
-                    new SubscriptionResult<string>() { Identifier = identifier, Result = identifier });
-                return true;
-            }
-            catch (Exception ex)
-            {
-                loggingService.LogException(ex, "Exception deleting address to database", category: StandardLoggingCategories.DataAccess);
-                return false;
-            }
-        }
-
-        [Authorize]
-        public async Task<Address> SetAddress(Guid addressId, string address1, string? address2,
-            string? address3, string city, string? stateCode, string? postalCode, string identifier,
-            [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var oldAddress = await ctx.Addresses
-                .FirstOrDefaultAsync(a => a.Id == addressId)
-                ;
-
-            if (oldAddress == null)
-                throw new GraphQLException("Invalid AddressId");
-
-
-            oldAddress.Address1 = address1;
-            oldAddress.Address2 = address2;
-            oldAddress.Address3 = address3;
-            oldAddress.City = city;
-            oldAddress.StateCode = stateCode;
-            oldAddress.PostalCode = postalCode;
-
-            ctx.Update(oldAddress);
-            try
-            {
-                await ctx.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                loggingService.LogException(ex, "Exception saving address to database", category: StandardLoggingCategories.DataAccess);
-            }
-
-            await eventSender.SendAsync($"{nameof(Subscription.OnAddressModified)}_{addressId}", new SubscriptionResult<Address> { Identifier = identifier, Result = oldAddress });
-
-            return oldAddress;
-        }
-        
-        [Authorize]
-        public async Task<bool> DeletePhoneNumber(Guid phoneId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-        {
-            try
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-
-                var phone = await ctx.PhoneNumbers.SingleOrDefaultAsync(x => x.Id == phoneId);
-                var lePhone = await ctx.LegalEntityPhones.SingleOrDefaultAsync(x => x.PhoneNumberId == phoneId);
-
-                if (lePhone != null)
-                {
-                    ctx.LegalEntityPhones.Remove(lePhone);
-                }
-                if (phone != null)
-                {
-                    ctx.PhoneNumbers.Remove(phone);
-                }
-
-                await ctx.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
-        //TODO: Restrict to people in the change permissions role
-        [Authorize]
-        public async Task<LegalEntityEmail> SetLegalEntityEmail(Guid id, Guid legalEntityId, string emailAddress,
-            string type, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-        {
             var ctx = await contextFactory.CreateDbContextAsync();
 
-            var oldRecord = await ctx.LegalEntityEmails
-                .FirstOrDefaultAsync(r => r.Id == id);
+            ctx.Addresses.Add(NewAddress);
 
-            if (oldRecord == null)
+            var newLEAddress = new LegalEntityAddress
             {
-                var newRecord = new LegalEntityEmail
-                {
-                    Id = id,
-                    LegalEntityId = legalEntityId,
-                    EmailAddress = emailAddress,
-                    Type = type
-                };
-                ctx.LegalEntityEmails.Add(newRecord);
-                await ctx.SaveChangesAsync();
-                
-                return newRecord;
-            }
+                LegalEntityId = legalEntityId,
+                AddressId = addressId,
+                Type = addressType
+            };
 
-            oldRecord.EmailAddress = emailAddress;
-            oldRecord.Type = type;
-            ctx.Update(oldRecord);
+            ctx.LegalEntityAddresses.Add(newLEAddress);
             await ctx.SaveChangesAsync();
-            
-            return oldRecord;
-        }
+            eventSender.SendAsync($"{nameof(Subscription.OnAddressCollectionModified)}_{legalEntityId}",
+                new SubscriptionResult<string>() { Identifier = identifier, Result = addressId.ToString() });
 
-        [Authorize]
-        public async Task<bool> DeleteLegalEntityEmail(Guid id,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-        {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var oldRecord = await ctx.LegalEntityEmails
-                .FirstOrDefaultAsync(r => r.Id == id);
-            if (oldRecord == null)
-                return false;
-            
-            ctx.LegalEntityEmails.Remove(oldRecord);
-            await ctx.SaveChangesAsync();
-            
             return true;
         }
-
-        [Authorize]
-        public async Task<bool> SetUserSetting(string key, string? value, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared, [Service] ILoggingService loggingService)
+        catch (Exception ex)
         {
-            var username = (await userShared.GetCurrentUser()).Username;
+            loggingService.LogException(ex, "Exception saving created address to database",
+                category: StandardLoggingCategories.DataAccess);
+            return false;
+        }
+    }
+
+    [Authorize]
+    public async Task<bool> CreatePhoneNumber(Guid phoneId, string? countryCode, string mainNumber, string? extension,
+        Guid legalEntityId, string phoneType, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        PhoneNumber newNumber = new PhoneNumber()
+        {
+            Id = phoneId,
+            CountryCode = countryCode ?? "US",
+            MainNumber = mainNumber,
+            Extension = extension
+        };
+
+        LegalEntityPhone lePhone = new LegalEntityPhone()
+        {
+            LegalEntityId = legalEntityId,
+            PhoneNumberId = phoneId,
+            Type = phoneType
+        };
+
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        ctx.PhoneNumbers.Add(newNumber);
+        ctx.LegalEntityPhones.Add(lePhone);
+        await ctx.SaveChangesAsync();
+
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> DeleteAddress(Guid addressId, string identifier,
+        [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] ILoggingService loggingService)
+    {
+        try
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var address = await ctx.Addresses.SingleOrDefaultAsync(x => x.Id == addressId);
+            var leAddress = await ctx.LegalEntityAddresses.SingleOrDefaultAsync(x => x.AddressId == addressId);
+
+            if (leAddress != null)
+            {
+                ctx.LegalEntityAddresses.Remove(leAddress);
+            }
+
+            if (address != null)
+            {
+                ctx.Addresses.Remove(address);
+            }
+
+            await ctx.SaveChangesAsync();
+            await eventSender.SendAsync(
+                $"{nameof(Subscription.OnAddressCollectionModified)}_{leAddress?.LegalEntityId}",
+                new SubscriptionResult<string>() { Identifier = identifier, Result = identifier });
+            return true;
+        }
+        catch (Exception ex)
+        {
+            loggingService.LogException(ex, "Exception deleting address to database",
+                category: StandardLoggingCategories.DataAccess);
+            return false;
+        }
+    }
+
+    [Authorize]
+    public async Task<Address> SetAddress(Guid addressId, string address1, string? address2,
+        string? address3, string city, string? stateCode, string? postalCode, string identifier,
+        [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] ILoggingService loggingService)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var oldAddress = await ctx.Addresses
+                .FirstOrDefaultAsync(a => a.Id == addressId)
+            ;
+
+        if (oldAddress == null)
+            throw new GraphQLException("Invalid AddressId");
+
+
+        oldAddress.Address1 = address1;
+        oldAddress.Address2 = address2;
+        oldAddress.Address3 = address3;
+        oldAddress.City = city;
+        oldAddress.StateCode = stateCode;
+        oldAddress.PostalCode = postalCode;
+
+        ctx.Update(oldAddress);
+        try
+        {
+            await ctx.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            loggingService.LogException(ex, "Exception saving address to database",
+                category: StandardLoggingCategories.DataAccess);
+        }
+
+        await eventSender.SendAsync($"{nameof(Subscription.OnAddressModified)}_{addressId}",
+            new SubscriptionResult<Address> { Identifier = identifier, Result = oldAddress });
+
+        return oldAddress;
+    }
+
+    [Authorize]
+    public async Task<bool> DeletePhoneNumber(Guid phoneId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        try
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var phone = await ctx.PhoneNumbers.SingleOrDefaultAsync(x => x.Id == phoneId);
+            var lePhone = await ctx.LegalEntityPhones.SingleOrDefaultAsync(x => x.PhoneNumberId == phoneId);
+
+            if (lePhone != null)
+            {
+                ctx.LegalEntityPhones.Remove(lePhone);
+            }
+
+            if (phone != null)
+            {
+                ctx.PhoneNumbers.Remove(phone);
+            }
+
+            await ctx.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
+    }
+
+    //TODO: Restrict to people in the change permissions role
+    [Authorize]
+    public async Task<LegalEntityEmail> SetLegalEntityEmail(Guid id, Guid legalEntityId, string emailAddress,
+        string type, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var oldRecord = await ctx.LegalEntityEmails
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (oldRecord == null)
+        {
+            var newRecord = new LegalEntityEmail
+            {
+                Id = id,
+                LegalEntityId = legalEntityId,
+                EmailAddress = emailAddress,
+                Type = type
+            };
+            ctx.LegalEntityEmails.Add(newRecord);
+            await ctx.SaveChangesAsync();
+
+            return newRecord;
+        }
+
+        oldRecord.EmailAddress = emailAddress;
+        oldRecord.Type = type;
+        ctx.Update(oldRecord);
+        await ctx.SaveChangesAsync();
+
+        return oldRecord;
+    }
+
+    [Authorize]
+    public async Task<bool> DeleteLegalEntityEmail(Guid id,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var oldRecord = await ctx.LegalEntityEmails
+            .FirstOrDefaultAsync(r => r.Id == id);
+        if (oldRecord == null)
+            return false;
+
+        ctx.LegalEntityEmails.Remove(oldRecord);
+        await ctx.SaveChangesAsync();
+
+        return true;
+    }
+
+    #region User Settings
+
+    [Authorize]
+    public async Task<bool> SetUserSetting(string key, string? value,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IHttpContextAccessor contextAccessor,
+        [Service] ILoggingService loggingService)
+    {
+        try
+        {
+            var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
             if (null == username)
                 throw new UnauthorizedAccessException("You must be logged in to set user settings.");
             return await SetUserSetting(key, value, username, contextFactory, loggingService);
         }
-
-        [Authorize]
-        public async Task<bool> SetDefaultUserSetting(string key, string? value, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+        catch (Exception e)
         {
-            return await SetUserSetting(key, value, "Default", contextFactory, loggingService);
+            Console.WriteLine(e);
+            throw;
         }
-
-        private async Task<bool> SetUserSetting(string key, string? value, string username, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            try
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-                var existing = await ctx.UserSettings.FirstOrDefaultAsync(up => up.Username == username && up.Key == key);
-                if (existing == null)
-                {
-                    if (value == null)
-                        return true;//Nothing to delete from DB
-                    ctx.UserSettings.Add(new UserSetting { Username = username, Key = key, Value = value });
-                    await ctx.SaveChangesAsync();
-                }
-                else
-                {
-                    if (value == null)
-                    {
-                        ctx.UserSettings.Remove(existing);
-                        await ctx.SaveChangesAsync();
-                        return true;
-                    }
-                    existing.Value = value;
-                    ctx.UserSettings.Update(existing);
-                    await ctx.SaveChangesAsync();
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                loggingService.LogException(ex, "Exception saving user setting to database", category: StandardLoggingCategories.DataAccess);
-                return false;
-            }
-        }
-
-        [Authorize (Policy = "InRoleChangePermissions")]
-        public async Task<bool> AddPrincipalToSecurityRole(Guid principalId, string role,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            try
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-                var existing =
-                    await ctx.Securities.FirstOrDefaultAsync(s => s.Role == role && s.PrincipalId == principalId);
-                if (null == existing)
-                {
-                    await ctx.Securities.AddAsync(new Security { PrincipalId = principalId, Role = role });
-                    await ctx.SaveChangesAsync();
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                loggingService.LogException(ex, "Exception adding principal to security role", category: StandardLoggingCategories.DataAccess);
-                return false;
-            }
-        }
-
-        [Authorize(Policy = "InRoleChangePermissions")]
-        public async Task<bool> RemovePrincipalFromSecurityRole(Guid principalId, string role,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            try
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-                var existing =
-                    await ctx.Securities.FirstOrDefaultAsync(s => s.Role == role && s.PrincipalId == principalId);
-                if (null == existing) return true;
-                ctx.Securities.Remove(existing);
-                await ctx.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                loggingService.LogException(ex, "Exception removing principal from security role", category: StandardLoggingCategories.DataAccess);
-                return false;
-            }
-        }
-
-        [Authorize (Policy = "InRoleChangePermissions")]
-        public async Task<bool> AddSecurityRole(string role, string description, int ord,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            //TODO:Update to fire a subscription event if the client caches the full list
-            try
-            {
-                if (string.IsNullOrWhiteSpace(role))
-                    throw new ArgumentException("role.Role cannot be null or whitespace.");
-                var newRole = new SecurityRole
-                {
-                    Id = Guid.NewGuid(),
-                    Role = role,
-                    Description = description,
-                    Ord = ord
-                };
-                var ctx = await contextFactory.CreateDbContextAsync();
-                var existing =
-                    await ctx.SecurityRoles.FirstOrDefaultAsync(s => s.Role == newRole.Role);
-                if (null != existing)
-                    return false;
-                if (newRole.Ord < 1)
-                {
-                    //Set the order to one higher than the previous max.
-                    //HACK: Not worrying about a transaction to prevent simultaneously creating roles that might have the same order
-                    var maxOrd = await ctx.SecurityRoles.MaxAsync(sr => sr.Ord);
-                    newRole.Ord = 1 + maxOrd;
-                }
-                await ctx.SecurityRoles.AddAsync(newRole);
-                await ctx.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                loggingService.LogException(ex, "Exception adding security role", category: StandardLoggingCategories.DataAccess);
-                return false;
-            }
-        }
-
-        [Authorize(Policy = "InRoleCanManageEmployees")]
-        public async Task<bool> SetEmployeeIsActive(Guid employeeId, bool isActive,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
-        {
-            try
-            {
-                var ctx = await contextFactory.CreateDbContextAsync();
-                var existing =
-                    await ctx.Employees.FirstOrDefaultAsync(e =>e.Id == employeeId);
-                if (null == existing)
-                    return false;
-                existing.Active = isActive;
-                ctx.Employees.Update(existing);
-                await ctx.SaveChangesAsync();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                loggingService.LogException(ex, "Exception changing employee active flag", category: StandardLoggingCategories.DataAccess);
-                return false;
-            }
-        }
-
-        [Authorize(Policy = "InRoleCanManageEmployees")]
-        public async Task<bool> SetEmployeeEmail(Guid employeeId, string email,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-        {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var employee = await ctx.Employees.SingleOrDefaultAsync(e => e.Id == employeeId);
-            if (employee == null) return false;
-            employee.Email = email;
-            ctx.Employees.Update(employee);
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-
-        [Authorize(Policy = "InRoleAddUser")]
-        public async Task<bool> CreateEmployee(string username, string fullName,
-            string initials, string title, string email,
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-        {
-            var ctx = await contextFactory.CreateDbContextAsync();
-            var existing = await ctx.Employees.SingleOrDefaultAsync(e => e.ActiveDirectoryAccount == username && e.Active);
-            if (existing != null)
-            {
-                throw new Exception("An active user with this username already exists.");
-            }
-
-            var newEmployee = new Employee()
-            {
-                ActiveDirectoryAccount = username,
-                Active = true,
-                Email = email,
-                FullName = fullName,
-                Initials = initials,
-                Title = title
-            };
-            ctx.Employees.Add(newEmployee);
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-
     }
+
+    [Authorize]
+    public async Task<bool> SetDefaultUserSetting(string key, string? value,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+    {
+        return await SetUserSetting(key, value, "Default", contextFactory, loggingService);
+    }
+
+    private async Task<bool> SetUserSetting(string key, string? value, string username,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+    {
+        try
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var existing =
+                await ctx.UserSettings.FirstOrDefaultAsync(up => up.Username == username && up.Key == key);
+            if (existing == null)
+            {
+                if (value == null)
+                    return true; //Nothing to delete from DB
+                ctx.UserSettings.Add(new UserSetting { Username = username, Key = key, Value = value });
+                await ctx.SaveChangesAsync();
+            }
+            else
+            {
+                if (value == null)
+                {
+                    ctx.UserSettings.Remove(existing);
+                    await ctx.SaveChangesAsync();
+                    return true;
+                }
+
+                existing.Value = value;
+                ctx.UserSettings.Update(existing);
+                await ctx.SaveChangesAsync();
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            loggingService.LogException(ex, "Exception saving user setting to database",
+                category: StandardLoggingCategories.DataAccess);
+            return false;
+        }
+    }
+
+    [Authorize]
+    public async Task<bool> ResetUserSettings([Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+        if (null == username)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        
+        var settings = await ctx.UserSettings
+            .Where(r => r.Username == username)
+            .ToListAsync();
+        
+        ctx.UserSettings.RemoveRange(settings);
+        await ctx.SaveChangesAsync();
+        return true;
+    }
+    
+    [Authorize]
+    public async Task<bool> ResetUserSetting(string key, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+        if (null == username)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        
+        var settings = await ctx.UserSettings
+            .Where(r => r.Username == username && r.Key == key)
+            .ToListAsync();
+        
+        ctx.UserSettings.RemoveRange(settings);
+        await ctx.SaveChangesAsync();
+        return true;
+    }
+
+    #endregion
+
+    [Authorize(Policy = "InRoleChangePermissions")]
+    public async Task<bool> AddPrincipalToSecurityRole(Guid principalId, string role,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+    {
+        try
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var existing =
+                await ctx.Securities.FirstOrDefaultAsync(s => s.Role == role && s.PrincipalId == principalId);
+            if (null == existing)
+            {
+                await ctx.Securities.AddAsync(new Security { PrincipalId = principalId, Role = role });
+                await ctx.SaveChangesAsync();
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            loggingService.LogException(ex, "Exception adding principal to security role",
+                category: StandardLoggingCategories.DataAccess);
+            return false;
+        }
+    }
+
+    [Authorize(Policy = "InRoleChangePermissions")]
+    public async Task<bool> RemovePrincipalFromSecurityRole(Guid principalId, string role,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+    {
+        try
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var existing =
+                await ctx.Securities.FirstOrDefaultAsync(s => s.Role == role && s.PrincipalId == principalId);
+            if (null == existing) return true;
+            ctx.Securities.Remove(existing);
+            await ctx.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            loggingService.LogException(ex, "Exception removing principal from security role",
+                category: StandardLoggingCategories.DataAccess);
+            return false;
+        }
+    }
+
+    [Authorize(Policy = "InRoleChangePermissions")]
+    public async Task<bool> AddSecurityRole(string role, string description, int ord,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+    {
+        //TODO:Update to fire a subscription event if the client caches the full list
+        try
+        {
+            if (string.IsNullOrWhiteSpace(role))
+                throw new ArgumentException("role.Role cannot be null or whitespace.");
+            var newRole = new SecurityRole
+            {
+                Id = Guid.NewGuid(),
+                Role = role,
+                Description = description,
+                Ord = ord
+            };
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var existing =
+                await ctx.SecurityRoles.FirstOrDefaultAsync(s => s.Role == newRole.Role);
+            if (null != existing)
+                return false;
+            if (newRole.Ord < 1)
+            {
+                //Set the order to one higher than the previous max.
+                //HACK: Not worrying about a transaction to prevent simultaneously creating roles that might have the same order
+                var maxOrd = await ctx.SecurityRoles.MaxAsync(sr => sr.Ord);
+                newRole.Ord = 1 + maxOrd;
+            }
+
+            await ctx.SecurityRoles.AddAsync(newRole);
+            await ctx.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            loggingService.LogException(ex, "Exception adding security role",
+                category: StandardLoggingCategories.DataAccess);
+            return false;
+        }
+    }
+
+    [Authorize(Policy = "InRoleCanManageEmployees")]
+    public async Task<bool> SetEmployeeIsActive(Guid employeeId, bool isActive,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
+    {
+        try
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var existing =
+                await ctx.Employees.FirstOrDefaultAsync(e => e.Id == employeeId);
+            if (null == existing)
+                return false;
+            existing.Active = isActive;
+            ctx.Employees.Update(existing);
+            await ctx.SaveChangesAsync();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            loggingService.LogException(ex, "Exception changing employee active flag",
+                category: StandardLoggingCategories.DataAccess);
+            return false;
+        }
+    }
+
+    [Authorize(Policy = "InRoleCanManageEmployees")]
+    public async Task<bool> SetEmployeeEmail(Guid employeeId, string email,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var employee = await ctx.Employees.SingleOrDefaultAsync(e => e.Id == employeeId);
+        if (employee == null) return false;
+        employee.Email = email;
+        ctx.Employees.Update(employee);
+        await ctx.SaveChangesAsync();
+        return true;
+    }
+
+    [Authorize(Policy = "InRoleAddUser")]
+    public async Task<bool> CreateEmployee(string username, string fullName,
+        string initials, string title, string email,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var existing = await ctx.Employees.SingleOrDefaultAsync(e => e.ActiveDirectoryAccount == username && e.Active);
+        if (existing != null)
+        {
+            throw new Exception("An active user with this username already exists.");
+        }
+
+        var newEmployee = new Employee()
+        {
+            ActiveDirectoryAccount = username,
+            Active = true,
+            Email = email,
+            FullName = fullName,
+            Initials = initials,
+            Title = title
+        };
+        ctx.Employees.Add(newEmployee);
+        await ctx.SaveChangesAsync();
+        return true;
+    }
+
+    #region BondBlock
+
+    [Authorize(Policy = "InRoleCanBondBlock")]
+    public async Task<bool> SetBondBlock(Guid bondBlockId, Guid? insurerId, string prefix, int firstNumber,
+        int lastNumber, bool agencyRestricted, Guid? issuedBy, string? comments, Guid? agencyId, bool enabled,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var existent = await ctx.BondBlocks
+            .FirstOrDefaultAsync(b => b.Id == bondBlockId);
+
+        if (existent == null)
+        {
+            var newBlock = new BondBlock
+            {
+                Id = bondBlockId,
+                // InsurerId = insurerId, ToDo: When the field is created in the DB this should be uncommented
+                Prefix = prefix,
+                FirstNumber = firstNumber,
+                LastNumber = lastNumber,
+                AgencyRestricted = agencyRestricted,
+                Enabled = enabled,
+                IssuedBy = issuedBy,
+                Comments = comments,
+                AgencyId = agencyId
+            };
+
+            ctx.BondBlocks.Add(newBlock);
+        }
+        else
+        {
+            existent.Prefix = prefix;
+            //existent.InsurerId = insurerId;
+            existent.FirstNumber = firstNumber;
+            existent.LastNumber = lastNumber;
+            existent.AgencyRestricted = agencyRestricted;
+            existent.IssuedBy = issuedBy;
+            existent.Comments = comments;
+            existent.AgencyId = agencyId;
+        }
+
+        await ctx.SaveChangesAsync();
+
+        return true;
+    }
+
+    [Authorize(Policy = "CanDeleteBondBlock")]
+    public async Task<bool> DeleteBondBlock(Guid bondBlockId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var existent = await ctx.BondBlocks
+            .FirstOrDefaultAsync(b => b.Id == bondBlockId);
+
+        if (existent == null)
+            throw new NotFoundException($"Bond block with the Id: {bondBlockId} was not found.");
+
+        ctx.BondBlocks.Remove(existent);
+        await ctx.SaveChangesAsync();
+
+        return true;
+    }
+
+    #endregion
 }

@@ -34,6 +34,8 @@ public partial class Indemnitor
 
     public string? Title { get; set; }
 
+    public DateOnly? ExecutionDate { get; set; }
+
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;

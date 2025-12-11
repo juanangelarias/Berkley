@@ -144,7 +144,6 @@ try
     builder.Services.AddScoped<AgencyMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
     builder.Services.AddScoped<GeneralMutation>();
-    builder.Services.AddScoped<UserSettingsMutation>();
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents()

@@ -155,6 +155,44 @@ public abstract class JamesLayoutComponentBase : LayoutComponentBase
     }
 
     /// <summary>
+    /// Generates a notification indicating that an item has been deleted successfully.
+    /// </summary>
+    /// <param name="itemDeleted">The name of the item that was deleted.</param>
+    protected void NotifyDeleteSuccessful(string itemDeleted)
+    {
+        itemDeleted = itemDeleted[..1].ToUpper() + itemDeleted[1..];
+
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Info,
+            Summary = $"{itemDeleted} deleted successfully.",
+            Duration = 5000
+        });
+    }
+
+    /// <summary>
+    /// Generates a notification indicating that an error occurred while attempting to delete an item.
+    /// </summary>
+    /// <param name="errors">An array of error messages describing the deletion issues.</param>
+    /// <param name="itemDeleted">The name of the item that failed to delete. Defaults to "data".</param>
+    /// <param name="logError">Indicates whether the error should be logged. Defaults to true.</param>
+    protected void NotifyDeleteError(string[] errors, string itemDeleted = "data", bool logError = true)
+    {
+        var summary = $"There {(errors.Length == 1 ? "was an error" : "were errors")} " +
+                      $"deleting {itemDeleted}.  {string.Join("  ", errors)}";
+
+        if (logError)
+            LoggingService.LogError(summary, errors);
+
+        NotificationService.Notify(new NotificationMessage
+        {
+            Severity = NotificationSeverity.Error,
+            Summary = summary,
+            Duration = 300000 // Treat as fatal 5 minutes
+        });
+    }
+    
+    /// <summary>
     /// Generates standard notification that a load failed.
     /// </summary>
     /// <param name="errors">Errors that were returned.</param>

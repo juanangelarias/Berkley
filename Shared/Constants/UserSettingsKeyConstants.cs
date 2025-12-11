@@ -8,6 +8,7 @@ public class UserSettingsKeyConstants
     public const string AgencyAgentGrid = "AgencyAgentGrid";
     public const string AgencyBondGrid = "AgencyBondGrid";
     public const string AgencyInventoryGrid = "AgencyInventoryGrid";
+    public const string AgencyAgentLicenseGrid = "AgencyAgentLicenseGrid";
     public const string AgencyLicenseGrid = "AgencyLicenseGrid";
     public const string AgencyLocationGrid = "AgencyLocationGrid";
     public const string AgencyPoaGrid = "AgencyPoaGrid";

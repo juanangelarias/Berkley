@@ -14,5 +14,7 @@ public partial class LineOfAuthorityStatusDm
 
     public string Status { get; set; } = null!;
 
+    public virtual ICollection<AgencyLineOfAuthorityLog> AgencyLineOfAuthorityLogs { get; set; } = new List<AgencyLineOfAuthorityLog>();
+
     public virtual ICollection<LineOfAuthorityLog> LineOfAuthorityLogs { get; set; } = new List<LineOfAuthorityLog>();
 }

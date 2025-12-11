@@ -13,6 +13,11 @@ public static class CacheKeys
     public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
     public static string Agency(string agencyNumber) => $"Agency-{agencyNumber}";
     public static string AgencyAgents(string id) => $"AgencyAgents-{id}";
+    public static string AgencyAgentLicenses(string agencyId, string agentId) => $"AgencyAgentLicenses-{agencyId}-{agentId}";
+    public static string AgencyLicenses(string id) => $"AgencyLicenses-{id}";
+    
+    // B
+    public static string BondByBlock(Guid bondBlockId) => $"BondByBlock-{bondBlockId}";
 
     // L
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";
@@ -25,6 +30,7 @@ public static class CacheKeys
     public const string AgenciesDto = "AgenciesDto";
     public const string AgencyStatuses = "AgencyStatuses";
     // B
+    public const string BondBlocks = "BondBlocks";
     public const string Branches = "Branches";
     public const string BusinessClasses = "BusinessClasses";
     public const string BusinessTypes = "BusinessTypes";
@@ -34,6 +40,8 @@ public static class CacheKeys
     public const string Divisions = "Divisions";
     // E
     public const string EmailTypes = "EmailTypes";
+    // I
+    public const string Insurers = "Insurers";
     // P
     public const string PhoneTypes = "PhoneTypes";
     // S

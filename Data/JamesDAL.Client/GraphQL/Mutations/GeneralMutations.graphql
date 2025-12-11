@@ -40,3 +40,15 @@ mutation DeleteEmailAddress($input: DeleteLegalEntityEmailInput!) {
         boolean
     }
 }
+
+mutation SetBondBlock($input: SetBondBlockInput!) {
+    setBondBlock(input: $input) {
+        boolean
+    }
+}
+
+mutation DeleteBondBlock($input: DeleteBondBlockInput!) {
+    deleteBondBlock(input: $input) {
+        boolean
+    }
+}

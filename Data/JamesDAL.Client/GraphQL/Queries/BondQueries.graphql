@@ -8,3 +8,36 @@
 query GetBondNumberByBondRequestNumber($bondRequestNumber: String!) {
     bondNumber(bondRequestNumber: $bondRequestNumber) 
 }
+
+query GetBondBlocksByAgency($agencyId: UUID!, $start: DateTime!, $end: DateTime!, $filter: String!) {
+    bondBlocksByAgency(agencyId: $agencyId
+    start: $start
+    end: $end
+    filter: $filter) {
+        id
+        created
+        firstNumber
+        lastNumber
+        enabled
+        issuedByNavigation {
+            fullName
+        }
+    }
+}
+
+query GetBondsByBlock($bondBlockId: UUID!){
+    bondsByBlock(bondBlockId: $bondBlockId) {
+        bondNumber
+        obligee {
+            fullName
+        }
+        bondTransactions {
+            coverageDate
+            bondAmount
+        }
+    }
+}
+
+query NextBondBlockInitialNumber($input: String!) {
+    nextBondBlockInitialNumber(prefix: $input)
+}

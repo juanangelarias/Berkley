@@ -4,6 +4,7 @@ public class AgencyLicenseBulk
 {
     public Guid Id { get; set; }
     public Guid AgencyId { get; set; }
+    public Guid? AgentId { get; set; }
     public string State { get; set; } = null!;
     public string? LicenseNumber { get; set; }
     public bool IsResident { get; set; }

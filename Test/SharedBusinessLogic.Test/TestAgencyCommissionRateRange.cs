@@ -160,7 +160,7 @@ public class TestAgencyCommissionRateRange
         // Act & Assert
         Assert.Equal(1234.ToString("C0"), range.FromText);
         Assert.Equal("Unlimited", range.ToText); // null -> "0"
-        Assert.Equal(0.2567.ToString("P2"), range.RateText);
+        Assert.Equal(0.2567.ToString("##.#0'%'"), range.RateText);
 
         // Also verify ToTxt when not null
         range.To = 9876;

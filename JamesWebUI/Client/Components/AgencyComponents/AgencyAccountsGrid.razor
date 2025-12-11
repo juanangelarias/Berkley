@@ -1,14 +1,11 @@
-﻿@using Newtonsoft.Json
-@using James.Shared.Constants
-@using James.Shared.Dto
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesGridLayoutComponentBase<AgencyAccountDto>
 
+@inject TooltipService TooltipService
 @inject IDataAccess DataAccess
-@inject TooltipService TooltipService;
 
 <Theme/>
 
-<RadzenDataGrid TItem="AgencyAccountDto" @ref="@AgencyAccountGrid" Data="@_agencyAccounts" AllowGrouping="true"
+<RadzenDataGrid TItem="AgencyAccountDto" @ref="@Grid" Data="@_agencyAccounts" AllowGrouping="true"
                 AllowSorting="true" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true" 
                 Density="Density.Compact" AllowFiltering="true" FilterMode="FilterMode.Advanced" IsLoading="@IsLoading" 
                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" RowExpand="RowExpand" 
@@ -17,10 +14,10 @@
         <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
             <RadzenButton Icon="settings" Click="SaveGridSettings"
                           MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
-                          Visible="@_userSettingsChanged"/>
-            <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                          Visible="@UserSettingsChanged"/>
+            <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
                           MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
-                          Visible="@_userSettingsLoaded"/>
+                          Visible="@UserSettingsLoaded"/>
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="account">
@@ -32,11 +29,11 @@
                     <Template Context="bond">
                         @if (bond.Status == "Active")
                         {
-                            <RadzenIcon Icon="circle" Style="color: green;"/>
+                            <JamesStatusIcon IconStyle="IconStyle.Success"/>
                         }
                         else
                         {
-                            <RadzenIcon Icon="circle" Style="color: red;"/>
+                            <JamesStatusIcon IconStyle="IconStyle.Danger"/>
                         }
                     </Template>
                 </RadzenDataGridColumn>
@@ -127,35 +124,16 @@
     [Parameter] public required string AgencyNumber { get; set; }
 
     private List<AgencyAccountDto> _agencyAccounts = new();
-    private RadzenDataGrid<AgencyAccountDto> AgencyAccountGrid { get; set; } = null!;
-
-    private IDataAccessResult<List<AgencyAccountDto>> _accountResult = null!;
-
-    #region Grid User Settings
-
-    private DataGridSettings? _dataGridSettings;
-    private DataGridSettings? GridSettings
-    {
-        get => _dataGridSettings;
-        set
-        {
-            if (_dataGridSettings == value)
-                return;
-
-            _dataGridSettings = value;
-            _userSettingsChanged = true;
-        }
-    }
-
-    private bool _userSettingsLoaded;
-    private bool _userSettingsChanged;
-
-    #endregion
-    
-    private ExportFormat _defaultExportFormat;
 
     // ToDo: Once we resolve the problem of deserialization we need to remove the line
     //       >> CacheDuration = new (0, 0, 0, 0) <<
+
+    #region Loaders
+
+    #region Account Load
+
+    private IDataAccessResult<List<AgencyAccountDto>> _accountResult = null!;
+    
     private LoadItem AccountLoad => AddEventNotify(new LoadItem<List<Account>>
     {
         Key = $"Accounts{AgencyNumber}",
@@ -169,9 +147,15 @@
         CacheDuration = new(0, 0, 0, 0)
     }, "accounts");
 
+    #endregion
+    
+    #endregion
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        
+        GridSettingsKey = "AgencyAccountsGrid";
 
         await GetGridSettings();
         await Task.Delay(100);
@@ -205,72 +189,6 @@
         else
             NotifyLoadError(bondsResult.Errors, "bonds", true);
     }
-
-    #region Grid User Settings
-
-    private async Task SaveGridSettings()
-    {
-        await ShowLoading();
-        
-        var userGridSettings = new GridSettings
-        {
-            DefaultExportFormat = _defaultExportFormat,
-            Settings = GridSettings
-        };
-
-        var value = JsonConvert.SerializeObject(userGridSettings);
-        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyAccountGrid, value);
-
-        if (!response.Success)
-        {
-            NotifySaveError(response.Errors, "user settings");
-            return;
-        }
-
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-        StateHasChanged();
-    }
-
-    private async Task GetGridSettings()
-    {
-        await ShowLoading();
-        
-        var response = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyAccountGrid);
-        if (!response.Success || response is { Success: true, Data: null })
-        {
-            if (!response.Success)
-                NotifyLoadError(response.Errors, "user settings");
-
-            _userSettingsLoaded = false;
-            return;
-        }
-
-        var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(response.Data!.Value);
-
-        if (userGridSettings == null)
-            return;
-
-        _defaultExportFormat = userGridSettings.DefaultExportFormat;
-        GridSettings = userGridSettings.Settings;
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-    }
-
-    private async Task ResetGridSettings()
-    {
-        await ShowLoading();
-        
-        GridSettings = null;
-        _defaultExportFormat = ExportFormat.Excel;
-        await AgencyAccountGrid.ReloadSettings();
-
-        await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyAccountGrid);
-        _userSettingsLoaded = false;
-        _userSettingsChanged = false;
-    }
-
-    #endregion
 
     private void ShowTooltip(ElementReference element, string type)
     {

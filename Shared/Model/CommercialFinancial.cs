@@ -54,5 +54,7 @@ public partial class CommercialFinancial
 
     public bool Complete { get; set; }
 
+    public long? ShortTermDebt { get; set; }
+
     public virtual ScalingDm ScalingNavigation { get; set; } = null!;
 }

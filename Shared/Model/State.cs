@@ -26,6 +26,8 @@ public partial class State
 
     public virtual ICollection<BondHold> BondHolds { get; set; } = new List<BondHold>();
 
+    public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
+
     public virtual ICollection<Bond> Bonds { get; set; } = new List<Bond>();
 
     public virtual CountryDm? CountryCodeNavigation { get; set; }

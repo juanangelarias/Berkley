@@ -907,8 +907,15 @@ namespace James.Data.Server
         
         public async Task<ISaveDataResult> ResetUserSettings()
         {
+            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
             return await ExecuteSave(async () =>
                 await generalMutation.ResetUserSettings(contextFactory, contextAccessor));
+        }
+
+        public async Task<ISaveDataResult> ResetUserSetting(string key)
+        {
+            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+            return await ExecuteSave(async () => await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
         }
         
         public async Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings()
@@ -919,11 +926,6 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
         {
             return await ExecuteSave(async () => await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor, loggingService));
-        }
-
-        public async Task<ISaveDataResult> ResetUserSetting(string key)
-        {
-            return await ExecuteSave(async () => await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
         }
         
         public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)

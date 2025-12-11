@@ -9,12 +9,11 @@
 
 @inject NavigationManager NavigationManager
 @inject IDataAccess DataAccess
-@inject ILoggingService Logging
 
 @attribute [Authorize]
 
 <Theme />
-<RenderModeBackground></RenderModeBackground>
+
 <PageTitle>BasisTNG - Agency Profile</PageTitle>
 
 @* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
@@ -146,7 +145,8 @@
                                                 <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" @bind-Value="@_agencyToDisplay.W9"
                                                                     Text="W-9" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" />
                                                 <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" @bind-Value="@_agencyToDisplay.Need1099"
-                                                                    Text="Need 1099" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" />
+                                                                    Text="Need 1099" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" 
+                                                                    Visible="false"/>
                                                 <RadzenToggleButton ButtonStyle="ButtonStyle.Light" ToggleButtonStyle="ButtonStyle.Success" @bind-Value="@_agencyToDisplay.Nasbp"
                                                                     Text="NASBP" Style="border-radius: 20px; width: 125px;" Size="ButtonSize.Small" Disabled="!EditMode" ToggleIcon="check" />
                                                 <RadzenButton Text="Edit" Icon="edit" Visible="!EditMode" Click="@(() => EditMode = !EditMode)" />
@@ -168,20 +168,20 @@
             </RadzenRow>
         </ChildContent>
     </RadzenPanel>
-    <RadzenPanel Style="border-radius: 20px">
+    <RadzenPanel Style="border-radius: 20px;">
         <PositionSavingTabs @ref="@TabsAgencyProfile" @bind-SelectedIndex="@TabsAgencyProfile.NewSelectedIndex" TabControlName="tabsAgencyProfile">
             <Tabs>
                 <PositionSavingTabsItem Text="General Info" TabName="tabGenInfo">
                     <AgencyGeneralInfoGrids Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Agents" TabName="tabAgents">
-                    <AgencyAgentsGrid AgencyId="@_agencyToDisplay.Id" />
+                    <AgencyAgentsGrid Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Inventory" TabName="tabInventory">
                     <AgencyInventoryGrid AgencyId="@_agencyToDisplay.Id" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Accounts and Bonds" TabName="tabAccountsBonds">
-                    <AgencyAccountsAndBonds agencyToDisplay="@_agencyToDisplay" />
+                    <AgencyAccountsAndBonds Agency="@_agencyToDisplay" />
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Commission Rates" TabName="tabCommissionRates">
                     <AgencyCommissionRates Agency="@_agencyToDisplay" AgencyStatus="@_agencyToDisplay?.Status" />

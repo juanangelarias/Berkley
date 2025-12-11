@@ -20,7 +20,6 @@ namespace James.Data.Server
         ObligeeMutation obligeeMutation,
         GeneralMutation generalMutation,
         ServerImagingAccess imagingAccess,
-        UserSettingsMutation userSettingsMutation,
         ITopicEventSender eventSender,
         ITopicEventReceiver eventReceiver,
         ILoggingService loggingService,
@@ -112,9 +111,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAgencyInventory(agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId)
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyLicenses(Guid agencyId, bool agents)
         {
-            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyLicenses(agencyId, agents, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<Insurer>>> GetAllInsurers()
@@ -164,6 +163,10 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyAgents(agencyId, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyAgentLicenses(agencyId, agentId, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses()
@@ -236,9 +239,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetEmailTypes(contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId)
+        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly)
         {
-            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, activeOnly, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
@@ -646,6 +649,14 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetBondNumber(bondRequestNumber, contextFactory));
         }
+        public async Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start, DateTime end, string filter)
+        {
+            return await ExecuteGet(async () => await query.GetBondBlocksByAgency(agencyId, start, end, filter, contextFactory));
+        }
+        public async Task<IDataAccessResult<List<Bond>>> GetBondsByBlock(Guid bondBlockId)
+        {
+            return await ExecuteGet(async () => await query.GetBondsByBlock(bondBlockId, contextFactory));
+        }
 
         public async Task<IDataAccessResult<List<ImagingType>>> GetAllImagingTypes()
         {
@@ -887,42 +898,60 @@ namespace James.Data.Server
         }
         
         #region User Settings
-        
-        public async Task<IDataAccessResult<UserSetting?>> GetUserSetting(string key)
-        {
-            return await ExecuteGet(async () => await query.GetUserSetting(key, contextFactory, contextAccessor));
-        }
 
         public async Task<ISaveDataResult> SetUserSettings(string key, string value)
         {
             return await ExecuteSave(async () =>
-                await userSettingsMutation.SetUserSetting(key, value, contextFactory, contextAccessor));
+                await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor, loggingService));
         }
         
         public async Task<ISaveDataResult> ResetUserSettings()
         {
+            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
             return await ExecuteSave(async () =>
-                await userSettingsMutation.ResetUserSettings(contextFactory, contextAccessor));
-        }
-        
-        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
-        {
-            return await ExecuteGet(async () => new Dictionary<string, string>(await query.GetAllUserSettings(contextFactory, contextAccessor)));
-        }
-
-        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
-        {
-            return await ExecuteSave(async () => await userSettingsMutation.SetUserSetting(key, value, contextFactory, contextAccessor));
+                await generalMutation.ResetUserSettings(contextFactory, contextAccessor));
         }
 
         public async Task<ISaveDataResult> ResetUserSetting(string key)
         {
-            return await ExecuteSave(async () => await userSettingsMutation.ResetUserSetting(key, contextFactory, contextAccessor));
+            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+            return await ExecuteSave(async () => await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
+        }
+        
+        public async Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings()
+        {
+            return await ExecuteGet(async () => new List<KeyValue>(await query.GetAllUserSettings(contextFactory, contextAccessor)));
+        }
+
+        public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor, loggingService));
         }
         
         public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
         {
-            return await ExecuteSave(async () => await userSettingsMutation.SetDefaultUserSetting(key, value, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService ));
+        }
+
+        #endregion
+        
+        #region BondBlock
+
+        public async Task<ISaveDataResult> SetBondBlock(BondBlock block)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetBondBlock(block.Id, null, block.Prefix,
+                block.FirstNumber, block.LastNumber, block.AgencyRestricted, block.IssuedBy, block.Comments, 
+                block.AgencyId, block.Enabled, contextFactory));
+        }
+        
+        public async Task<ISaveDataResult> DeleteBondBlock(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteBondBlock(id, contextFactory));
+        }
+
+        public Task<IDataAccessResult<int>> NextBondBlockInitialNumber(string prefix)
+        {
+            return ExecuteGet(async () => await query.GetNextBondBlockInitialNumber(prefix, contextFactory));
         }
 
         #endregion

@@ -34,7 +34,13 @@ public partial class Employee
 
     public virtual ICollection<AgencyStatusLog> AgencyStatusLogs { get; set; } = new List<AgencyStatusLog>();
 
+    public virtual ICollection<Branch> Branches { get; set; } = new List<Branch>();
+
     public virtual ICollection<NotificationGroupMember> NotificationGroupMembers { get; set; } = new List<NotificationGroupMember>();
+
+    public virtual ICollection<PrivateEquity> PrivateEquities { get; set; } = new List<PrivateEquity>();
+
+    public virtual ICollection<Underwriter> UnderwriterHomeOfficeLeadNavigations { get; set; } = new List<Underwriter>();
 
     public virtual Underwriter? UnderwriterIdNavigation { get; set; }
 

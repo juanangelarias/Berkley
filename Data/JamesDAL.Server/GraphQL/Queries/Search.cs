@@ -290,10 +290,7 @@ namespace James.Data.Server.GraphQL.Queries
         private async Task<List<JamesSearchResult>> AgencySearch(string searchString, bool activeOnly,
             IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
-            throw new NotImplementedException();
-            // ToDo: Check this with the team.  It should be re-done.
-            
-            /*var matchingAgencies = await SearchAgencies(searchString, activeOnly, contextFactory);
+            var matchingAgencies = await SearchAgencies(searchString, activeOnly, contextFactory);
             return matchingAgencies.Select(agency =>
                 new JamesSearchResult
                 {
@@ -305,7 +302,7 @@ namespace James.Data.Server.GraphQL.Queries
                     AgencyNumber = agency.AgencyNumber,
                     SearchString = agency.AgencyNumber.Contains(searchString) ? searchString : agency.IdNavigation.FullName,
                     Type = SearchResultType.Agency
-                }).ToList();*/
+                }).ToList();
         }
     }
 }

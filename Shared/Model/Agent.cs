@@ -18,6 +18,8 @@ public partial class Agent
 
     public virtual ICollection<AgencyLicense> AgencyLicenses { get; set; } = new List<AgencyLicense>();
 
+    public virtual ICollection<AgencyLineOfAuthorityAgent> AgencyLineOfAuthorityAgents { get; set; } = new List<AgencyLineOfAuthorityAgent>();
+
     public virtual ICollection<AgentsInAgency> AgentsInAgencies { get; set; } = new List<AgentsInAgency>();
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;

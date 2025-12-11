@@ -1,6 +1,4 @@
-﻿@using James.Shared;
-
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 
@@ -27,15 +25,18 @@
     <RadzenRow>
         <RadzenColumn Size="5">
             <RadzenText Text="@PoaDocumentStatus.DocumentType.Name" Visible="!EditMode" Style="width: 95%" />
-            <RadzenDropDown Multiple="false" Data="@DocTypes" @bind-Value="@PoaDocumentStatus.DocumentType" TextProperty="Name" Visible="EditMode" Style="width: 95%" />
+            <RadzenDropDown Multiple="false" Data="@DocTypes" @bind-Value="@PoaDocumentStatus.DocumentType" 
+                            TextProperty="Name" Visible="EditMode" Style="width: 95%" />
         </RadzenColumn>
         <RadzenColumn Size="3">
             <RadzenText Text="@PoaDocumentStatus.Requested.ToString()" Visible="!EditMode" />
-            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@PoaDocumentStatus.Requested" Visible="EditMode" AllowClear="true" />
+            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@PoaDocumentStatus.Requested" Visible="EditMode" 
+                              AllowClear="true" />
         </RadzenColumn>
         <RadzenColumn Size="3">
             <RadzenText Text="@PoaDocumentStatus.Received.ToString()" Visible="!EditMode" />
-            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@PoaDocumentStatus.Received" Visible="EditMode" AllowClear="true" />
+            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@PoaDocumentStatus.Received" Visible="EditMode" 
+                              AllowClear="true" />
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
@@ -50,47 +51,14 @@
 </RadzenCard>
 
 @code {
-    [Parameter] public required PowerOfAttorneyDocumentStatus PoaDocumentStatus { get; set; }
+    [Parameter, EditorRequired] public required PowerOfAttorneyDocumentStatus PoaDocumentStatus { get; set; }
+    [Parameter, EditorRequired] public required List<PowerOfAttorneyDocumentNameDm> DocTypes { get; set; }
     
-    private List<PowerOfAttorneyDocumentNameDm>? DocTypes { get; set; }
     private bool EditMode { get; set; }
-    
-    private IDataAccessResult<List<PowerOfAttorneyDocumentNameDm>> _PoADocumentsResult = null!;
 
-    private LoadItem PoADocumentsLoad => AddEventNotify(new LoadItem<List<PowerOfAttorneyDocumentNameDm>>
-    {
-        Key = "POADocumentName",
-        AsyncLoadTask = async () => _PoADocumentsResult = await DataAccess.GetPoaDocumentNames(),
-        CacheLoadTask = cache => _PoADocumentsResult = new DataAccessResult<List<PowerOfAttorneyDocumentNameDm>>
-        {
-            Data = (List<PowerOfAttorneyDocumentNameDm>)cache!
-        },
-        ResultVariable = () => _PoADocumentsResult,
-        AfterLoad = () =>
-        {
-            if (_PoADocumentsResult.Success)
-                DocTypes = _PoADocumentsResult.Data!.Select(ThisToThat.ToEntityType<PowerOfAttorneyDocumentNameDm>).ToList();
-        }
-    }, "POA documents");
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await base.OnParametersSetAsync();
-
-        await LoadDocumentTypes();
-    }
-
-    private async Task LoadDocumentTypes()
-    {
-        if (null == DocTypes || DocTypes.Count==0)
-        {
-            await DataAccess.GetCacheOrLoadDataAsync(PoADocumentsLoad);
-        }
-    }
-    
     private async Task SaveChanges()
     {
-        ArgumentNullException.ThrowIfNull(PoaDocumentStatus, nameof(PoaDocumentStatus));
+        ArgumentNullException.ThrowIfNull(PoaDocumentStatus);
         var result = await DataAccess.SetPowerOfAttorneyDocumentStatus(PoaDocumentStatus.Id,
                         PoaDocumentStatus.Requested?.ToDateTime(TimeOnly.Parse("12:00 AM")),
                         PoaDocumentStatus.Received?.ToDateTime(TimeOnly.Parse("12:00 AM")),

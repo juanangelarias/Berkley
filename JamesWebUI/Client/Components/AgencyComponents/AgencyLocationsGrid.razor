@@ -1,84 +1,81 @@
-﻿@using Newtonsoft.Json
-@using James.Shared.Constants
-@using James.Shared.Dto
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesGridLayoutComponentBase<AgencyLocationsDto>
 
 @inject NavigationManager NavigationManager
-@inject IDataAccess DataAccess
 @inject TooltipService TooltipService
+@inject IDataAccess DataAccess
 
 <Theme/>
 
-<RadzenDataGrid @ref="LocationsGrid" Data="RelatedParties" TItem="AgencyLocationsDto"
-                GridLines="DataGridGridLines.Vertical" @bind-Settings="@GridSettings" AllowColumnReorder="true"
-                AllowSorting="true" AllowGrouping="@NotResumed" AllowColumnPicking="@NotResumed" 
-                Density="Density.Compact" Style="@style" IsLoading="@IsLoading" FilterMode="FilterMode.Advanced" 
-                AllowColumnResize="true" CellRender="RenderGridCell">
+<RadzenDataGrid @ref="Grid" Data="RelatedParties" TItem="AgencyLocationsDto" GridLines="DataGridGridLines.Vertical" 
+                @bind-Settings="@GridSettings" AllowColumnReorder="true" AllowSorting="true" AllowGrouping="@NotResumed" 
+                AllowColumnPicking="@NotResumed" Density="Density.Compact" Style="@_style" IsLoading="@IsLoading" 
+                FilterMode="FilterMode.Advanced" AllowColumnResize="true" CellRender="RenderGridCell" 
+                AllowFiltering="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Visible="@NotResumed"
                      Gap="2rem">
-            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="_defaultExportFormat"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="DefaultExportFormat"/>
             <RadzenText Text="@_parentLocation" TextStyle="TextStyle.Body2"/>
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
                 <RadzenButton Icon="settings" Click="SaveGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
-                              Visible="@_userSettingsChanged"/>
-                <RadzenButton Icon="reset_settings" Click="ResetGridSettings"
+                              Visible="@UserSettingsChanged"/>
+                <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
                               MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
-                              Visible="@_userSettingsLoaded"/>
+                              Visible="@UserSettingsLoaded"/>
             </RadzenStack>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Status" Property="Agency.Status" Width="110px"
-                              TextAlign="TextAlign.Center">
+                              TextAlign="TextAlign.Center" Filterable="true">
             <Template Context="relParty">
                 @if (relParty.Agency.Status == "Active")
                 {
-                    <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success"/>
+                    <JamesStatusIcon IconStyle="IconStyle.Success"/>
                 }
                 else
                 {
-                    <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger"/>
+                    <JamesStatusIcon IconStyle="IconStyle.Danger"/>
                 }
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Agency" Property="Agency.AgencyNumber" Width="110px"
-                              TextAlign="TextAlign.Right"/>
+                              TextAlign="TextAlign.Right" Filterable="true"/>
         <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Agency Name" Property="Agency.IdNavigation.FullName"
-                              MinWidth="250px"/>
-        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Address" Filterable="false" MaxWidth="200px"
+                              MinWidth="250px" Filterable="true"/>
+        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Address" Filterable="true" MaxWidth="200px"
                               Property="Agency.MainAddress.Address1" Visible="@NotResumed">
             <Template Context="relatedParty">
                 @relatedParty.Agency.MainAddress?.Address1
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Address2" Filterable="false" MaxWidth="200px"
+        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Address2" Filterable="true" MaxWidth="200px"
                               Property="Agency.IdNavigation.MainAddress.Address2" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.Agency.MainAddress?.Address2
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Address3" Filterable="false" MaxWidth="200px"
+        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Address3" Filterable="true" MaxWidth="200px"
                               Property="Agency.IdNavigation.MainAddress.Address3" Visible="false">
             <Template Context="relatedParty">
                 @relatedParty.Agency.MainAddress?.Address3
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="City" Width="150x"
-                              Property="Agency.IdNavigation.MainAddress.City">
+                              Property="Agency.IdNavigation.MainAddress.City" Filterable="true">
             <Template Context="relatedParty">
                 @relatedParty.Agency.MainAddress?.City
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="State" Width="100px" TextAlign="TextAlign.Center"
-                              Property="Agency.IdNavigation.MainAddress.State">
+                              Property="Agency.IdNavigation.MainAddress.State" Filterable="true">
             <Template Context="relatedParty">
                 @relatedParty.Agency.MainAddress?.StateCode
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Zip Code" Width="110px" TextAlign="TextAlign.Center"
-                              Property="Agency.IdNavigation.MainAddress.PostalCode" Visible="false">
+                              Property="Agency.IdNavigation.MainAddress.PostalCode" Visible="false" Filterable="true">
             <Template Context="relatedParty">
                 @relatedParty.Agency.MainAddress?.PostalCode
             </Template>
@@ -94,32 +91,8 @@
     [Parameter, EditorRequired] public required bool NotResumed { get; set; }
 
     private List<AgencyLocationsDto> RelatedParties { get; set; } = [];
-    private RadzenDataGrid<AgencyLocationsDto> LocationsGrid { get; set; } = null!;
-    private string style = string.Empty;
+    private string _style = string.Empty;
     private string _parentLocation = string.Empty;
-    
-    #region Grid User Settings
-
-    private DataGridSettings? _dataGridSettings;
-    private DataGridSettings? GridSettings
-    {
-        get => _dataGridSettings;
-        set
-        {
-            if (_dataGridSettings == value)
-                return;
-
-            _dataGridSettings = value;
-            _userSettingsChanged = true;
-        }
-    }
-
-    private bool _userSettingsLoaded;
-    private bool _userSettingsChanged;
-
-    #endregion
-
-    private ExportFormat _defaultExportFormat;
     
     private IDataAccessResult<List<AgencyLocationsDto>> _relatedPartiesResult = null!;
 
@@ -140,14 +113,16 @@
             _parentLocation = parentLocation == null
                 ? ""
                 : $"Parent: {parentLocation.Agency.AgencyNumber} - {parentLocation.Agency.IdNavigation.FullName}";
-        }, CacheDuration = new TimeSpan(0,0,0,0,10)
+        }
     }, "agency related parties");
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        
+        GridSettingsKey = "AgencyLocationsGrid";
 
-        style = NotResumed
+        _style = NotResumed
             ? "height: 400px; border-radius: 10px;"
             : "height: 225px; border-radius: 10px;";
 
@@ -179,7 +154,7 @@
         substitutions.AddSubstitution("Agency.MainAddress.PostalCode", "Agency.MainAddress.PostalCode", "Zip");
         substitutions.AddSubstitution("Agency.Status", "Agency.Status", "Status");
 
-        NavigationManager.NavigateTo(ExportDataGridUrl(LocationsGrid,
+        NavigationManager.NavigateTo(ExportDataGridUrl(Grid,
                 $"/export/AgencyRelatedParties/{AgencyId}", format, substitutions),
             true);
     }
@@ -195,72 +170,6 @@
             args.Attributes.Add("style", "background-color: var(--rz-base-background-color);");
         }
     }
-
-    #region Grid User Settings
-
-    private async Task SaveGridSettings()
-    {
-        await ShowLoading();
-        
-        var userGridSettings = new GridSettings
-        {
-            DefaultExportFormat = _defaultExportFormat,
-            Settings = GridSettings
-        };
-
-        var value = JsonConvert.SerializeObject(userGridSettings);
-        var response = await DataAccess.SetUserSetting(UserSettingsKeyConstants.AgencyLocationGrid, value);
-
-        if (!response.Success)
-        {
-            NotifySaveError(response.Errors, "user settings");
-            return;
-        }
-
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-        StateHasChanged();
-    }
-
-    private async Task GetGridSettings()
-    {
-        await ShowLoading();
-        
-        var response = await DataAccess.GetUserSetting(UserSettingsKeyConstants.AgencyLocationGrid);
-        if (!response.Success || response is { Success: true, Data: null })
-        {
-            if (!response.Success)
-                NotifyLoadError(response.Errors, "user settings");
-
-            _userSettingsLoaded = false;
-            return;
-        }
-
-        var userGridSettings = JsonConvert.DeserializeObject<GridSettings>(response.Data!.Value);
-
-        if (userGridSettings == null)
-            return;
-
-        _defaultExportFormat = userGridSettings.DefaultExportFormat;
-        GridSettings = userGridSettings.Settings;
-        _userSettingsLoaded = true;
-        _userSettingsChanged = false;
-    }
-
-    private async Task ResetGridSettings()
-    {
-        await ShowLoading();
-        
-        GridSettings = null;
-        _defaultExportFormat = ExportFormat.Excel;
-        await LocationsGrid.ReloadSettings();
-
-        await DataAccess.ResetUserSetting(UserSettingsKeyConstants.AgencyLocationGrid);
-        _userSettingsLoaded = false;
-        _userSettingsChanged = false;
-    }
-
-    #endregion
 
     private void ShowTooltip(ElementReference element, string type)
     {

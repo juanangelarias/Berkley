@@ -254,10 +254,14 @@ namespace James.Data.Server.GraphQL.Queries
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            return await ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
+            var result =  await ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.IdNavigation)
                 .ThenInclude(agi=>agi.LegalEntityEmails)
+                .Include(ag => ag.Agent)
+                .ThenInclude(ag=>ag.IdNavigation)
+                .ThenInclude(ag=>ag.LegalEntityPhones)
+                .ThenInclude(ag=>ag.PhoneNumber)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.AgencyLicenses)
                 .ThenInclude(ag => ag.Insurer)
@@ -265,6 +269,22 @@ namespace James.Data.Server.GraphQL.Queries
                 .Where(ag => ag.AgencyId == agencyId)
                 .Select(aia => aia.Agent)
                 .ToListAsync();
+            
+            return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
+        }
+
+        [Authorize]
+        public async Task<List<AgencyLicense>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var result = await ctx.AgencyLicenses
+                .Where(lic => lic.AgencyId == agencyId && lic.AgentId == agentId)
+                .Include(lic => lic.Insurer)
+                .ThenInclude(lic => lic.IdNavigation)
+                .ToListAsync();
+            
+            return result;
         }
 
         [Authorize]
@@ -293,15 +313,25 @@ namespace James.Data.Server.GraphQL.Queries
         }
         
         [Authorize]
-        public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId,
+        public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, bool agents,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.AgencyLicenses.Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
-                .Include(lic => lic.Agency)
-                .Include(lic => lic.Insurer)
-                .ThenInclude(lic => lic.IdNavigation)
-                .ToListAsync();
+            var result = agents
+                ? await ctx.AgencyLicenses
+                    .Where(lic => lic.AgencyId == agencyId && lic.AgentId != null)
+                    .Include(i => i.Agency)
+                    .Include(lic => lic.Agent)
+                    .ThenInclude(i => i!.IdNavigation)
+                    .Include(lic => lic.Insurer)
+                    .ThenInclude(lic => lic.IdNavigation)
+                    .ToListAsync()
+                : await ctx.AgencyLicenses
+                    .Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
+                    .Include(i => i.Agency)
+                    .Include(lic => lic.Insurer)
+                    .ThenInclude(lic => lic.IdNavigation)
+                    .ToListAsync();
 
             return result;
         }
@@ -315,12 +345,14 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<List<PowerOfAttorney>> GetAgencyPOAs(Guid agencyId,
+        public async Task<List<PowerOfAttorney>> GetAgencyPOAs(Guid agencyId, bool activeOnly,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            return await ctx.PowerOfAttorneys
-                .Where(p => p.AgencyId.Equals(agencyId))
+            var result = await ctx.PowerOfAttorneys
+                .Where(p => p.AgencyId.Equals(agencyId) &&
+                            (activeOnly && (p.Status == "Active" || p.Status == "In Process") ||
+                             !activeOnly && p.Status == "Terminated"))
                 .Include(p => p.Insurer)
                 .ThenInclude(i => i.IdNavigation)
                 .Include(p => p.PowerOfAttorneyDocumentStatuses)
@@ -328,6 +360,8 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(p => p.StatusNavigation)
                 .Include(p => p.Agency)
                 .ToListAsync();
+            
+            return result;
         }
 
         [Authorize]

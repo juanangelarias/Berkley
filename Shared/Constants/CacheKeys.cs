@@ -23,6 +23,8 @@ public static class CacheKeys
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";
     public static string LegalEntityEmails(Guid id) => $"LegalEntityPhoneEmails-{id}";
     public static string LegalEntityPhoneNumbers(Guid id) => $"LegalEntityPhoneNumbers-{id}";
+    public static string LastIndemnitor(string accountNumber) => $"LastIndemnitor-{accountNumber}";
+    public static string LastPrivateEquity(string accountNumber) => $"LastPrivateEquity-{accountNumber}";
     
     // Fixed
     // A

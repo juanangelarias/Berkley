@@ -299,6 +299,8 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum);
         public Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum);
         public Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum);
+        public Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum);
+        public Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum);
     }
 
     public interface ISaveDataResult

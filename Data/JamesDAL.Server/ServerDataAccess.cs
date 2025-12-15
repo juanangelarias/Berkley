@@ -830,6 +830,16 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAccountAlerts(period, accountNum, contextFactory));
         }
+        
+        public async Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetLastPrivateEquityByAccount(accountNum, contextFactory));
+        }
+        
+        public async Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetLastIndemnitorByAccount(accountNum, contextFactory));
+        }
 
         private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<T>> dataFunc)
         {

@@ -104,7 +104,7 @@
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;" Value="11/12/2025"/>
+                        <RadzenTextBox Disabled="true" Value="@(_giaExecutionDate)" Style="color: black;" Value="11/12/2025"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
@@ -135,27 +135,27 @@
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="Shared Surety" Variant="Variant.Text">
-                        <RadzenRadioButtonList Value="false" TValue="bool"
+                        <RadzenRadioButtonList Value="@(Account.SharedSurety != null)" TValue="bool"
                                                Name="IsSharedSurety" Disabled="true" Style="color: black;">
                             <Items>
                                 <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
                                 <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
                             </Items>
                         </RadzenRadioButtonList>
-                        @*Value="@(GeneralInfoModel.IsSharedSurety ? "Yes" : "No" )"/>*@
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="8">
                     <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                        <RadzenTextBox Value="Private Equity text" Name="PrivateEquityText" Disabled="true"
+                        <RadzenTextBox Value="@_lastPrivateEquity?.FirmName" Name="PrivateEquityText" Disabled="true"
                                        Style="color: black;"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="4">
                     <JamesFormField Text="Year" Variant="Variant.Text">
-                        <RadzenTextBox Value="2025" Name="PrivateEquityYear" Disabled="true" Style="color: black;"/>
+                        <RadzenTextBox Value="@_lastPrivateEquity?.Year" Name="PrivateEquityYear" Disabled="true" 
+                                       Style="color: black;"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -163,7 +163,7 @@
                 <RadzenColumn Size="12">
                     <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
                         <RadzenTextBox Disabled="true" Style="color: black;"
-                                       Value="Created by {USER} on {CREATION DATE}"/>
+                                       Value="@_privateEquitySnapShot"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -179,6 +179,9 @@
     private AccountGeneralInfoModel GeneralInfoModel { get; set; } = new();
     private List<BusinessTypeClassCodeDm> _businessClasses = [];
     private List<Sic> _sicCodes = [];
+    private PrivateEquity? _lastPrivateEquity;
+    private string _privateEquitySnapShot = "";
+    private string? _giaExecutionDate;
 
     private readonly List<string> _endFiscalYearList =
         ["01/31", "02/28", "03/31", "04/30", "05/31", "06/30", "07/31", "08/31", "09/30", "10/31", "11/30", "12/31"];
@@ -189,7 +192,7 @@
 
     private IDataAccessResult<List<BusinessTypeClassCodeDm>> _businessClassResult = null!;
 
-    private LoadItem BusinessClassLoad => AddEventNotify(new LoadItem
+    private LoadItem BusinessClassLoad => AddEventNotify(new LoadItem<List<BusinessTypeClassCodeDm>>
     {
         Key = CacheKeys.BusinessClasses,
         AsyncLoadTask = async () => _businessClassResult = await DataAccess.GetAllBusinessTypeClassCodes(),
@@ -201,13 +204,59 @@
         AfterLoad = () => { _businessClasses = _businessClassResult.Data!; }
     }, "business classes");
 
-    #endregion*/
+    #endregion
+
+    #region LastPrivateEquity Load
+
+    private IDataAccessResult<PrivateEquity?> _lastPrivateEquityResult = null!;
+
+    private LoadItem LastPrivateEquityLoad => AddEventNotify(new LoadItem<PrivateEquity?>
+    {
+        Key = CacheKeys.LastPrivateEquity(Account.AccountNum),
+        AsyncLoadTask = async () => _lastPrivateEquityResult = await DataAccess.GetLastPrivateEquityByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _lastPrivateEquityResult = new DataAccessResult<PrivateEquity?>
+        {
+            Data = (PrivateEquity?)cache!
+        },
+        ResultVariable = () => _lastPrivateEquityResult,
+        AfterLoad = () =>
+        {
+            _lastPrivateEquity = _lastPrivateEquityResult.Data;
+            _privateEquitySnapShot = $"Created by {_lastPrivateEquity?.EnteredByNavigation?.FullName ?? "Unknown User"} " +
+                                 $"on {_lastPrivateEquity?.Created:MM/dd/yyyy}";
+        }
+    }, "last private equity");
+
+    #endregion
+
+    #region LastIndemnitor Load
+
+    private IDataAccessResult<Indemnitor?> _lastIndemnitorResult = null!;
+
+    private LoadItem LastIndemnitorLoad => AddEventNotify(new LoadItem<Indemnitor?>
+    {
+        Key = CacheKeys.LastIndemnitor(Account.AccountNum),
+        AsyncLoadTask = async () => _lastIndemnitorResult = await DataAccess.GetLastIndemnitorByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _lastIndemnitorResult = new DataAccessResult<Indemnitor?>
+        {
+            Data = (Indemnitor?)cache!
+        },
+        ResultVariable = () => _lastIndemnitorResult,
+        AfterLoad = () =>
+        {
+            _giaExecutionDate = _lastIndemnitorResult.Data?.ExecutionDate == null
+                ? ""
+                : _lastIndemnitorResult.Data?.ExecutionDate.Value.ToString("MM/dd/yyyy");
+        }
+    }, "last indemnitor");
+
+    #endregion
 
     #region SICCodes
 
     private IDataAccessResult<List<Sic>> _sicCodesResult = null!;
 
-    private LoadItem SicCodesLoad => AddEventNotify(new LoadItem
+    private LoadItem SicCodesLoad => AddEventNotify(new LoadItem<List<Sic>>
     {
         Key = CacheKeys.SicCodes,
         AsyncLoadTask = async () => _sicCodesResult = await DataAccess.GetAllSicCodes(),
@@ -230,9 +279,11 @@
         await LoadReferenceTables();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnParametersSetAsync()
     {
-        await base.OnAfterRenderAsync(firstRender);
+        await  base.OnParametersSetAsync();
+
+        await DataAccess.ParallelGetCacheOrDataAsync(LastPrivateEquityLoad, LastIndemnitorLoad);
     }
 
     private void ToggleEditMode()
@@ -243,12 +294,11 @@
             FiscalYearEnd = Account.FiscalYearEnd,
             GIAExecutionDate = null, // Account.GIAExecutionDate
             PriorSuretyCompany = Account.PriorSuretyCompany,
-            IsSharedSurety = false, // Account.IsSharedSurety
-            AccountIndustry = "", // Account.Account Industry
+            IsSharedSurety =  Account.SharedSurety != null,
+            AccountIndustry = Account.IndustryCode,
             PrivateEquityText = "", // From the last Private Equity Log field
             PrivateEquityDate = null, // From the last Private Equity Log field
-            SnapshotHistoricData = "Created by {USER} on {CREATION DATE}"
-            // From the last Private Equity Log field
+            SnapshotHistoricData = "Created by {USER} on {CREATION DATE}" // From the last Private Equity Log field
         };
 
         _isEditMode = !_isEditMode;
@@ -293,5 +343,4 @@
         GeneralInfoModel = new();
         _isEditMode = false;
     }
-
 }

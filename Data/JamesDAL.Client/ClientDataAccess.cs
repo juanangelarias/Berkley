@@ -967,6 +967,22 @@ namespace James.Data.Client
 
             return response;
         }
+        public async Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum)
+        {
+            var response = await ExecuteGet<PrivateEquity?>(async () => 
+                await jamesClient.GetLastPrivateEquityByAccount.ExecuteAsync(accountNum), 
+                "LastPrivateEquityByAccount");
+
+            return response;
+        }
+        public async Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum)
+        {
+            var response = await ExecuteGet<Indemnitor?>(async () =>
+                    await jamesClient.GetLastIndemnitorByAccount.ExecuteAsync(accountNum),
+                "LastIndemnitorByAccount");
+
+            return response;
+        }
 
         private sealed class AddressModifiedWatchClass(
             IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription) :

@@ -284,3 +284,21 @@ query GetAllAccountWatches($input: String!) {
         watchStatus
     }
 }
+
+query GetLastPrivateEquityByAccount($input: String!) {
+    lastPrivateEquityByAccount(accountNum: $input) {
+        created
+        enteredBy
+        enteredByNavigation {
+            fullName
+        }
+        firmName
+        year
+    }
+}
+
+query GetLastIndemnitorByAccount($input: String!){
+    lastIndemnitorByAccount(accountNum: $input){
+        executionDate
+    }
+}

@@ -76,13 +76,13 @@
     </RadzenRow>
     <RadzenRow>
         <RadzenPanel Style="border-radius: 10px; width: 100%;" class="rz-shadow-7 rz-p-2">
-            <RadzenTabs @ref="@MainTabs" @bind-SelectedIndex="@_mainTabItem" Change="@(() => MainTabsChanged())">
+            <RadzenTabs @ref="@MainTabs" @bind-SelectedIndex="@_mainTabItem" Change="@(args => MainTabsChanged(args))">
                 <Tabs>
                     <RadzenTabsItem Text="Account Info">
                         <Animate Animation="new FadeAnimation()" Duration="TimeSpan.FromSeconds(0.5)">
-                            <RadzenTabs @ref="@GeneralInfoTabs" TabControlName="GeneralInfoTabs"
-                                        @bind-SelectedIndex="@_generalInfoTabItem" 
-                                        Change="@(() => GeneralInfoTabsChanged())">
+                            <RadzenTabs @ref="@AccountInfoTabs" TabControlName="AccountInfoTabs"
+                                        @bind-SelectedIndex="@_accountInfoTabItem" 
+                                        Change="@(args => AccountInfoTabsChanged(args))">
                                 <Tabs>
                                     <RadzenTabsItem Text="General Information" >
                                         <AccountGeneralInformation/>
@@ -132,11 +132,11 @@
     
     [Parameter]
     [SupplyParameterFromQuery]
-    public string? TabLev1 { get; set; }
+    public string? MainTab { get; set; }
     
     [Parameter]
     [SupplyParameterFromQuery]
-    public string? TabLev2 { get; set; }
+    public string? AccInfoTab { get; set; }
 
     private string _accountStatus = null!;
     private bool _isAccountLoaded;
@@ -154,12 +154,35 @@
     private bool _alertOrClaimExist;
     private RadzenTabs MainTabs { get; set; } = new();
     private int _mainTabItem = 0;
-    private RadzenTabs GeneralInfoTabs { get; set; } = new();
-    private int _generalInfoTabItem = 0;
+    private RadzenTabs AccountInfoTabs { get; set; } = new();
+    private int _accountInfoTabItem = 0;
+    private bool _isNewRender = true;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _isNewRender = true;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        _mainTabItem = !string.IsNullOrEmpty(MainTab)
+            ? Convert.ToInt32(MainTab)
+            : 0;
+        
+        if (_mainTabItem == 0) // This tab contains General Info tabs
+        {
+            _accountInfoTabItem = !string.IsNullOrEmpty(AccInfoTab)
+                ? Convert.ToInt32(AccInfoTab)
+                : 0;
+        }
+        
+        if (!_isNewRender)
+            return;
+        
+        _isNewRender = false;
 
         var statusLog = Account.AccountStatusLogs
             .OrderByDescending(o => o.Effective)
@@ -198,22 +221,7 @@
         _firstIndemnityDate = firstIndemnity == null
             ? "First indemnity: None"
             : $"First indemnity: {firstIndemnity:MM/dd/yyyy}";
-        
-        // Tabs
 
-        _mainTabItem = !string.IsNullOrEmpty(TabLev1)
-                ? Convert.ToInt32(TabLev1)
-                : 0;
-
-        if (_mainTabItem == 0)
-        {
-            _generalInfoTabItem = !string.IsNullOrEmpty(TabLev2)
-                ? Convert.ToInt32(TabLev2)
-                : 0;
-        }
-        
-        // Tabs
-        
         _isAccountLoaded = true;
     }
 
@@ -273,30 +281,28 @@
         Account.IdNavigation.FullName = newName;
     }
 
-    private async Task MainTabsChanged()
+    private async Task MainTabsChanged(int index)
     {
         var queryParams = new Dictionary<string, object?>
         {
-            { "TabLev1", MainTabs.SelectedTab.Index },
+            { "MainTab", index },
+            { "AccInfoTab", 0 }
         };
-
-        if (_mainTabItem == 0)
-            queryParams.Add("TabLev2", GeneralInfoTabs.SelectedTab.Index);
 
         var newUri = Navigation.GetUriWithQueryParameters(queryParams);
         await JSRuntime.InvokeVoidAsync("history.replaceState", null, newUri);
         Navigation.NavigateTo(newUri, false);
     }
     
-    private async Task  GeneralInfoTabsChanged()
+    private async Task  AccountInfoTabsChanged(int index)
     {
         if (_mainTabItem != 0) 
             return;
-        
+
         var queryParams = new Dictionary<string, object?>
         {
-            { "TabLev1", MainTabs.SelectedTab.Index },
-            { "TabLev2", GeneralInfoTabs.SelectedTab.Index }
+            { "MainTab", MainTabs.SelectedTab.Index },
+            { "AccInfoTab", index }
         }; 
             
         var newUri = Navigation.GetUriWithQueryParameters(queryParams);

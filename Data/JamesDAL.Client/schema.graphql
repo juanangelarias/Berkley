@@ -591,6 +591,7 @@ type Query {
   allBusinessTypeClassCodes: [BusinessTypeClassCodeDm!]!
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
+  allIndustryCodes: [IndustryCodeDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!

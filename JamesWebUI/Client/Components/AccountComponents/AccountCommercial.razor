@@ -1,125 +1,125 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@using Blazorise.Animate
+@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 @inject TooltipService TooltipService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 <Theme/>
 
-@if (IsAccountLoaded)
-{
-    <RadzenColumn Size="12">
-        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-            <RadzenRow>
-                <RadzenPanel Style="border-radius: 10px;" class="rz-shadow-7 rz-p-2" Collapsed="@_summaryView">
-                    <HeaderTemplate>
-                        <RadzenCard Variant="Variant.Text" Style="width: 100%;" class="rz-p-0">
-                            <RadzenRow JustifyContent="JustifyContent.SpaceBetween" class="rz-text-align-center"
-                                       Gap="1rem">
-                                <RadzenColumn Size="8">
-                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem"
-                                                 AlignItems="AlignItems.Center" Style="padding: 0.5rem;">
-                                        <RadzenText TextStyle="TextStyle.DisplayH5" Style="margin-right: 20px;"
-                                                    Text="@Account.IdNavigation.FullName"/>
-                                        <RadzenIcon Icon="fiber_manual_record" IconStyle="@AccountStatusStyle"
-                                                    class="filled-icon"/>
-                                        <RadzenText Text="@AccountStatus" TextStyle="TextStyle.Body2"/>
-                                    </RadzenStack>
-                                </RadzenColumn>
-                                <RadzenColumn Size="4">
-                                    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
-                                                 JustifyContent="JustifyContent.End">
-                                        <RadzenText Text="@(FirstIndemnityDate)"
-                                                    Style="margin-top: 10px; margin-right: 10px;"/>
-                                        <RadzenIcon Icon="@_notificationIcon" Style="@_iconStyle1"
-                                                    class="icon-hover-effect"
-                                                    IconStyle="@_iconStyle" @onclick="@NotificationToggle"
-                                                    MouseEnter="@(args => NotificationTooltip(args))"/>
-                                    </RadzenStack>
-                                </RadzenColumn>
-                            </RadzenRow>
-                            <RadzenRow Visible="_summaryView">
-                                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center"
-                                             Style="width: 100%">
-                                    <RadzenButton Icon="expand_more" Variant="Variant.Text"
-                                                  Click="@(() => _summaryView = !_summaryView)"/>
-                                </RadzenStack>
-                            </RadzenRow>
-                        </RadzenCard>
-                    </HeaderTemplate>
-                    <ChildContent>
-                        <RadzenRow JustifyContent="JustifyContent.End" Gap="0.5rem">
-                            <RadzenColumn Size="@_columnSize">
-                                <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
-                                    <AccountBasicInfo Account="@Account" OnAccountNameChange="@AccountNameChanged"/>
-                                </RadzenCard>
-                            </RadzenColumn>
-                            <RadzenColumn Size="@_columnSize">
-                                <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
-                                    <AccountAgencyAndAddresses Account="@Account"/>
-                                </RadzenCard>
-                            </RadzenColumn>
-                            <RadzenColumn Size="@_columnSize" Visible="@(_isNotificationVisible)">
-                                <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
-                                    <AccountAlerts AccountNum="@Account.AccountNum"
-                                                   OnAlertOrClaimExist="@SetIsAlertOrClaimExist"/>
-                                </RadzenCard>
-                            </RadzenColumn>
-                        </RadzenRow>
-                    </ChildContent>
-                    <FooterTemplate>
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Visible="@(_isAccountLoaded)">
+    <RadzenRow>
+        <RadzenPanel Style="border-radius: 10px;" class="rz-shadow-7 rz-p-2" Collapsed="@_summaryView">
+            <HeaderTemplate>
+                <RadzenCard Variant="Variant.Text" Style="width: 100%;" class="rz-p-0">
+                    <RadzenRow JustifyContent="JustifyContent.SpaceBetween" class="rz-text-align-center"
+                               Gap="1rem">
+                        <RadzenColumn Size="8">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem"
+                                         AlignItems="AlignItems.Center" Style="padding: 0.5rem;">
+                                <RadzenText TextStyle="TextStyle.DisplayH5" Style="margin-right: 20px;"
+                                            Text="@Account.IdNavigation.FullName"/>
+                                <JamesStatusIcon IconStyle="@AccountStatusStyle"/>
+                                <RadzenText Text="@_accountStatus" TextStyle="TextStyle.Body2"/>
+                            </RadzenStack>
+                        </RadzenColumn>
+                        <RadzenColumn Size="4">
+                            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                                         JustifyContent="JustifyContent.End">
+                                <RadzenText Text="@(_firstIndemnityDate)"
+                                            Style="margin-top: 10px; margin-right: 10px;"/>
+                                <RadzenIcon Icon="@_notificationIcon" Style="@_iconStyle1"
+                                            class="icon-hover-effect"
+                                            IconStyle="@_iconStyle" @onclick="@NotificationToggle"
+                                            MouseEnter="@(args => NotificationTooltip(args))"/>
+                            </RadzenStack>
+                        </RadzenColumn>
+                    </RadzenRow>
+                    <RadzenRow Visible="_summaryView">
                         <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center"
                                      Style="width: 100%">
-                            <RadzenButton Icon="expand_less" Variant="Variant.Text"
+                            <RadzenButton Icon="expand_more" Variant="Variant.Text"
                                           Click="@(() => _summaryView = !_summaryView)"/>
                         </RadzenStack>
-                    </FooterTemplate>
-                </RadzenPanel>
-            </RadzenRow>
-            <RadzenRow>
-                <RadzenPanel Style="border-radius: 10px; width: 100%;" class="rz-shadow-7 rz-p-2">
-                    <PositionSavingTabs TabControlName="TabsMain" @ref="@MainTabs"
-                                        @bind-SelectedIndex="@MainTabs.NewSelectedIndex">
-                        <Tabs>
-                            <PositionSavingTabsItem Text="Account Info" TabName="AccountInfo">
-                                <PositionSavingTabs @ref="@GeneralInfoTabs" TabControlName="GeneralInfoTabs"
-                                                    @bind-SelectedIndex="@GeneralInfoTabs.NewSelectedIndex">
-                                    <Tabs>
-                                        <PositionSavingTabsItem Text="General Information" TabName="GeneralInformation">
-                                            <AccountGeneralInformation Account="@Account"/>
-                                        </PositionSavingTabsItem>
-                                        <PositionSavingTabsItem Text="Credit Rating" TabName="CreditRating">
+                    </RadzenRow>
+                </RadzenCard>
+            </HeaderTemplate>
+            <ChildContent>
+                <RadzenRow JustifyContent="JustifyContent.End" Gap="0.5rem">
+                    <RadzenColumn Size="@_columnSize">
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
+                            <AccountBasicInfo Account="@Account" OnAccountNameChange="@AccountNameChanged"/>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn Size="@_columnSize">
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
+                            <AccountAgencyAndAddresses Account="@Account"/>
+                        </RadzenCard>
+                    </RadzenColumn>
+                    <RadzenColumn Size="@_columnSize" Visible="@(_isNotificationVisible)">
+                        <RadzenCard Style="width: 100%; height: 500px;" Variant="Variant.Text" class="rz-p-0">
+                            <AccountAlerts AccountNum="@Account.AccountNum"
+                                           OnAlertOrClaimExist="@SetIsAlertOrClaimExist"/>
+                        </RadzenCard>
+                    </RadzenColumn>
+                </RadzenRow>
+            </ChildContent>
+            <FooterTemplate>
+                <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center"
+                             Style="width: 100%">
+                    <RadzenButton Icon="expand_less" Variant="Variant.Text"
+                                  Click="@(() => _summaryView = !_summaryView)"/>
+                </RadzenStack>
+            </FooterTemplate>
+        </RadzenPanel>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenPanel Style="border-radius: 10px; width: 100%;" class="rz-shadow-7 rz-p-2">
+            <RadzenTabs @ref="@MainTabs" @bind-SelectedIndex="@_mainTabItem" Change="@(() => MainTabsChanged())">
+                <Tabs>
+                    <RadzenTabsItem Text="Account Info">
+                        <Animate Animation="new FadeAnimation()" Duration="TimeSpan.FromSeconds(0.5)">
+                            <RadzenTabs @ref="@GeneralInfoTabs" TabControlName="GeneralInfoTabs"
+                                        @bind-SelectedIndex="@_generalInfoTabItem" 
+                                        Change="@(() => GeneralInfoTabsChanged())">
+                                <Tabs>
+                                    <RadzenTabsItem Text="General Information" >
+                                        <AccountGeneralInformation Account="@Account"/>
+                                    </RadzenTabsItem>
+                                    <RadzenTabsItem Text="Credit Rating">
 
-                                        </PositionSavingTabsItem>
-                                        <PositionSavingTabsItem Text="Bonded Principle" TabName="BondedPrinciple">
+                                    </RadzenTabsItem>
+                                    <RadzenTabsItem Text="Bonded Principle">
 
-                                        </PositionSavingTabsItem>
-                                    </Tabs>
-                                </PositionSavingTabs>
-                            </PositionSavingTabsItem>
-                            <PositionSavingTabsItem Text="Line of Authority" TabName="LineOfAuthority">
+                                    </RadzenTabsItem>
+                                </Tabs>
+                            </RadzenTabs>
+                        </Animate>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Line of Authority" TabName="LineOfAuthority">
 
-                            </PositionSavingTabsItem>
-                            <PositionSavingTabsItem Text="Bond Requests" TabName="BondRequests">
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Bond Requests" TabName="BondRequests">
 
-                            </PositionSavingTabsItem>
-                            <PositionSavingTabsItem Text="Financials" TabName="Financials">
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Financials" TabName="Financials">
 
-                            </PositionSavingTabsItem>
-                            <PositionSavingTabsItem Text="WIP" TabName="Wip">
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="WIP" TabName="Wip">
 
-                            </PositionSavingTabsItem>
-                            <PositionSavingTabsItem Text="Bank and Security" TabName="BankAndSecurity">
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Bank and Security" TabName="BankAndSecurity">
 
-                            </PositionSavingTabsItem>
-                            <PositionSavingTabsItem Text="Virtual File" TabName="VirtualFile">
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Virtual File" TabName="VirtualFile">
 
-                            </PositionSavingTabsItem>
-                        </Tabs>
-                    </PositionSavingTabs></RadzenPanel>
-            </RadzenRow>
-        </RadzenStack>
-    </RadzenColumn>
-}
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+        </RadzenPanel>
+    </RadzenRow>
+</RadzenStack>
 
 <style>
     .icon-hover-effect:hover {
@@ -129,11 +129,19 @@
 
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? TabLev1 { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? TabLev2 { get; set; }
 
-    private string AccountStatus;
-    private bool IsAccountLoaded;
-    private string FirstIndemnityDate;
-    private bool IsAccountActive;
+    private string _accountStatus = null!;
+    private bool _isAccountLoaded;
+    private string _firstIndemnityDate = null!;
+    private bool _isAccountActive;
     private IconStyle AccountStatusStyle { get; set; }
     private bool _summaryView = true;
     private bool _isNotificationVisible = true;
@@ -144,8 +152,10 @@
     private Variant _variant = Variant.Flat;
     private ButtonStyle _notificationStyle = ButtonStyle.Info;
     private bool _alertOrClaimExist;
-    private PositionSavingTabs MainTabs { get; set; } = new();
-    private PositionSavingTabs GeneralInfoTabs { get; set; } = new();
+    private RadzenTabs MainTabs { get; set; } = new();
+    private int _mainTabItem = 0;
+    private RadzenTabs GeneralInfoTabs { get; set; } = new();
+    private int _generalInfoTabItem = 0;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -156,7 +166,7 @@
             .FirstOrDefault();
 
         var accountStatus = statusLog?.AccountStatus ?? "";
-        AccountStatus = accountStatus.ToLower() switch
+        _accountStatus = accountStatus.ToLower() switch
         {
             "active" => "Active",
             "term. agent" => "Terminated",
@@ -169,7 +179,7 @@
             _ => "Not Defined"
         };
 
-        AccountStatusStyle = AccountStatus switch
+        AccountStatusStyle = _accountStatus switch
         {
             "Active" => IconStyle.Success,
             "Prospect" => IconStyle.Warning,
@@ -177,7 +187,7 @@
             _ => IconStyle.Base
         };
 
-        IsAccountActive = statusLog?.AccountStatusNavigation.Active ?? false;
+        _isAccountActive = statusLog?.AccountStatusNavigation.Active ?? false;
 
         var firstIndemnityResult = await DataAccess.GetFirstIndemnityDate(Account.AccountNum);
 
@@ -185,11 +195,26 @@
             ? firstIndemnityResult.Data
             : null;
 
-        FirstIndemnityDate = firstIndemnity == null
+        _firstIndemnityDate = firstIndemnity == null
             ? "First indemnity: None"
             : $"First indemnity: {firstIndemnity:MM/dd/yyyy}";
+        
+        // Tabs
 
-        IsAccountLoaded = true;
+        _mainTabItem = !string.IsNullOrEmpty(TabLev1)
+                ? Convert.ToInt32(TabLev1)
+                : 0;
+
+        if (_mainTabItem == 0)
+        {
+            _generalInfoTabItem = !string.IsNullOrEmpty(TabLev2)
+                ? Convert.ToInt32(TabLev2)
+                : 0;
+        }
+        
+        // Tabs
+        
+        _isAccountLoaded = true;
     }
 
     private void NotificationToggle()
@@ -248,4 +273,34 @@
         Account.IdNavigation.FullName = newName;
     }
 
+    private async Task MainTabsChanged()
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "TabLev1", MainTabs.SelectedTab.Index },
+        };
+
+        if (_mainTabItem == 0)
+            queryParams.Add("TabLev2", GeneralInfoTabs.SelectedTab.Index);
+
+        var newUri = Navigation.GetUriWithQueryParameters(queryParams);
+        await JSRuntime.InvokeVoidAsync("history.replaceState", null, newUri);
+        Navigation.NavigateTo(newUri, false);
+    }
+    
+    private async Task  GeneralInfoTabsChanged()
+    {
+        if (_mainTabItem != 0) 
+            return;
+        
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "TabLev1", MainTabs.SelectedTab.Index },
+            { "TabLev2", GeneralInfoTabs.SelectedTab.Index }
+        }; 
+            
+        var newUri = Navigation.GetUriWithQueryParameters(queryParams);
+        await JSRuntime.InvokeVoidAsync("history.replaceState", null, newUri);
+        Navigation.NavigateTo(newUri, false);
+    }
 }

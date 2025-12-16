@@ -43,6 +43,7 @@ public static class CacheKeys
     // E
     public const string EmailTypes = "EmailTypes";
     // I
+    public const string IndustryCodes = "IndustryCodes";
     public const string Insurers = "Insurers";
     // P
     public const string PhoneTypes = "PhoneTypes";

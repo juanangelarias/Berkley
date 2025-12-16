@@ -1343,6 +1343,12 @@ namespace James.Data.Client
                 }), "SetAgencyLicense");
         }
 
+        public async Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes()
+        {
+            return await ExecuteGet<List<IndustryCodeDm>>( async () => 
+                await jamesClient.GetAllIndustryCodes.ExecuteAsync(), "GetAllIndustryCodes");
+        }
+
         #region User Settings
 
         public async Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings()

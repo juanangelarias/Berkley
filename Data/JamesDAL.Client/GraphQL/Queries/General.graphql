@@ -226,3 +226,10 @@ query GetAllSicCodes {
         name
     }
 }
+
+query GetAllIndustryCodes {
+    allIndustryCodes {
+        code
+        industry
+    }
+}

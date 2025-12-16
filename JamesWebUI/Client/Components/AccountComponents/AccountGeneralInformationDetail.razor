@@ -13,16 +13,13 @@
                 <RadzenRow>
                     <RadzenColumn Size="6">
                         <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
-                            <RadzenDatePicker @bind-Value=@GeneralInfoModel.GIAExecutionDate DateFormat="MM/dd/yyyy"
-                                              Name="GIAExecutionDate"/>
-                            <RadzenRequiredValidator Text="GIA Execution Date is required."
-                                                     Component="GIAExecutionDate"/>
+                            <RadzenTextBox Disabled="true" Value="@_giaExecutionDate" Style="color: black;"/>
                         </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="6">
                         <JamesFormField Text="Account FYE Date" Variant="Variant.Text">
                             <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.FiscalYearEnd"
-                                            Data="@_endFiscalYearList" AllowClear="true" Name="FiscalYearEnd"/>
+                                            Data="@_endFiscalYearList" AllowFiltering="true" Name="FiscalYearEnd"/>
                         </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
@@ -41,11 +38,10 @@
                 <RadzenRow>
                     <RadzenColumn Size="12">
                         <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                            <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.AccountIndustry"
-                                            ValueProperty="@nameof(Sic.Code)"
-                                            TextProperty="@nameof(Sic.Name)"
-                                            AllowFiltering="true" Data="@_sicCodes" AllowClear="false"
-                                            Name="SicCode"/>
+                            <RadzenDropDown TValue="string" Data="_industryCodes"
+                                            TextProperty="@nameof(JamesLookup.Name)"
+                                            ValueProperty="@nameof(JamesLookup.Code)"
+                                            AllowFiltering="true" @bind-Value="@Account.IndustryCode"/>
                             <RadzenRequiredValidator Text="Account Industry is required." Component="SicCode"/>
                         </JamesFormField>
                     </RadzenColumn>
@@ -72,14 +68,22 @@
                 <RadzenRow>
                     <RadzenColumn Size="8">
                         <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityText" Name="PrivateEquityText"/>
+                            <RadzenTextBox Value="@_lastPrivateEquity?.FirmName" Name="PrivateEquityText" Disabled="true"
+                                           Style="color: black;"/>
                         </JamesFormField>
                     </RadzenColumn>
                     <RadzenColumn Size="4">
                         <JamesFormField Text="Year" Variant="Variant.Text">
-                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityDate" Name="PrivateEquityYear"/>
-                            <RadzenRegexValidator Text="The Year should contain 4 digits" Pattern="@RegExs.Year"/>
-                            <RadzenLengthValidator Text="The Year should contain 4 digits" Max="4"/>
+                            <RadzenTextBox Value="@_lastPrivateEquity?.Year" Name="PrivateEquityYear" Disabled="true"
+                                           Style="color: black;"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="12">
+                        <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
+                            <RadzenTextBox Disabled="true" Style="color: black;"
+                                           Value="@_privateEquitySnapShot"/>
                         </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
@@ -104,7 +108,7 @@
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Value="@(_giaExecutionDate)" Style="color: black;" Value="11/12/2025"/>
+                        <RadzenTextBox Disabled="true" Value="@(_giaExecutionDate)" Style="color: black;"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
@@ -123,7 +127,7 @@
             <RadzenRow>
                 <RadzenColumn Size="12">
                     <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                        <RadzenTextBox Disabled="true" Style="color: black;"/> @*Value="@Account.AccountIndustry"/>*@
+                        <RadzenTextBox Disabled="true" Style="color:black" Value="@AccountIndustry()"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
@@ -154,7 +158,7 @@
                 </RadzenColumn>
                 <RadzenColumn Size="4">
                     <JamesFormField Text="Year" Variant="Variant.Text">
-                        <RadzenTextBox Value="@_lastPrivateEquity?.Year" Name="PrivateEquityYear" Disabled="true" 
+                        <RadzenTextBox Value="@_lastPrivateEquity?.Year" Name="PrivateEquityYear" Disabled="true"
                                        Style="color: black;"/>
                     </JamesFormField>
                 </RadzenColumn>
@@ -179,6 +183,7 @@
     private AccountGeneralInfoModel GeneralInfoModel { get; set; } = new();
     private List<BusinessTypeClassCodeDm> _businessClasses = [];
     private List<Sic> _sicCodes = [];
+    private List<JamesLookup> _industryCodes = [];
     private PrivateEquity? _lastPrivateEquity;
     private string _privateEquitySnapShot = "";
     private string? _giaExecutionDate;
@@ -206,6 +211,34 @@
 
     #endregion
 
+    #region IndustryCodes Load
+
+    private IDataAccessResult<List<IndustryCodeDm>> _industryCodesResult = null!;
+
+    private LoadItem IndustryCodesLoad => AddEventNotify(new LoadItem<List<IndustryCodeDm>>
+    {
+        Key = CacheKeys.IndustryCodes,
+        AsyncLoadTask = async () => _industryCodesResult = await DataAccess.GetAllIndustryCodes(),
+        CacheLoadTask = cache => _industryCodesResult = new DataAccessResult<List<IndustryCodeDm>>
+        {
+            Data = (List<IndustryCodeDm>)cache!
+        },
+        ResultVariable = () => _industryCodesResult,
+        AfterLoad = () =>
+        {
+            _industryCodes = _industryCodesResult.Data!
+                .Select(s => new JamesLookup
+                {
+                    Id = s.Id,
+                    Code = s.Code,
+                    Name = $"{s.Code} - {s.Industry}"
+                })
+                .ToList();
+        }
+    }, "industry codes");
+
+    #endregion
+
     #region LastPrivateEquity Load
 
     private IDataAccessResult<PrivateEquity?> _lastPrivateEquityResult = null!;
@@ -223,7 +256,7 @@
         {
             _lastPrivateEquity = _lastPrivateEquityResult.Data;
             _privateEquitySnapShot = $"Created by {_lastPrivateEquity?.EnteredByNavigation?.FullName ?? "Unknown User"} " +
-                                 $"on {_lastPrivateEquity?.Created:MM/dd/yyyy}";
+                                     $"on {_lastPrivateEquity?.Created:MM/dd/yyyy}";
         }
     }, "last private equity");
 
@@ -281,7 +314,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        await  base.OnParametersSetAsync();
+        await base.OnParametersSetAsync();
 
         await DataAccess.ParallelGetCacheOrDataAsync(LastPrivateEquityLoad, LastIndemnitorLoad);
     }
@@ -294,7 +327,7 @@
             FiscalYearEnd = Account.FiscalYearEnd,
             GIAExecutionDate = null, // Account.GIAExecutionDate
             PriorSuretyCompany = Account.PriorSuretyCompany,
-            IsSharedSurety =  Account.SharedSurety != null,
+            IsSharedSurety = Account.SharedSurety != null,
             AccountIndustry = Account.IndustryCode,
             PrivateEquityText = "", // From the last Private Equity Log field
             PrivateEquityDate = null, // From the last Private Equity Log field
@@ -306,7 +339,17 @@
 
     private async Task LoadReferenceTables()
     {
-        await DataAccess.ParallelGetCacheOrDataAsync(BusinessClassLoad, SicCodesLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(BusinessClassLoad, SicCodesLoad, IndustryCodesLoad);
+    }
+
+    private string AccountIndustry()
+    {
+        var record = _industryCodes
+            .FirstOrDefault(f => f.Code == Account.IndustryCode);
+
+        return record != null
+            ? $"{record.Code} - {record.Name}"
+            : "";
     }
 
     private async Task OnSubmit(AccountGeneralInfoModel model)

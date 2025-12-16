@@ -930,6 +930,11 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await ImagingSearchCriteria(id, docCategory, useDocCategoryAsCriteria));
         }
         
+        public async Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes()
+        {
+            return await ExecuteGet(async () => await query.GetAllIndustryCodes(contextFactory));
+        }
+        
         #region User Settings
 
         public async Task<ISaveDataResult> SetUserSettings(string key, string value)

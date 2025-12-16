@@ -301,6 +301,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum);
         public Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum);
         public Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum);
+        public Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes();
     }
 
     public interface ISaveDataResult

@@ -258,7 +258,7 @@ namespace James.Data.Server.GraphQL.Queries
             var result = await ctx.Indemnitors
                 .OrderBy(o => o.AccountNum)
                 .ThenByDescending(o => o.AgreementDate)
-                .FirstOrDefaultAsync(r=>r.AccountNum == accountNum);
+                .FirstOrDefaultAsync(r => r.AccountNum == accountNum && r.AgreementType == "GIA");
             
             return result;
         }

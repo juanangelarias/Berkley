@@ -1,26 +1,32 @@
-﻿@using System.ComponentModel.DataAnnotations
-
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesGridLayoutComponentBase<AgencyInventory>
 
 @inject NavigationManager NavigationManager
-
+@inject TooltipService TooltipService
 @inject IDataAccess DataAccess
 
 <Theme/>
 
-<RadzenDataGrid TItem="AgencyInventory" @ref="@InventoryGrid" Data="@AgencyInventories"
+<RadzenDataGrid TItem="AgencyInventory" @ref="@Grid" Data="@AgencyInventories"
                 Style="border-radius: 10px; height: 400px;" Density="Density.Compact" EmptyText="No records to display" AllowColumnResize="true"
                 AllowSorting="true" AllowGrouping="true" EditMode="DataGridEditMode.Single" AllowColumnPicking="true"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" SelectionMode="DataGridSelectionMode.Single"
                 RowUpdate="UpdateInventoryRow" RowCreate="CreateInventoryRow" GridLines="DataGridGridLines.Vertical"
                 IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
-                Filter="@ShowLoading">
+                Filter="@ShowLoading" @bind-Settings="@GridSettings" AllowColumnReorder="true">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <AuthorizeView Policy="InRoleCanAddAgencyInventory">
                 <RadzenButton Icon="add" Text="New Record" Variant="Variant.Text" Click="@InsertInventoryRow"/>
             </AuthorizeView>
-            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid"/>
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="_defaultExportFormat"/>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
+                <RadzenButton Icon="settings" Click="SaveGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                              Visible="@UserSettingsChanged"/>
+                <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                              Visible="@UserSettingsLoaded"/>
+            </RadzenStack>
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
@@ -153,11 +159,11 @@
 @code {
     [Parameter, Required] public Guid AgencyId { get; set; }
 
-    private RadzenDataGrid<AgencyInventory> InventoryGrid { get; set; } = null!;
     private List<AgencyInventory> AgencyInventories { get; set; } = [];
     private List<AgencyInventory> InventoriesToInsert { get; set; } = [];
     private List<AgencyInventory> InventoriesToUpdate { get; set; } = [];
-    private bool IsLoading { get; set; }
+    
+    private ExportFormat _defaultExportFormat;
 
     //TODO: Implement an AllUsers list.
     private List<State> AllStates { get; set; } = [];
@@ -167,6 +173,8 @@
     private IDataAccessResult<List<AgencyInventory>> _inventoryResult = null!;
     private IDataAccessResult<List<State>> _states = null!;
     private IDataAccessResult<List<InventoryDocumentDm>> _docTypes = null!;
+
+    #region Loaders
 
     private LoadItem InventoryLoad => AddEventNotify(new LoadItem<List<AgencyInventory>>
     {
@@ -204,10 +212,16 @@
         AfterLoad = () => { AllDocTypes = _docTypes.Data!; }
     }, "document types");
 
+    #endregion
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+        
+        GridSettingsKey = "AgencyInventoryGrid";
+        
         await ShowLoading();
+        await GetGridSettings(); 
         await LoadData();
     }
 
@@ -243,7 +257,7 @@
         await ShowLoading();
         Reset();
         InventoriesToUpdate.Add(inventory);
-        await InventoryGrid.EditRow(inventory);
+        await Grid.EditRow(inventory);
     }
 
     private async Task DeleteInventoryRow(AgencyInventory inventory)
@@ -261,7 +275,7 @@
             DataAccess.UpdateCache($"Inventory{AgencyId}", AgencyInventories);
 
             NotifySuccessfulSave("agency inventory deleted");
-            await InventoryGrid.Reload();
+            await Grid.Reload();
         }
         else
         {
@@ -272,7 +286,7 @@
     private async Task SaveInventoryRow(AgencyInventory inventory)
     {
         await ShowLoading();
-        await InventoryGrid.UpdateRow(inventory);
+        await Grid.UpdateRow(inventory);
         await LoadInventory();
     }
 
@@ -280,7 +294,7 @@
     {
         await ShowLoading();
         Reset(inventory);
-        InventoryGrid.CancelEditRow(inventory);
+        Grid.CancelEditRow(inventory);
         await LoadInventory();
     }
 
@@ -295,7 +309,7 @@
             Address = new Address() { Id = Guid.NewGuid() }
         };
         InventoriesToInsert.Add(newInventory);
-        await InventoryGrid.InsertRow(newInventory);
+        await Grid.InsertRow(newInventory);
     }
 
     private async Task UpdateInventoryRow(AgencyInventory inventory)
@@ -345,15 +359,6 @@
         }
     }
 
-    protected async Task ShowLoading()
-    {
-        IsLoading = true;
-
-        await Task.Yield();
-
-        IsLoading = false;
-    }
-
     private void ExportGrid(ExportFormat format)
     {
         var substitutions = new ExportColumnSubstitutions();
@@ -367,9 +372,25 @@
         substitutions.AddSubstitution("Address.City", title: "City");
         substitutions.AddSubstitution("Address.StateCode", title: "State");
         substitutions.AddSubstitution("Address.PostalCode", title: "Zip Code");
-        NavigationManager.NavigateTo(ExportDataGridUrl(InventoryGrid,
+        NavigationManager.NavigateTo(ExportDataGridUrl(Grid,
                 $"/export/AgencyInventory/{AgencyId}", format, substitutions),
             true);
+    }
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
     }
 
 }

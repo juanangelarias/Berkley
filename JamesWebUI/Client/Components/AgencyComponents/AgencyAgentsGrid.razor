@@ -1,0 +1,179 @@
+﻿@using System.Text.RegularExpressions
+@using SharedBusinessLogic
+@inherits JamesGridLayoutComponentBase<Agent>
+
+@inject NavigationManager NavigationManager
+@inject TooltipService TooltipService
+@inject IDataAccess DataAccess
+
+<Theme/>
+
+<RadzenDataGrid TItem="Agent" Data="@Agents" @ref="@Grid" Density="Density.Compact"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
+                @bind-Settings="@GridSettings" AllowColumnReorder="true"
+                GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single"
+                AllowRowSelectOnRowClick="true" AllowPaging="true" PageSize="10" AllowSorting="true"
+                AllowColumnResize="true" AllowFiltering="true" FilterMode="FilterMode.Advanced">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="DefaultExportFormat"/>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
+                <RadzenButton Icon="settings" Click="SaveGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                              Visible="@UserSettingsChanged"/>
+                <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
+                              MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                              Visible="@UserSettingsLoaded"/>
+            </RadzenStack>
+        </RadzenStack>
+    </HeaderTemplate>
+    <Template Context="agent">
+        <AgencyAgentLicenseGrid Agency="Agency" Agent="agent"/>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn TItem="Agent" Title="First Name" Property="IdNavigation.GivenName" Width="200px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.GivenName"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="MI" Property="IdNavigation.MiddleInitial" Width="75px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.MiddleInitial"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Last Name" Property="IdNavigation.FamilyName" Width="200px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.IdNavigation.FamilyName"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="NPN" Property="NationalProducerNumber" Width="125px">
+            <Template Context="agent">
+                <RadzenText Text="@agent.NationalProducerNumber"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Email" Width="300px">
+            <Template Context="agent">
+                <RadzenText Text="@GetEmail(agent)"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Phone Number" Width="125px">
+            <Template Context="agent">
+                <RadzenText Text="@GetPhoneNumber(agent)"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="Agent" Title="Ext." Width="100px">
+            <Template Context="agent">
+                <RadzenText Text="@GetPhoneNumber(agent, true)"/>
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+
+@code {
+    [Parameter, EditorRequired] public Agency Agency { get; set; }
+
+    private List<Agent> Agents { get; set; } = [];
+
+    #region Loaders
+
+    private IDataAccessResult<List<Agent>> _agentsResult = null!;
+
+    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<Agent>>
+    {
+        Key = $"AgencyContacts{Agency.Id}",
+        AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(Agency.Id),
+        CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<Agent>>
+        {
+            Data = (List<Agent>)cache!
+        },
+        ResultVariable = () => _agentsResult,
+        AfterLoad = void () =>
+        {
+            Agents = _agentsResult.Data!;
+        }
+    }, "agency contacts");
+
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        GridSettingsKey = "AgencyAgentsGrid";
+        
+        await GetGridSettings();
+        IsLoading = false;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        if (Agency.Id == Guid.Empty)
+            return;
+
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyContactsLoad);
+    }
+
+    private void ExportGrid(ExportFormat format)
+    {
+        var substitutions = new ExportColumnSubstitutions();
+        //TODO: Determine substitutions
+        substitutions.AddSubstitution("IdNavigation.GivenName", "IdNavigation.GivenName", "Given Name");
+        substitutions.AddSubstitution("IdNavigation.MiddleInitial", "IdNavigation.MiddleInitial", "Middle Initial");
+        substitutions.AddSubstitution("IdNavigation.FamilyName", "IdNavigation.FamilyName", "Family Name");
+        substitutions.AddSubstitution("", "License.LicenseNumber", "License Number");
+        substitutions.AddSubstitution("", "License.State");
+        substitutions.AddSubstitution("", "License.IsResident", "Is Resident");
+        substitutions.AddSubstitution("", "License.AppointingState", "Appointing State");
+        substitutions.AddSubstitution("", "License.Insurer.IdNavigation.FullName", "Insurer");
+        substitutions.AddSubstitution("NationalProducerNumber", "NationalProducerNumber", "NationalProducerNumber");
+
+        NavigationManager.NavigateTo(ExportDataGridUrl(Grid,
+                $"/export/AgencyContacts/{Agency.Id}", format, substitutions),
+            true);
+    }
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
+    }
+
+    private string GetEmail(Agent agent)
+    {
+        return LegalEntityGetMains.GetMainEmail(agent.IdNavigation) ?? "";
+    }
+
+    private string GetPhoneNumber(Agent agent, bool extension = false)
+    {
+        var phoneNumber = LegalEntityGetMains.GetMainPhoneNumber(agent.IdNavigation);
+
+        if (extension)
+            return phoneNumber?.Extension ?? "";
+
+        var number = phoneNumber?.MainNumber ?? "";
+
+        return string.IsNullOrEmpty(number)
+            ? ""
+            : Regex.Replace(number, @"(\d{3})(\d{3})(\d{4})", "($1) $2-$3");
+    }
+}

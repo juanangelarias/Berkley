@@ -1,0 +1,33 @@
+﻿@inject DialogService DialogService
+
+<RadzenColumn Size="12">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1.5rem">
+        <RadzenRow>
+            <RadzenText Text="Are you sure ou want to save these changes?"/>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="width: 100%;"
+                         JustifyContent="JustifyContent.End">
+                <RadzenButton Icon="cancel" Text="Cancel" Click="@OnCancel" ButtonStyle="ButtonStyle.Secondary"
+                              Style="width: 125px;"/>
+                <RadzenButton Icon="save" Text="Save" Click="@OnSave" ButtonStyle="ButtonStyle.Primary" 
+                              Style="width: 125px;"/>
+            </RadzenStack>
+        </RadzenRow>
+    </RadzenStack>
+
+</RadzenColumn>
+
+@code {
+
+    private void OnCancel()
+    {
+        DialogService.Close(false);
+    }
+
+    private void OnSave()
+    {
+        DialogService.Close(true);
+    }
+
+}

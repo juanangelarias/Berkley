@@ -1,16 +1,30 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@inherits JamesGridLayoutComponentBase<Bond>
 
+@inject TooltipService TooltipService
 @inject IDataAccess DataAccess
 
 <Theme/>
 
-<RadzenDataGrid TItem="Bond" @ref="@_agencyBondGrid" Data="@_agencyBonds"
-                AllowGrouping="true" AllowSorting="true" AllowColumnResize="true" AllowColumnPicking="true"
-                Density="Density.Compact" Style="height: 400px; border-radius: 10px;" GridLines="DataGridGridLines.Vertical"
-                AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
-                IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
-                Filter="@ShowLoading">
+<RadzenDataGrid TItem="Bond" @ref="@Grid" Data="@_agencyBonds" Count="@_count" LoadData="@LoadAgencyBonds"
+                AllowVirtualization="true" @bind-Settings="@GridSettings" AllowColumnReorder="true"
+                Density="Density.Compact" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
+                AllowColumnPicking="true">
+    
+    @*AllowGrouping="true" AllowSorting="true" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading" 
+                Sort="@ShowLoading"
+                GridLines="DataGridGridLines.Vertical" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" IsLoading="@IsLoading"> *@
+
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+            <RadzenButton Icon="settings" Click="SaveGridSettings"
+                          MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                          Visible="@UserSettingsChanged"/>
+            <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
+                          MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                          Visible="@UserSettingsLoaded"/>
+        </RadzenStack>
+    </HeaderTemplate>
     <Columns>
         <RadzenDataGridColumn TItem="Bond" Filterable="true" FilterValue="@_statusFilter" FilterProperty="Status"
                               FilterOperator="FilterOperator.Contains" Resizable="true"
@@ -20,14 +34,14 @@
                     if (bond.Status.Trim() == "Open")
                     {
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Success"/>
+                            <JamesStatusIcon IconStyle="IconStyle.Success"/>
                             <RadzenText Text="@bond.Status"/>
                         </RadzenStack>
                     }
                     else
                     {
                         <RadzenStack Orientation="Orientation.Horizontal">
-                            <RadzenIcon Icon="fiber_manual_record" IconColor="@Colors.Danger"/>
+                            <JamesStatusIcon IconStyle="IconStyle.Danger"/>
                             <RadzenText Text="@bond.Status"/>
                         </RadzenStack>
                     }
@@ -60,11 +74,9 @@
                               SortOrder="SortOrder.Descending" Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" Width="175px"
                               Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="SIC" Property="Siccode" FormatString="{0:d}" Width="100px"
+        <RadzenDataGridColumn TItem="Bond" Title="Class Code" Property="Siccode" FormatString="{0:d}" Width="125px"
                               Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName" Width="200px" Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Municipality" Property="Municipality" FormatString="{0:d}"
-                              Width="175px" Resizable="true"/>
         <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass" Resizable="true"
                               Filterable="true" FilterValue="@_classFilter" FilterProperty="BondClass"
                               FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)"
@@ -86,26 +98,39 @@
     </LoadingTemplate>
 </RadzenDataGrid>
 
-
 @code {
     [Parameter] public Guid AgencyId { get; set; }
 
+    // ***
+    //
+    // ToDo: We need to add filters and orders to the virtualization!!!
+    //
+    // ***
+    
     private List<Bond> _agencyBonds = [];
-    private RadzenDataGrid<Bond> _agencyBondGrid = null!;
     private List<string>? _statusFilter;
     private List<string>? _classFilter;
     private List<string>? _bondTypeFilter;
+    
+    private int _skip;
+    private int _take;
+    private int _count = 1000;
+    private string? _lastFilter;
 
-    private RadzenDropDown<List<string>> StatusFilterDropDown { get; set; } = null!;
-    private RadzenDropDown<List<string>> ClassFilterDropDown { get; set; } = null!;
-    private RadzenDropDown<List<string>> BondTypeFilterDropDown { get; set; } = null!;
+    private RadzenDropDown<List<string>> StatusFilterDropDown { get; set; } = new();
+    private RadzenDropDown<List<string>> ClassFilterDropDown { get; set; } = new();
+    private RadzenDropDown<List<string>> BondTypeFilterDropDown { get; set; } = new();
+
+    #region Loaders
+
+    #region AgencyBonds Load
 
     private IDataAccessResult<List<Bond>> _agencyBondsResult = null!;
 
-    private LoadItem AgencyBondsLoad => AddEventNotify(new LoadItem
+    private LoadItem AgencyBondsLoad => AddEventNotify(new()
     {
         Key = $"AgencyBondGrid{AgencyId}",
-        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId),
+        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId, _skip, _take),
         CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<Bond>>
         {
             Data = (List<Bond>)cache!
@@ -114,20 +139,41 @@
         AfterLoad = () => { _agencyBonds = _agencyBondsResult.Data!; }
     }, "agency bond grid");
 
+    #endregion
+    
+    #endregion
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
+        GridSettingsKey = "AgencyBondsGrid";
+        
         await ShowLoading();
+        
+        await GetGridSettings();
 
-        await LoadAgencyBonds();
+        await LoadAgencyBonds(null);
     }
 
-    private async Task LoadAgencyBonds()
+    private async Task LoadAgencyBonds(LoadDataArgs? args)
     {
         if (AgencyId == Guid.Empty)
             return;
 
+        var countResult = await DataAccess.GetAgencyBondsCount(AgencyId);
+        if (countResult.Success)
+            _count = countResult.Data!.Count;
+        
+        if (!string.IsNullOrEmpty(args?.Filter) && _lastFilter != args.Filter)
+        {
+            _lastFilter = args.Filter;
+            args.Skip = 0;
+        }
+        
+        _skip = args == null ? 0 : args.Skip!.Value;
+        _take = args == null ? 15 : args.Top!.Value;
+        
         await DataAccess.GetCacheOrLoadDataAsync(AgencyBondsLoad);
     }
 
@@ -138,7 +184,7 @@
             _statusFilter = null;
         }
 
-        await _agencyBondGrid.Reload();
+        await Grid.Reload();
     }
 
     private async Task ClassFilterChange()
@@ -148,7 +194,7 @@
             _classFilter = null;
         }
 
-        await _agencyBondGrid.Reload();
+        await Grid.Reload();
     }
 
     private async Task BondTypeFilterChange()
@@ -158,6 +204,22 @@
             _bondTypeFilter = null;
         }
 
-        await _agencyBondGrid.Reload();
+        await Grid.Reload();
+    }
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
     }
 }

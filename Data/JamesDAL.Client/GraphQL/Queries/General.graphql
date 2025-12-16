@@ -17,15 +17,6 @@ query GetAllInventoryDocTypes {
     }
 }
 
-query GetEmployeeByUserName($userName: String!){
-    employeeByUserName(userName: $userName){
-        id
-        activeDirectoryAccount
-        fullName
-        initials
-    }
-}
-
 query GetAllBranches{
     allBranches {
         active
@@ -126,6 +117,59 @@ query GetUserSettings {
     userSettings {
         key
         value
+    }
+}
+
+query GetEmployees($activeOnly: Boolean!) {
+    employees(activeOnly: $activeOnly) {
+        id
+        active
+        activeDirectoryAccount
+        fullName
+        title
+        primaryBranchId
+        initials
+        email
+        homeOfficeApprover
+        underwriterIdNavigation {
+            active
+            notificationSendTo
+            reportsToNavigation {
+                id
+                fullName
+            }
+        }
+    }
+}
+
+query GetActiveDirectoryUsers($usernameSearchText: String!) {
+    activeDirectoryUsers(searchText: $usernameSearchText) {
+        emails
+        fullName
+        initials
+        username
+        title
+    }
+}
+
+mutation SetEmployeeEmail($input: SetEmployeeEmailInput!) {
+    setEmployeeEmail(input:$input){
+        boolean
+    }
+}
+
+mutation CreateEmployee($input:CreateEmployeeInput!) {
+    createEmployee(input: $input){
+        boolean
+    }
+}
+
+query GetEmployeeByUserName($userName: String!){
+    employeeByUserName(userName: $userName){
+        id
+        activeDirectoryAccount
+        fullName
+        initials
     }
 }
 

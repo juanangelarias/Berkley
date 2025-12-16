@@ -1,6 +1,5 @@
 ﻿using HotChocolate.Authorization;
 using James.Shared.Constants;
-using James.Shared.Data;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -18,6 +17,7 @@ public partial class Query
             return null;
         return new BondRequestNumberType() { BondRequestNumber = commercialBond.BondRequestNumber.Trim(), Type = "Commercial" };
     }
+    
     [Authorize]
     public async Task<string?> GetBondNumber(string bondRequestNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
@@ -52,5 +52,110 @@ public partial class Query
             return matchingBonds;
         }
         return [];
+    }
+
+    [Authorize]
+    public async Task<List<BondBlock>> GetBondBlocksByAgency(Guid agencyId, DateTime start, DateTime end, string filter,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        // ToDo: add a filter for issued by
+        var response = await ctx.BondBlocks
+            .Include(i => i.IssuedByNavigation)
+            .Where(b => b.AgencyId == agencyId &&
+                        b.Created >= start &&
+                        b.Created <= end &&
+                        (string.IsNullOrWhiteSpace(filter) ||
+                        b.Prefix.ToLower().Contains(filter.ToLower()) ||
+                        (b.Comments != null && b.Comments.ToLower().Contains(filter.ToLower())) ||
+                        (b.IssuedByNavigation != null &&
+                         b.IssuedByNavigation.FullName.ToLower().Contains(filter.ToLower()))))
+            .OrderBy(o => o.Prefix)
+            .ThenBy(t => t.FirstNumber)
+            .ToListAsync();
+        
+        return response;
+    }
+    
+    [Authorize]
+    public async Task<List<Bond>> GetBondsByBlock(Guid bondBlockId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var block = await ctx.BondBlocks
+            .FirstOrDefaultAsync(b => b.Id == bondBlockId);
+        
+        if(block == null)
+            throw new GraphQLException($"No bond block exists with id {bondBlockId}");
+
+        // ToDo: If the Bond Number is formatted the same way this block will work.
+        // var numbers = new List<string>();
+        // for (var i = block.FirstNumber; i <= block.LastNumber; i++)
+        // {
+        //     numbers.Add($"{block.Prefix}{i:000000000}");
+        // }
+
+        // var agBonds = await ctx.Bonds
+        //     .Include(i=>i.Obligee)
+        //     .Include(i=>i.BondTransactions)
+        //     .Where(r => r.AgencyId == block.AgencyId &&
+        //                 numbers.Contains(r.BondNumber))
+        //     .ToListAsync();
+        
+        // ToDo: This will work for any bond number format.
+        //       It is not the most efficient way to do this.
+        //       One way to manage this would be to have a field in the Bond table (BondBlockId) that points
+        //       to the BondBlock that the bond belongs to.
+
+        var agBonds = await ctx.Bonds
+            .Include(i => i.Obligee)
+            .Include(i => i.BondTransactions)
+            .OrderBy(p => p.AgencyId)
+            .Where(r => r.AgencyId == block.AgencyId)
+            .ToListAsync();
+
+        var bonds = new List<Bond>();
+        foreach (var bond in agBonds)
+        {
+            var (prefix, number) = GetBondNumberParts(bond.BondNumber);
+            if(block.Prefix.Trim() == prefix && number >= block.FirstNumber && number <= block.LastNumber)
+                bonds.Add(bond);
+        }
+        
+        return bonds;
+    }
+
+    [Authorize]
+    public async Task<int> GetNextBondBlockInitialNumber(string prefix,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var last = ctx.BondBlocks
+            .OrderBy(o => o.Prefix)
+            .ThenByDescending(t => t.FirstNumber)
+            .FirstOrDefault(b => b.Prefix.Trim().ToLower() == prefix.Trim().ToLower());
+
+        return last == null
+            ? 1
+            : last.LastNumber + 1;
+    }
+    
+    private (string, int) GetBondNumberParts(string bondNumber)
+    {
+        var prefix = "";
+        var number = "";
+        foreach (var c in bondNumber)
+        {
+            if (char.IsDigit(c))
+                number += c;
+            else
+            {
+                if(c != ' ')
+                    prefix += c;
+            }
+        }   
+        
+        return (prefix.Trim(), int.Parse(number));
     }
 }

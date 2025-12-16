@@ -7,8 +7,10 @@ using JamesWebUI.Client.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using Newtonsoft.Json;
 using System.Diagnostics;
-using System.DirectoryServices.AccountManagement;
-using System.Security.Principal;
+using James.Shared.Dto;
+using James.Shared.Model;
+using JamesWebUI.Client.Model;
+using Newtonsoft.Json;
 
 namespace JamesWebUI.Client.Services;
 

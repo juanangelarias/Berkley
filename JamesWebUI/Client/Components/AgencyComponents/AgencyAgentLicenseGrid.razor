@@ -1,0 +1,731 @@
+﻿@using Blazorise
+@using SharedBusinessLogic
+@using IconStyle = Radzen.IconStyle
+@using JustifyContent = Radzen.JustifyContent
+@using Orientation = Radzen.Orientation
+
+@inherits JamesGridLayoutComponentBase<AgencyLicense>
+
+@inject TooltipService TooltipService
+@inject IDataAccess DataAccess
+
+<Theme/>
+
+<RadzenDataGrid TItem="AgencyLicense" @ref="@Grid" Data="@Licenses" ColumnWidth="125px"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" @bind-Settings="@GridSettings" AllowColumnReorder="true"
+                GridLines="DataGridGridLines.Vertical" AllowSorting="true" Density="Density.Compact"
+                SelectionMode="DataGridSelectionMode.Multiple" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                AllowColumnPicking="true" AllowGrouping="true" AllowColumnResize="true" RowUpdate="UpdateLicenseRow"
+                EditMode="@_editMode" RowCreate="@OnLicenseCreate" IsLoading="@IsLoading" Sort="@ShowLoading"
+                Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <AuthorizeView Policy="InRoleCanAddAgencyLicense">
+                <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@InsertLicenseRow"/>
+            </AuthorizeView>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End"
+                         Style="margin-left: 10rem">
+                <AuthorizeView Policy="InRoleAgencyLicenseWorkInBulkMode">
+                    <RadzenButton Visible="!_bulkMode" Text="Bulk Edit" Icon="edit"
+                                  Size="ButtonSize.ExtraSmall" Disabled="IsLoading"
+                                  Click="@(_ => SetBulkEdit())"/>
+                </AuthorizeView>
+                <RadzenButton Visible="_bulkMode" Text="Save" Icon="check"
+                              ButtonStyle="ButtonStyle.Primary"
+                              Variant="Variant.Flat"
+                              Size="ButtonSize.ExtraSmall" Disabled="IsLoading"
+                              Click="@(_ => SaveBulkChanges())"/>
+                <RadzenButton Visible="_bulkMode" Text="Cancel" Icon="close"
+                              ButtonStyle="ButtonStyle.Danger"
+                              Variant="Variant.Flat"
+                              Size="ButtonSize.ExtraSmall" Disabled="IsLoading"
+                              Click="@(_ => CancelBulkEdit())"/>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
+                    <RadzenButton Icon="settings" Click="SaveGridSettings"
+                                  MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                                  Visible="@UserSettingsChanged"/>
+                    <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
+                                  MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                                  Visible="@UserSettingsLoaded"/>
+                </RadzenStack>
+            </RadzenStack>
+        </RadzenStack>
+    </HeaderTemplate>
+    <Columns>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Status" Filterable="true" Property="IsActive"
+                              MinWidth="10px" TextAlign="TextAlign.Center" Width="150px">
+            <Template Context="license">
+                @{
+                    if (license.IsActive)
+                    {
+                        <JamesStatusIcon IconStyle="IconStyle.Success"/>
+                    }
+                    else
+                    {
+                        <JamesStatusIcon IconStyle="IconStyle.Danger"/>
+                    }
+                }
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenCheckBox @bind-Value="@license.IsActive"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Type="typeof(IEnumerable<string>)"
+                              Filterable="true" FilterProperty="State" Property="State" Width="150px"
+                              FilterOperator="FilterOperator.Contains" MinWidth="10px" TextAlign="TextAlign.Center">
+            <Template Context="license">
+                <RadzenText Text="@license.State"/>
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenDropDown TValue="string" Data="AllStates" @bind-Value="@license.State" Name="State"
+                                TextProperty="Name" ValueProperty="Code" Style="width:95%"/>
+                <RadzenRequiredValidator Text="State is required" Component="State" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" MinWidth="10px" Property="AppointingState"
+                              TextAlign="TextAlign.Center" Width="170px">
+            <Template Context="license">
+                <RadzenCheckBox Value="license.AppointingState" ReadOnly="true"/>
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenCheckBox @bind-Value="license.AppointingState"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Property="LicenseNumber" MinWidth="10px"
+                              Width="160px">
+            <Template Context="license">
+                <RadzenText Text="@license.LicenseNumber"/>
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenTextBox @bind-Value="license.LicenseNumber" Style="width:95%"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Resident" MinWidth="10px" Property="IsResident"
+                              TextAlign="TextAlign.Center" Width="170px">
+            <Template Context="license">
+                <RadzenRow JustifyContent="JustifyContent.Center">
+                    <RadzenCheckBox TValue="bool" Value="license.IsResident" ReadOnly="true"/>
+                </RadzenRow>
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenCheckBox TValue="bool" @bind-Value="license.IsResident"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Insurer" Filterable="true" Property="Insurer"
+                              MinWidth="10px" Width="350px">
+            <Template Context="license">
+                <RadzenText Text="@license.Insurer.IdNavigation.FullName"/>
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenDropDown TValue="Insurer" Data="AllInsurers" Style="width:95%" Name="CmbInsurer"
+                                TextProperty="IdNavigation.FullName" @bind-Value="@license.Insurer"/>
+                <RadzenRequiredValidator Text="Insurer is required" Component="CmbInsurer" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" MinWidth="10px"
+                              Width="170px" FormatString="{0:d}">
+            <Template Context="license">
+                <RadzenText Text="@(license.Appointment == null ? "" :license.Appointment.Value.ToString("MM/dd/yyyy"))"/>
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Appointment"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" MinWidth="10px"
+                              Width="170px" FormatString="{0:d}">
+            <Template Context="license">
+                <RadzenText Text="@license.Termination.ToString()"/>
+            </Template>
+            <EditTemplate Context="license">
+                <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Termination"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="75px" MinWidth="75px" TItem="AgencyLicense" Filterable="false" Sortable="false"
+                              TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right"
+                              Resizable="false">
+            <Template Context="license">
+                <AuthorizeView Policy="InRoleCanEditAgencyLicense">
+                    <RadzenButton Icon="edit"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  Click="@(_ => EditLicenseRow(license))"
+                                  @onclick:stopPropagation="true"/>
+                </AuthorizeView>
+                <AuthorizeView Policy="InRoleCanDeleteAgencyLicense">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                  Icon="delete"
+                                  Variant="Variant.Flat"
+                                  Shade="Shade.Lighter"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => DeleteLicenseRow(license))"
+                                  @onclick:stopPropagation="true">
+                    </RadzenButton>
+                </AuthorizeView>
+            </Template>
+            <EditTemplate Context="license">
+                @if (!_bulkMode)
+                {
+                    <RadzenButton Icon="check"
+                                  ButtonStyle="ButtonStyle.Success"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  Click="@(_ => SaveLicenseRow(license))"/>
+                    <RadzenButton Icon="close"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => CancelLicenseEdit(license))"/>
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                  Icon="delete"
+                                  Variant="Variant.Flat"
+                                  Shade="Shade.Lighter"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => DeleteLicenseRow(license))"/>
+                }
+                @if (license.Id == Guid.Empty)
+                {
+                    <RadzenButton Icon="close"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => CancelLicenseEditBulkMode(license))"/>
+                }
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter, EditorRequired] public required Agency Agency { get; set; }
+    [Parameter, EditorRequired] public Agent Agent { get; set; }
+
+    private List<AgencyLicense> Licenses { get; set; } = [];
+    private List<AgencyLicense> _agencyLicensesBeforeBulkEdit = [];
+    private List<AgencyLicense> _toInsert = [];
+    private static List<Insurer> AllInsurers { get; set; } = [];
+    private static List<State> AllStates { get; set; } = [];
+
+    private readonly DataGridEditMode _editMode = DataGridEditMode.Multiple;
+    private bool _bulkMode;
+    private string LicensesKey => CacheKeys.AgencyAgentLicenses(Agency.Id.ToString(), Agent.Id.ToString());
+
+    #region Loaders
+
+    #region LicensesLoad
+
+    private IDataAccessResult<List<AgencyLicense>> _licenses = null!;
+
+    private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem<List<AgencyLicense>>
+    {
+        Key = LicensesKey,
+        AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyAgentLicenses(Agency.Id, Agent.Id),
+        CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
+        {
+            Data = (List<AgencyLicense>)cache!
+        },
+        ResultVariable = () => _licenses,
+        AfterLoad = () =>
+        {
+            Licenses = _licenses.Data!;
+        }
+    }, "agency licenses");
+
+    #endregion
+
+    #region StatesLoad
+
+    private IDataAccessResult<List<State>> _states = null!;
+
+    private LoadItem StatesLoad => AddEventNotify(new LoadItem<List<State>>
+    {
+        Key = CacheKeys.States,
+        AsyncLoadTask = async () => _states = await DataAccess.GetAllStates(),
+        CacheLoadTask = cache => _states = new DataAccessResult<List<State>>
+        {
+            Data = (List<State>)cache!
+        },
+        ResultVariable = () => _states,
+        AfterLoad = () =>
+        {
+            if (_states.Success)
+                AllStates = _states.Data!;
+        }
+    }, "states");
+
+    #endregion
+
+    #region InsuresLoad
+
+    private IDataAccessResult<List<Insurer>> _insurers = null!;
+
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
+    {
+        Key = CacheKeys.Insurers,
+        AsyncLoadTask = async () => _insurers = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurers = new DataAccessResult<List<Insurer>>
+        {
+            Data = (List<Insurer>)cache!
+        },
+        ResultVariable = () => _insurers,
+        AfterLoad = () =>
+        {
+            if (_insurers.Success)
+                AllInsurers = _insurers.Data!;
+        }
+    }, "insurers");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        GridSettingsKey = "AgencyAgentGrid";
+        
+        await GetGridSettings();
+        await LoadData();
+    }
+    
+    private async Task LoadData()
+    {
+        if (Agency.Id == Guid.Empty)
+            return;
+
+        LoadItem[] loadItems =
+        [
+            StatesLoad,
+            InsurersLoad,
+            AgencyLicensesLoad
+        ];
+
+        await DataAccess.ParallelGetCacheOrDataAsync(loadItems);
+    }
+
+    private async Task LoadLicenses()
+    {
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyLicensesLoad);
+    }
+
+    private async Task InsertLicenseRow()
+    {
+        //This is where we handle the status change of the grid (edit mode or not).
+        //The actual Insert is done in OnLicenseCreate()
+        await ShowLoading();
+
+        var newLicense = new AgencyLicense
+        {
+            Id = Guid.Empty,
+            IsActive = false,
+            IsResident = false,
+            AppointingState = false,
+            AgencyId = Agency.Id,
+            Agency = Agency,
+            Insurer = new Insurer
+            {
+                Id = Guid.Empty,
+                IdNavigation = new LegalEntity
+                {
+                    FullName = ""
+                }
+            }
+        };
+
+        if (_bulkMode)
+        {
+            _toInsert.Add(newLicense);
+        }
+
+        await Grid.InsertRow(newLicense);
+    }
+
+    private async Task EditLicenseRow(AgencyLicense license)
+    {
+        await ShowLoading();
+        await Grid.EditRow(license);
+    }
+
+    private async Task DeleteLicenseRow(AgencyLicense license)
+    {
+        var deleteConfirmed = await DialogService.Confirm("Are you sure?",
+            "Agency License Deletion",
+            new ConfirmOptions { OkButtonText = "Yes", CancelButtonText = "No" });
+
+        if (deleteConfirmed == false)
+            return;
+
+        await ShowLoading();
+        var result = await DataAccess.DeleteLicense(license.Id);
+
+        if (result.Success)
+        {
+            var toDelete = Licenses.FirstOrDefault(f => f.Id == license.Id);
+            if (toDelete != null)
+            {
+                Licenses.Remove(toDelete);
+                DataAccess.UpdateCache(LicensesKey, Licenses);
+            }
+
+            await Grid.Reload();
+
+            await LoadLicenses();
+        }
+        else
+            await HandleError("Error deleting License", result.Errors);
+    }
+
+    private async Task SaveLicenseRow(AgencyLicense license)
+    {
+        //This is where we handle the status change of the grid (edit mode or not).
+        //The actual Update/Insert is done in those methods.
+
+        if (!ValidateLicenseFields(license))
+            return;
+
+        var task = Grid.UpdateRow(license);
+        await ShowLoading(task);
+    }
+
+    private bool ValidateLicenseFields(AgencyLicense license)
+    {
+        var flag = true;
+        if (string.IsNullOrWhiteSpace(license.State))
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "State has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+            flag = false;
+        }
+
+        if (license.Insurer.Id == Guid.Empty)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Insurer has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+            flag = false;
+        }
+
+        return flag;
+    }
+
+    private async Task OnLicenseCreate(AgencyLicense license)
+    {
+        license.Id = Guid.NewGuid();
+
+        //This is where we handle row inserts.
+
+        var result = await DataAccess.CreateLicense(
+            license.Id,
+            Agency.Id,
+            Agent.Id,
+            license.AppointingState,
+            license.Comments,
+            license.Appointment,
+            license.Expiration,
+            license.Termination,
+            license.Insurer.Id,
+            license.IsResident,
+            license.LicenseNumber,
+            license.State,
+            license.IsActive
+        );
+
+        if (!result.Success)
+            await HandleError("Error creating License", result.Errors);
+        else
+        {
+            license.InsurerId = license.Insurer.Id;
+            Licenses.Add(license);
+
+            DataAccess.UpdateCache(LicensesKey, Licenses);
+        }
+    }
+
+    private async Task CancelLicenseEdit(AgencyLicense license)
+    {
+        await ShowLoading();
+        Grid.CancelEditRow(license);
+    }
+
+    private async Task CancelLicenseEditBulkMode(AgencyLicense license)
+    {
+        _toInsert.Remove(license);
+
+        await ShowLoading();
+        Grid.CancelEditRow(license);
+    }
+
+    private async Task UpdateLicenseRow(AgencyLicense license)
+    {
+        //This is where we handle row Updates.
+        var result = await DataAccess.SetAgencyLicense(license.Id,
+            Agency.Id,
+            license.AgentId,
+            license.AppointingState,
+            license.Comments,
+            license.Appointment,
+            license.Expiration,
+            license.Termination,
+            license.InsurerId,
+            license.IsResident,
+            license.LicenseNumber,
+            license.State,
+            license.IsActive
+        );
+
+        if (!result.Success)
+            await HandleError("Error Setting Agency License", result.Errors);
+        else
+            DataAccess.UpdateCache(LicensesKey, Licenses);
+    }
+
+    private async Task SetBulkEdit()
+    {
+        await ShowLoading();
+
+        _agencyLicensesBeforeBulkEdit = Licenses
+            .Select(s => new AgencyLicense
+            {
+                Id = s.Id,
+                Created = s.Created,
+                Modified = s.Modified,
+                AgencyId = s.AgencyId,
+                AgentId = s.AgentId,
+                State = s.State,
+                LicenseNumber = s.LicenseNumber,
+                IsResident = s.IsResident,
+                InsurerId = s.InsurerId,
+                Expiration = s.Expiration,
+                Comments = s.Comments,
+                Appointment = s.Appointment,
+                Termination = s.Termination,
+                AppointingState = s.AppointingState,
+                IsActive = s.IsActive,
+                ImagingId = s.ImagingId,
+                Agency = s.Agency,
+                Agent = s.Agent,
+                Insurer = s.Insurer,
+                StateNavigation = s.StateNavigation
+            })
+            .ToList();
+
+        IsLoading = true;
+        await Grid.EditRows(Licenses);
+        _bulkMode = true;
+        IsLoading = false;
+    }
+
+    private async Task CancelBulkEdit()
+    {
+        await ShowLoading();
+
+        IsLoading = true;
+
+        Grid.CancelEditRows(Licenses);
+
+        Licenses = _agencyLicensesBeforeBulkEdit
+            .Select(s => new AgencyLicense
+            {
+                Id = s.Id,
+                Created = s.Created,
+                Modified = s.Modified,
+                AgencyId = s.AgencyId,
+                AgentId = s.AgentId,
+                State = s.State,
+                LicenseNumber = s.LicenseNumber,
+                IsResident = s.IsResident,
+                InsurerId = s.InsurerId,
+                Expiration = s.Expiration,
+                Comments = s.Comments,
+                Appointment = s.Appointment,
+                Termination = s.Termination,
+                AppointingState = s.AppointingState,
+                IsActive = s.IsActive,
+                ImagingId = s.ImagingId,
+                Agency = s.Agency,
+                Agent = s.Agent,
+                Insurer = s.Insurer,
+                StateNavigation = s.StateNavigation
+            })
+            .ToList();
+
+        _agencyLicensesBeforeBulkEdit = [];
+
+        await Grid.Reload();
+        _bulkMode = false;
+        IsLoading = false;
+    }
+
+    private async Task SaveBulkChanges()
+    {
+        var response = await DialogService.Confirm("Are you sure ou want to save these changes?", 
+            "Bulk Edit Confirmation");
+
+        if (response is null or false)
+            return;
+
+        await ShowLoading();
+
+        IsLoading = true;
+
+        var toInsert = _toInsert;
+        var toUpdate = (from edited in Grid.Data
+                let original = _agencyLicensesBeforeBulkEdit.FirstOrDefault(f => f.Id == edited.Id)
+                where !AreLicensesEqual(original, edited)
+                select edited)
+            .ToList();
+
+        var validInsert = ValidateRecords(toInsert, true);
+        var validUpdate = ValidateRecords(toUpdate, false);
+
+        if (!validUpdate || !validInsert)
+        {
+            IsLoading = false;
+            return;
+        }
+
+        toInsert.ForEach(x => x.Id = Guid.NewGuid());
+
+        var tasks = new List<Task>();
+        if (toInsert.Any())
+            tasks.Add(ExecuteBulkInsert(toInsert));
+
+        if (toUpdate.Any())
+            tasks.Add(ExecuteBulkUpdate(toUpdate));
+
+        await Task.WhenAll(tasks);
+
+        Licenses.AddRange(_toInsert);
+        _toInsert = [];
+
+        Grid.CancelEditRows(Licenses);
+        _agencyLicensesBeforeBulkEdit = [];
+        _bulkMode = false;
+        IsLoading = false;
+    }
+
+    private async Task ExecuteBulkInsert(List<AgencyLicense> toInsert)
+    {
+        var result = await DataAccess.AgencyLicenseBulkInsert(toInsert.Select(s => new AgencyLicenseBulk
+        {
+            Id = s.Id,
+            AgencyId = s.AgencyId,
+            AppointingState = s.AppointingState,
+            Appointment = s.Appointment,
+            Comments = s.Comments,
+            Expiration = s.Expiration,
+            InsurerId = s.Insurer.Id,
+            IsActive = s.IsActive,
+            IsResident = s.IsResident,
+            LicenseNumber = s.LicenseNumber,
+            State = s.State,
+            Termination = s.Termination
+        }).ToList());
+
+        if (result.Success)
+            NotifySuccessfulSave("insert agency licenses");
+        else
+            NotifySaveError(result.Errors, "While inserting agency licenses");
+    }
+
+    private async Task ExecuteBulkUpdate(List<AgencyLicense> toUpdate)
+    {
+        var result = await DataAccess.AgencyLicenseBulkUpdate(toUpdate.Select(s => new AgencyLicenseBulk
+        {
+            Id = s.Id,
+            AgencyId = s.AgencyId,
+            AppointingState = s.AppointingState,
+            Appointment = s.Appointment,
+            Comments = s.Comments,
+            Expiration = s.Expiration,
+            InsurerId = s.Insurer.Id,
+            IsActive = s.IsActive,
+            IsResident = s.IsResident,
+            LicenseNumber = s.LicenseNumber,
+            State = s.State,
+            Termination = s.Termination
+        }).ToList());
+
+        if (result.Success)
+            NotifySuccessfulSave("update agency licenses");
+        else
+            NotifySaveError(result.Errors, "While updating agency licenses");
+    }
+
+    private bool AreLicensesEqual(AgencyLicense original, AgencyLicense edited)
+    {
+        if (original.IsActive != edited.IsActive)
+            return false;
+
+        if (original.State != edited.State)
+            return false;
+
+        if (original.AppointingState != edited.AppointingState)
+            return false;
+
+        if (original.LicenseNumber != edited.LicenseNumber)
+            return false;
+
+        if (original.IsResident != edited.IsResident)
+            return false;
+
+        if (original.InsurerId != edited.InsurerId)
+            return false;
+
+        if (original.Insurer.Id != edited.Insurer.Id)
+            return false;
+
+        if (original.AppointingState != edited.AppointingState)
+            return false;
+
+        return original.Termination == edited.Termination;
+    }
+
+    private bool ValidateRecords(List<AgencyLicense> licenses, bool isNew)
+    {
+        var errors = AgencyLicensesLogic.Validate(licenses, isNew);
+        if (errors.Count == 0)
+            return true;
+
+        foreach (var error in errors)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = error,
+                Duration = 2000
+            });
+        }
+
+        return false;
+    }
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
+    }
+
+}

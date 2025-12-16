@@ -15,27 +15,7 @@ query GetSecurityRoleMembers($role: String!) {
   }
 }
 
-query GetEmployees($activeOnly: Boolean!) {
-  employees(activeOnly: $activeOnly) {
-    id
-    active
-    activeDirectoryAccount
-    fullName
-    title
-    primaryBranchId
-    initials
-    email
-    homeOfficeApprover
-    underwriterIdNavigation {
-      active
-      notificationSendTo
-      reportsToNavigation {
-        id
-        fullName
-      }
-    }
-  }
-}
+
 
 query GetSecurityRolesByUser($input: UUID!) {
     securityRolesByUser(principalId: $input) {
@@ -46,27 +26,7 @@ query GetSecurityRolesByUser($input: UUID!) {
     }
 }
 
-query GetActiveDirectoryUsers($usernameSearchText: String!) {
-  activeDirectoryUsers(searchText: $usernameSearchText) {
-    emails
-    fullName
-    initials
-    username
-    title
-  }
-}
 
-mutation SetEmployeeEmail($input: SetEmployeeEmailInput!) {
-  setEmployeeEmail(input:$input){
-    boolean
-  }
-}
-
-mutation CreateEmployee($input:CreateEmployeeInput!) {
-  createEmployee(input: $input){
-    boolean
-  }
-}
 
 mutation AddPrincipalToSecurityRole($input: AddPrincipalToSecurityRoleInput!) {
   addPrincipalToSecurityRole(input: $input) {

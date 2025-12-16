@@ -10,12 +10,13 @@
 
 @code {
     [Parameter, EditorRequired] public required bool IsLoading { get; set; }
+    [Parameter] public ExportFormat ExportFormat { get; set; }
     [Parameter, EditorRequired] public required EventCallback<ExportFormat> ExportGrid { get; set; }
 
     private void Export(RadzenSplitButtonItem? item)
     {
         var format = item == null
-            ? ExportFormat.Excel
+            ? ExportFormat
             : item.Value.ToLower() == "excel"
                 ? ExportFormat.Excel
                 : ExportFormat.CSV;

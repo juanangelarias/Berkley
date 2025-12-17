@@ -201,7 +201,7 @@ else
 
     private IDataAccessResult<List<Agent>> _agencyAgentsResult = null!;
 
-    private LoadItem AgencyAgentsLoad => AddEventNotify(new()
+    private LoadItem AgencyAgentsLoad => AddEventNotify(new LoadItem<List<Agent>>
     {
         Key = CacheKeys.AgencyAgents(_model?.AgencyNumber ?? Account.AgencyNumber ?? ""),
         AsyncLoadTask = async () =>
@@ -231,7 +231,7 @@ else
 
     private IDataAccessResult<List<AgencyDto>> _agenciesResult = null!;
 
-    private LoadItem AgenciesLoad => AddEventNotify(new()
+    private LoadItem AgenciesLoad => AddEventNotify(new LoadItem<List<AgencyDto>>()
     {
         Key = CacheKeys.AgenciesDto,
         AsyncLoadTask = async () => _agenciesResult = await DataAccess.GetAllActiveAgencies(),

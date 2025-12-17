@@ -85,7 +85,7 @@
                                         Change="@(args => AccountInfoTabsChanged(args))">
                                 <Tabs>
                                     <RadzenTabsItem Text="General Information" >
-                                        <AccountGeneralInformation/>
+                                        <AccountGeneralInformation Account="@Account"/>
                                     </RadzenTabsItem>
                                     <RadzenTabsItem Text="Credit Rating">
 
@@ -143,7 +143,7 @@
     private string _firstIndemnityDate = null!;
     private bool _isAccountActive;
     private IconStyle AccountStatusStyle { get; set; }
-    private bool _summaryView;
+    private bool _summaryView = true;
     private bool _isNotificationVisible = true;
     private int _columnSize = 4;
     private string _notificationIcon = "notifications_off";

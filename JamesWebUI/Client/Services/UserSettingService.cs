@@ -1,16 +1,9 @@
 ﻿using Blazored.LocalStorage;
+using James.Shared.Constants;
 using James.Shared.Data;
-using James.Shared.Dto;
-using James.Shared.Model;
-using JamesWebUI.Client.Model;
 using JamesWebUI.Client.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
-using Newtonsoft.Json;
 using System.Diagnostics;
-using James.Shared.Dto;
-using James.Shared.Model;
-using JamesWebUI.Client.Model;
-using Newtonsoft.Json;
 
 namespace JamesWebUI.Client.Services;
 
@@ -26,15 +19,13 @@ public interface IUserSettingService
 public class UserSettingService(IDataAccess dataAccess, ILocalStorageService localStorageService, AuthenticationStateProvider authenticationStateProvider) : IUserSettingService
 {
     public string? GridKey { get; set; }
-
+    private string CacheKey(string username) => CacheKeys.UserSettings(username, GridKey);
+    
     #region Constants for used keys
 
     public const string SuperSearchSettingsKey = "SuperSearchSettings";
 
     #endregion
-
-    private string CacheKey(string username) => $"UserSettings{username}{SubKey}";
-    private string SubKey => GridKey == null ? "" : $"_{GridKey}";
 
     #region Loaders
 
@@ -52,7 +43,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
             ResultVariable = () => _loadSettingsResult,
             AfterLoad = () =>
             {
-                Debug.Assert(_loadSettingsResult.Data != null, "_loadSettingsResult.Data != null");
+                Debug.Assert(_loadSettingsResult.Data != null);
                 //Add after load code here
                 _settings = _loadSettingsResult.Data;
                 //Save to local storage asynchronously and don't wait for the save to finish
@@ -115,7 +106,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
     public async Task<Dictionary<string, string>> GetAllUserSettingsAsync(bool forceReload = false)
     {
         var username = await GetUserName();
-        var cacheKey = CacheKey(username);
+        var cacheKey = CacheKey(username!);
         if (forceReload)
         {
             _settings = null;
@@ -139,7 +130,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
     public async Task<string?> GetUserSettingAsync(string key, bool forceReload = false)
     {
         var userSettings = await GetAllUserSettingsAsync(forceReload);
-        if (userSettings == null)
+        if (userSettings == null!)
             return null;
 
         return userSettings.GetValueOrDefault(key);

@@ -161,6 +161,14 @@ type AgencyLicenseBulkUpdatePayload {
   boolean: Boolean
 }
 
+input SetAccountGeneralInfoPanelInput {
+  accountId: UUID!
+  fiscalYearEnd: String
+  businessType: String
+  industryCode: String
+  priorSuretyCompany: String
+}
+
 type Subscription {
   onAddressModified(addressId: ID!): SubscriptionResultOfAddress!
   onAddressCollectionModified(legalEntityId: ID!): SubscriptionResultOfGuid!
@@ -524,6 +532,8 @@ type Query {
   searchAccountsByAccountNumber(accountNumberFragment: String! activeOnly: Boolean!): [Account!]!
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
   allAccountWatches(accountNum: String!): [AccountWatch!]!
+  lastPrivateEquityByAccount(accountNum: String!): PrivateEquity
+  lastIndemnitorByAccount(accountNum: String!): Indemnitor
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -570,6 +580,11 @@ type Query {
   emailTypes: [EmailTypeDm!]!
   allCountries: [CountryDm!]!
   allWatchStatuses: [WatchStatusDm!]!
+  userSettings: [KeyValuePairOfStringAndString!]!
+  allBusinessTypeClassCodes: [BusinessTypeClassCodeDm!]!
+  allBusinessTypes: [BusinessTypeDm!]!
+  allSicCodes: [Sic!]!
+  allIndustryCodes: [IndustryCodeDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -1293,6 +1308,7 @@ type Underwriter {
 type Mutation {
   setCurrentCreditReportLink(input: SetCurrentCreditReportLinkInput!): SetCurrentCreditReportLinkPayload!
   setAccountGeneralInfo(input: SetAccountGeneralInfoInput!): SetAccountGeneralInfoPayload!
+  setAccountGeneralInfoPanel(input: SetAccountGeneralInfoPanelInput!): SetAccountGeneralInfoPanelPayload!
   setAccountSystems(input: SetAccountSystemsInput!): SetAccountSystemsPayload!
   setAccountAdditionalInformation(input: SetAccountAdditionalInformationInput!): SetAccountAdditionalInformationPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
@@ -3044,6 +3060,10 @@ type Collateral {
   bondSpecific: Boolean
   released: DateTime
   bondNumberNavigation: Bond
+}
+
+type SetAccountGeneralInfoPanelPayload {
+  boolean: Boolean
 }
 
 type Sicratio {

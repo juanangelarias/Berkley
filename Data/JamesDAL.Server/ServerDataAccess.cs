@@ -7,7 +7,6 @@ using James.Shared;
 using James.Shared.Data;
 using James.Shared.Dto;
 using James.Shared.Imaging;
-using James.Shared.Server;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server
@@ -28,6 +27,21 @@ namespace James.Data.Server
         : BaseDataAccess(browserStorageCache, loggingService), IDataAccess
     //TODO: Review if using this with injected classes causes any issues similar to GraphQl queries with injected classes
     {
+        public async Task<IDataAccessResult<List<BusinessTypeClassCodeDm>>> GetAllBusinessTypeClassCodes()
+        {
+            return await ExecuteGet(async () => await query.GetAllBusinessTypeClassCodes(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<BusinessTypeDm>>> GetAllBusinessTypes()
+        {
+            return await ExecuteGet(async () => await query.GetAllBusinessTypes(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<Sic>>> GetAllSicCodes()
+        {
+            return await ExecuteGet(async () => await query.GetAllSicCodes(contextFactory));
+        }
+
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
             return (await ExecuteGet(async () => await query.GetAccountByNumber(accountNumber, contextFactory)))!;
@@ -265,6 +279,13 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await accountMutation.SetAccountGeneralInfo(accountId, yearStarted,
                 currentManagementYear, businessClass, businessType, priorSurety, estAnnualPremium, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, 
+            string? businessType, string? industryCode, string? priorSuretyCompany)
+        {
+            return await ExecuteSave(async () => await accountMutation.SetAccountGeneralInfoPanel(accountId, 
+                fiscalYearEnd, businessType, industryCode, priorSuretyCompany, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
@@ -807,6 +828,16 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAccountAlerts(period, accountNum, contextFactory));
         }
+        
+        public async Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetLastPrivateEquityByAccount(accountNum, contextFactory));
+        }
+        
+        public async Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetLastIndemnitorByAccount(accountNum, contextFactory));
+        }
 
         private async Task<IDataAccessResult<T>> ExecuteGet<T>(Func<Task<T>> dataFunc)
         {
@@ -895,6 +926,11 @@ namespace James.Data.Server
             bool useDocCategoryAsCriteria = true)
         {
             return await ExecuteGet(async () => await ImagingSearchCriteria(id, docCategory, useDocCategoryAsCriteria));
+        }
+        
+        public async Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes()
+        {
+            return await ExecuteGet(async () => await query.GetAllIndustryCodes(contextFactory));
         }
         
         #region User Settings

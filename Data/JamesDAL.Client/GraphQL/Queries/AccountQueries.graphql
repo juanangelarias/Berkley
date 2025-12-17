@@ -123,6 +123,10 @@
                 active
             }
         }
+        priorSuretyCompany
+        industryCode
+        sharedSurety
+        fiscalYearEnd
     }
 }
 
@@ -282,5 +286,23 @@ query GetAllAccountWatches($input: String!) {
         reason
         watchDate
         watchStatus
+    }
+}
+
+query GetLastPrivateEquityByAccount($input: String!) {
+    lastPrivateEquityByAccount(accountNum: $input) {
+        created
+        enteredBy
+        enteredByNavigation {
+            fullName
+        }
+        firmName
+        year
+    }
+}
+
+query GetLastIndemnitorByAccount($input: String!){
+    lastIndemnitorByAccount(accountNum: $input){
+        executionDate
     }
 }

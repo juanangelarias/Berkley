@@ -1,33 +1,36 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@using Blazorise.Animate
+@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 @inject TooltipService TooltipService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
 
 <Theme/>
 
-@if (IsAccountLoaded)
-{
-    <RadzenColumn Size="12">
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem" Visible="@(_isAccountLoaded)">
+    <RadzenRow>
         <RadzenPanel Style="border-radius: 10px;" class="rz-shadow-7 rz-p-2" Collapsed="@_summaryView">
             <HeaderTemplate>
                 <RadzenCard Variant="Variant.Text" Style="width: 100%;" class="rz-p-0">
-                    <RadzenRow JustifyContent="JustifyContent.SpaceBetween" class="rz-text-align-center" Gap="1rem">
+                    <RadzenRow JustifyContent="JustifyContent.SpaceBetween" class="rz-text-align-center"
+                               Gap="1rem">
                         <RadzenColumn Size="8">
-                            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" AlignItems="AlignItems.Center"
-                                         Style="padding: 0.5rem;">
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem"
+                                         AlignItems="AlignItems.Center" Style="padding: 0.5rem;">
                                 <RadzenText TextStyle="TextStyle.DisplayH5" Style="margin-right: 20px;"
-                                            Text="@Account?.IdNavigation.FullName"/>
-                                <RadzenIcon Icon="fiber_manual_record" IconStyle="@AccountStatusStyle" 
-                                            class="filled-icon"/>
-                                <RadzenText Text="@AccountStatus" TextStyle="TextStyle.Body2"/>
+                                            Text="@Account.IdNavigation.FullName"/>
+                                <JamesStatusIcon IconStyle="@AccountStatusStyle"/>
+                                <RadzenText Text="@_accountStatus" TextStyle="TextStyle.Body2"/>
                             </RadzenStack>
                         </RadzenColumn>
                         <RadzenColumn Size="4">
                             <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
                                          JustifyContent="JustifyContent.End">
-                                <RadzenText Text="@(FirstIndemnityDate)"
+                                <RadzenText Text="@(_firstIndemnityDate)"
                                             Style="margin-top: 10px; margin-right: 10px;"/>
-                                <RadzenIcon Icon="@_notificationIcon" Style="@_iconStyle1" class="icon-hover-effect"
+                                <RadzenIcon Icon="@_notificationIcon" Style="@_iconStyle1"
+                                            class="icon-hover-effect"
                                             IconStyle="@_iconStyle" @onclick="@NotificationToggle"
                                             MouseEnter="@(args => NotificationTooltip(args))"/>
                             </RadzenStack>
@@ -70,8 +73,53 @@
                 </RadzenStack>
             </FooterTemplate>
         </RadzenPanel>
-    </RadzenColumn>
-}
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenPanel Style="border-radius: 10px; width: 100%;" class="rz-shadow-7 rz-p-2">
+            <RadzenTabs @ref="@MainTabs" @bind-SelectedIndex="@_mainTabItem" Change="@(args => MainTabsChanged(args))">
+                <Tabs>
+                    <RadzenTabsItem Text="Account Info">
+                        <Animate Animation="new FadeAnimation()" Duration="TimeSpan.FromSeconds(0.5)">
+                            <RadzenTabs @ref="@AccountInfoTabs" TabControlName="AccountInfoTabs"
+                                        @bind-SelectedIndex="@_accountInfoTabItem" 
+                                        Change="@(args => AccountInfoTabsChanged(args))">
+                                <Tabs>
+                                    <RadzenTabsItem Text="General Information" >
+                                        <AccountGeneralInformation/>
+                                    </RadzenTabsItem>
+                                    <RadzenTabsItem Text="Credit Rating">
+
+                                    </RadzenTabsItem>
+                                    <RadzenTabsItem Text="Bonded Principle">
+
+                                    </RadzenTabsItem>
+                                </Tabs>
+                            </RadzenTabs>
+                        </Animate>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Line of Authority" TabName="LineOfAuthority">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Bond Requests" TabName="BondRequests">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Financials" TabName="Financials">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="WIP" TabName="Wip">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Bank and Security" TabName="BankAndSecurity">
+
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Virtual File" TabName="VirtualFile">
+
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+        </RadzenPanel>
+    </RadzenRow>
+</RadzenStack>
 
 <style>
     .icon-hover-effect:hover {
@@ -81,11 +129,19 @@
 
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Mn { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Ai { get; set; }
 
-    private string AccountStatus;
-    private bool IsAccountLoaded;
-    private string FirstIndemnityDate;
-    private bool IsAccountActive;
+    private string _accountStatus = null!;
+    private bool _isAccountLoaded;
+    private string _firstIndemnityDate = null!;
+    private bool _isAccountActive;
     private IconStyle AccountStatusStyle { get; set; }
     private bool _summaryView;
     private bool _isNotificationVisible = true;
@@ -96,17 +152,44 @@
     private Variant _variant = Variant.Flat;
     private ButtonStyle _notificationStyle = ButtonStyle.Info;
     private bool _alertOrClaimExist;
+    private RadzenTabs MainTabs { get; set; } = new();
+    private int _mainTabItem = 0;
+    private RadzenTabs AccountInfoTabs { get; set; } = new();
+    private int _accountInfoTabItem = 0;
+    private bool _isNewRender = true;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _isNewRender = true;
+    }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        _mainTabItem = !string.IsNullOrEmpty(Mn)
+            ? Convert.ToInt32(Mn)
+            : 0;
+        
+        if (_mainTabItem == 0) // This tab contains General Info tabs
+        {
+            _accountInfoTabItem = !string.IsNullOrEmpty(Ai)
+                ? Convert.ToInt32(Ai)
+                : 0;
+        }
+        
+        if (!_isNewRender)
+            return;
+        
+        _isNewRender = false;
 
         var statusLog = Account.AccountStatusLogs
             .OrderByDescending(o => o.Effective)
             .FirstOrDefault();
 
         var accountStatus = statusLog?.AccountStatus ?? "";
-        AccountStatus = accountStatus.ToLower() switch
+        _accountStatus = accountStatus.ToLower() switch
         {
             "active" => "Active",
             "term. agent" => "Terminated",
@@ -119,7 +202,7 @@
             _ => "Not Defined"
         };
 
-        AccountStatusStyle = AccountStatus switch
+        AccountStatusStyle = _accountStatus switch
         {
             "Active" => IconStyle.Success,
             "Prospect" => IconStyle.Warning,
@@ -127,7 +210,7 @@
             _ => IconStyle.Base
         };
 
-        IsAccountActive = statusLog?.AccountStatusNavigation.Active ?? false;
+        _isAccountActive = statusLog?.AccountStatusNavigation.Active ?? false;
 
         var firstIndemnityResult = await DataAccess.GetFirstIndemnityDate(Account.AccountNum);
 
@@ -135,11 +218,11 @@
             ? firstIndemnityResult.Data
             : null;
 
-        FirstIndemnityDate = firstIndemnity == null
+        _firstIndemnityDate = firstIndemnity == null
             ? "First indemnity: None"
             : $"First indemnity: {firstIndemnity:MM/dd/yyyy}";
 
-        IsAccountLoaded = true;
+        _isAccountLoaded = true;
     }
 
     private void NotificationToggle()
@@ -198,4 +281,32 @@
         Account.IdNavigation.FullName = newName;
     }
 
+    private async Task MainTabsChanged(int index)
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "mn", index },
+            { "ai", 0 }
+        };
+
+        var newUri = Navigation.GetUriWithQueryParameters(queryParams);
+        await JSRuntime.InvokeVoidAsync("history.replaceState", null, newUri);
+        Navigation.NavigateTo(newUri, false);
+    }
+    
+    private async Task  AccountInfoTabsChanged(int index)
+    {
+        if (_mainTabItem != 0) 
+            return;
+
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "mn", MainTabs.SelectedTab.Index },
+            { "ai", index }
+        }; 
+            
+        var newUri = Navigation.GetUriWithQueryParameters(queryParams);
+        await JSRuntime.InvokeVoidAsync("history.replaceState", null, newUri);
+        Navigation.NavigateTo(newUri, false);
+    }
 }

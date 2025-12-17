@@ -132,11 +132,11 @@
     
     [Parameter]
     [SupplyParameterFromQuery]
-    public string? MTab { get; set; }
+    public string? Mn { get; set; }
     
     [Parameter]
     [SupplyParameterFromQuery]
-    public string? AiTab { get; set; }
+    public string? Ai { get; set; }
 
     private string _accountStatus = null!;
     private bool _isAccountLoaded;
@@ -168,14 +168,14 @@
     {
         await base.OnParametersSetAsync();
 
-        _mainTabItem = !string.IsNullOrEmpty(MTab)
-            ? Convert.ToInt32(MTab)
+        _mainTabItem = !string.IsNullOrEmpty(Mn)
+            ? Convert.ToInt32(Mn)
             : 0;
         
         if (_mainTabItem == 0) // This tab contains General Info tabs
         {
-            _accountInfoTabItem = !string.IsNullOrEmpty(AiTab)
-                ? Convert.ToInt32(AiTab)
+            _accountInfoTabItem = !string.IsNullOrEmpty(Ai)
+                ? Convert.ToInt32(Ai)
                 : 0;
         }
         
@@ -285,8 +285,8 @@
     {
         var queryParams = new Dictionary<string, object?>
         {
-            { "MTab", index },
-            { "AiTab", 0 }
+            { "mn", index },
+            { "ai", 0 }
         };
 
         var newUri = Navigation.GetUriWithQueryParameters(queryParams);
@@ -301,8 +301,8 @@
 
         var queryParams = new Dictionary<string, object?>
         {
-            { "MTab", MainTabs.SelectedTab.Index },
-            { "AiTab", index }
+            { "mn", MainTabs.SelectedTab.Index },
+            { "ai", index }
         }; 
             
         var newUri = Navigation.GetUriWithQueryParameters(queryParams);

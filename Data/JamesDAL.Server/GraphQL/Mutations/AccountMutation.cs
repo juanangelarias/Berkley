@@ -43,9 +43,9 @@ public class AccountMutation
     }
 
     [Authorize]
-    public async Task<bool> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
-        string? fiscalYearEnd, string? businessType, string? accountIndustry, string? priorSuretyCompany,
-        bool? isSharedSurety, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    public async Task<bool> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, string? businessType,
+        string? industryCode, string? priorSuretyCompany,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
@@ -55,12 +55,10 @@ public class AccountMutation
         if (account == null)
             throw new NotFoundException("Account not found");
 
-        //account.GIAExecutionDate = giaExecutionDate;
         account.FiscalYearEnd = fiscalYearEnd;
         account.BusinessType = businessType;
-        //account.AccountIndustry = accountIndustry;
+        account.IndustryCode = industryCode;
         account.PriorSuretyCompany = priorSuretyCompany;
-        //account.IsSharedSurety = isSharedSurety;
 
         await ctx.SaveChangesAsync();
         return true;

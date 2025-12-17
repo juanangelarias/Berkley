@@ -2,6 +2,7 @@
 using JamesWebUI.Client.Model;
 using JamesWebUI.Client.Services;
 using Microsoft.AspNetCore.Components;
+using Newtonsoft.Json;
 using Radzen;
 using Radzen.Blazor;
 
@@ -49,7 +50,8 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
         }
     }
 
-    protected string UserSettingsKey { get; set; } = string.Empty;
+    protected string GridSettingsKey { get; set; } = "";
+
     protected RadzenDataGrid<T> Grid { get; set; } = null!;
     
     #endregion
@@ -64,13 +66,18 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
             Settings = GridSettings
         };
 
-        var response = await UserSettingService.SetGridSettings(userGridSettings);
+        var json = JsonConvert.SerializeObject(userGridSettings);
+        var response = await UserSettingService.SetUserSettingAsync(GridSettingsKey,json);
         
         if (!response.Success)
         {
             NotifySaveError(response.Errors, "user grid settings");
             return;
         }
+        
+        // Forcing the refresh of the user settings
+        await UserSettingService.GetUserSettingAsync(GridSettingsKey, true);
+        
 
         NotifySuccessfulSave("user grid settings");
 
@@ -82,12 +89,14 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
     protected async Task GetGridSettings()
     {
         await ShowLoading();
-        var response = await UserSettingService.GetGridSettings();
+        var response = await UserSettingService.GetUserSettingAsync(GridSettingsKey);
         if (response == null)
             return;
 
-        DefaultExportFormat = response.DefaultExportFormat;
-        GridSettings = response.Settings;
+        var gridSettings = JsonConvert.DeserializeObject<GridSettings>(response) ?? new();
+        
+        DefaultExportFormat = gridSettings.DefaultExportFormat;
+        GridSettings = gridSettings.Settings;
         UserSettingsLoaded = true;
         UserSettingsChanged = false;
     }
@@ -100,7 +109,7 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
         DefaultExportFormat = ExportFormat.Excel;
         await Grid.ReloadSettings();
 
-        var response = await UserSettingService.ResetUserSettings();
+        var response = await UserSettingService.SetUserSettingAsync(GridSettingsKey, null);
         if (!response.Success)
         {
             NotifySaveError(response.Errors, "user grid settings");

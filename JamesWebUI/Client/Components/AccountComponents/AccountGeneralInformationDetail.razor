@@ -2,173 +2,180 @@
 
 @inject IDataAccess DataAccess
 
-
-@if (_isEditMode)
-{
-    <RadzenTemplateForm TItem="AccountGeneralInfoModel" Data="@GeneralInfoModel" Submit="OnSubmit" @ref="@Form">
+<RadzenFieldset Text="General Information" Style="width: 100%">
+    @if (_isEditMode)
+    {
+        <RadzenTemplateForm TItem="AccountGeneralInfoModel" Data="@GeneralInfoModel" Submit="OnSubmit" @ref="@Form">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem;">
+                <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
+                    <RadzenText Style="height: 30px;"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="6">
+                        <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
+                            <RadzenTextBox Disabled="true" Value="@_giaExecutionDate" Style="color: black;"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6">
+                        <JamesFormField Text="Account FYE Date" Variant="Variant.Text">
+                            <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.FiscalYearEnd"
+                                            Data="@_endFiscalYearList" AllowFiltering="true" Name="FiscalYearEnd"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="12">
+                        <JamesFormField Text="Business Type" Variant="Variant.Text">
+                            <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.BusinessType"
+                                            ValueProperty="@nameof(BusinessTypeDm.BusinessType)"
+                                            TextProperty="@nameof(BusinessTypeDm.BusinessType)"
+                                            AllowFiltering="true" Data="@_businessTypes" AllowClear="false"
+                                            Name="BusinessType"/>
+                            <RadzenRequiredValidator Text="Business Type is required." Component="BusinessType"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="12">
+                        <JamesFormField Text="Account Industry" Variant="Variant.Text">
+                            <RadzenDropDown TValue="string" Data="_industryCodes" Name="IndustryCode"
+                                            TextProperty="@nameof(JamesLookup.Name)"
+                                            ValueProperty="@nameof(JamesLookup.Code)"
+                                            AllowFiltering="true" @bind-Value="@GeneralInfoModel.IndustryCode"/>
+                            <RadzenRequiredValidator Text="Account Industry is required." Component="IndustryCode"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="6">
+                        <JamesFormField Text="Prior Surety" Variant="Variant.Text">
+                            <RadzenTextBox @bind-Value="@GeneralInfoModel.PriorSuretyCompany" Name="PriorSurety"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="6">
+                        <JamesFormField Text="Shared Surety" Variant="Variant.Text">
+                            <RadzenRadioButtonList Value="@(Account.SharedSurety != null)" TValue="bool"
+                                                   Name="IsSharedSurety" Disabled="true" Style="color: black;">
+                                <Items>
+                                    <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
+                                    <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
+                                </Items>
+                            </RadzenRadioButtonList>
+                        </JamesFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="8">
+                        <JamesFormField Text="Private Equity" Variant="Variant.Text">
+                            <RadzenTextBox Value="@_lastPrivateEquity?.FirmName" Name="PrivateEquityText"
+                                           Disabled="true"
+                                           Style="color: black;"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <JamesFormField Text="Year" Variant="Variant.Text">
+                            <RadzenTextBox Value="@_lastPrivateEquity?.Year" Name="PrivateEquityYear" Disabled="true"
+                                           Style="color: black;"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenColumn Size="12">
+                        <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
+                            <RadzenTextBox Disabled="true" Style="color: black;"
+                                           Value="@_privateEquitySnapShot"/>
+                        </JamesFormField>
+                    </RadzenColumn>
+                </RadzenRow>
+                <RadzenRow JustifyContent="JustifyContent.End">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="1rem;">
+                        <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary"
+                                      ButtonType="ButtonType.Submit" Disabled="@(!Form.IsValid)"/>
+                        <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
+                                      ButtonType="ButtonType.Reset"/>
+                    </RadzenStack>
+                </RadzenRow>
+            </RadzenStack>
+        </RadzenTemplateForm>
+    }
+    else
+    {
         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem;">
             <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
-                <RadzenText Style="height: 30px;"/>
+                <AuthorizeView Policy="InRoleCanEditAccountGeneralInformationTab">
+                    <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
+                                  Click="@ToggleEditMode" Style="height: 30px;"/>
+                </AuthorizeView>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
-                        <RadzenDatePicker @bind-Value=@GeneralInfoModel.GIAExecutionDate DateFormat="MM/dd/yyyy"
-                                          Name="GIAExecutionDate"/>
-                        <RadzenRequiredValidator Text="GIA Execution Date is required."
-                                                 Component="GIAExecutionDate"/>
+                        <RadzenTextBox Disabled="true" Value="@(_giaExecutionDate)" Style="color: black;"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="Account FYE Date" Variant="Variant.Text">
-                        <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.FiscalYearEnd"
-                                        Data="@_endFiscalYearList" AllowClear="true" Name="FiscalYearEnd"/>
+                        <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.FiscalYearEnd"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="12">
                     <JamesFormField Text="Business Type" Variant="Variant.Text">
-                        <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.BusinessType"
-                                        ValueProperty="@nameof(BusinessTypeClassCodeDm.BusinessType)"
-                                        TextProperty="@nameof(BusinessTypeClassCodeDm.BusinessType)"
-                                        AllowFiltering="true" Data="@_businessClasses" AllowClear="false"
-                                        Name="BusinessType"/>
-                        <RadzenRequiredValidator Text="Business Type is required." Component="BusinessType"/>
+                        <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.BusinessType"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="12">
                     <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                        <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.AccountIndustry"
-                                        ValueProperty="@nameof(Sic.Code)"
-                                        TextProperty="@nameof(Sic.Name)"
-                                        AllowFiltering="true" Data="@_sicCodes" AllowClear="false"
-                                        Name="SicCode"/>
-                        <RadzenRequiredValidator Text="Account Industry is required." Component="SicCode"/>
+                        <RadzenTextBox Disabled="true" Style="color:black" Value="@AccountIndustry()"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="Prior Surety" Variant="Variant.Text">
-                        <RadzenTextBox @bind-Value="@GeneralInfoModel.PriorSuretyCompany" Name="PriorSurety"/>
+                        <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.PriorSuretyCompany"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="6">
                     <JamesFormField Text="Shared Surety" Variant="Variant.Text">
-                        <RadzenRadioButtonList @bind-Value="@GeneralInfoModel.IsSharedSurety" TValue="bool"
-                                               Name="IsSharedSurety">
+                        <RadzenRadioButtonList Value="@(Account.SharedSurety != null)" TValue="bool"
+                                               Name="IsSharedSurety" Disabled="true" Style="color: black;">
                             <Items>
                                 <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
                                 <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
                             </Items>
                         </RadzenRadioButtonList>
-                        <RadzenRequiredValidator Text="Shared surety is required." Component="IsSharedSurety"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="8">
                     <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                        <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityText" Name="PrivateEquityText"/>
+                        <RadzenTextBox Value="@_lastPrivateEquity?.FirmName" Name="PrivateEquityText" Disabled="true"
+                                       Style="color: black;"/>
                     </JamesFormField>
                 </RadzenColumn>
                 <RadzenColumn Size="4">
                     <JamesFormField Text="Year" Variant="Variant.Text">
-                        <RadzenTextBox @bind-Value="@GeneralInfoModel.PrivateEquityDate" Name="PrivateEquityYear"/>
-                        <RadzenRegexValidator Text="The Year should contain 4 digits" Pattern="@RegExs.Year"/>
-                        <RadzenLengthValidator Text="The Year should contain 4 digits" Max="4"/>
+                        <RadzenTextBox Value="@_lastPrivateEquity?.Year" Name="PrivateEquityYear" Disabled="true"
+                                       Style="color: black;"/>
                     </JamesFormField>
                 </RadzenColumn>
             </RadzenRow>
-            <RadzenRow JustifyContent="JustifyContent.End">
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End" Gap="1rem;">
-                    <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary"
-                                  ButtonType="ButtonType.Submit" Disabled="@(!Form.IsValid)"/>
-                    <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
-                                  ButtonType="ButtonType.Reset"/>
-                </RadzenStack>
+            <RadzenRow>
+                <RadzenColumn Size="12">
+                    <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
+                        <RadzenTextBox Disabled="true" Style="color: black;"
+                                       Value="@_privateEquitySnapShot"/>
+                    </JamesFormField>
+                </RadzenColumn>
             </RadzenRow>
         </RadzenStack>
-    </RadzenTemplateForm>
-}
-else
-{
-    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem;">
-        <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
-            <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
-                          Click="@ToggleEditMode" Style="height: 30px;"/>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="6">
-                <JamesFormField Text="GIA Execution Date" Variant="Variant.Text">
-                    <RadzenTextBox Disabled="true" Style="color: black;" Value="11/12/2025"/>
-                </JamesFormField>
-            </RadzenColumn>
-            <RadzenColumn Size="6">
-                <JamesFormField Text="Account FYE Date" Variant="Variant.Text">
-                    <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.FiscalYearEnd"/>
-                </JamesFormField>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="12">
-                <JamesFormField Text="Business Type" Variant="Variant.Text">
-                    <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.BusinessType"/>
-                </JamesFormField>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="12">
-                <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                    <RadzenTextBox Disabled="true" Style="color: black;"/> @*Value="@Account.AccountIndustry"/>*@
-                </JamesFormField>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="6">
-                <JamesFormField Text="Prior Surety" Variant="Variant.Text">
-                    <RadzenTextBox Disabled="true" Style="color: black;" Value="@Account.PriorSuretyCompany"/>
-                </JamesFormField>
-            </RadzenColumn>
-            <RadzenColumn Size="6">
-                <JamesFormField Text="Shared Surety" Variant="Variant.Text">
-                    <RadzenRadioButtonList Value="false" TValue="bool"
-                                           Name="IsSharedSurety" Disabled="true" Style="color: black;">
-                        <Items>
-                            <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
-                            <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
-                        </Items>
-                    </RadzenRadioButtonList>
-                    @*Value="@(GeneralInfoModel.IsSharedSurety ? "Yes" : "No" )"/>*@
-                </JamesFormField>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="8">
-                <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                    <RadzenTextBox Value="Private Equity text" Name="PrivateEquityText" Disabled="true"
-                                   Style="color: black;"/>
-                </JamesFormField>
-            </RadzenColumn>
-            <RadzenColumn Size="4">
-                <JamesFormField Text="Year" Variant="Variant.Text">
-                    <RadzenTextBox Value="2025" Name="PrivateEquityYear" Disabled="true" Style="color: black;"/>
-                </JamesFormField>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="12">
-                <JamesFormField Text="Snapshot of table with historic data" Variant="Variant.Text">
-                    <RadzenTextBox Disabled="true" Style="color: black;"
-                                   Value="Created by {USER} on {CREATION DATE}"/>
-                </JamesFormField>
-            </RadzenColumn>
-        </RadzenRow>
-    </RadzenStack>
-}
+    }
+</RadzenFieldset>
 
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; } = null!;
@@ -176,47 +183,106 @@ else
     private bool _isEditMode;
     private RadzenTemplateForm<AccountGeneralInfoModel> Form { get; set; } = null!;
     private AccountGeneralInfoModel GeneralInfoModel { get; set; } = new();
-    private List<BusinessTypeClassCodeDm> _businessClasses = [];
-    private List<Sic> _sicCodes = [];
+    private List<BusinessTypeDm> _businessTypes = [];
+    private List<JamesLookup> _industryCodes = [];
+    private PrivateEquity? _lastPrivateEquity;
+    private string _privateEquitySnapShot = "";
+    private string? _giaExecutionDate;
 
     private readonly List<string> _endFiscalYearList =
         ["01/31", "02/28", "03/31", "04/30", "05/31", "06/30", "07/31", "08/31", "09/30", "10/31", "11/30", "12/31"];
 
     #region Loaders
 
-    #region BusinessClass
+    #region BusinessTypes
 
-    private IDataAccessResult<List<BusinessTypeClassCodeDm>> _businessClassResult = null!;
+    private IDataAccessResult<List<BusinessTypeDm>> _businessTypeResult = null!;
 
-    private LoadItem BusinessClassLoad => AddEventNotify(new LoadItem
+    private LoadItem BusinessClassLoad => AddEventNotify(new LoadItem<List<BusinessTypeDm>>
     {
         Key = CacheKeys.BusinessClasses,
-        AsyncLoadTask = async () => _businessClassResult = await DataAccess.GetAllBusinessTypeClassCodes(),
-        CacheLoadTask = cache => _businessClassResult = new DataAccessResult<List<BusinessTypeClassCodeDm>>
+        AsyncLoadTask = async () => _businessTypeResult = await DataAccess.GetAllBusinessTypes(),
+        CacheLoadTask = cache => _businessTypeResult = new DataAccessResult<List<BusinessTypeDm>>
         {
-            Data = (List<BusinessTypeClassCodeDm>)cache!
+            Data = (List<BusinessTypeDm>)cache!
         },
-        ResultVariable = () => _businessClassResult,
-        AfterLoad = () => { _businessClasses = _businessClassResult.Data!; }
-    }, "business classes");
+        ResultVariable = () => _businessTypeResult,
+        AfterLoad = () => { _businessTypes = _businessTypeResult.Data!; }
+    }, "business types");
 
-    #endregion*/
+    #endregion
 
-    #region SICCodes
+    #region IndustryCodes Load
 
-    private IDataAccessResult<List<Sic>> _sicCodesResult = null!;
+    private IDataAccessResult<List<IndustryCodeDm>> _industryCodesResult = null!;
 
-    private LoadItem SicCodesLoad => AddEventNotify(new LoadItem
+    private LoadItem IndustryCodesLoad => AddEventNotify(new LoadItem<List<IndustryCodeDm>>
     {
-        Key = CacheKeys.SicCodes,
-        AsyncLoadTask = async () => _sicCodesResult = await DataAccess.GetAllSicCodes(),
-        CacheLoadTask = cache => _sicCodesResult = new DataAccessResult<List<Sic>>
+        Key = CacheKeys.IndustryCodes,
+        AsyncLoadTask = async () => _industryCodesResult = await DataAccess.GetAllIndustryCodes(),
+        CacheLoadTask = cache => _industryCodesResult = new DataAccessResult<List<IndustryCodeDm>>
         {
-            Data = (List<Sic>)cache!
+            Data = (List<IndustryCodeDm>)cache!
         },
-        ResultVariable = () => _sicCodesResult,
-        AfterLoad = () => { _sicCodes = _sicCodesResult.Data!; }
-    }, "SIC codes");
+        ResultVariable = () => _industryCodesResult,
+        AfterLoad = () =>
+        {
+            _industryCodes = _industryCodesResult.Data!
+                .Select(s => new JamesLookup
+                {
+                    Id = s.Id,
+                    Code = s.Code,
+                    Name = $"{s.Code} - {s.Industry}"
+                })
+                .ToList();
+        }
+    }, "industry codes");
+
+    #endregion
+
+    #region LastPrivateEquity Load
+
+    private IDataAccessResult<PrivateEquity?> _lastPrivateEquityResult = null!;
+
+    private LoadItem LastPrivateEquityLoad => AddEventNotify(new LoadItem<PrivateEquity?>
+    {
+        Key = CacheKeys.LastPrivateEquity(Account.AccountNum),
+        AsyncLoadTask = async () => _lastPrivateEquityResult = await DataAccess.GetLastPrivateEquityByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _lastPrivateEquityResult = new DataAccessResult<PrivateEquity?>
+        {
+            Data = (PrivateEquity?)cache!
+        },
+        ResultVariable = () => _lastPrivateEquityResult,
+        AfterLoad = () =>
+        {
+            _lastPrivateEquity = _lastPrivateEquityResult.Data;
+            _privateEquitySnapShot = $"Created by {_lastPrivateEquity?.EnteredByNavigation.FullName ?? "Unknown User"} " +
+                                     $"on {_lastPrivateEquity?.Created:MM/dd/yyyy}";
+        }
+    }, "last private equity");
+
+    #endregion
+
+    #region LastIndemnitor Load
+
+    private IDataAccessResult<Indemnitor?> _lastIndemnitorResult = null!;
+
+    private LoadItem LastIndemnitorLoad => AddEventNotify(new LoadItem<Indemnitor?>
+    {
+        Key = CacheKeys.LastIndemnitor(Account.AccountNum),
+        AsyncLoadTask = async () => _lastIndemnitorResult = await DataAccess.GetLastIndemnitorByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _lastIndemnitorResult = new DataAccessResult<Indemnitor?>
+        {
+            Data = (Indemnitor?)cache!
+        },
+        ResultVariable = () => _lastIndemnitorResult,
+        AfterLoad = () =>
+        {
+            _giaExecutionDate = _lastIndemnitorResult.Data?.ExecutionDate == null
+                ? ""
+                : _lastIndemnitorResult.Data?.ExecutionDate.Value.ToString("MM/dd/yyyy");
+        }
+    }, "last indemnitor");
 
     #endregion
 
@@ -229,9 +295,11 @@ else
         await LoadReferenceTables();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnParametersSetAsync()
     {
-        await base.OnAfterRenderAsync(firstRender);
+        await base.OnParametersSetAsync();
+
+        await DataAccess.ParallelGetCacheOrDataAsync(LastPrivateEquityLoad, LastIndemnitorLoad);
     }
 
     private void ToggleEditMode()
@@ -240,14 +308,8 @@ else
         {
             BusinessType = Account.BusinessType,
             FiscalYearEnd = Account.FiscalYearEnd,
-            GIAExecutionDate = null, // Account.GIAExecutionDate
             PriorSuretyCompany = Account.PriorSuretyCompany,
-            IsSharedSurety = false, // Account.IsSharedSurety
-            AccountIndustry = "", // Account.Account Industry
-            PrivateEquityText = "", // From the last Private Equity Log field
-            PrivateEquityDate = null, // From the last Private Equity Log field
-            SnapshotHistoricData = "Created by {USER} on {CREATION DATE}"
-            // From the last Private Equity Log field
+            IndustryCode = Account.IndustryCode,
         };
 
         _isEditMode = !_isEditMode;
@@ -255,13 +317,23 @@ else
 
     private async Task LoadReferenceTables()
     {
-        await DataAccess.ParallelGetCacheOrDataAsync(BusinessClassLoad, SicCodesLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(BusinessClassLoad, IndustryCodesLoad);
+    }
+
+    private string AccountIndustry()
+    {
+        var record = _industryCodes
+            .FirstOrDefault(f => f.Code == Account.IndustryCode);
+
+        return record != null
+            ? record.Name
+            : "";
     }
 
     private async Task OnSubmit(AccountGeneralInfoModel model)
     {
-        var result = await DataAccess.SetAccountGeneralInfoPanel(Account.Id, model.GIAExecutionDate, model.FiscalYearEnd,
-            model.BusinessType, model.AccountIndustry, model.PriorSuretyCompany, model.IsSharedSurety);
+        var result = await DataAccess.SetAccountGeneralInfoPanel(Account.Id, model.FiscalYearEnd, model.BusinessType,
+            model.IndustryCode, model.PriorSuretyCompany);
 
         if (!result.Success)
         {
@@ -271,18 +343,10 @@ else
 
         NotifySuccessfulSave("account general information");
 
-        /*if (model.PrivateEquityDate != original.PrivateEquityDate ||
-            model.PrivateEquityText != original.PrivateEquityText)
-        {
-            // Create a new log in the PrivateEquityLog table
-        }*/
-
-        //Account.GiaExecutionDate = model.GIAExecutionDate;
         Account.FiscalYearEnd = model.FiscalYearEnd;
         Account.BusinessType = model.BusinessType;
-        //Account.AccountIndustry = model.AccountIndustry;
+        Account.IndustryCode = model.IndustryCode;
         Account.PriorSuretyCompany = model.PriorSuretyCompany;
-        //Account.IsSharedSurety = model.IsSharedSurety;
 
         _isEditMode = false;
     }
@@ -292,5 +356,4 @@ else
         GeneralInfoModel = new();
         _isEditMode = false;
     }
-
 }

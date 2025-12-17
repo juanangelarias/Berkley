@@ -20,6 +20,8 @@ public partial class Underwriter
 
     public string? NotificationGroup { get; set; }
 
+    public Guid? HomeOfficeLead { get; set; }
+
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
     public virtual ICollection<BondHold> BondHolds { get; set; } = new List<BondHold>();
@@ -31,6 +33,8 @@ public partial class Underwriter
     public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
 
     public virtual ICollection<Bond> Bonds { get; set; } = new List<Bond>();
+
+    public virtual Employee? HomeOfficeLeadNavigation { get; set; }
 
     public virtual Employee IdNavigation { get; set; } = null!;
 

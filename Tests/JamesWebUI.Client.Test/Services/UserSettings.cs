@@ -44,6 +44,9 @@ namespace JamesWebUI.Client.Test.Services
             var uss = GetUserSettingsService();
             //var dataAccess = _lazyServiceProvider!.Value.GetService<IDataAccess>();
             //Get user settings as baseline
+            var testKey = "UnitTest12345";
+            var testValue = "UnitTest12345Value";
+            await uss.SetUserSettingAsync(testKey, testValue);
             var settings = await uss.GetAllUserSettingsAsync();
             Assert.NotNull(settings);
             Assert.True(settings.Any());
@@ -89,8 +92,8 @@ namespace JamesWebUI.Client.Test.Services
         }
 
         private ITestOutputHelper Output { get; init; }
-        private static UserSettingsService GetUserSettingsService() =>
-            _lazyServiceProvider!.Value.GetService<UserSettingsService>()!;
+        private static UserSettingService GetUserSettingsService() =>
+            _lazyServiceProvider!.Value.GetService<UserSettingService>()!;
         private static Lazy<ServiceProvider>? _lazyServiceProvider;
 
         protected ServiceProvider CreateServer(SubscriptionOptions? options = null)
@@ -147,7 +150,7 @@ namespace JamesWebUI.Client.Test.Services
             services.AddScoped<ImagingKong0Helper>();
             services.AddScoped<ServerImagingAccess>();
             services.AddScoped<AgencyMutation>();
-            services.AddScoped<UserSettingsService>();
+            services.AddScoped<UserSettingService>();
             services.AddSingleton(typeof(ILogger), typeof(NullLogger));
             services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
             services.AddScoped<ILoggingShared, LoggingShared>();
@@ -157,7 +160,7 @@ namespace JamesWebUI.Client.Test.Services
             services.SetupImagingForKong(config);
 #pragma warning restore CA1416
             services.AddScoped<ILocalStorageService, TestLocalStorageService>();
-            services.AddScoped<UserSettingsService>();
+            services.AddScoped<UserSettingService>();
 
             services.AddLogging(c => c
                 //builder.Logging

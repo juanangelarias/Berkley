@@ -24,6 +24,7 @@ type UserProfile {
   accountStatusLogs: [AccountStatusLog!]!
   agencyCompetitions: [AgencyCompetition!]!
   agencyInventories: [AgencyInventory!]!
+  agencyLineOfAuthorityLogs: [AgencyLineOfAuthorityLog!]!
   bondBlocks: [BondBlock!]!
   bondHolds: [BondHold!]!
   bondRequestCctoNavigations: [BondRequest!]!
@@ -109,6 +110,7 @@ type Insurer {
   writingCompany: String
   agencyLicenses: [AgencyLicense!]!
   bondHolds: [BondHold!]!
+  bondTransactions: [BondTransaction!]!
   bonds: [Bond!]!
   currencyCountryNavigation: CountryDm!
   idNavigation: LegalEntity!
@@ -166,12 +168,10 @@ type AgencyLicenseBulkUpdatePayload {
 
 input SetAccountGeneralInfoPanelInput {
   accountId: UUID!
-  giaExecutionDate: DateTime
   fiscalYearEnd: String
   businessType: String
-  accountIndustry: String
+  industryCode: String
   priorSuretyCompany: String
-  isSharedSurety: Boolean
 }
 
 type Subscription {
@@ -231,6 +231,16 @@ input LogInformationInput {
   data: [KeyValuePairOfStringAndStringInput!]
 }
 
+type AgencyLineOfAuthorityAgent {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  agencyLineOfAuthorityId: UUID!
+  agentId: UUID!
+  agencyLineOfAuthority: AgencyLineOfAuthorityLog!
+  agent: Agent!
+}
+
 type SetAgencyProfitSharingInfoPayload {
   boolean: Boolean
 }
@@ -251,6 +261,11 @@ input SetBondBlockInput {
 input SetCurrentCreditReportLinkInput {
   accountNum: String!
   imagingDocumentId: UUID
+}
+
+type KeyValue {
+  key: String!
+  value: String!
 }
 
 type EmailTypeDm {
@@ -494,7 +509,10 @@ type Employee {
   entraId: String
   activeDirectoryTitle: String
   agencyStatusLogs: [AgencyStatusLog!]!
+  branches: [Branch!]!
   notificationGroupMembers: [NotificationGroupMember!]!
+  privateEquities: [PrivateEquity!]!
+  underwriterHomeOfficeLeadNavigations: [Underwriter!]!
   underwriterIdNavigation: Underwriter
   underwriterReportsToNavigations: [Underwriter!]!
 }
@@ -519,6 +537,8 @@ type Query {
   searchAccountsByAccountNumber(accountNumberFragment: String! activeOnly: Boolean!): [Account!]!
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
   allAccountWatches(accountNum: String!): [AccountWatch!]!
+  lastPrivateEquityByAccount(accountNum: String!): PrivateEquity
+  lastIndemnitorByAccount(accountNum: String!): Indemnitor
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -569,6 +589,7 @@ type Query {
   allBusinessTypeClassCodes: [BusinessTypeClassCodeDm!]!
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
+  allIndustryCodes: [IndustryCodeDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -589,8 +610,8 @@ type Query {
   activeDirectoryUsers(searchText: String!): [PotentialEmployeeActiveDirectoryInfo!]!
   allStates: [State!]!
   underwriters: [Underwriter!]!
-  allUserSettings: [KeyValuePairOfStringAndString!]!
   userSetting(key: String!): UserSetting
+  allUserSettings: [KeyValue!]!
 }
 
 type AgencyCommission {
@@ -1072,6 +1093,7 @@ type LineOfAuthorityStatusDm {
   created: DateTime!
   modified: DateTime!
   status: String!
+  agencyLineOfAuthorityLogs: [AgencyLineOfAuthorityLog!]!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
 }
 
@@ -1274,12 +1296,14 @@ type Underwriter {
   active: Boolean!
   reportsTo: UUID
   notificationGroup: String
+  homeOfficeLead: UUID
   accounts: [Account!]!
   bondHolds: [BondHold!]!
   bondRequestCommercials: [BondRequestCommercial!]!
   bondRequests: [BondRequest!]!
   bondTransactions: [BondTransaction!]!
   bonds: [Bond!]!
+  homeOfficeLeadNavigation: Employee
   idNavigation: Employee!
   notificationGroupNavigation: NotificationGroup
   profitCenters: [ProfitCenter!]!
@@ -1328,6 +1352,8 @@ type Mutation {
   deleteLegalEntityEmail(input: DeleteLegalEntityEmailInput!): DeleteLegalEntityEmailPayload!
   setUserSetting(input: SetUserSettingInput!): SetUserSettingPayload!
   setDefaultUserSetting(input: SetDefaultUserSettingInput!): SetDefaultUserSettingPayload!
+  resetUserSettings: ResetUserSettingsPayload!
+  resetUserSetting(input: ResetUserSettingInput!): ResetUserSettingPayload!
   addPrincipalToSecurityRole(input: AddPrincipalToSecurityRoleInput!): AddPrincipalToSecurityRolePayload!
   removePrincipalFromSecurityRole(input: RemovePrincipalFromSecurityRoleInput!): RemovePrincipalFromSecurityRolePayload!
   addSecurityRole(input: AddSecurityRoleInput!): AddSecurityRolePayload!
@@ -1336,8 +1362,6 @@ type Mutation {
   createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
   setBondBlock(input: SetBondBlockInput!): SetBondBlockPayload!
   deleteBondBlock(input: DeleteBondBlockInput!): DeleteBondBlockPayload!
-  resetUserSettings: ResetUserSettingsPayload!
-  resetUserSetting(input: ResetUserSettingInput!): ResetUserSettingPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1369,6 +1393,18 @@ type AdditionalObligee {
   interest: String
   bondNumber: String!
   bondNumberNavigation: Bond!
+}
+
+type PrivateEquity {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  firmName: String!
+  year: String!
+  enteredBy: UUID!
+  accountNumNavigation: Account!
+  enteredByNavigation: Employee!
 }
 
 type ResponsibilityDm {
@@ -1864,6 +1900,7 @@ type Indemnitor {
   encryptSpouseTaxId: String
   signatory: String
   title: String
+  executionDate: LocalDate
   accountNumNavigation: Account!
   idNavigation: LegalEntity!
   fullName: String!
@@ -1998,6 +2035,7 @@ type CommercialFinancial {
   totalDebt: Long
   scaling: String!
   complete: Boolean!
+  shortTermDebt: Long
   scalingNavigation: ScalingDm!
 }
 
@@ -2108,8 +2146,10 @@ type Branch {
   active: Boolean!
   region: String!
   headCount: Int
+  homeOfficeLead: UUID!
   accounts: [Account!]!
   branchOfficeAddress: Address!
+  homeOfficeLeadNavigation: Employee!
   phone: PhoneNumber!
   regionNavigation: RegionDm!
 }
@@ -2258,13 +2298,17 @@ type BondTransaction {
   rateStructure: String
   rateClass: String
   underwriterId: UUID!
+  state: String
+  insurerId: UUID
   accountClassNavigation: AccountClassDm!
   accountNumNavigation: Account!
   agency: Agency!
   bondNumberNavigation: Bond!
   bondTransactionPurposes: [BondTransactionPurpose!]!
+  insurer: Insurer
   regionNavigation: RegionDm!
   sfaaCodeNavigation: Sfaa!
+  stateNavigation: State
   underwriter: Underwriter!
 }
 
@@ -2321,6 +2365,15 @@ type PhoneNumber {
   legalEntityPhone: LegalEntityPhone
 }
 
+type IndustryCodeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  code: String!
+  industry: String!
+  accounts: [Account!]!
+}
+
 type BondBlock {
   id: UUID!
   created: DateTime!
@@ -2373,6 +2426,7 @@ type Agent {
   modified: DateTime!
   nationalProducerNumber: String
   agencyLicenses: [AgencyLicense!]!
+  agencyLineOfAuthorityAgents: [AgencyLineOfAuthorityAgent!]!
   agentsInAgencies: [AgentsInAgency!]!
   idNavigation: LegalEntity!
   accounts: [Account!]!
@@ -2725,6 +2779,9 @@ type Account {
   indemnityComments: String
   creditReportImagingId: UUID
   businessTypeRiskCodeId: UUID
+  sicCode: String
+  industryCode: String
+  sharedSurety: String
   accountPrograms: [AccountProgram!]!
   accountStatusLogs: [AccountStatusLog!]!
   accountWatches: [AccountWatch!]!
@@ -2755,9 +2812,11 @@ type Account {
   homeOfficeReviewByNavigation: UserProfile
   idNavigation: LegalEntity!
   indemnitors: [Indemnitor!]!
+  industryCodeNavigation: IndustryCodeDm
   keyPersonnel: [KeyPersonnel!]!
   lawFirm: LawEntity
   personalFinancialStatements: [PersonalFinancialStatement!]!
+  privateEquities: [PrivateEquity!]!
   ratios: [Ratio!]!
   taxBasisNavigation: TaxBasisDm
   underwriter: Underwriter
@@ -3244,6 +3303,7 @@ type State {
   addresses: [Address!]!
   agencyLicenses: [AgencyLicense!]!
   bondHolds: [BondHold!]!
+  bondTransactions: [BondTransaction!]!
   bonds: [Bond!]!
   countryCodeNavigation: CountryDm
   insurerStates: [InsurerState!]!
@@ -3302,6 +3362,28 @@ type WorkInProgressSummary {
   totalEstimatedGrossProfit: Long!
   imagingId: UUID
   workInProgressJobs: [WorkInProgressJob!]!
+}
+
+type AgencyLineOfAuthorityLog {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  agencyNumber: String!
+  accountNum: String!
+  sequenceNumber: Int!
+  effective: DateTime!
+  expiration: DateTime!
+  loasingle: Int!
+  loaaggregate: Int!
+  comments: String
+  status: String
+  division: String
+  bondType: String
+  createdBy: UUID
+  conditions: String
+  agencyLineOfAuthorityAgents: [AgencyLineOfAuthorityAgent!]!
+  createdByNavigation: UserProfile
+  statusNavigation: LineOfAuthorityStatusDm
 }
 
 input DeleteAgencyInventoryInput {

@@ -109,9 +109,8 @@ namespace James.Shared.Data
             string? currentManagementYear, string? businessClass, string? businessType, string? priorSurety,
             int? estAnnualPremium);
 
-        public Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
-            string? fiscalYearEnd, string? businessType, string? accountIndustry, string? priorSuretyCompany,
-            bool? isSharedSurety);
+        public Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, 
+            string? businessType, string? industryCode, string? priorSuretyCompany);
 
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);
@@ -264,12 +263,13 @@ namespace James.Shared.Data
             DateTime? requested, DateTime? received, Guid documentTypeId, string? comments);
 
         #region User Settings
-
-        public Task<IDataAccessResult<UserSetting?>> GetUserSetting(string key);
-        public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
+        
+        public Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings();
         
         public Task<ISaveDataResult> SetUserSetting(string key, string? value);
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSettings();
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSetting(string key);
         public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
 
@@ -298,6 +298,9 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum);
         public Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum);
         public Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum);
+        public Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum);
+        public Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum);
+        public Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes();
     }
 
     public interface ISaveDataResult

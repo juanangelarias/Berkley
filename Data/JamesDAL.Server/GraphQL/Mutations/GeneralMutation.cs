@@ -3,6 +3,7 @@ using HotChocolate.Subscriptions;
 using James.Data.Server.Exceptions;
 using James.Shared;
 using James.Shared.Constants;
+using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Mutations;
 
@@ -237,15 +238,25 @@ public partial class GeneralMutation
         return true;
     }
 
+    #region User Settings
+
     [Authorize]
     public async Task<bool> SetUserSetting(string key, string? value,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IHttpContextAccessor contextAccessor,
         [Service] ILoggingService loggingService)
     {
-        var username = (await userShared.GetCurrentUser()).Username;
-        if (null == username)
-            throw new UnauthorizedAccessException("You must be logged in to set user settings.");
-        return await SetUserSetting(key, value, username, contextFactory, loggingService);
+        try
+        {
+            var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+            if (null == username)
+                throw new UnauthorizedAccessException("You must be logged in to set user settings.");
+            return await SetUserSetting(key, value, username, contextFactory, loggingService);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     [Authorize]
@@ -261,7 +272,8 @@ public partial class GeneralMutation
         try
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var existing = await ctx.UserSettings.FirstOrDefaultAsync(up => up.Username == username && up.Key == key);
+            var existing =
+                await ctx.UserSettings.FirstOrDefaultAsync(up => up.Username == username && up.Key == key);
             if (existing == null)
             {
                 if (value == null)
@@ -292,6 +304,48 @@ public partial class GeneralMutation
             return false;
         }
     }
+
+    [Authorize]
+    public async Task<bool> ResetUserSettings([Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+        if (null == username)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        
+        var settings = await ctx.UserSettings
+            .Where(r => r.Username == username)
+            .ToListAsync();
+        
+        ctx.UserSettings.RemoveRange(settings);
+        await ctx.SaveChangesAsync();
+        return true;
+    }
+    
+    [Authorize]
+    public async Task<bool> ResetUserSetting(string key, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+        if (null == username)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        
+        var settings = await ctx.UserSettings
+            .Where(r => r.Username == username && r.Key == key)
+            .ToListAsync();
+        
+        ctx.UserSettings.RemoveRange(settings);
+        await ctx.SaveChangesAsync();
+        return true;
+    }
+
+    #endregion
 
     [Authorize(Policy = "InRoleChangePermissions")]
     public async Task<bool> AddPrincipalToSecurityRole(Guid principalId, string role,
@@ -447,12 +501,12 @@ public partial class GeneralMutation
     #region BondBlock
 
     [Authorize(Policy = "InRoleCanBondBlock")]
-    public async Task<bool> SetBondBlock(Guid bondBlockId, Guid? insurerId, string prefix, int firstNumber, 
+    public async Task<bool> SetBondBlock(Guid bondBlockId, Guid? insurerId, string prefix, int firstNumber,
         int lastNumber, bool agencyRestricted, Guid? issuedBy, string? comments, Guid? agencyId, bool enabled,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var existent = await ctx.BondBlocks
             .FirstOrDefaultAsync(b => b.Id == bondBlockId);
 
@@ -471,7 +525,7 @@ public partial class GeneralMutation
                 Comments = comments,
                 AgencyId = agencyId
             };
-            
+
             ctx.BondBlocks.Add(newBlock);
         }
         else
@@ -485,9 +539,9 @@ public partial class GeneralMutation
             existent.Comments = comments;
             existent.AgencyId = agencyId;
         }
-        
+
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 
@@ -498,15 +552,15 @@ public partial class GeneralMutation
         var ctx = await contextFactory.CreateDbContextAsync();
         var existent = await ctx.BondBlocks
             .FirstOrDefaultAsync(b => b.Id == bondBlockId);
-        
-        if (existent == null) 
+
+        if (existent == null)
             throw new NotFoundException($"Bond block with the Id: {bondBlockId} was not found.");
-        
+
         ctx.BondBlocks.Remove(existent);
         await ctx.SaveChangesAsync();
-        
+
         return true;
-    } 
+    }
 
     #endregion
 }

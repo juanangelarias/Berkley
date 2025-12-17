@@ -205,7 +205,7 @@
     {
         await base.OnInitializedAsync();
         
-        UserSettingsKey = "AgencyBondRecordHistory";
+        GridSettingsKey = "AgencyBondRecordHistory";
         
         _filter.StartDate = DateTime.Today.AddYears(-1);
         _filter.EndDate = DateTime.Today.AddDays(1).AddMilliseconds(-1);

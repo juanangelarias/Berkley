@@ -355,22 +355,10 @@
         await base.OnParametersSetAsync();
 
         var type = AgentsLicenses ? "Agents" : "Agency";
-        UserSettingsKey = $"AgencyLicensesGrid-{type}";
-        UserSettingService.GridKey = UserSettingsKey;
+        GridSettingsKey = $"AgencyLicensesGrid-{type}";
         
         await LoadData();
     }
-
-    /*protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-        
-        if(firstRender)
-        {
-            await GetGridSettings();
-            StateHasChanged();
-        }
-    }*/
 
     private async Task LoadData()
     {
@@ -860,5 +848,4 @@
         };
         TooltipService.Open(element, message, options);
     }
-
 }

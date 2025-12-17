@@ -226,5 +226,15 @@ namespace James.Data.Server.GraphQL.Queries
             
             return await ctx.Sics.ToListAsync();
         }
+        
+        [Authorize]
+        public async Task<List<IndustryCodeDm>> GetAllIndustryCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.IndustryCodeDms
+                .OrderBy(o=>o.Code)
+                .ToListAsync();
+        }
     }
 }

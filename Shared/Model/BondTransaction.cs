@@ -90,6 +90,10 @@ public partial class BondTransaction
 
     public Guid UnderwriterId { get; set; }
 
+    public string? State { get; set; }
+
+    public Guid? InsurerId { get; set; }
+
     public virtual AccountClassDm AccountClassNavigation { get; set; } = null!;
 
     public virtual Account AccountNumNavigation { get; set; } = null!;
@@ -100,9 +104,13 @@ public partial class BondTransaction
 
     public virtual ICollection<BondTransactionPurpose> BondTransactionPurposes { get; set; } = new List<BondTransactionPurpose>();
 
+    public virtual Insurer? Insurer { get; set; }
+
     public virtual RegionDm RegionNavigation { get; set; } = null!;
 
     public virtual Sfaa SfaaCodeNavigation { get; set; } = null!;
+
+    public virtual State? StateNavigation { get; set; }
 
     public virtual Underwriter Underwriter { get; set; } = null!;
 }

@@ -29,13 +29,13 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<BusinessTypeClassCodeDm>>> GetAllBusinessTypeClassCodes()
         {
             return await ExecuteGet<List<BusinessTypeClassCodeDm>>(async () =>
-                await jamesClient.GetAllBusinessTypeClassCodee.ExecuteAsync());
+                await jamesClient.GetAllBusinessTypeClassCodes.ExecuteAsync());
         }
 
         public async Task<IDataAccessResult<List<BusinessTypeDm>>> GetAllBusinessTypes()
         {
             return await ExecuteGet<List<BusinessTypeDm>>(async () =>
-                await jamesClient.GetAllBusinessTypes.ExecuteAsync()); 
+                await jamesClient.GetAllBusinessTypes.ExecuteAsync(), "AllBusinessTypes"); 
         }
 
         public async Task<IDataAccessResult<List<Sic>>> GetAllSicCodes()
@@ -1343,7 +1343,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes()
         {
             return await ExecuteGet<List<IndustryCodeDm>>( async () => 
-                await jamesClient.GetAllIndustryCodes.ExecuteAsync(), "GetAllIndustryCodes");
+                await jamesClient.GetAllIndustryCodes.ExecuteAsync(), "AllIndustryCodes");
         }
 
         #region User Settings

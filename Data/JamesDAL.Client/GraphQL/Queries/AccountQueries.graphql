@@ -123,6 +123,10 @@
                 active
             }
         }
+        priorSuretyCompany
+        industryCode
+        sharedSurety
+        fiscalYearEnd
     }
 }
 

@@ -212,7 +212,7 @@ query GetAllBusinessTypes {
     }
 }
 
-query GetAllBusinessTypeClassCodee {
+query GetAllBusinessTypeClassCodes {
     allBusinessTypeClassCodes {
         businessType
         classCode

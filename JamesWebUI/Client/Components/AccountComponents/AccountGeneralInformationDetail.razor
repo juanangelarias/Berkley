@@ -67,7 +67,8 @@
                 <RadzenRow>
                     <RadzenColumn Size="8">
                         <JamesFormField Text="Private Equity" Variant="Variant.Text">
-                            <RadzenTextBox Value="@_lastPrivateEquity?.FirmName" Name="PrivateEquityText" Disabled="true"
+                            <RadzenTextBox Value="@_lastPrivateEquity?.FirmName" Name="PrivateEquityText"
+                                           Disabled="true"
                                            Style="color: black;"/>
                         </JamesFormField>
                     </RadzenColumn>
@@ -101,8 +102,10 @@
     {
         <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem;">
             <RadzenRow JustifyContent="JustifyContent.End" Gap="1rem">
-                <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
-                              Click="@ToggleEditMode" Style="height: 30px;"/>
+                <AuthorizeView Policy="InRoleCanEditAccountGeneralInformationTab">
+                    <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
+                                  Click="@ToggleEditMode" Style="height: 30px;"/>
+                </AuthorizeView>
             </RadzenRow>
             <RadzenRow>
                 <RadzenColumn Size="6">
@@ -181,7 +184,6 @@
     private RadzenTemplateForm<AccountGeneralInfoModel> Form { get; set; } = null!;
     private AccountGeneralInfoModel GeneralInfoModel { get; set; } = new();
     private List<BusinessTypeDm> _businessTypes = [];
-    //private List<Sic> _sicCodes = [];
     private List<JamesLookup> _industryCodes = [];
     private PrivateEquity? _lastPrivateEquity;
     private string _privateEquitySnapShot = "";
@@ -284,24 +286,6 @@
 
     #endregion
 
-    /*#region SICCodes
-
-    private IDataAccessResult<List<Sic>> _sicCodesResult = null!;
-
-    private LoadItem SicCodesLoad => AddEventNotify(new LoadItem<List<Sic>>
-    {
-        Key = CacheKeys.SicCodes,
-        AsyncLoadTask = async () => _sicCodesResult = await DataAccess.GetAllSicCodes(),
-        CacheLoadTask = cache => _sicCodesResult = new DataAccessResult<List<Sic>>
-        {
-            Data = (List<Sic>)cache!
-        },
-        ResultVariable = () => _sicCodesResult,
-        AfterLoad = () => { _sicCodes = _sicCodesResult.Data!; }
-    }, "SIC codes");
-
-    #endregion*/
-
     #endregion
 
     protected override async Task OnInitializedAsync()
@@ -342,13 +326,13 @@
             .FirstOrDefault(f => f.Code == Account.IndustryCode);
 
         return record != null
-            ? $"{record.Code} - {record.Name}"
+            ? record.Name
             : "";
     }
 
     private async Task OnSubmit(AccountGeneralInfoModel model)
     {
-        var result = await DataAccess.SetAccountGeneralInfoPanel(Account.Id, model.FiscalYearEnd, model.BusinessType, 
+        var result = await DataAccess.SetAccountGeneralInfoPanel(Account.Id, model.FiscalYearEnd, model.BusinessType,
             model.IndustryCode, model.PriorSuretyCompany);
 
         if (!result.Success)

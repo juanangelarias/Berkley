@@ -2,6 +2,7 @@
 using James.Shared.Data;
 using JamesWebUI.Client.Shared;
 using System.Diagnostics;
+using James.Shared.Constants;
 using James.Shared.Dto;
 using James.Shared.Model;
 using JamesWebUI.Client.Model;
@@ -21,6 +22,7 @@ public interface IUserSettingService
 public class UserSettingService(IDataAccess dataAccess, ILocalStorageService localStorageService) : IUserSettingService
 {
     public string? GridKey { get; set; }
+    private string CacheKey => CacheKeys.UserSettings(Environment.UserName, GridKey);
     
     #region Constants for used keys
 
@@ -28,16 +30,13 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
 
     #endregion
 
-    private string CacheKey => $"UserSettings{Environment.UserName}{SubKey}";
-    private string SubKey => GridKey == null ? "" : $"_{GridKey}";
-    
     #region Loaders
 
     #region User Settings Load
 
     private IDataAccessResult<List<KeyValue>> _loadSettingsResult = null!;
 
-    private LoadItem UserSettingLoadItem() =>
+    private LoadItem<List<KeyValue>> UserSettingLoadItem() =>
         new()
         {
             Key = CacheKey,

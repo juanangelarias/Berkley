@@ -205,3 +205,31 @@ query GetAllEmailTypes {
         type
     }
 }
+
+query GetAllBusinessTypes {
+    allBusinessTypes {
+        businessType
+    }
+}
+
+query GetAllBusinessTypeClassCodes {
+    allBusinessTypeClassCodes {
+        businessType
+        classCode
+        isContract
+    }
+}
+
+query GetAllSicCodes {
+    allSicCodes {
+        code
+        name
+    }
+}
+
+query GetAllIndustryCodes {
+    allIndustryCodes {
+        code
+        industry
+    }
+}

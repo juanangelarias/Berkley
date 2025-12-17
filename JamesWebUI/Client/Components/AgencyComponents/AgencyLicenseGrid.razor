@@ -360,17 +360,6 @@
         await LoadData();
     }
 
-    /*protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await base.OnAfterRenderAsync(firstRender);
-        
-        if(firstRender)
-        {
-            await GetGridSettings();
-            StateHasChanged();
-        }
-    }*/
-
     private async Task LoadData()
     {
         if (Agency.Id == Guid.Empty)

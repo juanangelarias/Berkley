@@ -39,9 +39,9 @@
     List<SecurityRole> _securityRoles = null!;
     private IDataAccessResult<List<SecurityRole>> _loadSecurityRolesResult = null!;
     private LoadItem RolesLoadItem => AddEventNotify(
-        new()
+        new LoadItem<List<SecurityRole>>
         {
-            Key = "SecRoles",
+            Key = CacheKeys.SecRoles,
             AsyncLoadTask = async () => _loadSecurityRolesResult = await DataAccess.GetAllSecurityRoles(),
             CacheLoadTask = cache => _loadSecurityRolesResult = new DataAccessResult<List<SecurityRole>> { Data = (List<SecurityRole>)cache! },
             ResultVariable = () => _loadSecurityRolesResult,
@@ -50,7 +50,7 @@
                 _securityRoles = _loadSecurityRolesResult.Data!;
                 //Save to local storage asynchronously and don't wait for the save to finish
                 Task.Factory.StartNew(data =>
-                    LocalStorageService.SetItemAsyncWithExpiry("SecRoles", TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
+                    LocalStorageService.SetItemAsyncWithExpiry(CacheKeys.SecRoles, TimeSpan.FromDays(1), data), _loadSecurityRolesResult.Data);
             }
         }, "security roles");
 

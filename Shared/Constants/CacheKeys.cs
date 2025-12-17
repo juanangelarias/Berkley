@@ -26,6 +26,17 @@ public static class CacheKeys
     public static string LastIndemnitor(string accountNumber) => $"LastIndemnitor-{accountNumber}";
     public static string LastPrivateEquity(string accountNumber) => $"LastPrivateEquity-{accountNumber}";
     
+    // U
+    public static string UserSettings(string userId, string? subKey)
+    {
+        var key = $"UserSettings-{userId}";
+        
+        if (subKey != null) 
+            key += $"-{subKey}";
+        
+        return key;
+    }
+
     // Fixed
     // A
     public const string AddressTypes = "AddressTypes";
@@ -48,6 +59,7 @@ public static class CacheKeys
     // P
     public const string PhoneTypes = "PhoneTypes";
     // S
+    public const string SecRoles = "SecRoles";
     public const string SicCodes = "SicCodes";
     public const string States = "States";
     // U

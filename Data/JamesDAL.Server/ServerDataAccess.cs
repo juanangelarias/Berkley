@@ -281,13 +281,11 @@ namespace James.Data.Server
                 currentManagementYear, businessClass, businessType, priorSurety, estAnnualPremium, contextFactory));
         }
 
-        public async Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
-            string? fiscalYearEnd, string? businessType, string? accountIndustry, string? priorSuretyCompany,
-            bool? isSharedSurety)
+        public async Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, 
+            string? businessType, string? industryCode, string? priorSuretyCompany)
         {
             return await ExecuteSave(async () => await accountMutation.SetAccountGeneralInfoPanel(accountId, 
-                giaExecutionDate, fiscalYearEnd, businessType, accountIndustry, priorSuretyCompany, isSharedSurety, 
-                contextFactory));
+                fiscalYearEnd, businessType, industryCode, priorSuretyCompany, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,

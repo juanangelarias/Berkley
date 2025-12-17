@@ -109,9 +109,8 @@ namespace James.Shared.Data
             string? currentManagementYear, string? businessClass, string? businessType, string? priorSurety,
             int? estAnnualPremium);
 
-        public Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, DateTime? giaExecutionDate,
-            string? fiscalYearEnd, string? businessType, string? accountIndustry, string? priorSuretyCompany,
-            bool? isSharedSurety);
+        public Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, 
+            string? businessType, string? industryCode, string? priorSuretyCompany);
 
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);

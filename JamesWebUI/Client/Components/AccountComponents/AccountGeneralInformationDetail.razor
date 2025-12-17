@@ -27,9 +27,9 @@
                     <RadzenColumn Size="12">
                         <JamesFormField Text="Business Type" Variant="Variant.Text">
                             <RadzenDropDown TValue="string" @bind-Value="@GeneralInfoModel.BusinessType"
-                                            ValueProperty="@nameof(BusinessTypeClassCodeDm.BusinessType)"
-                                            TextProperty="@nameof(BusinessTypeClassCodeDm.BusinessType)"
-                                            AllowFiltering="true" Data="@_businessClasses" AllowClear="false"
+                                            ValueProperty="@nameof(BusinessTypeDm.BusinessType)"
+                                            TextProperty="@nameof(BusinessTypeDm.BusinessType)"
+                                            AllowFiltering="true" Data="@_businessTypes" AllowClear="false"
                                             Name="BusinessType"/>
                             <RadzenRequiredValidator Text="Business Type is required." Component="BusinessType"/>
                         </JamesFormField>
@@ -38,11 +38,11 @@
                 <RadzenRow>
                     <RadzenColumn Size="12">
                         <JamesFormField Text="Account Industry" Variant="Variant.Text">
-                            <RadzenDropDown TValue="string" Data="_industryCodes"
+                            <RadzenDropDown TValue="string" Data="_industryCodes" Name="IndustryCode"
                                             TextProperty="@nameof(JamesLookup.Name)"
                                             ValueProperty="@nameof(JamesLookup.Code)"
-                                            AllowFiltering="true" @bind-Value="@Account.IndustryCode"/>
-                            <RadzenRequiredValidator Text="Account Industry is required." Component="SicCode"/>
+                                            AllowFiltering="true" @bind-Value="@GeneralInfoModel.IndustryCode"/>
+                            <RadzenRequiredValidator Text="Account Industry is required." Component="IndustryCode"/>
                         </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
@@ -54,14 +54,13 @@
                     </RadzenColumn>
                     <RadzenColumn Size="6">
                         <JamesFormField Text="Shared Surety" Variant="Variant.Text">
-                            <RadzenRadioButtonList @bind-Value="@GeneralInfoModel.IsSharedSurety" TValue="bool"
-                                                   Name="IsSharedSurety">
+                            <RadzenRadioButtonList Value="@(Account.SharedSurety != null)" TValue="bool"
+                                                   Name="IsSharedSurety" Disabled="true" Style="color: black;">
                                 <Items>
                                     <RadzenRadioButtonListItem Text="Yes" Value="true" Style="height: 40px;"/>
                                     <RadzenRadioButtonListItem Text="No" Value="false" Style="height: 40px;"/>
                                 </Items>
                             </RadzenRadioButtonList>
-                            <RadzenRequiredValidator Text="Shared surety is required." Component="IsSharedSurety"/>
                         </JamesFormField>
                     </RadzenColumn>
                 </RadzenRow>
@@ -181,8 +180,8 @@
     private bool _isEditMode;
     private RadzenTemplateForm<AccountGeneralInfoModel> Form { get; set; } = null!;
     private AccountGeneralInfoModel GeneralInfoModel { get; set; } = new();
-    private List<BusinessTypeClassCodeDm> _businessClasses = [];
-    private List<Sic> _sicCodes = [];
+    private List<BusinessTypeDm> _businessTypes = [];
+    //private List<Sic> _sicCodes = [];
     private List<JamesLookup> _industryCodes = [];
     private PrivateEquity? _lastPrivateEquity;
     private string _privateEquitySnapShot = "";
@@ -193,21 +192,21 @@
 
     #region Loaders
 
-    #region BusinessClass
+    #region BusinessTypes
 
-    private IDataAccessResult<List<BusinessTypeClassCodeDm>> _businessClassResult = null!;
+    private IDataAccessResult<List<BusinessTypeDm>> _businessTypeResult = null!;
 
-    private LoadItem BusinessClassLoad => AddEventNotify(new LoadItem<List<BusinessTypeClassCodeDm>>
+    private LoadItem BusinessClassLoad => AddEventNotify(new LoadItem<List<BusinessTypeDm>>
     {
         Key = CacheKeys.BusinessClasses,
-        AsyncLoadTask = async () => _businessClassResult = await DataAccess.GetAllBusinessTypeClassCodes(),
-        CacheLoadTask = cache => _businessClassResult = new DataAccessResult<List<BusinessTypeClassCodeDm>>
+        AsyncLoadTask = async () => _businessTypeResult = await DataAccess.GetAllBusinessTypes(),
+        CacheLoadTask = cache => _businessTypeResult = new DataAccessResult<List<BusinessTypeDm>>
         {
-            Data = (List<BusinessTypeClassCodeDm>)cache!
+            Data = (List<BusinessTypeDm>)cache!
         },
-        ResultVariable = () => _businessClassResult,
-        AfterLoad = () => { _businessClasses = _businessClassResult.Data!; }
-    }, "business classes");
+        ResultVariable = () => _businessTypeResult,
+        AfterLoad = () => { _businessTypes = _businessTypeResult.Data!; }
+    }, "business types");
 
     #endregion
 
@@ -255,7 +254,7 @@
         AfterLoad = () =>
         {
             _lastPrivateEquity = _lastPrivateEquityResult.Data;
-            _privateEquitySnapShot = $"Created by {_lastPrivateEquity?.EnteredByNavigation?.FullName ?? "Unknown User"} " +
+            _privateEquitySnapShot = $"Created by {_lastPrivateEquity?.EnteredByNavigation.FullName ?? "Unknown User"} " +
                                      $"on {_lastPrivateEquity?.Created:MM/dd/yyyy}";
         }
     }, "last private equity");
@@ -285,7 +284,7 @@
 
     #endregion
 
-    #region SICCodes
+    /*#region SICCodes
 
     private IDataAccessResult<List<Sic>> _sicCodesResult = null!;
 
@@ -301,7 +300,7 @@
         AfterLoad = () => { _sicCodes = _sicCodesResult.Data!; }
     }, "SIC codes");
 
-    #endregion
+    #endregion*/
 
     #endregion
 
@@ -325,13 +324,8 @@
         {
             BusinessType = Account.BusinessType,
             FiscalYearEnd = Account.FiscalYearEnd,
-            GIAExecutionDate = null, // Account.GIAExecutionDate
             PriorSuretyCompany = Account.PriorSuretyCompany,
-            IsSharedSurety = Account.SharedSurety != null,
-            AccountIndustry = Account.IndustryCode,
-            PrivateEquityText = "", // From the last Private Equity Log field
-            PrivateEquityDate = null, // From the last Private Equity Log field
-            SnapshotHistoricData = "Created by {USER} on {CREATION DATE}" // From the last Private Equity Log field
+            IndustryCode = Account.IndustryCode,
         };
 
         _isEditMode = !_isEditMode;
@@ -339,7 +333,7 @@
 
     private async Task LoadReferenceTables()
     {
-        await DataAccess.ParallelGetCacheOrDataAsync(BusinessClassLoad, SicCodesLoad, IndustryCodesLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(BusinessClassLoad, IndustryCodesLoad);
     }
 
     private string AccountIndustry()
@@ -354,8 +348,8 @@
 
     private async Task OnSubmit(AccountGeneralInfoModel model)
     {
-        var result = await DataAccess.SetAccountGeneralInfoPanel(Account.Id, model.GIAExecutionDate, model.FiscalYearEnd,
-            model.BusinessType, model.AccountIndustry, model.PriorSuretyCompany, model.IsSharedSurety);
+        var result = await DataAccess.SetAccountGeneralInfoPanel(Account.Id, model.FiscalYearEnd, model.BusinessType, 
+            model.IndustryCode, model.PriorSuretyCompany);
 
         if (!result.Success)
         {
@@ -365,18 +359,10 @@
 
         NotifySuccessfulSave("account general information");
 
-        /*if (model.PrivateEquityDate != original.PrivateEquityDate ||
-            model.PrivateEquityText != original.PrivateEquityText)
-        {
-            // Create a new log in the PrivateEquityLog table
-        }*/
-
-        //Account.GiaExecutionDate = model.GIAExecutionDate;
         Account.FiscalYearEnd = model.FiscalYearEnd;
         Account.BusinessType = model.BusinessType;
-        //Account.AccountIndustry = model.AccountIndustry;
+        Account.IndustryCode = model.IndustryCode;
         Account.PriorSuretyCompany = model.PriorSuretyCompany;
-        //Account.IsSharedSurety = model.IsSharedSurety;
 
         _isEditMode = false;
     }

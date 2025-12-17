@@ -168,12 +168,10 @@ type AgencyLicenseBulkUpdatePayload {
 
 input SetAccountGeneralInfoPanelInput {
   accountId: UUID!
-  giaExecutionDate: DateTime
   fiscalYearEnd: String
   businessType: String
-  accountIndustry: String
+  industryCode: String
   priorSuretyCompany: String
-  isSharedSurety: Boolean
 }
 
 type Subscription {

@@ -4,6 +4,7 @@ using James.Shared.Data;
 using JamesWebUI.Client.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Diagnostics;
+using Blazorise;
 
 namespace JamesWebUI.Client.Services;
 
@@ -46,9 +47,6 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
                 Debug.Assert(_loadSettingsResult.Data != null);
                 //Add after load code here
                 _settings = _loadSettingsResult.Data;
-                //Save to local storage asynchronously and don't wait for the save to finish
-                Task.Factory.StartNew(data =>
-                    localStorageService.SetItemAsyncWithExpiry(CacheKey(username), TimeSpan.FromDays(1), data), _settings);
             }
         };
 
@@ -140,16 +138,32 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
     {
         if (null != _settings)
         {
+            var username = await GetUserName();
+            var cacheKey = CacheKey(username!);
             //Alter local cache
             if (value != null)
                 _settings[key] = value;
             else _settings.Remove(key);
+            dataAccess.UpdateCache(cacheKey, _settings);
+            //Update the browser cache asynchronously
+            localStorageService.SetItemAsyncWithExpiry(cacheKey, TimeSpan.FromDays(1), _settings);
         }
         return await dataAccess.SetUserSetting(key, value);
     }
 
     public async Task<ISaveDataResult> SetDefaultUserSettingAsync(string key, string? value)
     {
+        if (null != _settings)
+        {
+            var username = await GetUserName();
+            var cacheKey = CacheKey(username!);
+            //Invalidate cache
+            _settings = null;
+            dataAccess.Clear(key);
+            //Update the browser cache asynchronously
+            localStorageService.RemoveItemAsync(cacheKey);
+        }
+
         return await dataAccess.SetDefaultUserSetting(key, value);
     }
 }

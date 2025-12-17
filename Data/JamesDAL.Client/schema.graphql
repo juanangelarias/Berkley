@@ -157,6 +157,11 @@ type NotebookEntry {
   typeNavigation: NotebookEntryTypeDm!
 }
 
+type KeyValuePairOfStringAndString {
+  key: String!
+  value: String!
+}
+
 type AgencyLicenseBulkUpdatePayload {
   boolean: Boolean
 }

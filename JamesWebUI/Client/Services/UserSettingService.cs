@@ -93,6 +93,16 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
         if (username == "Browser")
         {
             var authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+            var retries = 20;
+            while (authState.User.Identity?.IsAuthenticated != true && retries-- > 0)
+            {
+                await Task.Delay(100);
+                authState = await authenticationStateProvider.GetAuthenticationStateAsync();
+            }
+            if (retries < 20)
+            {
+                Console.WriteLine($"UserSettingService: Waited {20 - retries}*100ms for authentication state.");
+            }
             var currentClaimsPrincipal = authState.User;
             username = currentClaimsPrincipal.FindFirst("nickname")?.Value
                        ?? currentClaimsPrincipal
@@ -104,7 +114,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
 
     public async Task<Dictionary<string, string>> GetAllUserSettingsAsync(bool forceReload = false)
     {
-        var username = Environment.UserName;
+        var username = await GetUserName();
         var cacheKey = CacheKey(username);
         if (forceReload)
         {

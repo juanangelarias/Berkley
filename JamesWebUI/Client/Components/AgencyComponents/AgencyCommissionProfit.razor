@@ -74,7 +74,7 @@
             Position = TooltipPosition.Top
         };
 
-        TooltipService.Open(args, childContent: _ => render, o: opts);
+        TooltipService.Open(args, _ => render, opts);
     }
 
     private void ToggleProfitSharing(bool isProfitSharing)

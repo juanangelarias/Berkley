@@ -529,6 +529,8 @@ type Query {
   accountByNumber(accountNumber: String): Account
   firstIndemnity(accountNum: String!): LocalDate
   searchAccounts(searchString: String!): [Account!]!
+  lastPrivateEquityByAccount(accountNum: String!): PrivateEquity
+  lastIndemnitorByAccount(accountNum: String!): Indemnitor
   accountActiveLinesOfAuthority(accountNumber: String!): InforceAccountLOA!
   accountProgramHistory(accountNumber: String!): [AccountProgram!]!
   accountOnly(accountNumber: String): Account
@@ -537,8 +539,7 @@ type Query {
   searchAccountsByAccountNumber(accountNumberFragment: String! activeOnly: Boolean!): [Account!]!
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
   allAccountWatches(accountNum: String!): [AccountWatch!]!
-  lastPrivateEquityByAccount(accountNum: String!): PrivateEquity
-  lastIndemnitorByAccount(accountNum: String!): Indemnitor
+  allLineOfAuthorityLogs(accountNum: String!): [LineOfAuthorityLog!]!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -590,12 +591,14 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
+  accountLOAs(accountNum: String!): AccountLOAsDto!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
   allImagingTypes: [ImagingType!]!
   allImagingCategoryTabDivisionType: [VImagingCategoryTabDivisionType!]!
   allInsurers: [Insurer!]!
+  loaLogsByAccount(accountNumber: String!): [LineOfAuthorityLog!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -2443,6 +2446,15 @@ type Agent {
   familyName: String
 }
 
+type AccountLOADetailDto {
+  bondType: String
+  effective: DateTime!
+  expiration: DateTime!
+  single: Int!
+  aggregate: Int!
+  status: String
+}
+
 type SetPowerOfAttorneyPayload {
   powerOfAttorney: PowerOfAttorney
 }
@@ -2939,6 +2951,11 @@ type KeyPersonnel {
 
 type CreateEmployeePayload {
   boolean: Boolean
+}
+
+type AccountLOAsDto {
+  accountLOAs: [AccountLOADetailDto!]!
+  agencyLOAs: [AccountLOADetailDto!]!
 }
 
 type ImagingCategory {

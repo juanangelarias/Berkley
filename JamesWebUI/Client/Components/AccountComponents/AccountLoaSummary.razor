@@ -1,10 +1,11 @@
-﻿<RadzenAccordion Multiple="true" Expand="@(args => OnExpand(args))" Collapse="@(args => OnCollapse(args))"
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<RadzenAccordion Multiple="true" Expand="@(args => OnExpand(args))" Collapse="@(args => OnCollapse(args))"
                  @ref="@Accordion">
     <Items>
         <RadzenAccordionItem Text="Current Account Program Limits" Selected="@_currentSelected">
-            <RadzenRow Visible="@(!_isEditModeCurrent)" JustifyContent="JustifyContent.Right">
-                <RadzenButton Icon="edit" Click="@SetEditModeCurrent" class="rz-p-0 rz-m-0"  Variant="Variant.Text"/>
-            </RadzenRow>
             <RadzenRow Gap="0" AlignItems="AlignItems.End">
                 <RadzenColumn Size="3">
                     <RadzenText Text="Single" TextAlign="TextAlign.End"/>
@@ -102,18 +103,41 @@
     private bool _activeSelected = false;
     private bool _remainingSelected = false;
     private RadzenAccordion Accordion { get; set; } = null!;
+    private List<AccountLOADetailDto> _accountLOAs = [];
+    private List<AccountLOADetailDto> _agencyLOAs = [];
 
-    /*protected override async Task OnAfterRenderAsync(bool firstRender)
+    #region Loaders
+
+    #region LOAs Load
+
+    private IDataAccessResult<AccountLOAsDto> _lOAsResult = null!;
+
+    private LoadItem LOAsLoad => AddEventNotify(new LoadItem<AccountLOAsDto>
     {
-        await base.OnAfterRenderAsync(firstRender);
-        
-        if(firstRender)
+        Key = CacheKeys.AccountLOAs(Account.AccountNum),
+        AsyncLoadTask = async () => _lOAsResult = await DataAccess.GetAccountLOAs(Account.AccountNum),
+        CacheLoadTask = cache => _lOAsResult = new DataAccessResult<AccountLOAsDto>
         {
-            _currentSelected = true;
-            _activeSelected = false;
-            _remainingSelected = false;
+            Data = (AccountLOAsDto)cache!
+        },
+        ResultVariable = () => _lOAsResult,
+        AfterLoad = () =>
+        {
+            _accountLOAs = _lOAsResult.Data!.AccountLOAs;
+            _agencyLOAs = _lOAsResult.Data!.AgencyLOAs;
         }
-    }*/
+    }, "account and agency LOAs");
+
+#endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await DataAccess.GetCacheOrLoadDataAsync(LOAsLoad);
+    }
 
     private void OnExpand(int args)
     {

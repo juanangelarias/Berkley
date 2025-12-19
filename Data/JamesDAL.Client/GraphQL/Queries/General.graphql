@@ -233,3 +233,24 @@ query GetAllIndustryCodes {
         industry
     }
 }
+
+query GetAccountLOAs($input: String!) {
+    accountLOAs(accountNum: $input) {
+        accountLOAs {
+            aggregate
+            bondType
+            effective
+            expiration
+            single
+            status
+        }
+        agencyLOAs {
+            aggregate
+            bondType
+            effective
+            expiration
+            single
+            status
+        }
+    }
+}

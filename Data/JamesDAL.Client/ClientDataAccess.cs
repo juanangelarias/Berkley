@@ -458,6 +458,11 @@ namespace James.Data.Client
             
             return GraphQLSaveResult(result);
         }
+        public async Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber)
+        {
+            return await ExecuteGet<AccountLOAsDto>(async () => await
+                jamesClient.GetAccountLOAs.ExecuteAsync(accountNumber), "AccountLOAs");
+        }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs)

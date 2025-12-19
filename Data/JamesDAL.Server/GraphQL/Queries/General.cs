@@ -1,4 +1,5 @@
 ﻿using HotChocolate.Authorization;
+using James.Shared.Dto;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries
@@ -235,6 +236,89 @@ namespace James.Data.Server.GraphQL.Queries
             return await ctx.IndustryCodeDms
                 .OrderBy(o=>o.Code)
                 .ToListAsync();
+        }
+
+        [Authorize]
+        public async Task<AccountLOAsDto> GetAccountLOAs(string accountNum,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx1 = await contextFactory.CreateDbContextAsync();
+            var ctx2 = await contextFactory.CreateDbContextAsync();
+            
+            var approvedLOAByAccountTask = GetApprovedLOAByAccount(accountNum, ctx1);
+            var approvedAgencyLOAByAccountTask = GetApprovedAgencyLOAByAccount(accountNum, ctx2);
+            
+            await Task.WhenAll(approvedAgencyLOAByAccountTask, approvedLOAByAccountTask);
+
+            var response = new AccountLOAsDto
+            {
+                AccountLOAs = approvedLOAByAccountTask.Result,
+                AgencyLOAs = approvedAgencyLOAByAccountTask.Result
+            };
+
+            return response;
+        }
+
+        private async Task<List<AccountLOADetailDto>> GetApprovedLOAByAccount(string accountNum,
+            JamesDatabaseContext ctx)
+        {
+            var data = await ctx.LineOfAuthorityLogs
+                .OrderBy(o => o.AccountNum)
+                .ThenBy(t => t.BondType)
+                .ThenByDescending(t => t.Effective)
+                .Where(r => r.AccountNum == accountNum && r.Status == "Approved")
+                .Select(s=> new AccountLOADetailDto
+                {
+                    Aggregate = s.Loaaggregate,
+                    BondType = s.BondType, 
+                    Effective = s.Effective,
+                    Expiration = s.Expiration,
+                    Single = s.Loasingle,
+                    Status = s.Status
+                })
+                .ToListAsync();
+            
+            var contract = data.FirstOrDefault(f => f.BondType == "Contract");
+            var commercial = data.FirstOrDefault(f=>f.BondType == "Commercial");
+            
+            var result = new List<AccountLOADetailDto>();
+            if(contract != null)
+                result.Add(contract);
+            if(commercial != null)
+                result.Add(commercial);
+            
+            return result;
+        }
+
+        private async Task<List<AccountLOADetailDto>> GetApprovedAgencyLOAByAccount(string accountNum,
+            JamesDatabaseContext ctx)
+        {
+            var data =  await ctx.AgencyLineOfAuthorityLogs
+                .OrderBy(o => o.AccountNum)
+                .ThenBy(t => t.BondType)
+                .ThenByDescending(t => t.Effective)
+                .Where(r => r.AccountNum == accountNum && r.Status == "Approved")
+                .Select(s=> new AccountLOADetailDto
+                {
+                    Aggregate = s.Loaaggregate,
+                    BondType = s.BondType, 
+                    Effective = s.Effective,
+                    Expiration = s.Expiration,
+                    Single = s.Loasingle,
+                    Status = s.Status
+                })
+                .ToListAsync();
+
+            var contract = data.FirstOrDefault(f => f.BondType == "Contract");
+            var commercial = data.FirstOrDefault(f=>f.BondType == "Commercial");
+            
+            var result = new List<AccountLOADetailDto>();
+            if(contract != null)
+                result.Add(contract);
+            if(commercial != null)
+                result.Add(commercial);
+            
+            return result;
         }
     }
 }

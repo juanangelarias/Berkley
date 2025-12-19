@@ -111,6 +111,7 @@ namespace James.Shared.Data
 
         public Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, 
             string? businessType, string? industryCode, string? priorSuretyCompany);
+        public Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber);
 
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);

@@ -309,6 +309,7 @@ public partial class GeneralMutation
     public async Task<bool> ResetUserSettings([Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
         [Service] IHttpContextAccessor contextAccessor)
     {
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
@@ -328,6 +329,7 @@ public partial class GeneralMutation
     public async Task<bool> ResetUserSetting(string key, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
         [Service] IHttpContextAccessor contextAccessor)
     {
+        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;

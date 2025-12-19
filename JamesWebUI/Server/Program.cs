@@ -7,27 +7,28 @@ using James.Data.Server.GraphQL;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.Model;
 using James.Shared;
+using James.Shared.Constants;
 using James.Shared.Data;
 using James.Shared.Server;
 using James.Shared.Server.Kong0;
 using JamesWebUI.Client.Components;
+using JamesWebUI.Client.Security;
 using JamesWebUI.Client.Services;
 using JamesWebUI.Server.Helpers;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Radzen;
 using Serilog;
 using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
-using James.Shared.Constants;
-using JamesWebUI.Client.Security;
-using JamesWebUI.Server.AuthenticationStateSyncer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Authorization;
 using FileInfo = System.IO.FileInfo;
 using Path = System.IO.Path;
 using Query = James.Data.Server.GraphQL.Queries.Query;
@@ -44,7 +45,6 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Services.AddCascadingAuthenticationState();
-    builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 
     ConfirmAppSettingsEntry("Auth0:Authority");
     ConfirmAppSettingsEntry("Auth0:ClientId");
@@ -147,7 +147,12 @@ try
     builder.Services.AddRazorComponents()
          .AddInteractiveServerComponents()
          .AddInteractiveWebAssemblyComponents()
-         .AddAuthenticationStateSerialization();
+         .AddAuthenticationStateSerialization(
+             options =>
+             {
+                 options.SerializeAllClaims = true;
+             }
+         );
     builder.Services.AddScoped<AddressPhoneFormatService>();
     builder.Services.Configure<ForwardedHeadersOptions>(options =>
     {

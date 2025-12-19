@@ -144,10 +144,16 @@ public partial class Account
 
     public Guid? BusinessTypeRiskCodeId { get; set; }
 
+    public string? SicCode { get; set; }
+
+    public string? IndustryCode { get; set; }
+
+    public string? SharedSurety { get; set; }
+
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
-    
+
     public virtual ICollection<AccountWatch> AccountWatches { get; set; } = new List<AccountWatch>();
 
     public virtual ICollection<AdditionalRelatedParty> AdditionalRelatedParties { get; set; } = new List<AdditionalRelatedParty>();
@@ -204,11 +210,15 @@ public partial class Account
 
     public virtual ICollection<Indemnitor> Indemnitors { get; set; } = new List<Indemnitor>();
 
+    public virtual IndustryCodeDm? IndustryCodeNavigation { get; set; }
+
     public virtual ICollection<KeyPersonnel> KeyPersonnel { get; set; } = new List<KeyPersonnel>();
 
     public virtual LawEntity? LawFirm { get; set; }
 
     public virtual ICollection<PersonalFinancialStatement> PersonalFinancialStatements { get; set; } = new List<PersonalFinancialStatement>();
+
+    public virtual ICollection<PrivateEquity> PrivateEquities { get; set; } = new List<PrivateEquity>();
 
     public virtual ICollection<Ratio> Ratios { get; set; } = new List<Ratio>();
 

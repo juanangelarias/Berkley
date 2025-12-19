@@ -26,6 +26,24 @@ namespace James.Data.Client
             return await Task.FromResult( new DataAccessResult<List<Agent>>());
         }
 
+        public async Task<IDataAccessResult<List<BusinessTypeClassCodeDm>>> GetAllBusinessTypeClassCodes()
+        {
+            return await ExecuteGet<List<BusinessTypeClassCodeDm>>(async () =>
+                await jamesClient.GetAllBusinessTypeClassCodes.ExecuteAsync());
+        }
+
+        public async Task<IDataAccessResult<List<BusinessTypeDm>>> GetAllBusinessTypes()
+        {
+            return await ExecuteGet<List<BusinessTypeDm>>(async () =>
+                await jamesClient.GetAllBusinessTypes.ExecuteAsync(), "AllBusinessTypes"); 
+        }
+
+        public async Task<IDataAccessResult<List<Sic>>> GetAllSicCodes()
+        {
+            return await ExecuteGet<List<Sic>>(async () =>
+                await jamesClient.GetAllSicCodes.ExecuteAsync());
+        }
+
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
         {
             return await ExecuteGet<Account>(
@@ -423,6 +441,21 @@ namespace James.Data.Client
                 PriorSurety = priorSurety,
                 EstAnnualPremium = estAnnualPremium
             });
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, 
+            string? businessType, string? industryCode, string? priorSuretyCompany)
+        {
+            var result = await jamesClient.SetAccountGeneralInfoPanel.ExecuteAsync(new SetAccountGeneralInfoPanelInput
+            {
+                AccountId = accountId,
+                FiscalYearEnd = fiscalYearEnd,
+                BusinessType = businessType,
+                IndustryCode = industryCode,
+                PriorSuretyCompany = priorSuretyCompany
+            });
+            
             return GraphQLSaveResult(result);
         }
 
@@ -931,6 +964,22 @@ namespace James.Data.Client
 
             return response;
         }
+        public async Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum)
+        {
+            var response = await ExecuteGet<PrivateEquity?>(async () => 
+                await jamesClient.GetLastPrivateEquityByAccount.ExecuteAsync(accountNum), 
+                "LastPrivateEquityByAccount");
+
+            return response;
+        }
+        public async Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum)
+        {
+            var response = await ExecuteGet<Indemnitor?>(async () =>
+                    await jamesClient.GetLastIndemnitorByAccount.ExecuteAsync(accountNum),
+                "LastIndemnitorByAccount");
+
+            return response;
+        }
 
         private sealed class AddressModifiedWatchClass(
             IObservable<IOperationResult<IAddressModifiedResult>> graphQlSubscription) :
@@ -1291,13 +1340,19 @@ namespace James.Data.Client
                 }), "SetAgencyLicense");
         }
 
+        public async Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes()
+        {
+            return await ExecuteGet<List<IndustryCodeDm>>( async () => 
+                await jamesClient.GetAllIndustryCodes.ExecuteAsync(), "AllIndustryCodes");
+        }
+
         #region User Settings
 
-        public async Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings()
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
         {
             
             var settingList =
-                await ExecuteGet<List<KeyValue>>(
+                await ExecuteGet<Dictionary<string, string>>(
                     async () => await jamesClient.GetAllUserSettings.ExecuteAsync(), "AllUserSettings");
             return settingList;
         }
@@ -1314,6 +1369,7 @@ namespace James.Data.Client
 
         public async Task<ISaveDataResult> ResetUserSettings()
         {
+            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
             return await ExecuteSave(async () =>
                 await jamesClient.ResetUserSettings.ExecuteAsync(), "ResetUserSettings");
         }

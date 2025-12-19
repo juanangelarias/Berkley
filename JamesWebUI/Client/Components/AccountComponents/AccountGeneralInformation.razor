@@ -1,0 +1,36 @@
+﻿<RadzenCard Style="width: 100%" Variant="Variant.Text">
+    <RadzenRow>
+        <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
+            <AccountGeneralInformationDetail Account="@Account"/>
+        </RadzenColumn>
+        <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
+            <RadzenFieldset Text="LOA Summary" Style="width: 100%"></RadzenFieldset>
+        </RadzenColumn>
+        <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
+            <RadzenFieldset Text="Bonds/Outstanding Liability" Style="width: 100%"></RadzenFieldset>
+        </RadzenColumn>
+        <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
+            <RadzenRow>
+                <RadzenFieldset Text="Rate & Commission" Style="width: 100%"></RadzenFieldset>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenFieldset Text="Bank Information" Style="width: 100%"></RadzenFieldset>
+            </RadzenRow>
+        </RadzenColumn>
+        <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
+            <RadzenRow>
+                <RadzenFieldset Text="Annual Premium" Style="width: 100%"></RadzenFieldset>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenFieldset Text="Collateral" Style="width: 100%"></RadzenFieldset>
+            </RadzenRow>
+        </RadzenColumn>
+        <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
+            <RadzenFieldset Text="S&P Rating" Style="width: 100%"></RadzenFieldset>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenCard>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+}

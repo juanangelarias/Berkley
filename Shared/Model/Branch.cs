@@ -34,9 +34,13 @@ public partial class Branch
 
     public int? HeadCount { get; set; }
 
+    public Guid HomeOfficeLead { get; set; }
+
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
     public virtual Address BranchOfficeAddress { get; set; } = null!;
+
+    public virtual Employee HomeOfficeLeadNavigation { get; set; } = null!;
 
     public virtual PhoneNumber Phone { get; set; } = null!;
 

@@ -233,5 +233,34 @@ namespace James.Data.Server.GraphQL.Queries
 
             return result;
         }
+
+        [Authorize]
+        public async Task<PrivateEquity?> GetLastPrivateEquityByAccount(string accountNum,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var result = await ctx.PrivateEquities
+                .Include(i=>i.EnteredByNavigation)
+                .OrderBy(o=>o.AccountNum)
+                .ThenByDescending(o => o.Created)
+                .FirstOrDefaultAsync(r => r.AccountNum == accountNum);
+
+            return result;
+        }
+
+        [Authorize]
+        public async Task<Indemnitor?> GetLastIndemnitorByAccount(string accountNum,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var result = await ctx.Indemnitors
+                .OrderBy(o => o.AccountNum)
+                .ThenByDescending(o => o.AgreementDate)
+                .FirstOrDefaultAsync(r => r.AccountNum == accountNum && r.AgreementType == "GIA");
+            
+            return result;
+        }
     }
 }

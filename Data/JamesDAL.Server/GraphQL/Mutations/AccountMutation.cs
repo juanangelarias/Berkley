@@ -1,5 +1,6 @@
 ﻿using HotChocolate.Authorization;
 using HotChocolate.Subscriptions;
+using James.Data.Server.Exceptions;
 
 namespace James.Data.Server.GraphQL.Mutations;
 
@@ -36,6 +37,28 @@ public class AccountMutation
         account.BusinessTypeClass = businessClass;
         account.BusinessType = businessType;
         account.PriorSuretyCompany = priorSurety;
+
+        await ctx.SaveChangesAsync();
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, string? businessType,
+        string? industryCode, string? priorSuretyCompany,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var account = await ctx.Accounts
+            .FirstOrDefaultAsync(a => a.Id == accountId);
+
+        if (account == null)
+            throw new NotFoundException("Account not found");
+
+        account.FiscalYearEnd = fiscalYearEnd;
+        account.BusinessType = businessType;
+        account.IndustryCode = industryCode;
+        account.PriorSuretyCompany = priorSuretyCompany;
 
         await ctx.SaveChangesAsync();
         return true;

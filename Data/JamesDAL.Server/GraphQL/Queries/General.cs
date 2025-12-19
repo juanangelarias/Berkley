@@ -1,6 +1,4 @@
 ﻿using HotChocolate.Authorization;
-using James.Shared;
-using James.Shared.Dto;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries
@@ -179,11 +177,9 @@ namespace James.Data.Server.GraphQL.Queries
             
             return result;
         }
-
+        
         [Authorize]
-        public async Task<List<KeyValue>> GetAllUserSettings(
-            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-            [Service] IHttpContextAccessor contextAccessor)
+        public async Task<List<KeyValuePair<string, string>>> GetUserSettings([Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IHttpContextAccessor contextAccessor)
         {
             try
             {
@@ -192,32 +188,53 @@ namespace James.Data.Server.GraphQL.Queries
                     throw new UnauthorizedAccessException("Must be logged in to get user settings.");
                 var ctx = await contextFactory.CreateDbContextAsync();
                 var ctx2 = await contextFactory.CreateDbContextAsync();
-                var userSettingsTask = ctx.UserSettings.Where(up => up.Username == username)
-                    .Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
-                var defaultSettingsTask = ctx2.UserSettings.Where(up => up.Username == "Default")
-                    .Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
+                var userSettingsTask = ctx.UserSettings.Where(up => up.Username == username).Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
+                var defaultSettingsTask = ctx2.UserSettings.Where(up => up.Username == "Default").Select(up => new KeyValuePair<string, string>(up.Key, up.Value)).ToListAsync();
                 Task[] parallelTasks = [userSettingsTask, defaultSettingsTask];
                 await Task.WhenAll(parallelTasks);
-                
-                var settings = defaultSettingsTask.Result;
-                var userSettings = userSettingsTask.Result;
-                
-                settings.AddRange(userSettings);
-
-                var result = settings
-                    .Select(s => new KeyValue
-                    {
-                        Key = s.Key,
-                        Value = s.Value
-                    })
-                    .ToList();
-                
-                return result;
+                var settings = defaultSettingsTask.Result.ToDictionary();
+                foreach (var kvp in userSettingsTask.Result)
+                    settings[kvp.Key] = kvp.Value;
+                return settings.ToList();
             }
             catch (Exception ex)
             {
                 throw new GraphQLException($"Error when retrieving user settings.", ex);
             }
+        }
+        
+        [Authorize]
+        public async Task<List<BusinessTypeClassCodeDm>> GetAllBusinessTypeClassCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.BusinessTypeClassCodeDms.ToListAsync();
+        }
+        
+        [Authorize]
+        public async Task<List<BusinessTypeDm>> GetAllBusinessTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.BusinessTypeDms.ToListAsync();
+        }
+        
+        [Authorize]
+        public async Task<List<Sic>> GetAllSicCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.Sics.ToListAsync();
+        }
+        
+        [Authorize]
+        public async Task<List<IndustryCodeDm>> GetAllIndustryCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.IndustryCodeDms
+                .OrderBy(o=>o.Code)
+                .ToListAsync();
         }
     }
 }

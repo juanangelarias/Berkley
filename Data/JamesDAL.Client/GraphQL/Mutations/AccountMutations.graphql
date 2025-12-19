@@ -80,3 +80,9 @@ mutation SetAccountAgencyAndAgent($input: SetAccountAgencyAndAgentInput!) {
         boolean
     }
 }
+
+mutation SetAccountGeneralInfoPanel($input: SetAccountGeneralInfoPanelInput!) {
+    setAccountGeneralInfoPanel(input: $input){
+        boolean
+    }
+}

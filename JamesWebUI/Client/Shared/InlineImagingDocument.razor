@@ -130,7 +130,14 @@
     {
         if (_module != null)
         {
-            await _module.DisposeAsync();
+            try
+            {
+                await _module.DisposeAsync();
+            }
+            catch (JSDisconnectedException )
+            {
+                //Just swallow, as these errors don't matter and cause problems with the debugger
+            }
         }
     }
 }

@@ -264,7 +264,7 @@ namespace James.Shared.Data
 
         #region User Settings
         
-        public Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings();
+        public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
         
         public Task<ISaveDataResult> SetUserSetting(string key, string? value);
         //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.

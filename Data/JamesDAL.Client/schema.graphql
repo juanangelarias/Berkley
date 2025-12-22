@@ -2956,6 +2956,7 @@ type CreateEmployeePayload {
 type AccountLOAsDto {
   accountLOAs: [AccountLOADetailDto!]!
   agencyLOAs: [AccountLOADetailDto!]!
+  loaTotal: Int!
 }
 
 type ImagingCategory {

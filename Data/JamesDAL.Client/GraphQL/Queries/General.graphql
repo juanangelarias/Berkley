@@ -251,6 +251,7 @@ query GetAccountLOAs($input: String!) {
             expiration
             single
             status
-        }
+        },
+        loaTotal
     }
 }

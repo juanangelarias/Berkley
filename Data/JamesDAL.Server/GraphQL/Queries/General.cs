@@ -244,16 +244,22 @@ namespace James.Data.Server.GraphQL.Queries
         {
             var ctx1 = await contextFactory.CreateDbContextAsync();
             var ctx2 = await contextFactory.CreateDbContextAsync();
+            var ctx3 = await contextFactory.CreateDbContextAsync();
             
             var approvedLOAByAccountTask = GetApprovedLOAByAccount(accountNum, ctx1);
             var approvedAgencyLOAByAccountTask = GetApprovedAgencyLOAByAccount(accountNum, ctx2);
-            
-            await Task.WhenAll(approvedAgencyLOAByAccountTask, approvedLOAByAccountTask);
+            var openBondsTotalTask = GetAccountOpenBondsTotal(accountNum, ctx3);
+            await Task.WhenAll(approvedAgencyLOAByAccountTask, approvedLOAByAccountTask, openBondsTotalTask);
 
+            var approvedLOAByAccount = approvedLOAByAccountTask.Result;
+            var approvedAgencyLOAByAccount = approvedAgencyLOAByAccountTask.Result;
+            var openBondsTotal = openBondsTotalTask.Result;
+            
             var response = new AccountLOAsDto
             {
-                AccountLOAs = approvedLOAByAccountTask.Result,
-                AgencyLOAs = approvedAgencyLOAByAccountTask.Result
+                AccountLOAs = approvedLOAByAccount,
+                AgencyLOAs = approvedAgencyLOAByAccount,
+                LOATotal = openBondsTotal
             };
 
             return response;
@@ -319,6 +325,23 @@ namespace James.Data.Server.GraphQL.Queries
                 result.Add(commercial);
             
             return result;
+        }
+
+        private async Task<int> GetAccountOpenBondsTotal(string accountNum, JamesDatabaseContext ctx)
+        {
+            var openBondsTransaccion = await ctx.BondTransactions
+                .Include(i=>i.BondNumberNavigation)
+                .ThenInclude(i=>i.BondType)
+                .Where(r => r.AccountNum == accountNum &&
+                            r.BondNumberNavigation.Status == "Open")
+                .ToListAsync();
+
+            var total = openBondsTransaccion
+                .Where(r => r.Type == "Initial Premium")
+                .ToList()
+                .Sum(s => s.BondAmount);
+
+            return total;
         }
     }
 }

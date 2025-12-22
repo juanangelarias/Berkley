@@ -1,6 +1,7 @@
 ﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
+@inject TooltipService TooltipService
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="0.2rem">
     <RadzenRow>
@@ -79,11 +80,15 @@
     </RadzenRow>
     <RadzenRow class="rz-mt-3">
         <RadzenColumn Size="6">
-            <RadzenText Text="Remaining LOA Balance" Style="font-weight: bold;" class="rz-ml-1"/>
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenText Text="Remaining LOA Balance" Style="font-weight: bold;" class="rz-ml-1"/>
+                <RadzenIcon Icon="info" IconStyle="IconStyle.Primary" class="rz-mr-1" Style="height: 10px"
+                            MouseEnter="@((arg) => SetToolTip(arg))"/>
+            </RadzenStack>
         </RadzenColumn>
         <RadzenColumn Size="3">
             <RadzenText Text="@_loaTotal.ToString("C0")" TextAlign="TextAlign.Right"
-                        Style="font-weight: bold;" class="rz-mr-1"/>
+                        Style="font-weight: bold;" class="@BalanceClass()"/>
         </RadzenColumn>
     </RadzenRow>
 </RadzenStack>
@@ -93,8 +98,8 @@
 
     private static List<AccountLOADetailDto> _accountLOAs = [];
     private static List<AccountLOADetailDto> _agencyLOAs = [];
-    private static int _loaTotal = 0;
-    
+    private static int _loaTotal;
+
     private string _accountCommercialSingle = "";
     private string _accountCommercialAggregate = "";
     private string _accountCommercialExpiration = "";
@@ -183,8 +188,17 @@
         _agencyContractExpiration = _agencyLOAs
             .FirstOrDefault(r => r.BondType == "Contract")?.Expiration.ToString("MM/dd/yyyy") ?? "";
 
-        _loaTotal = _accountLOAs.Sum(s => s.Aggregate) +
-                    _agencyLOAs.Sum(s => s.Aggregate) -
+        _loaTotal = _accountLOAs.Sum(s => s.Aggregate) -
                     _remainingBalance;
+    }
+
+    private string BalanceClass()
+    {
+        return _loaTotal >= 0 ? "rz-mr-1 rz-color-black" : "rz-mr-1 rz-color-danger";
+    }
+
+    private void SetToolTip(ElementReference elementReference)
+    {
+        TooltipService.Open(elementReference, "Account Commercial Aggregate + Account Contract Aggregate - Sum of Open Bonds Amounts");
     }
 }

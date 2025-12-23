@@ -15,6 +15,7 @@ public static class CacheKeys
     public static string AgencyAgents(string id) => $"AgencyAgents-{id}";
     public static string AgencyAgentLicenses(string agencyId, string agentId) => $"AgencyAgentLicenses-{agencyId}-{agentId}";
     public static string AgencyLicenses(string id) => $"AgencyLicenses-{id}";
+    public static string AccountLOAs(string accountNumber) => $"AccountLOAs-{accountNumber}";
     
     // B
     public static string BondByBlock(Guid bondBlockId) => $"BondByBlock-{bondBlockId}";

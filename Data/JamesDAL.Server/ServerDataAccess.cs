@@ -287,6 +287,11 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await accountMutation.SetAccountGeneralInfoPanel(accountId, 
                 fiscalYearEnd, businessType, industryCode, priorSuretyCompany, contextFactory));
         }
+        
+        public async Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber)
+        {
+            return await ExecuteGet(async () => await query.GetAccountLOAs(accountNumber, contextFactory));
+        }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem,

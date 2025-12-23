@@ -41,7 +41,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<Sic>>> GetAllSicCodes()
         {
             return await ExecuteGet<List<Sic>>(async () =>
-                await jamesClient.GetAllSicCodes.ExecuteAsync());
+                await jamesClient.GetAllSicCodes.ExecuteAsync(), "AllSicCodes");
         }
 
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
@@ -457,6 +457,11 @@ namespace James.Data.Client
             });
             
             return GraphQLSaveResult(result);
+        }
+        public async Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber)
+        {
+            return await ExecuteGet<AccountLOAsDto>(async () => await
+                jamesClient.GetAccountLOAs.ExecuteAsync(accountNumber), "AccountLOAs");
         }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,

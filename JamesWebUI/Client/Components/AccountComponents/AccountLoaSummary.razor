@@ -1,0 +1,206 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject TooltipService TooltipService
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0.2rem">
+    <RadzenRow>
+        <RadzenColumn Size="3"/>
+        <RadzenColumn Size="3">
+            <RadzenText Text="Single" TextAlign="TextAlign.Right" Style="font-weight: bold;" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="Aggregate" TextAlign="TextAlign.Right" Style="font-weight: bold;" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="Expiration" TextAlign="TextAlign.Right" Style="font-weight: bold;" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow Style="background-color: #f0f0f0;">
+        <RadzenText Text="ACCOUNT" class="rz-pt-2 rz-ml-1" Style="font-weight: bold;"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn Size="3">
+            <RadzenText Text="Commercial" class="rz-ml-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_accountCommercialSingle" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_accountCommercialAggregate" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_accountCommercialExpiration" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-1">
+        <RadzenColumn Size="3">
+            <RadzenText Text="Contract" class="rz-ml-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_accountContractSingle" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_accountContractAggregate" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_accountContractExpiration" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-3" Style="background-color: #f0f0f0;">
+        <RadzenText Text="AGENCY" class="rz-pt-2 rz-ml-1" Style="font-weight: bold;"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn Size="3">
+            <RadzenText Text="Commercial" class="rz-ml-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_agencyCommercialSingle" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_agencyCommercialAggregate" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_agencyCommercialExpiration" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-1">
+        <RadzenColumn Size="3">
+            <RadzenText Text="Contract" class="rz-ml-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_agencyContractSingle" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_agencyContractAggregate" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_agencyContractExpiration" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-3">
+        <RadzenColumn Size="6">
+            <RadzenStack Orientation="Orientation.Horizontal">
+                <RadzenText Text="Remaining LOA Balance" Style="font-weight: bold;" class="rz-ml-1"/>
+                <RadzenIcon Icon="info" IconStyle="IconStyle.Primary" class="rz-mr-1" Style="height: 10px"
+                            MouseEnter="@((arg) => SetToolTip(arg))"/>
+            </RadzenStack>
+        </RadzenColumn>
+        <RadzenColumn Size="3">
+            <RadzenText Text="@_remainingBalance.ToString("C0")" TextAlign="TextAlign.Right"
+                        Style="font-weight: bold;" class="@BalanceClass()"/>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private static List<AccountLOADetailDto> _accountLOAs = [];
+    private static List<AccountLOADetailDto> _agencyLOAs = [];
+    private static int _remainingBalance;
+
+    private string _accountCommercialSingle = "";
+    private string _accountCommercialAggregate = "";
+    private string _accountCommercialExpiration = "";
+    private string _accountContractSingle = "";
+    private string _accountContractAggregate = "";
+    private string _accountContractExpiration = "";
+    private string _agencyCommercialSingle = "";
+    private string _agencyCommercialAggregate = "";
+    private string _agencyCommercialExpiration = "";
+    private string _agencyContractSingle = "";
+    private string _agencyContractAggregate = "";
+    private string _agencyContractExpiration = "";
+
+    private int _loaTotal;
+
+    #region Loaders
+
+    #region LOAs Load
+
+    private IDataAccessResult<AccountLOAsDto> _lOAsResult = null!;
+
+    private LoadItem LOAsLoad => AddEventNotify(new LoadItem<AccountLOAsDto>
+    {
+        Key = CacheKeys.AccountLOAs(Account.AccountNum),
+        AsyncLoadTask = async () => _lOAsResult = await DataAccess.GetAccountLOAs(Account.AccountNum),
+        CacheLoadTask = cache => _lOAsResult = new DataAccessResult<AccountLOAsDto>
+        {
+            Data = (AccountLOAsDto)cache!
+        },
+        ResultVariable = () => _lOAsResult,
+        AfterLoad = () =>
+        {
+            _accountLOAs = _lOAsResult.Data!.AccountLOAs;
+            _agencyLOAs = _lOAsResult.Data!.AgencyLOAs;
+            _loaTotal = _lOAsResult.Data!.LOATotal;
+            CalculatePresentationFields();
+        }
+    }, "account and agency LOAs");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await DataAccess.GetCacheOrLoadDataAsync(LOAsLoad);
+    }
+
+    private void CalculatePresentationFields()
+    {
+        _accountCommercialSingle = _accountLOAs
+            .FirstOrDefault(r => r.BondType == "Commercial")?.Single.ToString("C0") ?? "";
+
+        _accountCommercialAggregate = _accountLOAs
+            .FirstOrDefault(r => r.BondType == "Commercial")?.Aggregate.ToString("C0") ?? "";
+
+        _accountCommercialExpiration = _accountLOAs
+            .FirstOrDefault(r => r.BondType == "Commercial")?.Expiration.ToString("MM/dd/yyyy") ?? "";
+
+        _accountContractSingle = _accountLOAs
+            .FirstOrDefault(r => r.BondType == "Contract")?.Single.ToString("C0") ?? "";
+
+        _accountContractAggregate = _accountLOAs
+            .FirstOrDefault(r => r.BondType == "Contract")?.Aggregate.ToString("C0") ?? "";
+
+        _accountContractExpiration = _accountLOAs
+            .FirstOrDefault(r => r.BondType == "Contract")?.Expiration.ToString("MM/dd/yyyy") ?? "";
+
+        _agencyCommercialSingle = _agencyLOAs
+            .FirstOrDefault(r => r.BondType == "Commercial")?.Single.ToString("C0") ?? "";
+
+        _agencyCommercialAggregate = _agencyLOAs
+            .FirstOrDefault(r => r.BondType == "Commercial")?.Aggregate.ToString("C0") ?? "";
+
+        _agencyCommercialExpiration = _agencyLOAs
+            .FirstOrDefault(r => r.BondType == "Commercial")?.Expiration.ToString("MM/dd/yyyy") ?? "";
+
+        _agencyContractSingle = _agencyLOAs
+            .FirstOrDefault(r => r.BondType == "Contract")?.Single.ToString("C0") ?? "";
+
+        _agencyContractAggregate = _agencyLOAs
+            .FirstOrDefault(r => r.BondType == "Contract")?.Aggregate.ToString("C0") ?? "";
+
+        _agencyContractExpiration = _agencyLOAs
+            .FirstOrDefault(r => r.BondType == "Contract")?.Expiration.ToString("MM/dd/yyyy") ?? "";
+
+
+        // TODO: This calculation need to be discussed with all the team!
+        _remainingBalance = _accountLOAs.Sum(s => s.Aggregate) -
+                    _loaTotal;
+    }
+
+    private string BalanceClass()
+    {
+        return _remainingBalance >= 0 ? "rz-mr-1 rz-color-black" : "rz-mr-1 rz-color-danger";
+    }
+
+    private void SetToolTip(ElementReference elementReference)
+    {
+        TooltipService.Open(elementReference, "Account Commercial Aggregate + Account Contract Aggregate - Sum of Open Bonds Amounts");
+    }
+}

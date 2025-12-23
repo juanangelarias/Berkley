@@ -87,7 +87,7 @@
             </RadzenStack>
         </RadzenColumn>
         <RadzenColumn Size="3">
-            <RadzenText Text="@_loaTotal.ToString("C0")" TextAlign="TextAlign.Right"
+            <RadzenText Text="@_remainingBalance.ToString("C0")" TextAlign="TextAlign.Right"
                         Style="font-weight: bold;" class="@BalanceClass()"/>
         </RadzenColumn>
     </RadzenRow>
@@ -98,7 +98,7 @@
 
     private static List<AccountLOADetailDto> _accountLOAs = [];
     private static List<AccountLOADetailDto> _agencyLOAs = [];
-    private static int _loaTotal;
+    private static int _remainingBalance;
 
     private string _accountCommercialSingle = "";
     private string _accountCommercialAggregate = "";
@@ -113,7 +113,7 @@
     private string _agencyContractAggregate = "";
     private string _agencyContractExpiration = "";
 
-    private int _remainingBalance;
+    private int _loaTotal;
 
     #region Loaders
 
@@ -134,7 +134,7 @@
         {
             _accountLOAs = _lOAsResult.Data!.AccountLOAs;
             _agencyLOAs = _lOAsResult.Data!.AgencyLOAs;
-            _remainingBalance = _lOAsResult.Data!.LOATotal;
+            _loaTotal = _lOAsResult.Data!.LOATotal;
             CalculatePresentationFields();
         }
     }, "account and agency LOAs");
@@ -188,13 +188,15 @@
         _agencyContractExpiration = _agencyLOAs
             .FirstOrDefault(r => r.BondType == "Contract")?.Expiration.ToString("MM/dd/yyyy") ?? "";
 
-        _loaTotal = _accountLOAs.Sum(s => s.Aggregate) -
-                    _remainingBalance;
+
+        // TODO: This calculation need to be discussed with all the team!
+        _remainingBalance = _accountLOAs.Sum(s => s.Aggregate) -
+                    _loaTotal;
     }
 
     private string BalanceClass()
     {
-        return _loaTotal >= 0 ? "rz-mr-1 rz-color-black" : "rz-mr-1 rz-color-danger";
+        return _remainingBalance >= 0 ? "rz-mr-1 rz-color-black" : "rz-mr-1 rz-color-danger";
     }
 
     private void SetToolTip(ElementReference elementReference)

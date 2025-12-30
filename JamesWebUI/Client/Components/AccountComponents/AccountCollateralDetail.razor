@@ -1,0 +1,42 @@
+﻿<RadzenCard Variant="Variant.Outlined">
+    <ChildContent>
+        <RadzenRow Gap="0">
+            <RadzenColumn Size="8">
+                <RadzenText Text="Bond No."/>
+            </RadzenColumn>
+            <RadzenColumn Size="4">
+                <RadzenLink Text="@Collateral.BondNumber" Target="_blank"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow Gap="0">
+            <RadzenColumn Size="8">
+                <RadzenText Text="Bank"/>
+            </RadzenColumn>
+            <RadzenColumn Size="4">
+                <RadzenText Text="@Collateral.Bank"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow Gap="0">
+            <RadzenColumn Size="8">
+                <RadzenText Text="ILOC / Cash"/>
+            </RadzenColumn>
+            <RadzenColumn Size="4">
+                <RadzenText Text="@Collateral.IlocOrCash.ToString("C0")"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow Gap="0">
+            <RadzenColumn Size="8">
+                <RadzenText Text="Exp. Date"/>
+            </RadzenColumn>
+            <RadzenColumn Size="4">
+                <RadzenText Text="@Collateral.ExpireationDate.ToString("d")"/>
+            </RadzenColumn>
+        </RadzenRow>
+    </ChildContent>
+</RadzenCard>
+
+@code {
+    //TODO: Adjust the target property in line 8 once the Bond page is done
+    
+    [Parameter, EditorRequired] public required AccountCollateralDto Collateral { get; set; }
+}

@@ -1,0 +1,63 @@
+﻿<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+    <RadzenRow Gap="1">
+        <RadzenText Text="Bond specific or account general, and the bank it's held with or if its an ILOC or Cash"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenText Text="Data Points:"/>
+    </RadzenRow>
+    <RadzenTable>
+        <RadzenTableBody>
+            @foreach (var collateral in _collaterals)
+            {
+                <RadzenTableRow>
+                    <RadzenTableCell class="rz-my-2">
+                        <AccountCollateralDetail Collateral="@collateral"/>
+                    </RadzenTableCell>
+                </RadzenTableRow>
+            }
+        </RadzenTableBody>
+    </RadzenTable>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private List<AccountCollateralDto> _collaterals = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _collaterals =
+        [
+            new()
+            {
+                BondNumber = "123456",
+                Bank = "Bank No. 1",
+                IlocOrCash = 50000000,
+                ExpireationDate = new DateOnly(2030, 12, 31)
+            },
+            new()
+            {
+                BondNumber = "563321",
+                Bank = "Bank No. 2",
+                IlocOrCash = 2000000,
+                ExpireationDate = new DateOnly(2026, 12, 31)
+            },
+            new()
+            {
+                BondNumber = "354888",
+                Bank = "Bank No. 3",
+                IlocOrCash = 100000,
+                ExpireationDate = new DateOnly(2035, 12, 31)
+            },
+            new()
+            {
+                BondNumber = "965445",
+                Bank = "Bank No. 4",
+                IlocOrCash = 700000,
+                ExpireationDate = new DateOnly(2027, 12, 31)
+            },
+        ];
+    }
+}

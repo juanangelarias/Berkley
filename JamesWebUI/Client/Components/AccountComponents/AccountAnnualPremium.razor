@@ -1,0 +1,59 @@
+﻿
+@inject TooltipService TooltipService;
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+    <RadzenRow Gap="1">
+        <RadzenColumn class="rz-vw-50">
+            <RadzenText Text="TTM" TextAlign="TextAlign.Right" class="rz-mr-1"
+                        MouseEnter="@(arg => ShowTooltip(arg, "TTM"))"/>
+        </RadzenColumn>
+        <RadzenColumn class="rz-vw-50">
+            <RadzenText Text="YTD" TextAlign="TextAlign.Right" class="rz-mr-1"
+                        MouseEnter="@(arg => ShowTooltip(arg, "YTD"))"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow Gap="1">
+        <RadzenColumn class="rz-vw-50">
+            <RadzenText Text="@(_annualPremium.TrailingTwelveMonths.ToString("C0"))"
+                        TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn class="rz-vw-50">
+            <RadzenText Text="@(_annualPremium.YearToDate.ToString("C0"))"
+                        TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired] public Account Account { get; set; }
+
+    private AccountAnnualPremiumDto _annualPremium = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _annualPremium = new()
+        {
+            TrailingTwelveMonths = 100000000,
+            YearToDate = 60000000
+        };
+    }
+
+    private void ShowTooltip(ElementReference element, string id)
+    {
+        var opts = new TooltipOptions
+        {
+            Position = TooltipPosition.Right
+        };
+        switch (id)
+        {
+            case "TTM":
+                TooltipService.Open(element, "Trailing Twelve Months", opts);
+                break;
+            case "YTD":
+                TooltipService.Open(element, "Year to Date", opts);
+                break;
+        }
+    }
+}

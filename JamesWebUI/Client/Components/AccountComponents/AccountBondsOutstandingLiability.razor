@@ -1,0 +1,123 @@
+﻿<RadzenStack Orientation="Orientation.Vertical">
+    <RadzenRow Style="background-color: #f0f0f0;" class="rz-pt-2 rz-ml-1">
+        <RadzenText Text="Current exposure - Commercial & Contract Amount" class="rz-ml-1"
+                    Style="font-weight: bold;"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn class="rz-ml-3 rz-vw-50">
+            <RadzenText Text="Commercial Total"/>
+        </RadzenColumn>
+        <RadzenColumn class="rz-vw-50">
+            <RadzenText Text="$123,456,789" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn class="rz-ml-3 rz-vw-50">
+            <RadzenText Text="Contract Total"/>
+        </RadzenColumn>
+        <RadzenColumn class="rz-vw-50">
+            <RadzenText Text="$123,456,789" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-3" Style="background-color: #f0f0f0;">
+        <RadzenText Text="Largest outstanding bond amount" class="rz-pt-2 rz-ml-1 rz-mb-0"
+                    Style="font-weight: bold;"/>
+        <RadzenText Text="(average size bond need) - & bond type" TextStyle="TextStyle.Caption"
+                    class="rz-ml-1" Style="margin-top: -17px"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <RadzenText Text="Dollar amount" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="8">
+            <RadzenText Text="Bond Type/Class Code"/>
+        </RadzenColumn>
+    </RadzenRow>
+    @foreach (var item in _outstandingBonds)
+    {
+        <RadzenRow>
+            <RadzenColumn Size="4" class="rz-pt-0" Style="margin-top: -13px;">
+                <RadzenText Text="@item.Amount.ToString("C0")" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+            </RadzenColumn>
+            <RadzenColumn Size="8" class="rz-pt-0" Style="margin-top: -13px;">
+                <RadzenText Text="@($"{item.BondType}/{item.BondClass}")"/>
+            </RadzenColumn>
+        </RadzenRow>
+    }
+    <RadzenStack Gap="0">
+        <RadzenRow>
+            <RadzenText Text="Liability"/>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenText Text="Class Code description"/>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenText Text="Largest open, ever"/>
+        </RadzenRow>
+    </RadzenStack>
+    <RadzenRow class="rz-mt-4">
+        <RadzenLink Text="Bond Maintenance" Target="GoToBondMaintenance"/>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    // TODO: Adjust the target property in line 59 once Bond Maintenance Page is done
+    [Parameter, EditorRequired] public Account Account { get; set; }
+
+    private List<OutstandingBondDto> _outstandingBonds = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _outstandingBonds =
+        [
+            new()
+            {
+                Amount = 123456789,
+                BondType = "Commercial",
+                BondClass = "Court and Fiduciary"
+            },
+            new()
+            {
+                Amount = 234567891,
+                BondType = "Commercial",
+                BondClass = "License and Permit"
+            },
+            new()
+            {
+                Amount = 345678912,
+                BondType = "Commercial",
+                BondClass = "Miscellaneous"
+            },
+            new()
+            {
+                Amount = 456789123,
+                BondType = "Contract",
+                BondClass = "Class A"
+            },
+            new()
+            {
+                Amount = 567891234,
+                BondType = "Contract",
+                BondClass = "Class A-1"
+            },
+            new()
+            {
+                Amount = 678912345,
+                BondType = "Contract",
+                BondClass = "Miscellaneous"
+            },
+        ];
+
+        _outstandingBonds = _outstandingBonds
+            .OrderBy(o => o.BondType)
+            .ThenBy(t => t.BondClass)
+            .ToList();
+    }
+
+    private void GoToBondMaintenance()
+    {
+        throw new NotImplementedException();
+    }
+}

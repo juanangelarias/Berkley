@@ -18,10 +18,10 @@
         </RadzenRow>
         <RadzenRow Gap="0">
             <RadzenColumn Size="8">
-                <RadzenText Text="ILOC / Cash"/>
+                <RadzenText Text="@Collateral.Type"/>
             </RadzenColumn>
             <RadzenColumn Size="4">
-                <RadzenText Text="@Collateral.IlocOrCash.ToString("C0")"/>
+                <RadzenText Text="@Collateral.Amount.ToString("C0")"/>
             </RadzenColumn>
         </RadzenRow>
         <RadzenRow Gap="0">
@@ -29,7 +29,7 @@
                 <RadzenText Text="Exp. Date"/>
             </RadzenColumn>
             <RadzenColumn Size="4">
-                <RadzenText Text="@Collateral.ExpireationDate.ToString("d")"/>
+                <RadzenText Text="@Collateral.ExpirationDate?.ToString("d")"/>
             </RadzenColumn>
         </RadzenRow>
     </ChildContent>

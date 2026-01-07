@@ -355,5 +355,26 @@ public partial class Query
             ? await GetParent(legalEntity.Parent, contextFactory) 
             : legalEntity.Parent;
     }
-    
+
+    [Authorize]
+    public async Task<List<AccountCollateralDto>> GetAccountBondCollaterals(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var collaterals = ctx.Collaterals
+            .Where(r => r.AccountNum == accountNum && r.Expiration > DateOnly.FromDateTime(Today))
+            .Select(s => new AccountCollateralDto
+            {
+                BondNumber = s.BondNumber,
+                //Bank = s.Bank        // ToDo: After the field "Bank" is added to the table this should be uncommented
+                Bank = "Bank ???",      // ToDo: After the field "Bank" is added to the table this should be removed
+                Type = s.Type,
+                Amount = s.Amount ?? 0,
+                ExpirationDate = s.Expiration
+            })
+            .ToList();
+        
+        return collaterals;
+    }
 }

@@ -511,6 +511,15 @@ namespace James.Data.Client
             
             return result;
         }
+        
+        public async Task<IDataAccessResult<List<AccountCollateralDto>>> GetAccountBondCollaterals(string accountNum)
+        {
+            var result = await ExecuteGet<List<AccountCollateralDto>>(async () =>
+                await jamesClient.GetAccountBondCollaterals.ExecuteAsync(accountNum),
+                "AccountBondCollaterals");
+            
+            return result;
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

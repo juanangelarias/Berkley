@@ -2,8 +2,9 @@
 
 public class AccountCollateralDto
 {
-    public string BondNumber { get; set; } = null!;
+    public string? BondNumber { get; set; }
     public string Bank { get; set; } = null!;
-    public int IlocOrCash { get; set; }
-    public DateOnly ExpireationDate { get; set; }
+    public string? Type { get; set; }
+    public int Amount { get; set; }
+    public DateOnly? ExpirationDate { get; set; }
 }

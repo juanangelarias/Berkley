@@ -313,3 +313,13 @@ query GetAccountAnnualPremiums($accountNum: String!, $type: String!){
         yearToDate
     }
 }
+
+query GetAccountBondCollaterals($accountNum: String!) {
+    accountBondCollaterals(accountNum: $accountNum) {
+        bondNumber
+        type
+        bank
+        amount
+        expirationDate
+    }
+}

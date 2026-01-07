@@ -541,6 +541,7 @@ type Query {
   allAccountWatches(accountNum: String!): [AccountWatch!]!
   allLineOfAuthorityLogs(accountNum: String!): [LineOfAuthorityLog!]!
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
+  accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -2226,6 +2227,14 @@ enum ImagingDocumentCategory {
   COMM_BID
   CONT_BID
   BILLING
+}
+
+type AccountCollateralDto {
+  bondNumber: String
+  bank: String!
+  type: String
+  amount: Int!
+  expirationDate: LocalDate
 }
 
 input UpdateAccountWatchInput {

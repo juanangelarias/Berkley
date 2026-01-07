@@ -312,6 +312,11 @@ namespace James.Data.Server
                 managementIncentives, fundedBuySell, multipleActiveOwners, trackCommAccount, berkleyAffiliate, comments,
                 contextFactory));
         }
+        
+        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum, string type)
+        {
+            return await ExecuteGet(async () => await query.GetAccountAnnualPremiums(accountNum, type, contextFactory));
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

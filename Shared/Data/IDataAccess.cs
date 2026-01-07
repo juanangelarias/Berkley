@@ -121,6 +121,8 @@ namespace James.Shared.Data
             bool? fundedBuySell, bool? multipleActiveOwners, bool? trackCommAccount, bool? berkleyAffiliate,
             string? comments);
 
+        public Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum, string type);
+
         public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type);
 

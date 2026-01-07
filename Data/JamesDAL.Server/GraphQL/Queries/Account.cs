@@ -1,4 +1,6 @@
 ﻿using HotChocolate.Authorization;
+using James.Shared.Dto;
+using static System.DateTime;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -133,12 +135,12 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var contractLOA = await ctx.LineOfAuthorityLogs
-            .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.BondType == "Contract")
+            .Where(l => l.AccountNum == accountNumber && l.Effective <= Today && l.BondType == "Contract")
             .OrderByDescending(l => l.Created)
             .FirstOrDefaultAsync();
 
         var commercialLOA = await ctx.LineOfAuthorityLogs
-            .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today &&
+            .Where(l => l.AccountNum == accountNumber && l.Effective <= Today &&
                         l.BondType == "Commercial")
             .OrderByDescending(l => l.Created)
             .FirstOrDefaultAsync();
@@ -275,4 +277,83 @@ public partial class Query
 
         return result;
     }
+    
+    [Authorize]
+    public async Task<AccountAnnualPremiumDto> GetAccountAnnualPremiums(string accountNum, string type,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var startDate = Today.AddYears(-1);
+        var endDate = Today;
+        var yearStart = new DateTime(endDate.Year, 1, 1);
+        
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var account = ctx.Accounts
+            .FirstOrDefault(f=>f.AccountNum == accountNum);
+
+        if (account == null)
+            return new();
+        
+        var accountList = (type.ToUpper() == "ACCOUNT ONLY")
+             ? [account.AccountNum]
+             : await GetRelatedAccounts(account.Id,  type.ToUpper() == "PARENT ONLY", contextFactory);
+        
+        var premiums = await ctx.BondTransactions
+            .OrderBy(o => o.Effective)
+            .Where(r => r.Effective >= startDate &&
+                        r.Effective <= endDate &&
+                        accountList.Contains(r.AccountNum))
+            .Select(s => new {s.Effective,s.Premium})
+            .ToListAsync();
+        
+        var response = new AccountAnnualPremiumDto
+        {
+            TrailingTwelveMonths = premiums.Sum(s => s.Premium),
+            YearToDate = premiums.Where(r => r.Effective >= yearStart).Sum(s => s.Premium)
+        };
+        
+        return response;
+    }
+
+    private async Task<List<string>> GetRelatedAccounts(Guid accountId, bool onlyParent, 
+        IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var parentId = await GetParent(accountId, contextFactory);
+        if(parentId == null) 
+            return [];
+        
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        if (onlyParent)
+        {
+            var parentAccountNum = ctx.Accounts.FirstOrDefault(f => f.Id == parentId)?.AccountNum;
+            return parentAccountNum == null
+                ? []
+                : [parentAccountNum];
+        }
+
+        var relatedAccounts = ctx.LegalEntities
+            .Include(i => i.ParentNavigation)
+            .Where(r => r.Parent == parentId)
+            .Select(s => s.AccountIdNavigation!.AccountNum)
+            .ToList();
+            
+        return relatedAccounts.Where(r => r != null).ToList();
+    }
+    
+    private async Task<Guid?> GetParent(Guid legalEntityId, IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var legalEntity = await ctx.LegalEntities
+            .FirstOrDefaultAsync(r => r.Id == legalEntityId);
+        
+        if(legalEntity == null)
+            return null;
+        
+        return legalEntity.Parent != legalEntity.Id 
+            ? await GetParent(legalEntity.Parent, contextFactory) 
+            : legalEntity.Parent;
+    }
+    
 }

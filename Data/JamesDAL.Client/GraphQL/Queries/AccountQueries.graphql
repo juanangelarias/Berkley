@@ -306,3 +306,10 @@ query GetLastIndemnitorByAccount($input: String!){
         executionDate
     }
 }
+
+query GetAccountAnnualPremiums($accountNum: String!, $type: String!){
+    accountAnnualPremiums(accountNum: $accountNum, type: $type){
+        trailingTwelveMonths
+        yearToDate
+    }
+}

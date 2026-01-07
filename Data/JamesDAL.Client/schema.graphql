@@ -540,6 +540,7 @@ type Query {
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
   allAccountWatches(accountNum: String!): [AccountWatch!]!
   allLineOfAuthorityLogs(accountNum: String!): [LineOfAuthorityLog!]!
+  accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -591,7 +592,6 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
-  accountLOAs(accountNum: String!): AccountLOAsDto!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -599,6 +599,7 @@ type Query {
   allImagingCategoryTabDivisionType: [VImagingCategoryTabDivisionType!]!
   allInsurers: [Insurer!]!
   loaLogsByAccount(accountNumber: String!): [LineOfAuthorityLog!]!
+  accountLOAs(accountNum: String!): AccountLOAsDto!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -2390,6 +2391,11 @@ type BondBlock {
   comments: String
   agencyId: UUID
   issuedByNavigation: UserProfile
+}
+
+type AccountAnnualPremiumDto {
+  trailingTwelveMonths: Int!
+  yearToDate: Int!
 }
 
 type AddressTypeDm {

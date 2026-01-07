@@ -1,43 +1,75 @@
-﻿
-@inject TooltipService TooltipService;
+﻿@inherits JamesLayoutComponentBase
 
-<RadzenStack Orientation="Orientation.Vertical" Gap="0">
-    <RadzenRow Gap="1">
-        <RadzenColumn class="rz-vw-50">
-            <RadzenText Text="TTM" TextAlign="TextAlign.Right" class="rz-mr-1"
-                        MouseEnter="@(arg => ShowTooltip(arg, "TTM"))"/>
-        </RadzenColumn>
-        <RadzenColumn class="rz-vw-50">
-            <RadzenText Text="YTD" TextAlign="TextAlign.Right" class="rz-mr-1"
-                        MouseEnter="@(arg => ShowTooltip(arg, "YTD"))"/>
-        </RadzenColumn>
-    </RadzenRow>
-    <RadzenRow Gap="1">
-        <RadzenColumn class="rz-vw-50">
-            <RadzenText Text="@(_annualPremium.TrailingTwelveMonths.ToString("C0"))"
-                        TextAlign="TextAlign.Right" class="rz-mr-1"/>
-        </RadzenColumn>
-        <RadzenColumn class="rz-vw-50">
-            <RadzenText Text="@(_annualPremium.YearToDate.ToString("C0"))"
-                        TextAlign="TextAlign.Right" class="rz-mr-1"/>
-        </RadzenColumn>
-    </RadzenRow>
-</RadzenStack>
+@inject TooltipService TooltipService;
+@inject IDataAccess DataAccess;
+
+<RadzenRow class="rz-mb-3" JustifyContent="JustifyContent.End">
+    <RadzenColumn Size="4">
+        <RadzenDropDown TValue="string" Data="_options" @bind-Value="_selectedOption"
+                        Change="arg => OptionChange(arg)"/>
+    </RadzenColumn>
+</RadzenRow>
+<RadzenRow>
+    <RadzenTable>
+        <RadzenTableHeader>
+            <RadzenTableHeaderCell>
+                <RadzenText Text="TTM" TextAlign="TextAlign.Right" class="rz-mr-1"
+                            MouseEnter="@(arg => ShowTooltip(arg, "TTM"))"/>
+            </RadzenTableHeaderCell>
+            <RadzenTableHeaderCell>
+                <RadzenText Text="YTD" TextAlign="TextAlign.Right" class="rz-mr-1"
+                            MouseEnter="@(arg => ShowTooltip(arg, "YTD"))"/>
+            </RadzenTableHeaderCell>
+        </RadzenTableHeader>
+        <RadzenTableBody>
+            <RadzenTableRow>
+                <RadzenTableCell class="rz-w-25">
+                    <RadzenText Text="@(_annualPremium.TrailingTwelveMonths.ToString("C0"))"
+                                TextAlign="TextAlign.Right"/>
+                </RadzenTableCell>
+                <RadzenTableCell class="rz-w-25">
+                    <RadzenText Text="@(_annualPremium.YearToDate.ToString("C0"))"
+                                TextAlign="TextAlign.Right"/>
+                </RadzenTableCell>
+            </RadzenTableRow>
+        </RadzenTableBody>
+    </RadzenTable>
+</RadzenRow>
 
 @code {
     [Parameter, EditorRequired] public Account Account { get; set; }
 
     private AccountAnnualPremiumDto _annualPremium = new();
+    private List<string> _options = ["Account only", "Parent only", "All related"];
+    private string _selectedOption = "Account only";
+
+    #region Loaders
+
+    #region AccountPremiums Load
+
+    private IDataAccessResult<AccountAnnualPremiumDto> _accountPremiumsResult = null!;
+
+    private LoadItem AccountPremiumsLoad => AddEventNotify(new LoadItem<AccountAnnualPremiumDto>
+    {
+        Key = CacheKeys.AccountAnnualPremiums(Account.AccountNum, _selectedOption),
+        AsyncLoadTask = async () => _accountPremiumsResult = await DataAccess.GetAccountAnnualPremiums(Account.AccountNum, _selectedOption),
+        CacheLoadTask = cache => _accountPremiumsResult = new DataAccessResult<AccountAnnualPremiumDto>
+        {
+            Data = (AccountAnnualPremiumDto)cache!
+        },
+        ResultVariable = () => _accountPremiumsResult,
+        AfterLoad = () => { _annualPremium = _accountPremiumsResult.Data!; }
+    }, "account annual premiums");
+
+    #endregion
+
+    #endregion
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        _annualPremium = new()
-        {
-            TrailingTwelveMonths = 100000000,
-            YearToDate = 60000000
-        };
+        await LoadPremiums();
     }
 
     private void ShowTooltip(ElementReference element, string id)
@@ -56,4 +88,21 @@
                 break;
         }
     }
+
+    private async Task OptionChange(object value)
+    {
+        var option = value as string;
+        if (option == null)
+            return;
+
+        await LoadPremiums();
+    }
+
+    private async Task LoadPremiums()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(AccountPremiumsLoad);
+    }
+
 }

@@ -502,6 +502,15 @@ namespace James.Data.Client
                 });
             return GraphQLSaveResult(result);
         }
+        
+        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum, string type)
+        {
+            var result = await ExecuteGet<AccountAnnualPremiumDto>(async () => 
+                await jamesClient.GetAccountAnnualPremiums.ExecuteAsync(accountNum, type), 
+                "AccountAnnualPremiums");
+            
+            return result;
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

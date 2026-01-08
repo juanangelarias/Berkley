@@ -43,7 +43,7 @@ namespace SharedBusinessLogic
                 ? endDate.DayNumber - actualDate.Value.DayNumber
                 : 0;
         
-            return amount * remnantLife / lifeInDays;
+            return lifeInDays > 0 ? amount * remnantLife / lifeInDays : 0;
         }
     }
 }

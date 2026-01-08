@@ -139,6 +139,12 @@ type SetAgencyGeneralInfoPayload {
   boolean: Boolean
 }
 
+type AccountOutstandingLiabilityByTypeAndClassDto {
+  bondType: String!
+  bondClass: String!
+  amount: Int!
+}
+
 type NotebookEntry {
   id: UUID!
   created: DateTime!
@@ -542,6 +548,7 @@ type Query {
   allLineOfAuthorityLogs(accountNum: String!): [LineOfAuthorityLog!]!
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
+  accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -3301,6 +3308,13 @@ type ProfitCenter {
 
 type SetPowerOfAttorneyDocumentStatusPayload {
   powerOfAttorneyDocumentStatus: PowerOfAttorneyDocumentStatus
+}
+
+type AccountOutstandingLiabilityDto {
+  outstandingCommercialLiability: Int!
+  outstandingContractLiability: Int!
+  largestBondEver: Int!
+  largestOutstandingBonds: [AccountOutstandingLiabilityByTypeAndClassDto!]!
 }
 
 input LogExceptionInput {

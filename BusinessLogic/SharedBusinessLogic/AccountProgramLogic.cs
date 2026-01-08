@@ -1,6 +1,5 @@
-﻿using James.Shared.Data;
-using James.Shared.Model;
-using System.Reflection.Metadata.Ecma335;
+﻿using James.Shared.Model;
+using static System.DateTime;
 
 namespace SharedBusinessLogic
 {
@@ -23,6 +22,28 @@ namespace SharedBusinessLogic
 
 
             return true;
+        }
+
+        /// <summary>
+        /// Calculates the prorated bond amount based on the total amount, start date, end date, and an optional actual date.
+        /// The calculation considers the portion of the bond's life remaining relative to its total duration.
+        /// </summary>
+        /// <param name="amount">The total bond amount to be prorated.</param>
+        /// <param name="startDate">The start date of the bond coverage period.</param>
+        /// <param name="endDate">The end date of the bond coverage period.</param>
+        /// <param name="actualDate">The current or specific date for prorating the amount. Defaults to today if not provided.</param>
+        /// <returns>The prorated bond amount as an integer.</returns>
+        public static int CalculateProratedBondAmount(int amount, DateOnly startDate, DateOnly endDate,
+            DateOnly? actualDate = null)
+        {
+            actualDate ??= DateOnly.FromDateTime(Today);
+
+            var lifeInDays = endDate.DayNumber - startDate.DayNumber;
+            var remnantLife = endDate > actualDate.Value 
+                ? endDate.DayNumber - actualDate.Value.DayNumber
+                : 0;
+        
+            return amount * remnantLife / lifeInDays;
         }
     }
 }

@@ -520,6 +520,14 @@ namespace James.Data.Client
             
             return result;
         }
+        public async Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum)
+        {
+            var result = await ExecuteGet<AccountOutstandingLiabilityDto>(async () =>
+                await jamesClient.GetAccountOutstandingLiability.ExecuteAsync(accountNum),
+                "AccountOutstandingLiability");
+            
+            return result;
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

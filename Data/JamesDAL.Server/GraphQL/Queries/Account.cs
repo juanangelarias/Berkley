@@ -1,5 +1,6 @@
 ﻿using HotChocolate.Authorization;
 using James.Shared.Dto;
+using SharedBusinessLogic;
 using static System.DateTime;
 
 namespace James.Data.Server.GraphQL.Queries;
@@ -334,11 +335,11 @@ public partial class Query
 
         var relatedAccounts = ctx.LegalEntities
             .Include(i => i.ParentNavigation)
-            .Where(r => r.Parent == parentId)
+            .Where(r => r.Parent == parentId && r.AccountIdNavigation != null)
             .Select(s => s.AccountIdNavigation!.AccountNum)
             .ToList();
             
-        return relatedAccounts.Where(r => r != null).ToList();
+        return relatedAccounts;
     }
     
     private async Task<Guid?> GetParent(Guid legalEntityId, IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -363,11 +364,14 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var collaterals = ctx.Collaterals
-            .Where(r => r.AccountNum == accountNum && r.Expiration > DateOnly.FromDateTime(Today))
+            .Where(r =>
+                r.AccountNum == accountNum &&
+                r.Released != null &&
+                r.Released.Value < Today)
             .Select(s => new AccountCollateralDto
             {
                 BondNumber = s.BondNumber,
-                //Bank = s.Bank        // ToDo: After the field "Bank" is added to the table this should be uncommented
+                //Bank = s.Bank         // ToDo: After the field "Bank" is added to the table this should be uncommented
                 Bank = "Bank ???",      // ToDo: After the field "Bank" is added to the table this should be removed
                 Type = s.Type,
                 Amount = s.Amount ?? 0,
@@ -376,5 +380,90 @@ public partial class Query
             .ToList();
         
         return collaterals;
+    }
+
+    [Authorize]
+    public async Task<AccountOutstandingLiabilityDto> GetAccountOutstandingLiability(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var accountId = (await ctx.Accounts.FirstOrDefaultAsync(f => f.AccountNum == accountNum))?.Id;
+        if(accountId == null) 
+            throw new GraphQLException("No account with this account number exists.");
+        
+        var relatedAccounts = await GetRelatedAccounts(accountId.Value, false, contextFactory);
+
+        var bonds = await ctx.Bonds
+            .Include(i => i.BondType)
+            .OrderBy(o => o.AccountNum)
+            .ThenBy(t => t.BondType!.BondType)
+            .ThenBy(t => t.BondType!.BondClass)
+            .Where(r => relatedAccounts.Contains(r.AccountNum))
+            .Select(s => new
+            {
+                s.BondNumber,
+                s.Status,
+                s.BondType!.BondType,
+                s.BondType!.BondClass,
+                s.CurrentBondLiability
+            })
+            .ToListAsync();
+        
+        var bondNumbers = bonds
+            .Where(r=> r.Status == "Open")
+            .Select(s => s.BondNumber).ToList();
+        
+        var bondMods = await ctx.BondModTransactions
+            .OrderBy(o=>o.BondNumber)
+            .ThenByDescending(t=>t.Effective)
+            .Where(r => bondNumbers.Contains(r.BondNumber))
+            .ToListAsync();
+
+        var result = new AccountOutstandingLiabilityDto();
+        foreach (var bond in bonds)
+        {
+            var mod = bondMods.FirstOrDefault(f => f.BondNumber == bond.BondNumber);
+            var proratedAmount = bond.BondType == "Contract"
+                ? mod == null
+                    ? 0
+                    : AccountProgramBusinessLogic.CalculateProratedBondAmount(bond.CurrentBondLiability, mod.Effective,
+                        mod.Expiration)
+                : bond.CurrentBondLiability;
+            
+            if(proratedAmount == 0) 
+                continue;
+
+            switch (bond.BondType)
+            {
+                case "Commercial":
+                    result.OutstandingCommercialLiability += proratedAmount;
+                    break;
+                case "Contract":
+                    result.OutstandingContractLiability += proratedAmount;
+                    break;
+            }
+
+            var exist = result.LargestOutstandingBonds
+                .FirstOrDefault(f => f.BondType == bond.BondType &&
+                                     f.BondClass == bond.BondClass);
+            
+            if (exist != null && proratedAmount > exist.Amount)
+                exist.Amount = proratedAmount;
+
+            if (exist == null)
+                result.LargestOutstandingBonds.Add(new()
+                {
+                    BondType = bond.BondType,
+                    BondClass = bond.BondClass,
+                    Amount = proratedAmount
+                });
+        }
+
+        result.LargestBondEver = bonds
+            .OrderByDescending(o => o.CurrentBondLiability)
+            .FirstOrDefault()?.CurrentBondLiability ?? 0;
+        
+        return result;
     }
 }

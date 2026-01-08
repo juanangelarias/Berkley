@@ -48,6 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\BusinessLogic\SharedBusinessLogic\SharedBusinessLogic.csproj" />
     <ProjectReference Include="..\..\James.Shared.Server\James.Shared.Server.csproj" />
     <ProjectReference Include="..\..\Shared\James.Shared.csproj" />
     <ProjectReference Include="..\JamesDAL.Imaging\James.Data.Imaging.csproj" />

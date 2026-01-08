@@ -323,3 +323,16 @@ query GetAccountBondCollaterals($accountNum: String!) {
         expirationDate
     }
 }
+
+query GetAccountOutstandingLiability($accountNum: String!) {
+    accountOutstandingLiability(accountNum: $accountNum) {
+        outstandingCommercialLiability
+        outstandingContractLiability
+        largestBondEver
+        largestOutstandingBonds {
+            bondType
+            bondClass
+            amount
+        }
+    }
+}

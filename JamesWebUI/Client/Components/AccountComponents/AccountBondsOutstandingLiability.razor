@@ -1,4 +1,13 @@
-﻿<RadzenStack Orientation="Orientation.Vertical">
+﻿@inherits JamesLayoutComponentBase
+
+@inject TooltipService TooltipService
+@inject IDataAccess DataAccess
+
+<RadzenStack Orientation="Orientation.Vertical">
+    <RadzenRow JustifyContent="JustifyContent.Right">
+        <RadzenIcon Icon="info" IconStyle="IconStyle.Primary" class="rz-mt-1" Style="height: 15px"
+                    MouseEnter="@((arg) => SetToolTip(arg))"/>
+    </RadzenRow>
     <RadzenRow Style="background-color: #f0f0f0;" class="rz-pt-2 rz-ml-1">
         <RadzenText Text="Current exposure - Commercial & Contract Amount" class="rz-ml-1"
                     Style="font-weight: bold;"/>
@@ -8,7 +17,8 @@
             <RadzenText Text="Commercial Total"/>
         </RadzenColumn>
         <RadzenColumn class="rz-vw-50">
-            <RadzenText Text="$123,456,789" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+            <RadzenText Text="@(_outstandingLiability.OutstandingCommercialLiability.ToString("C0"))"
+                        TextAlign="TextAlign.Right" class="rz-mr-1"/>
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow>
@@ -16,7 +26,8 @@
             <RadzenText Text="Contract Total"/>
         </RadzenColumn>
         <RadzenColumn class="rz-vw-50">
-            <RadzenText Text="$123,456,789" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+            <RadzenText Text="@(_outstandingLiability.OutstandingContractLiability.ToString("C0"))"
+                        TextAlign="TextAlign.Right" class="rz-mr-1"/>
         </RadzenColumn>
     </RadzenRow>
     <RadzenRow class="rz-mt-3" Style="background-color: #f0f0f0;">
@@ -33,7 +44,7 @@
             <RadzenText Text="Bond Type/Class Code"/>
         </RadzenColumn>
     </RadzenRow>
-    @foreach (var item in _outstandingBonds)
+    @foreach (var item in _outstandingLiability.LargestOutstandingBonds)
     {
         <RadzenRow>
             <RadzenColumn Size="4" class="rz-pt-0" Style="margin-top: -13px;">
@@ -52,72 +63,73 @@
             <RadzenText Text="Class Code description"/>
         </RadzenRow>
         <RadzenRow>
-            <RadzenText Text="Largest open, ever"/>
+            <RadzenColumn class="rz-vw-50">
+                <RadzenText Text="Largest open, ever"/>
+            </RadzenColumn>
+            <RadzenColumn class="rz-vw-50">
+                <RadzenText Text="@(_outstandingLiability.LargestBondEver.ToString("C0"))"
+                            TextAlign="TextAlign.Right" class="rz-mr-1"/>
+            </RadzenColumn>
         </RadzenRow>
     </RadzenStack>
     <RadzenRow class="rz-mt-4">
-        <RadzenLink Text="Bond Maintenance" Target="GoToBondMaintenance"/>
+        <RadzenLink Text="Bond Maintenance" @onclick="@(() => GoToBondMaintenance())"/>
     </RadzenRow>
 </RadzenStack>
 
 @code {
-    // TODO: Adjust the target property in line 59 once Bond Maintenance Page is done
+
+    // TODO: Adjust the target property in line 76 once Bond Maintenance Page is done
     [Parameter, EditorRequired] public Account Account { get; set; }
 
-    private List<OutstandingBondDto> _outstandingBonds = [];
+    private AccountOutstandingLiabilityDto _outstandingLiability = new();
+
+    #region Loaders
+
+    #region OutstandingLiability Load
+
+    private IDataAccessResult<AccountOutstandingLiabilityDto> _outstandingLiabilityResult = null!;
+
+    private LoadItem OutstandingLiabilityLoad => AddEventNotify(new LoadItem<AccountOutstandingLiabilityDto>
+    {
+        Key = CacheKeys.AccountOutstandingLiability(Account.AccountNum),
+        AsyncLoadTask = async () => _outstandingLiabilityResult = await DataAccess.GetAccountOutstandingLiability(Account.AccountNum),
+        CacheLoadTask = cache => _outstandingLiabilityResult = new DataAccessResult<AccountOutstandingLiabilityDto>
+        {
+            Data = (AccountOutstandingLiabilityDto)cache!
+        },
+        ResultVariable = () => _outstandingLiabilityResult,
+        AfterLoad = () => { _outstandingLiability = _outstandingLiabilityResult.Data!; }
+    }, "account outstanding liability");
+
+    #endregion
+
+    #endregion
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
-        _outstandingBonds =
-        [
-            new()
-            {
-                Amount = 123456789,
-                BondType = "Commercial",
-                BondClass = "Court and Fiduciary"
-            },
-            new()
-            {
-                Amount = 234567891,
-                BondType = "Commercial",
-                BondClass = "License and Permit"
-            },
-            new()
-            {
-                Amount = 345678912,
-                BondType = "Commercial",
-                BondClass = "Miscellaneous"
-            },
-            new()
-            {
-                Amount = 456789123,
-                BondType = "Contract",
-                BondClass = "Class A"
-            },
-            new()
-            {
-                Amount = 567891234,
-                BondType = "Contract",
-                BondClass = "Class A-1"
-            },
-            new()
-            {
-                Amount = 678912345,
-                BondType = "Contract",
-                BondClass = "Miscellaneous"
-            },
-        ];
+        await LoadOutstandingLiability();
+    }
 
-        _outstandingBonds = _outstandingBonds
-            .OrderBy(o => o.BondType)
-            .ThenBy(t => t.BondClass)
-            .ToList();
+    private async Task LoadOutstandingLiability()
+    {
+        await ShowLoading();
+        await DataAccess.GetCacheOrLoadDataAsync(OutstandingLiabilityLoad);
     }
 
     private void GoToBondMaintenance()
     {
-        throw new NotImplementedException();
+        NotificationService.Notify(new NotificationMessage
+        {
+            Detail = "Bond Maintenance Page is not yet implemented.",
+        });
+    }
+
+    private void SetToolTip(ElementReference elementReference)
+    {
+        TooltipService.Open(elementReference,
+            "Calculated taking into account all the bonds that belongs to all the related accounts");
     }
 }

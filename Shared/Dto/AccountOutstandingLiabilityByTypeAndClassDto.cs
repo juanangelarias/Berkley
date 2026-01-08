@@ -1,6 +1,6 @@
 ﻿namespace James.Shared.Dto;
 
-public class OutstandingBondDto
+public class AccountOutstandingLiabilityByTypeAndClassDto
 {
     public string BondType { get; set; } = "";
     public string BondClass { get; set; } = "";

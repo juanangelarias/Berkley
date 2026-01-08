@@ -322,6 +322,10 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAccountBondCollaterals(accountNum, contextFactory)); 
         }
+        public async Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetAccountOutstandingLiability(accountNum, contextFactory)); 
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

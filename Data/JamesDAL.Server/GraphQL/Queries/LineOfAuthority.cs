@@ -37,7 +37,6 @@ public partial class Query
         
         var ctx1 = await contextFactory.CreateDbContextAsync();
         var ctx2 = await contextFactory.CreateDbContextAsync();
-        var ctx3 = await contextFactory.CreateDbContextAsync();
 
         var approvedLOAByAccountTask = GetApprovedLOAByAccount(parentAccountNum, ctx1);
         var approvedAgencyLOAByAccountTask = GetApprovedAgencyLOAByAccount(parentAccountNum, ctx2);

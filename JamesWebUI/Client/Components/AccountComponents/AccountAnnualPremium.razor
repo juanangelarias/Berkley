@@ -4,9 +4,9 @@
 @inject IDataAccess DataAccess;
 
 <RadzenRow class="rz-mb-3" JustifyContent="JustifyContent.End">
-    <RadzenColumn Size="4">
+    <RadzenColumn Size="5">
         <RadzenDropDown TValue="string" Data="_options" @bind-Value="_selectedOption"
-                        Change="arg => OptionChange(arg)"/>
+                        Change="arg => OptionChange(arg)" class="rz-mr-3"/>
     </RadzenColumn>
 </RadzenRow>
 <RadzenRow>

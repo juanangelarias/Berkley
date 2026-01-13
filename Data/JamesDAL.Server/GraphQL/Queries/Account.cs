@@ -265,7 +265,7 @@ public partial class Query
 
         return result;
     }
-    
+
     [Authorize]
     public async Task<List<LineOfAuthorityLog>> GetAllLineOfAuthorityLogs(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -273,12 +273,12 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
         var result = await ctx.LineOfAuthorityLogs
             .Where(r => r.AccountNum == accountNum)
-            .OrderByDescending(o=>o.Effective)
+            .OrderByDescending(o => o.Effective)
             .ToListAsync();
 
         return result;
     }
-    
+
     [Authorize]
     public async Task<AccountAnnualPremiumDto> GetAccountAnnualPremiums(string accountNum, string type,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -286,43 +286,43 @@ public partial class Query
         var startDate = Today.AddYears(-1);
         var endDate = Today;
         var yearStart = new DateTime(endDate.Year, 1, 1);
-        
+
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var account = ctx.Accounts
-            .FirstOrDefault(f=>f.AccountNum == accountNum);
+            .FirstOrDefault(f => f.AccountNum == accountNum);
 
         if (account == null)
             return new();
-        
+
         var accountList = (type.ToUpper() == "ACCOUNT ONLY")
-             ? [account.AccountNum]
-             : await GetRelatedAccounts(account.Id,  type.ToUpper() == "PARENT ONLY", contextFactory);
-        
+            ? [account.AccountNum]
+            : await GetRelatedAccounts(account.Id, type.ToUpper() == "PARENT ONLY", contextFactory);
+
         var premiums = await ctx.BondTransactions
             .OrderBy(o => o.Effective)
             .Where(r => r.Effective >= startDate &&
                         r.Effective <= endDate &&
                         accountList.Contains(r.AccountNum))
-            .Select(s => new {s.Effective,s.Premium})
+            .Select(s => new { s.Effective, s.Premium })
             .ToListAsync();
-        
+
         var response = new AccountAnnualPremiumDto
         {
             TrailingTwelveMonths = premiums.Sum(s => s.Premium),
             YearToDate = premiums.Where(r => r.Effective >= yearStart).Sum(s => s.Premium)
         };
-        
+
         return response;
     }
 
-    private async Task<List<string>> GetRelatedAccounts(Guid accountId, bool onlyParent, 
+    private async Task<List<string>> GetRelatedAccounts(Guid accountId, bool onlyParent,
         IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var parentId = await GetParent(accountId, contextFactory);
-        if(parentId == null) 
+        if (parentId == null)
             return [];
-        
+
         var ctx = await contextFactory.CreateDbContextAsync();
 
         if (onlyParent)
@@ -338,22 +338,22 @@ public partial class Query
             .Where(r => r.Parent == parentId && r.AccountIdNavigation != null)
             .Select(s => s.AccountIdNavigation!.AccountNum)
             .ToList();
-            
+
         return relatedAccounts;
     }
-    
+
     private async Task<Guid?> GetParent(Guid legalEntityId, IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var legalEntity = await ctx.LegalEntities
             .FirstOrDefaultAsync(r => r.Id == legalEntityId);
-        
-        if(legalEntity == null)
+
+        if (legalEntity == null)
             return null;
-        
-        return legalEntity.Parent != legalEntity.Id 
-            ? await GetParent(legalEntity.Parent, contextFactory) 
+
+        return legalEntity.Parent != legalEntity.Id
+            ? await GetParent(legalEntity.Parent, contextFactory)
             : legalEntity.Parent;
     }
 
@@ -372,13 +372,13 @@ public partial class Query
             {
                 BondNumber = s.BondNumber,
                 //Bank = s.Bank         // ToDo: After the field "Bank" is added to the table this should be uncommented
-                Bank = "Bank ???",      // ToDo: After the field "Bank" is added to the table this should be removed
+                Bank = "Bank ???", // ToDo: After the field "Bank" is added to the table this should be removed
                 Type = s.Type,
                 Amount = s.Amount ?? 0,
                 ExpirationDate = s.Expiration
             })
             .ToList();
-        
+
         return collaterals;
     }
 
@@ -389,9 +389,9 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var accountId = (await ctx.Accounts.FirstOrDefaultAsync(f => f.AccountNum == accountNum))?.Id;
-        if(accountId == null) 
+        if (accountId == null)
             throw new GraphQLException("No account with this account number exists.");
-        
+
         var relatedAccounts = await GetRelatedAccounts(accountId.Value, false, contextFactory);
 
         var bonds = await ctx.Bonds
@@ -409,14 +409,14 @@ public partial class Query
                 s.CurrentBondLiability
             })
             .ToListAsync();
-        
+
         var bondNumbers = bonds
-            .Where(r=> r.Status == "Open")
+            .Where(r => r.Status == "Open")
             .Select(s => s.BondNumber).ToList();
-        
+
         var bondMods = await ctx.BondModTransactions
-            .OrderBy(o=>o.BondNumber)
-            .ThenByDescending(t=>t.Effective)
+            .OrderBy(o => o.BondNumber)
+            .ThenByDescending(t => t.Effective)
             .Where(r => bondNumbers.Contains(r.BondNumber))
             .ToListAsync();
 
@@ -430,8 +430,8 @@ public partial class Query
                     : AccountProgramBusinessLogic.CalculateProratedBondAmount(bond.CurrentBondLiability, mod.Effective,
                         mod.Expiration)
                 : bond.CurrentBondLiability;
-            
-            if(proratedAmount == 0) 
+
+            if (proratedAmount == 0)
                 continue;
 
             switch (bond.BondType)
@@ -447,7 +447,7 @@ public partial class Query
             var exist = result.LargestOutstandingBonds
                 .FirstOrDefault(f => f.BondType == bond.BondType &&
                                      f.BondClass == bond.BondClass);
-            
+
             if (exist != null && proratedAmount > exist.Amount)
                 exist.Amount = proratedAmount;
 
@@ -463,7 +463,106 @@ public partial class Query
         result.LargestBondEver = bonds
             .OrderByDescending(o => o.CurrentBondLiability)
             .FirstOrDefault()?.CurrentBondLiability ?? 0;
+
+        return result;
+    }
+
+    [Authorize]
+    public async Task<AccountRateAndCommissionDto> GetAccountRiskAndCommissions(
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var result = new AccountRateAndCommissionDto();
+        
+        var contractRatesTask = GetContractRates(contextFactory);
+        var commercialRatesTask = GetCommercialRates(contextFactory);
+        var rateGroupsTask = GetRateGroups(contextFactory);
+        var riskTypesTask = GetRiskTypes(contextFactory);
+        var commercialBondTypesTask = GetCommercialBondTypes(contextFactory);
+
+        await Task.WhenAll(contractRatesTask, commercialRatesTask, rateGroupsTask, riskTypesTask, commercialBondTypesTask);
+
+        var rateClasses = contractRatesTask.Result
+            .OrderBy(o=> o.Class)
+            .Select(r => r.Class).Distinct().ToList();
+        var rateTypes = contractRatesTask.Result
+            .OrderBy(o=>o.RateType)
+            .Select(r => r.RateType).Distinct().ToList();
+        
+        result.ContractRates = contractRatesTask.Result;
+        result.CommercialRates = commercialRatesTask.Result;
+        result.RateGroups = rateGroupsTask.Result;
+        result.RiskTypes = riskTypesTask.Result;
+        result.CommercialBondTypes = commercialBondTypesTask.Result;
+        result.RateClasses = rateClasses;
+        result.RateTypes = rateTypes;
         
         return result;
+    }
+
+    private async Task<List<ContractRate>> GetContractRates(
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var contractRates = await ctx.ContractRates
+            .OrderBy(o => o.RateGroup)
+            .ThenBy(t1 => t1.Class)
+            .ThenBy(t2 => t2.RateType)
+            .ThenBy(t3 => t3.MaximumAmount)
+            .ToListAsync();
+        
+        return contractRates;
+    }
+
+    private async Task<List<CommercialRate>> GetCommercialRates(
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var commercialRates = await ctx.CommercialRates
+            .OrderBy(o => o.RateGroup)
+            .ThenBy(t1 => t1.CommercialBondType)
+            .ThenBy(t2 => t2.RiskType)
+            .ThenBy(t3 => MinValue)
+            .ToListAsync();
+        
+        return commercialRates;
+
+    }
+
+    private async Task<List<string>> GetRateGroups([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var rateGroups = await ctx.RateGroupDms
+            .OrderBy(o => o.RateGroup)
+            .Select(s => s.RateGroup)
+            .ToListAsync();
+        
+        return rateGroups;
+    }
+
+    private async Task<List<string>> GetRiskTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var riskTypes = await ctx.RiskTypeDms
+            .OrderBy(o=>o.RiskType)
+            .Select(s => s.RiskType)
+            .ToListAsync();
+        
+        return riskTypes;
+    }
+    
+    private async Task<List<string>> GetCommercialBondTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var bondTypes = await ctx.CommercialBondTypeDms
+            .OrderBy(o => o.CommercialBondType)
+            .Select(s => s.CommercialBondType)
+            .ToListAsync();
+        
+        return bondTypes;
     }
 }

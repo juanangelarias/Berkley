@@ -292,6 +292,11 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAccountLOAs(accountNumber, contextFactory));
         }
+        
+        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRiskAndCommissions()
+        {
+            return await ExecuteGet(async () => await query.GetAccountRiskAndCommissions(contextFactory));
+        }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem,

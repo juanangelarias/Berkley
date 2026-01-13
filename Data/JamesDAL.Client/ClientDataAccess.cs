@@ -463,6 +463,15 @@ namespace James.Data.Client
             return await ExecuteGet<AccountLOAsDto>(async () => await
                 jamesClient.GetAccountLOAs.ExecuteAsync(accountNumber), "AccountLOAs");
         }
+        
+        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRiskAndCommissions()
+        {
+            var result = await ExecuteGet<AccountRateAndCommissionDto>(async () =>
+                    await jamesClient.GetAccountRiskAndCommissions.ExecuteAsync(),
+                "AccountRiskAndCommissions");
+            
+            return result;
+        }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs)

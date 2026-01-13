@@ -549,6 +549,7 @@ type Query {
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
+  accountRiskAndCommissions: AccountRiskAndCommissionDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -654,6 +655,16 @@ input CreateAgencyPOAInput {
   currentIssued: LocalDate
   comments: String
   status: String!
+}
+
+type AccountRiskAndCommissionDto {
+  rateGroups: [String!]!
+  rateClasses: [String!]!
+  rateTypes: [String!]!
+  contractRates: [ContractRate!]!
+  commercialBondTypes: [String!]!
+  riskTypes: [String!]!
+  commercialRates: [CommercialRate!]!
 }
 
 type UpdateAccountWatchPayload {
@@ -1266,6 +1277,23 @@ type AgencySearchDto {
 
 type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
+}
+
+type CommercialRate {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  commercialBondType: String!
+  riskType: String!
+  minumumAmount: Int!
+  maximumAmount: Int!
+  amountPerUnit: Float
+  unitSize: Int
+  annualMinimum: Int
+  commercialBondTypeNavigation: CommercialBondTypeDm!
+  rateGroupNavigation: RateGroupDm!
+  riskTypeNavigation: RiskTypeDm!
 }
 
 type SicratioTypeDm {
@@ -2074,6 +2102,14 @@ input AgencyLicenseBulkInput {
   isActive: Boolean!
 }
 
+type RiskTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  riskType: String!
+  commercialRates: [CommercialRate!]!
+}
+
 type BondRequest {
   id: UUID!
   created: DateTime!
@@ -2538,6 +2574,14 @@ type PowerOfAttorneyStatusDm {
   powerOfAttorneys: [PowerOfAttorney!]!
 }
 
+type CommercialBondTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  commercialBondType: String!
+  commercialRates: [CommercialRate!]!
+}
+
 type WatchStatusDm {
   id: UUID!
   created: DateTime!
@@ -2866,6 +2910,19 @@ type Account {
   emailAddresses: [LegalEntityEmail!]!
 }
 
+type ContractRate {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  class: String!
+  rateType: String!
+  minumumAmount: Int!
+  maximumAmount: Int!
+  premiumRate: Float
+  rateGroupNavigation: RateGroupDm!
+}
+
 type DivisionDm {
   id: UUID!
   created: DateTime!
@@ -3162,6 +3219,17 @@ type LawEntity {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type RateGroupDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  description: String!
+  createdBy: UUID!
+  commercialRates: [CommercialRate!]!
+  contractRates: [ContractRate!]!
 }
 
 type AccountProgramStatusDm {

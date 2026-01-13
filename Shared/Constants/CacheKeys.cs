@@ -62,6 +62,8 @@ public static class CacheKeys
     public const string Insurers = "Insurers";
     // P
     public const string PhoneTypes = "PhoneTypes";
+    // R
+    public const string RiskCommission = "RiskCommission";
     // S
     public const string SecRoles = "SecRoles";
     public const string SicCodes = "SicCodes";

@@ -1,0 +1,149 @@
+﻿@using James.Shared.EnumTypes
+@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess;
+
+<RadzenRow JustifyContent="JustifyContent.End" Visible="@_selectTypeVisible">
+    <RadzenDropDown TValue="string" Data="@Types" Text="Type" @bind-Value="@SelectedType" class="rz-mb-3"/>
+</RadzenRow>
+<RadzenRow Visible="@(SelectedType == AccountType.Commercial)">
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <RadzenFormField Text="Rate Group">
+                <RadzenDropDown TValue="string" Data="@RateAndCommission.RateGroups" @bind-Value="@SelectedRateGroup"
+                                Change="@OnCommercialFilterChanged"/>
+            </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn Size="4">
+            <RadzenFormField Text="bond Type">
+                <RadzenDropDown TValue="string" Data="@RateAndCommission.CommercialBondTypes"
+                                @bind-Value="@SelectedBondType" Change="@OnCommercialFilterChanged"/>
+            </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn Size="4">
+            <RadzenFormField Text="Risk Type">
+                <RadzenDropDown TValue="string" Data="@RateAndCommission.RiskTypes" @bind-Value="@SelectedRiskType"
+                                Change="@OnCommercialFilterChanged"/>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenDataGrid TItem="CommercialRate" Data="_commercialRates">
+            <Columns>
+                <RadzenDataGridColumn TItem="int" Title="Minimum" Property="MinumumAmount"/>
+                <RadzenDataGridColumn TItem="int" Title="Maximum" Property="MaximumAmount"/>
+                <RadzenDataGridColumn TItem="double?" Title="Amount per Unit" Property="AmountPerUnit"/>
+                <RadzenDataGridColumn TItem="int?" Title="Unit Size" Property="UnitSize"/>
+                <RadzenDataGridColumn TItem="int?" Title="Annual Minimum" Property="AnnualMinimum"/>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenRow>
+</RadzenRow>
+<RadzenRow Visible="@(SelectedType == AccountType.Contract)">
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <RadzenFormField Text="Rate Group">
+                <RadzenDropDown TValue="string" Data="@RateAndCommission.RateGroups" @bind-Value="@SelectedRateGroup"
+                                Change="@OnContractFilterChanged"/>
+            </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn Size="4">
+            <RadzenFormField Text="Rate Class">
+                <RadzenDropDown TValue="string" Data="@RateAndCommission.RateClasses" @bind-Value="@SelectedRateClass"
+                                Change="@OnContractFilterChanged"/>
+            </RadzenFormField>
+        </RadzenColumn>
+        <RadzenColumn Size="4">
+            <RadzenFormField Text="Rate type">
+                <RadzenDropDown TValue="string" Data="@RateAndCommission.RateTypes" @bind-Value="@SelectedRateType"
+                                Change="@OnContractFilterChanged"/>
+            </RadzenFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenDataGrid TItem="ContractRate" Data="_contractRates">
+            <Columns>
+                <RadzenDataGridColumn TItem="int" Title="Minimum" Property="MinumumAmount"/>
+                <RadzenDataGridColumn TItem="int" Title="Maximum" Property="MaximumAmount"/>
+                <RadzenDataGridColumn TItem="double?" Title="Premium Rate" Property="PremiumRate"/>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenRow>
+</RadzenRow>
+
+@code {
+    [Parameter] public string? InputType { get; set; }
+
+    private AccountRateAndCommissionDto RateAndCommission { get; set; } = new();
+    private bool _selectTypeVisible;
+    private List<string> Types = AccountType.GetList();
+    private string? SelectedType { get; set; }
+    private string? SelectedRateGroup { get; set; }
+    private string? SelectedBondType { get; set; }
+    private string? SelectedRiskType { get; set; }
+    private string? SelectedRateClass { get; set; }
+    private string? SelectedRateType { get; set; }
+    private List<CommercialRate> _commercialRates = [];
+    private List<ContractRate> _contractRates = [];
+
+    #region Loaders
+
+    #region RiskCommission Load
+
+    private IDataAccessResult<AccountRateAndCommissionDto> _riskCommissionResult = null!;
+
+    private LoadItem RiskCommissionLoad => AddEventNotify(new LoadItem<AccountRateAndCommissionDto>
+    {
+        Key = CacheKeys.RiskCommission,
+        AsyncLoadTask = async () => _riskCommissionResult = await DataAccess.GetAccountRiskAndCommissions(),
+        CacheLoadTask = cache => _riskCommissionResult = new DataAccessResult<AccountRateAndCommissionDto>
+        {
+            Data = (AccountRateAndCommissionDto)cache!
+        },
+        ResultVariable = () => _riskCommissionResult,
+        AfterLoad = () => { RateAndCommission = _riskCommissionResult.Data!; }
+    }, "account risk and commissions");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await DataAccess.GetCacheOrLoadDataAsync(RiskCommissionLoad);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var validInput = Types.Contains(InputType ?? "");
+        _selectTypeVisible = !validInput;
+        SelectedType = validInput ? InputType : null;
+
+        StateHasChanged();
+    }
+
+    private void OnCommercialFilterChanged()
+    {
+        _commercialRates = RateAndCommission.CommercialRates
+            .Where(r =>
+                (SelectedRateGroup == null || r.RateGroup == SelectedRateGroup) &&
+                (SelectedBondType == null || r.CommercialBondType == SelectedBondType) &&
+                (SelectedRiskType == null || r.RiskType == SelectedRiskType))
+            .ToList();
+    }
+
+    private void OnContractFilterChanged()
+    {
+        _contractRates = RateAndCommission.ContractRates
+            .Where(r =>
+                (SelectedRateGroup == null || r.RateGroup == SelectedRateGroup) &&
+                (SelectedRateClass == null || r.Class == SelectedRateClass) &&
+                (SelectedRateType == null || r.Class == SelectedRateType)
+            )
+            .ToList();
+    }
+}

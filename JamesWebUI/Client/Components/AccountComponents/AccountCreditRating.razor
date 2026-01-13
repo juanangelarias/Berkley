@@ -1,0 +1,59 @@
+﻿<RadzenDataGrid TItem="CreditReportHistory" FilterMode="FilterMode.Advanced">
+    <Columns>
+        <RadzenDataGridColumn Title="Source">
+            <Template Context="report">
+                <RadzenText Text="@report.CreditReport"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenDropDown TValue="string" Data="@_creditReportSources" TextProperty="CreditReport"
+                                ValueProperty="CreditReport" @bind-Value="@report.CreditReport"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Date">
+            <Template Context="report">
+                <RadzenText Text="@report.Pulled.ToString("d")"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenDatePicker TValue="DateTime" @bind-Value="@report.Pulled"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Rating">
+            <Template Context="report">
+                <RadzenText Text="@report.Rating"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenTextBox @bind-Value="@report.Rating"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Definition">
+            <Template Context="report">
+                <RadzenText Text="@report.Definition"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenTextBox @bind-Value="@report.Definition"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Outlook/Remarks">
+            <Template Context="report">
+                <RadzenText Text="@report.Remarks"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenTextBox @bind-Value="@report.Remarks"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn>
+            <Template>
+                
+            </Template>
+            <EditTemplate>
+                
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private List<CreditReportDm> _creditReportSources = [];
+}

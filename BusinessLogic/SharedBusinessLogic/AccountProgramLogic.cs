@@ -16,6 +16,8 @@ namespace SharedBusinessLogic
         /// <returns>True if approval request is valid.</returns>
         public static bool ApproveAccountProgram(AccountProgram programToApprove)
         {
+            // ToDo: add the actual logic
+            
             //Get Account
 
             //Get User Program Authority
@@ -36,6 +38,12 @@ namespace SharedBusinessLogic
         public static int CalculateProratedBondAmount(int amount, DateOnly startDate, DateOnly endDate,
             DateOnly? actualDate = null)
         {
+            if(amount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be greater than zero.");
+            
+            if(startDate > endDate)
+                throw new ArgumentOutOfRangeException(nameof(startDate), "Start date must be before end date.");
+            
             actualDate ??= DateOnly.FromDateTime(Today);
 
             var lifeInDays = endDate.DayNumber - startDate.DayNumber;

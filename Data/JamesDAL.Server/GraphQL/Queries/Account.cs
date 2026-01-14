@@ -325,21 +325,38 @@ public partial class Query
         
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        if (onlyParent)
+        var parentAccountNum = ctx.Accounts.FirstOrDefault(f => f.Id == parentId)?.AccountNum;
+        
+        if (onlyParent || parentAccountNum == null)
         {
-            var parentAccountNum = ctx.Accounts.FirstOrDefault(f => f.Id == parentId)?.AccountNum;
             return parentAccountNum == null
                 ? []
                 : [parentAccountNum];
         }
 
-        var relatedAccounts = ctx.LegalEntities
-            .Include(i => i.ParentNavigation)
-            .Where(r => r.Parent == parentId && r.AccountIdNavigation != null)
-            .Select(s => s.AccountIdNavigation!.AccountNum)
-            .ToList();
-            
-        return relatedAccounts;
+        List<string> related = [parentAccountNum];
+        related.AddRange(await GetLegalEntityChildren(parentAccountNum, ctx));
+        
+        return related;
+    }
+
+    private async Task<List<string>> GetLegalEntityChildren(string accountNum, 
+        JamesDatabaseContext ctx)
+    {
+        var  result = new List<string>();
+        var children = await ctx.LegalEntityChildren
+            .FromSqlInterpolated($"EXECUTE dbo.GetLegalEntityChildren {accountNum}")
+            .ToListAsync();
+        
+        result.AddRange(children.Select(s => s.ChildAccountNum));
+
+        foreach (var child in children)
+        {
+            var newChildren = await GetLegalEntityChildren(child.ChildAccountNum, ctx);
+            result.AddRange(newChildren);       
+        }
+        
+        return result;
     }
     
     private async Task<Guid?> GetParent(Guid legalEntityId, IDbContextFactory<JamesDatabaseContext> contextFactory)

@@ -207,6 +207,8 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<LegalEntity> LegalEntities { get; set; }
 
     public virtual DbSet<LegalEntityAddress> LegalEntityAddresses { get; set; }
+    
+    public virtual DbSet<LegalEntityChild> LegalEntityChildren { get; set; }
 
     public virtual DbSet<LegalEntityEmail> LegalEntityEmails { get; set; }
 
@@ -3637,6 +3639,11 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.Type)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_LegalEntityAddress_AddressType");
+        });
+
+        modelBuilder.Entity<LegalEntityChild>(entity =>
+        {
+            entity.HasNoKey();
         });
 
         modelBuilder.Entity<LegalEntityEmail>(entity =>

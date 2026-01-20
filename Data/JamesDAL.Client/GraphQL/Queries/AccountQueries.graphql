@@ -370,3 +370,25 @@ query GetAccountRiskAndCommissions {
         riskTypes
     }
 }
+
+query GetCreditReport($accountNum: String!) {
+    creditReport(accountNumber: $accountNum) {
+        creditReportAgencies {
+            created
+            creditReport
+            id
+            modified
+        }
+        creditReports {
+            accountNum
+            created
+            creditReport
+            definition
+            id
+            modified
+            pulled
+            rating
+            remarks
+        }
+    }
+}

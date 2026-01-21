@@ -47,7 +47,8 @@
 
         if (null != autoComplete.Value && (autoComplete.Value.GetType()) == typeof(Obligee))
         {
-            NavigationManager.NavigateTo("/Obligee/" + ((Obligee)autoComplete.Value).ObligeeNum);
+            //TODO: This is now broken with the recent changes to the Radzen Controls
+            //NavigationManager.NavigateTo("/Obligee/" + ((Obligee)autoComplete.SelectedItem).ObligeeNum);
             autoComplete.Value = "";
         }
     }

@@ -13,6 +13,8 @@ public partial class JamesDatabaseContext : DbContext
     }
 
     public virtual DbSet<Account> Accounts { get; set; }
+    
+    public DbSet<AccountChild> AccountChildren { get; set; }
 
     public virtual DbSet<AccountClassDm> AccountClassDms { get; set; }
 
@@ -207,8 +209,6 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<LegalEntity> LegalEntities { get; set; }
 
     public virtual DbSet<LegalEntityAddress> LegalEntityAddresses { get; set; }
-    
-    public virtual DbSet<LegalEntityChild> LegalEntityChildren { get; set; }
 
     public virtual DbSet<LegalEntityEmail> LegalEntityEmails { get; set; }
 
@@ -391,7 +391,7 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<WorkInProgressSummary> WorkInProgressSummaries { get; set; }
 
     public virtual DbSet<WritingCompanyDm> WritingCompanyDms { get; set; }
-
+    
     //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //    => optionsBuilder.UseSqlServer(_connectionString);
 
@@ -564,6 +564,12 @@ public partial class JamesDatabaseContext : DbContext
             entity.HasOne(d => d.Underwriter).WithMany(p => p.Accounts)
                 .HasForeignKey(d => d.UnderwriterId)
                 .HasConstraintName("FK_Account_UnderWriter");
+        });
+
+        modelBuilder.Entity<AccountChild>(entity =>
+        {
+            entity.HasNoKey();
+            entity.ToFunction("fnGetAllRelatedAccounts");
         });
 
         modelBuilder.Entity<AccountClassDm>(entity =>
@@ -3639,11 +3645,6 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.Type)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_LegalEntityAddress_AddressType");
-        });
-
-        modelBuilder.Entity<LegalEntityChild>(entity =>
-        {
-            entity.HasNoKey();
         });
 
         modelBuilder.Entity<LegalEntityEmail>(entity =>

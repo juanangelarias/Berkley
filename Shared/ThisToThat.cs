@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using James.Shared.Constants;
+using System.Collections;
 using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.InteropServices.JavaScript;
 using System.Text;
 using System.Text.RegularExpressions;
-using James.Shared.Constants;
-using James.Shared.Data;
 
 namespace James.Shared
 {
@@ -31,14 +32,65 @@ namespace James.Shared
                 return null!;
             if (typeof(string) != destinationType && destinationType.GetInterfaces().Contains(typeof(IEnumerable)))
             {
-                return source is not IEnumerable enumerable 
-                    ? throw new Exception("Source type is not IEnumerable, perhaps your subproperty is wrong or missing. Check your 'ExecuteGet'") 
+                return source is not IEnumerable enumerable
+                    ? throw new Exception("Source type is not IEnumerable, perhaps your subproperty is wrong or missing. Check your 'ExecuteGet'")
                     : CopyIEnumerable(enumerable, destinationType);
             }
 
-            var dConstructor = destinationType.GetConstructor([]) ??
-                               throw new Exception("Destination type must have a no argument constructor");
-            var result = dConstructor.Invoke([]);
+            ConstructorInfo dConstructor;
+            object result;
+            if (destinationType is { IsGenericType: true, Name: "KeyValuePair`2" })
+            //Handle KeyValuePair conversion since KeyValuePair does not have a no-argument constructor
+            {
+                var keyPairTypes = destinationType.GenericTypeArguments;
+                dConstructor = destinationType.GetConstructor(keyPairTypes)!;
+                if (dConstructor == null)
+                    throw new Exception("Destination KeyValuePair type must have a constructor with key and value arguments");
+                if (keyPairTypes.All(ty => ty == typeof(string)))
+                    result = new KeyValuePair<string, string>();
+                else
+                {
+                    object defaultKey, defaultValue;
+                    var defaultKeyConstructor = keyPairTypes[0].GetConstructor([]);
+                    if (null != defaultKeyConstructor)
+                        defaultKey = defaultKeyConstructor.Invoke([]);
+                    else if (keyPairTypes[0] == typeof(string))
+                        defaultKey = string.Empty;
+                    else
+                        throw new Exception("Key type must have a no argument constructor");
+                    var defaultValueConstructor = keyPairTypes[1].GetConstructor([]);
+                    if (null != defaultKeyConstructor)
+                        defaultValue = defaultKeyConstructor.Invoke([]);
+                    else if (keyPairTypes[1] == typeof(string))
+                        defaultValue = string.Empty;
+                    else
+                        throw new Exception("Value type must have a no argument constructor");
+                    result = dConstructor.Invoke([defaultKey, defaultValue]);
+                }
+            }
+            else if (destinationType == typeof(DateOnly) ||
+                     (destinationType.Name.StartsWith("Nullable") &&
+                      destinationType.IsGenericType &&
+                      destinationType.GenericTypeArguments.Length == 1 &&
+                      destinationType.GenericTypeArguments[0] == typeof(DateOnly)))
+            {
+                if (source is DateTime sdt)
+                    return DateOnly.FromDateTime(sdt);
+                if (source is DateOnly sdo)
+                    return sdo;
+                throw new NotSupportedException("DateOnly isn't yet supported for this source type.");
+            }
+            else
+            {
+                dConstructor = destinationType.GetConstructor([]);
+                if (null == dConstructor)
+                {
+                    LoggingService?.LogWarning("Destination type not supported in ThisToThat", category: StandardLoggingCategories.DataAccess,
+                    data: new Dictionary<string, string> { { "Type", destinationType.Name } });
+                    throw new Exception("Destination type must have a no argument constructor") { Source = destinationType.Name };
+                }
+                result = dConstructor.Invoke([]);
+            }
             var sProperties = source.GetType().GetProperties();
             var dProperties = result.GetType().GetProperties().Where(pi => pi.CanWrite).ToArray();
             var propMatches = from sProp in sProperties
@@ -144,8 +196,8 @@ namespace James.Shared
             }
 
             var dListType = destType.GenericTypeArguments.Single();
-            var list = (from object? item 
-                        in source 
+            var list = (from object? item
+                        in source
                         select dListType == typeof(string) ? item : ToEntityType(item, dListType)).ToList();
 
             IEnumerable? MakeConcreteList(Type type)

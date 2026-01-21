@@ -1,4 +1,5 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@using System.Diagnostics
+@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
@@ -8,6 +9,7 @@
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
     <RadzenText Text="Search Account: " Style="margin-right: 0;" />
     <RadzenAutoComplete @ref="@AutoComplete" MinLength="3" Style="width: 60%;" 
+                        TextProperty="IdNavigation.FullName"
                         Variant="Variant.Text" SelectedItemChanged="@ResultSelected"
                         Placeholder="Account Name, Account No." Data="@SearchResults" LoadData="SearchAccount"
                         FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
@@ -26,7 +28,7 @@
 @code {
     [Parameter, EditorRequired] public EventCallback<string> SetAccount { get; set; }
     [Parameter, EditorRequired] public EventCallback CreateNewAccount { get; set; }
-    
+
     private List<Account> SearchResults { get; set; } = new List<Account>();
     private Account SelectedAccount { get; set; } = new Account();
     private RadzenAutoComplete AutoComplete { get; set; } = null!;
@@ -48,11 +50,13 @@
 
     private void ResultSelected(dynamic args)
     {
-        var account = (Account?)args;
-        if (account == null) 
+        var account = SearchResults.FirstOrDefault();
+        if (account == null)
             return;
         
-        NavigationManager.NavigateTo("/Account/" + ((Account)AutoComplete.Value).AccountNum);
+        //TODO: This is now broken with the recent changes to the Radzen Controls
+        //NavigationManager.NavigateTo("/Account/" + ((Account)AutoComplete.SelectedItem).AccountNum);
         AutoComplete.Value = "";
     }
+
 }

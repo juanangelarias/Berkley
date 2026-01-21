@@ -10,6 +10,9 @@ public static class CacheKeys
     // A
     public static string Account(string accountNumber) => $"Account-{accountNumber}";
     public static string AccountAlerts(string alertPeriod, string accountNumber) => $"AccountAlerts-{alertPeriod}-{accountNumber}";
+    public static string AccountAnnualPremiums(string accountNumber, string type) => $"AccountAnnualPremiums-{accountNumber}-{type}";
+    public static string AccountCollaterals(string accountNumber) => $"AccountCollaterals-{accountNumber}";
+    public static string AccountOutstandingLiability(string accountNumber) => $"AccountOutstandingLiability-{accountNumber}";
     public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
     public static string Agency(string agencyNumber) => $"Agency-{agencyNumber}";
     public static string AgencyAgents(string id) => $"AgencyAgents-{id}";

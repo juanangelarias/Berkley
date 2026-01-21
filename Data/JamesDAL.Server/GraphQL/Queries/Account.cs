@@ -1,4 +1,7 @@
 ﻿using HotChocolate.Authorization;
+using James.Shared.Dto;
+using SharedBusinessLogic;
+using static System.DateTime;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -133,12 +136,12 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var contractLOA = await ctx.LineOfAuthorityLogs
-            .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today && l.BondType == "Contract")
+            .Where(l => l.AccountNum == accountNumber && l.Effective <= Today && l.BondType == "Contract")
             .OrderByDescending(l => l.Created)
             .FirstOrDefaultAsync();
 
         var commercialLOA = await ctx.LineOfAuthorityLogs
-            .Where(l => l.AccountNum == accountNumber && l.Effective <= DateTime.Today &&
+            .Where(l => l.AccountNum == accountNumber && l.Effective <= Today &&
                         l.BondType == "Commercial")
             .OrderByDescending(l => l.Created)
             .FirstOrDefaultAsync();
@@ -273,6 +276,170 @@ public partial class Query
             .OrderByDescending(o=>o.Effective)
             .ToListAsync();
 
+        return result;
+    }
+    
+    [Authorize]
+    public async Task<AccountAnnualPremiumDto> GetAccountAnnualPremiums(string accountNum, string type,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var startDate = Today.AddYears(-1);
+        var endDate = Today;
+        var yearStart = new DateTime(endDate.Year, 1, 1);
+        
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var account = ctx.Accounts
+            .FirstOrDefault(f=>f.AccountNum == accountNum);
+
+        if (account == null)
+            return new();
+
+        var accountList = (type.ToUpper() == "ACCOUNT ONLY")
+            ? [account.AccountNum]
+            : await ctx.AccountChildren
+                .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({account.AccountNum})")
+                .Select(s => s.AccountNum)
+                .ToListAsync();
+        
+        var premiums = await ctx.BondTransactions
+            .OrderBy(o => o.Effective)
+            .Where(r => r.Effective >= startDate &&
+                        r.Effective <= endDate &&
+                        accountList.Contains(r.AccountNum))
+            .Select(s => new {s.Effective,s.Premium})
+            .ToListAsync();
+        
+        var response = new AccountAnnualPremiumDto
+        {
+            TrailingTwelveMonths = premiums.Sum(s => s.Premium),
+            YearToDate = premiums.Where(r => r.Effective >= yearStart).Sum(s => s.Premium)
+        };
+        
+        return response;
+    }
+    
+    private async Task<Guid?> GetParent(Guid legalEntityId, IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var legalEntity = await ctx.LegalEntities
+            .FirstOrDefaultAsync(r => r.Id == legalEntityId);
+        
+        if(legalEntity == null)
+            return null;
+        
+        return legalEntity.Parent != legalEntity.Id 
+            ? await GetParent(legalEntity.Parent, contextFactory) 
+            : legalEntity.Parent;
+    }
+
+    [Authorize]
+    public async Task<List<AccountCollateralDto>> GetAccountBondCollaterals(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var collaterals = ctx.Collaterals
+            .Where(r =>
+                r.AccountNum == accountNum &&
+                r.Released != null &&
+                r.Released.Value < Today)
+            .Select(s => new AccountCollateralDto
+            {
+                BondNumber = s.BondNumber,
+                //Bank = s.Bank         // ToDo: After the field "Bank" is added to the table this should be uncommented
+                Bank = "Bank ???",      // ToDo: After the field "Bank" is added to the table this should be removed
+                Type = s.Type,
+                Amount = s.Amount ?? 0,
+                ExpirationDate = s.Expiration
+            })
+            .ToList();
+        
+        return collaterals;
+    }
+
+    [Authorize]
+    public async Task<AccountOutstandingLiabilityDto> GetAccountOutstandingLiability(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var relatedAccounts = await ctx.AccountChildren
+            .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({accountNum})")
+            .Select(s => s.AccountNum)
+            .ToListAsync();
+
+        var bonds = await ctx.Bonds
+            .Include(i => i.BondType)
+            .OrderBy(o => o.AccountNum)
+            .ThenBy(t => t.BondType!.BondType)
+            .ThenBy(t => t.BondType!.BondClass)
+            .Where(r => relatedAccounts.Contains(r.AccountNum))
+            .Select(s => new
+            {
+                s.BondNumber,
+                s.Status,
+                s.BondType!.BondType,
+                s.BondType!.BondClass,
+                s.CurrentBondLiability
+            })
+            .ToListAsync();
+        
+        var bondNumbers = bonds
+            .Where(r=> r.Status == "Open")
+            .Select(s => s.BondNumber).ToList();
+        
+        var bondMods = await ctx.BondModTransactions
+            .OrderBy(o=>o.BondNumber)
+            .ThenByDescending(t=>t.Effective)
+            .Where(r => bondNumbers.Contains(r.BondNumber))
+            .ToListAsync();
+
+        var result = new AccountOutstandingLiabilityDto();
+        foreach (var bond in bonds)
+        {
+            var mod = bondMods.FirstOrDefault(f => f.BondNumber == bond.BondNumber);
+            var proratedAmount = bond.BondType == "Contract"
+                ? mod == null
+                    ? 0
+                    : AccountProgramBusinessLogic.CalculateProratedBondAmount(bond.CurrentBondLiability, mod.Effective,
+                        mod.Expiration)
+                : bond.CurrentBondLiability;
+            
+            if(proratedAmount == 0) 
+                continue;
+
+            switch (bond.BondType)
+            {
+                case "Commercial":
+                    result.OutstandingCommercialLiability += proratedAmount;
+                    break;
+                case "Contract":
+                    result.OutstandingContractLiability += proratedAmount;
+                    break;
+            }
+
+            var exist = result.LargestOutstandingBonds
+                .FirstOrDefault(f => f.BondType == bond.BondType &&
+                                     f.BondClass == bond.BondClass);
+            
+            if (exist != null && proratedAmount > exist.Amount)
+                exist.Amount = proratedAmount;
+
+            if (exist == null)
+                result.LargestOutstandingBonds.Add(new()
+                {
+                    BondType = bond.BondType,
+                    BondClass = bond.BondClass,
+                    Amount = proratedAmount
+                });
+        }
+
+        result.LargestBondEver = bonds
+            .OrderByDescending(o => o.CurrentBondLiability)
+            .FirstOrDefault()?.CurrentBondLiability ?? 0;
+        
         return result;
     }
 }

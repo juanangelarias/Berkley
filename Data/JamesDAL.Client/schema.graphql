@@ -139,6 +139,12 @@ type SetAgencyGeneralInfoPayload {
   boolean: Boolean
 }
 
+type AccountOutstandingLiabilityByTypeAndClassDto {
+  bondType: String!
+  bondClass: String!
+  amount: Int!
+}
+
 type NotebookEntry {
   id: UUID!
   created: DateTime!
@@ -540,6 +546,9 @@ type Query {
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
   allAccountWatches(accountNum: String!): [AccountWatch!]!
   allLineOfAuthorityLogs(accountNum: String!): [LineOfAuthorityLog!]!
+  accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
+  accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
+  accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -591,7 +600,6 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
-  accountLOAs(accountNum: String!): AccountLOAsDto!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -599,6 +607,7 @@ type Query {
   allImagingCategoryTabDivisionType: [VImagingCategoryTabDivisionType!]!
   allInsurers: [Insurer!]!
   loaLogsByAccount(accountNumber: String!): [LineOfAuthorityLog!]!
+  accountLOAs(accountNum: String!): AccountLOAsDto!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -2227,6 +2236,14 @@ enum ImagingDocumentCategory {
   BILLING
 }
 
+type AccountCollateralDto {
+  bondNumber: String
+  bank: String!
+  type: String
+  amount: Int!
+  expirationDate: LocalDate
+}
+
 input UpdateAccountWatchInput {
   id: UUID!
   watchStatus: String!
@@ -2390,6 +2407,11 @@ type BondBlock {
   comments: String
   agencyId: UUID
   issuedByNavigation: UserProfile
+}
+
+type AccountAnnualPremiumDto {
+  trailingTwelveMonths: Int!
+  yearToDate: Int!
 }
 
 type AddressTypeDm {
@@ -3286,6 +3308,13 @@ type ProfitCenter {
 
 type SetPowerOfAttorneyDocumentStatusPayload {
   powerOfAttorneyDocumentStatus: PowerOfAttorneyDocumentStatus
+}
+
+type AccountOutstandingLiabilityDto {
+  outstandingCommercialLiability: Int!
+  outstandingContractLiability: Int!
+  largestBondEver: Int!
+  largestOutstandingBonds: [AccountOutstandingLiabilityByTypeAndClassDto!]!
 }
 
 input LogExceptionInput {

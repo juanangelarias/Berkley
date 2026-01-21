@@ -1,0 +1,135 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject TooltipService TooltipService
+@inject IDataAccess DataAccess
+
+<RadzenStack Orientation="Orientation.Vertical">
+    <RadzenRow JustifyContent="JustifyContent.Right">
+        <RadzenIcon Icon="info" IconStyle="IconStyle.Primary" class="rz-mt-1" Style="height: 15px"
+                    MouseEnter="@((arg) => SetToolTip(arg))"/>
+    </RadzenRow>
+    <RadzenRow Style="background-color: #f0f0f0;" class="rz-pt-2 rz-ml-1">
+        <RadzenText Text="Current exposure - Commercial & Contract Amount" class="rz-ml-1"
+                    Style="font-weight: bold;"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn class="rz-ml-3 rz-vw-50">
+            <RadzenText Text="Commercial Total"/>
+        </RadzenColumn>
+        <RadzenColumn class="rz-vw-50">
+            <RadzenText Text="@(_outstandingLiability.OutstandingCommercialLiability.ToString("C0"))"
+                        TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn class="rz-ml-3 rz-vw-50">
+            <RadzenText Text="Contract Total"/>
+        </RadzenColumn>
+        <RadzenColumn class="rz-vw-50">
+            <RadzenText Text="@(_outstandingLiability.OutstandingContractLiability.ToString("C0"))"
+                        TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-3" Style="background-color: #f0f0f0;">
+        <RadzenText Text="Largest outstanding bond amount" class="rz-pt-2 rz-ml-1 rz-mb-0"
+                    Style="font-weight: bold;"/>
+        <RadzenText Text="(average size bond need) - & bond type" TextStyle="TextStyle.Caption"
+                    class="rz-ml-1" Style="margin-top: -17px"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <RadzenText Text="Dollar amount" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+        </RadzenColumn>
+        <RadzenColumn Size="8">
+            <RadzenText Text="Bond Type/Class Code"/>
+        </RadzenColumn>
+    </RadzenRow>
+    @foreach (var item in _outstandingLiability.LargestOutstandingBonds)
+    {
+        <RadzenRow>
+            <RadzenColumn Size="4" class="rz-pt-0" Style="margin-top: -13px;">
+                <RadzenText Text="@item.Amount.ToString("C0")" TextAlign="TextAlign.Right" class="rz-mr-1"/>
+            </RadzenColumn>
+            <RadzenColumn Size="8" class="rz-pt-0" Style="margin-top: -13px;">
+                <RadzenText Text="@($"{item.BondType}/{item.BondClass}")"/>
+            </RadzenColumn>
+        </RadzenRow>
+    }
+    <RadzenStack Gap="0">
+        <RadzenRow>
+            <RadzenText Text="Liability"/>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenText Text="Class Code description"/>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn class="rz-vw-50">
+                <RadzenText Text="Largest open, ever"/>
+            </RadzenColumn>
+            <RadzenColumn class="rz-vw-50">
+                <RadzenText Text="@(_outstandingLiability.LargestBondEver.ToString("C0"))"
+                            TextAlign="TextAlign.Right" class="rz-mr-1"/>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenStack>
+    <RadzenRow class="rz-mt-4">
+        <RadzenLink Text="Bond Maintenance" @onclick="@(() => GoToBondMaintenance())"/>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+
+    // TODO: Adjust the target property in line 76 once Bond Maintenance Page is done
+    [Parameter, EditorRequired] public Account Account { get; set; }
+
+    private AccountOutstandingLiabilityDto _outstandingLiability = new();
+
+    #region Loaders
+
+    #region OutstandingLiability Load
+
+    private IDataAccessResult<AccountOutstandingLiabilityDto> _outstandingLiabilityResult = null!;
+
+    private LoadItem OutstandingLiabilityLoad => AddEventNotify(new LoadItem<AccountOutstandingLiabilityDto>
+    {
+        Key = CacheKeys.AccountOutstandingLiability(Account.AccountNum),
+        AsyncLoadTask = async () => _outstandingLiabilityResult = await DataAccess.GetAccountOutstandingLiability(Account.AccountNum),
+        CacheLoadTask = cache => _outstandingLiabilityResult = new DataAccessResult<AccountOutstandingLiabilityDto>
+        {
+            Data = (AccountOutstandingLiabilityDto)cache!
+        },
+        ResultVariable = () => _outstandingLiabilityResult,
+        AfterLoad = () => { _outstandingLiability = _outstandingLiabilityResult.Data!; }
+    }, "account outstanding liability");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadOutstandingLiability();
+    }
+
+    private async Task LoadOutstandingLiability()
+    {
+        await ShowLoading();
+        await DataAccess.GetCacheOrLoadDataAsync(OutstandingLiabilityLoad);
+    }
+
+    private void GoToBondMaintenance()
+    {
+        NotificationService.Notify(new NotificationMessage
+        {
+            Detail = "Bond Maintenance Page is not yet implemented.",
+        });
+    }
+
+    private void SetToolTip(ElementReference elementReference)
+    {
+        TooltipService.Open(elementReference,
+            "Calculated taking into account all the bonds that belongs to all the related accounts");
+    }
+}

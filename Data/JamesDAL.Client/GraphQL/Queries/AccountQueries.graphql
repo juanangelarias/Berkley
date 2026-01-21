@@ -306,3 +306,33 @@ query GetLastIndemnitorByAccount($input: String!){
         executionDate
     }
 }
+
+query GetAccountAnnualPremiums($accountNum: String!, $type: String!){
+    accountAnnualPremiums(accountNum: $accountNum, type: $type){
+        trailingTwelveMonths
+        yearToDate
+    }
+}
+
+query GetAccountBondCollaterals($accountNum: String!) {
+    accountBondCollaterals(accountNum: $accountNum) {
+        bondNumber
+        type
+        bank
+        amount
+        expirationDate
+    }
+}
+
+query GetAccountOutstandingLiability($accountNum: String!) {
+    accountOutstandingLiability(accountNum: $accountNum) {
+        outstandingCommercialLiability
+        outstandingContractLiability
+        largestBondEver
+        largestOutstandingBonds {
+            bondType
+            bondClass
+            amount
+        }
+    }
+}

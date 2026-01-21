@@ -191,7 +191,7 @@
 
         // TODO: This calculation need to be discussed with all the team!
         _remainingBalance = _accountLOAs.Sum(s => s.Aggregate) -
-                    _loaTotal;
+                            _loaTotal;
     }
 
     private string BalanceClass()
@@ -201,6 +201,13 @@
 
     private void SetToolTip(ElementReference elementReference)
     {
-        TooltipService.Open(elementReference, "Account Commercial Aggregate + Account Contract Aggregate - Sum of Open Bonds Amounts");
+        var ttOptions = new TooltipOptions
+        {
+            Duration = 15000,
+            CloseTooltipOnDocumentClick = true
+        };
+        TooltipService.Open(elementReference, 
+            "Account Commercial Aggregate + Account Contract Aggregate - Sum of Open Bonds Amounts (all related accounts)", 
+            ttOptions);
     }
 }

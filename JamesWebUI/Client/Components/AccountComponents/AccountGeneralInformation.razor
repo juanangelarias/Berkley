@@ -1,36 +1,53 @@
 ﻿<RadzenCard Style="width: 100%" Variant="Variant.Text">
     <RadzenRow>
         <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
-            <RadzenFieldset Text="General Information" Style="width: 100%">
+            <RadzenFieldset Text="General Information" Style="max-height: 400px;" class="rz-overflow-auto">
                 <AccountGeneralInformationDetail Account="@Account"/>
             </RadzenFieldset>
         </RadzenColumn>
         <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
-            <RadzenFieldset Text="LOA Summary" Style="width: 100%">
+            <RadzenFieldset Text="LOA Summary" Style="max-height: 400px;" class="rz-overflow-auto">
                 <AccountLoaSummary Account="@Account"/>
             </RadzenFieldset>
         </RadzenColumn>
         <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
-            <RadzenFieldset Text="Bonds/Outstanding Liability" Style="width: 100%"></RadzenFieldset>
+            <RadzenFieldset Text="Bonds/Outstanding Liability" Style="max-height: 400px;"
+                            class="rz-overflow-auto">
+                <AccountBondsOutstandingLiability Account="@Account"/>
+            </RadzenFieldset>
         </RadzenColumn>
         <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
             <RadzenRow>
-                <RadzenFieldset Text="Rate & Commission" Style="width: 100%"></RadzenFieldset>
+                <RadzenFieldset Text="Rate & Commission" Style="max-height: 400px;" class="rz-overflow-auto rz-vw-100">
+
+                </RadzenFieldset>
             </RadzenRow>
             <RadzenRow>
-                <RadzenFieldset Text="Bank Information" Style="width: 100%"></RadzenFieldset>
+                <RadzenFieldset Text="Bank Information" Style="max-height: 400px;"
+                                class="rz-overflow-auto rz-vw-100">
+                    
+                </RadzenFieldset>
             </RadzenRow>
         </RadzenColumn>
         <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
             <RadzenRow>
-                <RadzenFieldset Text="Annual Premium" Style="width: 100%"></RadzenFieldset>
+                <RadzenFieldset Text="Annual Premium" Style="max-height: 400px;"
+                                class="rz-overflow-auto rz-vw-100">
+                    <AccountAnnualPremium Account="@Account"/>
+                </RadzenFieldset>
             </RadzenRow>
             <RadzenRow>
-                <RadzenFieldset Text="Collateral" Style="width: 100%"></RadzenFieldset>
+                <RadzenFieldset Text="Collateral" Style="max-height: 400px;"
+                                class="rz-overflow-auto rz-vw-100">
+                    <AccountCollateral Account="@Account"/>
+                </RadzenFieldset>
             </RadzenRow>
         </RadzenColumn>
         <RadzenColumn SizeLG="4" SizeMD="6" SizeSM="12">
-            <RadzenFieldset Text="S&P Rating" Style="width: 100%"></RadzenFieldset>
+            <RadzenFieldset Text="S&P Rating" Style="max-height: 400px;"
+                            class="rz-overflow-auto">
+
+            </RadzenFieldset>
         </RadzenColumn>
     </RadzenRow>
 </RadzenCard>

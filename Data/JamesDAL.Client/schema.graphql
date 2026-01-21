@@ -233,6 +233,10 @@ type LogExceptionPayload {
   boolean: Boolean
 }
 
+input DeleteCreditReportInput {
+  id: UUID!
+}
+
 input LogInformationInput {
   eventId: Int!
   message: String!
@@ -1002,6 +1006,10 @@ type SecurityRole {
   securities: [Security!]!
 }
 
+type DeleteCreditReportPayload {
+  boolean: Boolean
+}
+
 type PhoneTypeDm {
   id: UUID!
   created: DateTime!
@@ -1379,6 +1387,8 @@ type Mutation {
   agencyLicenseBulkInsert(input: AgencyLicenseBulkInsertInput!): AgencyLicenseBulkInsertPayload!
   agencyLicenseBulkDelete(input: AgencyLicenseBulkDeleteInput!): AgencyLicenseBulkDeletePayload!
   setAgencyProfitSharingInfo(input: SetAgencyProfitSharingInfoInput!): SetAgencyProfitSharingInfoPayload!
+  setCreditReport(input: SetCreditReportInput!): SetCreditReportPayload!
+  deleteCreditReport(input: DeleteCreditReportInput!): DeleteCreditReportPayload!
   createAddress(input: CreateAddressInput!): CreateAddressPayload!
   createPhoneNumber(input: CreatePhoneNumberInput!): CreatePhoneNumberPayload!
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
@@ -1949,6 +1959,10 @@ type Indemnitor {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type SetCreditReportPayload {
+  boolean: Boolean
 }
 
 type CreditReportHistory {
@@ -2992,6 +3006,16 @@ input AgencyLicenseBulkUpdateInput {
 input CreateAgencyPOADocumentLinkInput {
   poaId: UUID!
   imagingDocumentId: UUID
+}
+
+input SetCreditReportInput {
+  id: UUID!
+  creditReportAgency: String!
+  accountNum: String!
+  pulledDate: DateTime!
+  rating: String!
+  definition: String!
+  remarks: String!
 }
 
 type KeyPersonnel {

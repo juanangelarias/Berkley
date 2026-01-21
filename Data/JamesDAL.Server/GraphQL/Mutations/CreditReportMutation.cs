@@ -29,7 +29,7 @@ public partial class GeneralMutation
         {
             var creditReport = new CreditReportHistory
             {
-                Id = Guid.NewGuid(),
+                Id = id,
                 CreditReport = creditReportAgency,
                 AccountNum = accountNum,
                 Pulled = pulledDate,

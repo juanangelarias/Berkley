@@ -22,6 +22,9 @@ public static class CacheKeys
     
     // B
     public static string BondByBlock(Guid bondBlockId) => $"BondByBlock-{bondBlockId}";
+    
+    // C
+    public static string CreditReport(string accountNumber) => $"BondTransactions-{accountNumber}";
 
     // L
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";

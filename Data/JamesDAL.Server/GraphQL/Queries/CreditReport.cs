@@ -28,6 +28,7 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var creditReports = await ctx.CreditReportDms
+            .OrderBy(o=>o.CreditReport)
             .ToListAsync();
         return creditReports;
     }
@@ -38,6 +39,8 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
         var creditReports = await ctx.CreditReportHistories
             .Where(c => c.AccountNum == accountNumber)
+            .OrderBy(o=>o.AccountNum)
+            .ThenByDescending(o=>o.Pulled)
             .ToListAsync();
         
         return creditReports;

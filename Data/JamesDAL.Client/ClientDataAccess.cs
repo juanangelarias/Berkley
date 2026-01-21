@@ -545,6 +545,28 @@ namespace James.Data.Client
 
             return result;
         }
+        
+        public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum, DateTime pulledDate, string rating,
+            string definition, string remarks)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.SetCreditReport.ExecuteAsync(new SetCreditReportInput
+                {
+                    Id = id,
+                    CreditReportAgency = creditReportAgency,
+                    AccountNum = accountNum,
+                    PulledDate = pulledDate,
+                    Rating = rating,
+                    Definition = definition,
+                    Remarks = remarks
+                }));
+        }
+        
+        public async Task<ISaveDataResult> DeleteCreditReport(Guid id)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.DeleteCreditReport.ExecuteAsync(new DeleteCreditReportInput { Id = id }));
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

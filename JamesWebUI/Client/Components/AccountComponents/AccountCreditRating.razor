@@ -1,6 +1,17 @@
-﻿<RadzenDataGrid TItem="CreditReportHistory" FilterMode="FilterMode.Advanced">
+﻿@inherits JamesGridLayoutComponentBase<CreditReportHistory>
+
+@inject IDataAccess DataAccess
+
+<RadzenDataGrid TItem="CreditReportHistory" Data="_creditReports" FilterMode="FilterMode.Advanced" @ref="@_grid">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <AuthorizeView Policy="InRoleCanAddEditAccountCreditReport">
+                <RadzenButton Icon="add" Text="New Credit Report" Variant="Variant.Text" Click="@InsertRow"/>
+            </AuthorizeView>
+        </RadzenStack>
+    </HeaderTemplate>
     <Columns>
-        <RadzenDataGridColumn Title="Source">
+        <RadzenDataGridColumn Title="Source" MinWidth="150px" Width="200px">
             <Template Context="report">
                 <RadzenText Text="@report.CreditReport"/>
             </Template>
@@ -9,15 +20,15 @@
                                 ValueProperty="CreditReport" @bind-Value="@report.CreditReport"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Date">
+        <RadzenDataGridColumn Title="Date" MinWidth="100px" Width="150px">
             <Template Context="report">
-                <RadzenText Text="@report.Pulled.ToString("d")"/>
+                <RadzenText Text="@report.Pulled.ToString("MM/dd/yyyy")"/>
             </Template>
             <EditTemplate Context="report">
                 <RadzenDatePicker TValue="DateTime" @bind-Value="@report.Pulled"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Rating">
+        <RadzenDataGridColumn Title="Rating" MinWidth="150px" Width="200px">
             <Template Context="report">
                 <RadzenText Text="@report.Rating"/>
             </Template>
@@ -25,7 +36,7 @@
                 <RadzenTextBox @bind-Value="@report.Rating"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Definition">
+        <RadzenDataGridColumn Title="Definition" MinWidth="150px" Width="200px">
             <Template Context="report">
                 <RadzenText Text="@report.Definition"/>
             </Template>
@@ -33,7 +44,7 @@
                 <RadzenTextBox @bind-Value="@report.Definition"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Outlook/Remarks">
+        <RadzenDataGridColumn Title="Outlook/Remarks" MinWidth="150px" Width="200px">
             <Template Context="report">
                 <RadzenText Text="@report.Remarks"/>
             </Template>
@@ -41,12 +52,24 @@
                 <RadzenTextBox @bind-Value="@report.Remarks"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn>
-            <Template>
-                
+        <RadzenDataGridColumn MinWidth="90px" Width="90px" MaxWidth="90px" Frozen="true" FrozenPosition="FrozenColumnPosition.Right">
+            <Template Context="report">
+                <AuthorizeView Policy="InRoleCanAddEditAccountCreditReport">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" 
+                                  Size="ButtonSize.Small" Click="@(_ => EditRow(report))"
+                                  @onclick:stopPropagation="true"/>
+                </AuthorizeView>
+                <AuthorizeView Policy="InRoleCanDeleteAccountCreditReport">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
+                                  Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1"
+                                  Click="@(_ => DeleteRow(report))" @onclick:stopPropagation="true"/>
+                </AuthorizeView>
             </Template>
-            <EditTemplate>
-                
+            <EditTemplate Context="report">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" 
+                              Size="ButtonSize.Small" Click="@(_ => SaveRow(report))"/>
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" 
+                              Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelEdit(report))"/>
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
@@ -55,5 +78,72 @@
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
+    private List<CreditReportHistory> _creditReports = [];
     private List<CreditReportDm> _creditReportSources = [];
+    private RadzenDataGrid<CreditReportHistory> _grid = null!;
+
+    #region Loaders
+
+    #region CreditReports Load
+
+    private IDataAccessResult<CreditReportDto> _creditReportsResult = null!;
+
+    private LoadItem CreditReportsLoad => AddEventNotify(new LoadItem<CreditReportDto>
+    {
+        Key = CacheKeys.CreditReport(Account.AccountNum),
+        AsyncLoadTask = async () => _creditReportsResult = await DataAccess.GetCreditReport(Account.AccountNum),
+        CacheLoadTask = cache => _creditReportsResult = new DataAccessResult<CreditReportDto>
+        {
+            Data = (CreditReportDto)cache!
+        },
+        ResultVariable = () => _creditReportsResult,
+        AfterLoad = () =>
+        {
+            _creditReports = _creditReportsResult.Data!.CreditReports;
+            _creditReportSources = _creditReportsResult.Data!.CreditReportAgencies;
+        }
+    }, "credit reports");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadCreditReports();
+    }
+
+    private async Task LoadCreditReports()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(CreditReportsLoad);
+    }
+    
+    private async Task InsertRow(MouseEventArgs arg)
+    {
+        throw new NotImplementedException();
+    }
+    
+    private async Task EditRow(CreditReportHistory report)
+    {
+        throw new NotImplementedException();
+    }
+    
+    private async Task DeleteRow(CreditReportHistory report)
+    {
+        throw new NotImplementedException();
+    }
+    
+    private async Task SaveRow(CreditReportHistory report)
+    {
+        throw new NotImplementedException();
+    }
+    
+    private async Task CancelEdit(CreditReportHistory report)
+    {
+        throw new NotImplementedException();
+    }
 }

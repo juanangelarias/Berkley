@@ -342,9 +342,9 @@ namespace James.Data.Client
             return response;
         }
 
-        public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take)
+        public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, int skip, int take)
         {
-            return await ExecuteGet<List<Bond>>(
+            return await ExecuteGet<List<AgencyBondDto>>(
                 async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, skip, take), "AgencyBonds");
         }
         

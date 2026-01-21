@@ -101,34 +101,20 @@ query agencyAccountBonds($accountNum: String!) {
 
 query GetAgencyBonds($agencyId: UUID!, $skip: Int!, $take: Int!) {
   agencyBonds(agencyId: $agencyId, skip: $skip, take: $take) {
-    bondNumber
-    accountNumNavigation{
+      accountName
       accountNum
-      idNavigation{
-        fullName
-      }
-        accountStatusLogs {
-            effective            
-            accountStatus            
-        }
-    }
-    effective
-    expiration
-    underWriter{
-      idNavigation{
-        fullName
-      }
-    }
-    obligee{
-      fullName
-    }
-    bondType {
+      beginDate
+      bondClass
+      bondNumber
       bondType
-    }
-    siccode
-    municipality
-    bondClass
-    status
+      branch
+      endDate
+      obligeeId
+      obligeeName
+      sicCode
+      status
+      underWriterId
+      underWriterName
   }
 }
 

@@ -159,7 +159,7 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllInventoryDocTypes(contextFactory));
         }
-        public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take)
+        public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, int skip, int take)
         {
             return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, skip, take, contextFactory));
         }

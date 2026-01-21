@@ -218,11 +218,12 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<List<Bond>> GetAgencyBonds(Guid agencyId, int skip, int take,
+        public async Task<List<AgencyBondDto>> GetAgencyBonds(Guid agencyId, int skip, int take,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var result = await ctx.Bonds.Where(a => a.AgencyId == agencyId)
+            var bonds = await ctx.Bonds
+                .Where(a => a.AgencyId == agencyId)
                 .Include(b => b.UnderWriter)
                 .ThenInclude(b => b.IdNavigation)
                 .Include(b => b.Obligee)
@@ -235,8 +236,37 @@ namespace James.Data.Server.GraphQL.Queries
                 .Skip(skip)
                 .Take(take)
                 .ToListAsync();
+            
+            if(bonds == null || bonds.Count == 0)
+                throw new GraphQLException($"There are no bonds for agencyId: {agencyId}.");
+            
+            var bondNumbers = bonds.Select(b => b.BondNumber).ToList();
+            var transactions = ctx.BondTransactions
+                .Where(t => bondNumbers.Contains(t.BondNumber))
+                .OrderBy(o => o.BondNumber)
+                .ThenByDescending(t=>t.Effective)
+                .ToList();
 
-            return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
+            return bonds.Select(bond => new AgencyBondDto()
+                {
+                    Status = bond.Status,
+                    BondNumber = bond.BondNumber,
+                    AccountNum = bond.AccountNum,
+                    AccountName = bond.AccountNumNavigation.IdNavigation.FullName,
+                    BondType = bond.BondType?.BondType ?? "",
+                    BeginDate = bond.Effective,
+                    EndDate = bond.Expiration,
+                    UnderWriterId = bond.UnderWriterId,
+                    UnderWriterName = bond.UnderWriter.IdNavigation.FullName,
+                    SicCode = bond.Siccode ?? "",
+                    ObligeeId = bond.ObligeeId,
+                    ObligeeName = bond.Obligee?.FullName ?? "",
+                    BondClass = bond.BondClass,
+                    Branch = transactions
+                        .FirstOrDefault(t => t.BondNumber == bond.BondNumber)?
+                        .Branch ?? "",
+                })
+                .ToList();
         }
 
         [Authorize]

@@ -294,10 +294,13 @@ public partial class Query
 
         if (account == null)
             return new();
-        
+
         var accountList = (type.ToUpper() == "ACCOUNT ONLY")
-             ? [account.AccountNum]
-             : await GetRelatedAccounts(account.Id,  type.ToUpper() == "PARENT ONLY", contextFactory);
+            ? [account.AccountNum]
+            : await ctx.AccountChildren
+                .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({account.AccountNum})")
+                .Select(s => s.AccountNum)
+                .ToListAsync();
         
         var premiums = await ctx.BondTransactions
             .OrderBy(o => o.Effective)
@@ -314,49 +317,6 @@ public partial class Query
         };
         
         return response;
-    }
-
-    private async Task<List<string>> GetRelatedAccounts(Guid accountId, bool onlyParent, 
-        IDbContextFactory<JamesDatabaseContext> contextFactory)
-    {
-        var parentId = await GetParent(accountId, contextFactory);
-        if(parentId == null) 
-            return [];
-        
-        var ctx = await contextFactory.CreateDbContextAsync();
-
-        var parentAccountNum = ctx.Accounts.FirstOrDefault(f => f.Id == parentId)?.AccountNum;
-        
-        if (onlyParent || parentAccountNum == null)
-        {
-            return parentAccountNum == null
-                ? []
-                : [parentAccountNum];
-        }
-
-        List<string> related = [parentAccountNum];
-        related.AddRange(await GetLegalEntityChildren(parentAccountNum, ctx));
-        
-        return related;
-    }
-
-    private async Task<List<string>> GetLegalEntityChildren(string accountNum, 
-        JamesDatabaseContext ctx)
-    {
-        var  result = new List<string>();
-        var children = await ctx.LegalEntityChildren
-            .FromSqlInterpolated($"EXECUTE dbo.GetLegalEntityChildren {accountNum}")
-            .ToListAsync();
-        
-        result.AddRange(children.Select(s => s.ChildAccountNum));
-
-        foreach (var child in children)
-        {
-            var newChildren = await GetLegalEntityChildren(child.ChildAccountNum, ctx);
-            result.AddRange(newChildren);       
-        }
-        
-        return result;
     }
     
     private async Task<Guid?> GetParent(Guid legalEntityId, IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -405,11 +365,10 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var accountId = (await ctx.Accounts.FirstOrDefaultAsync(f => f.AccountNum == accountNum))?.Id;
-        if(accountId == null) 
-            throw new GraphQLException("No account with this account number exists.");
-        
-        var relatedAccounts = await GetRelatedAccounts(accountId.Value, false, contextFactory);
+        var relatedAccounts = await ctx.AccountChildren
+            .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({accountNum})")
+            .Select(s => s.AccountNum)
+            .ToListAsync();
 
         var bonds = await ctx.Bonds
             .Include(i => i.BondType)

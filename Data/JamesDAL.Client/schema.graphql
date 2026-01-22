@@ -278,11 +278,6 @@ input SetCurrentCreditReportLinkInput {
   imagingDocumentId: UUID
 }
 
-type KeyValue {
-  key: String!
-  value: String!
-}
-
 type EmailTypeDm {
   id: UUID!
   created: DateTime!
@@ -558,7 +553,7 @@ type Query {
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
-  accountRiskAndCommissions: AccountRateAndCommissionDto!
+  accountRateAndCommissions: AccountRateAndCommissionDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency

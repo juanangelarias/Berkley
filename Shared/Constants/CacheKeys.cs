@@ -33,7 +33,7 @@ public static class CacheKeys
     // U
     public static string UserSettings(string userId, string? subKey)
     {
-        var key = $"UserSettings-{userId}";
+        var key = $"UserSettings-{userId.ToLower()}";
         
         if (subKey != null) 
             key += $"-{subKey}";

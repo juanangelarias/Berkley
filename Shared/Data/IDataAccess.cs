@@ -114,7 +114,7 @@ namespace James.Shared.Data
         
         public Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber);
 
-        public Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRiskAndCommissions();
+        public Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRateAndCommissions();
 
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);

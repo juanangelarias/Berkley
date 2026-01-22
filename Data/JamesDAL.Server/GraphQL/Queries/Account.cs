@@ -444,7 +444,7 @@ public partial class Query
     }
 
     [Authorize]
-    public async Task<AccountRateAndCommissionDto> GetAccountRiskAndCommissions(
+    public async Task<AccountRateAndCommissionDto> GetAccountRateAndCommissions(
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var result = new AccountRateAndCommissionDto();

@@ -337,8 +337,8 @@ query GetAccountOutstandingLiability($accountNum: String!) {
     }
 }
 
-query GetAccountRiskAndCommissions {
-    accountRiskAndCommissions {
+query GetAccountRateAndCommissions {
+    accountRateAndCommissions {
         commercialRates {
             amountPerUnit
             annualMinimum

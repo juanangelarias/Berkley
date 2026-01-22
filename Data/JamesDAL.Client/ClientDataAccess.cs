@@ -464,10 +464,10 @@ namespace James.Data.Client
                 jamesClient.GetAccountLOAs.ExecuteAsync(accountNumber), "AccountLOAs");
         }
         
-        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRiskAndCommissions()
+        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRateAndCommissions()
         {
             var result = await ExecuteGet<AccountRateAndCommissionDto>(async () =>
-                    await jamesClient.GetAccountRiskAndCommissions.ExecuteAsync(),
+                    await jamesClient.GetAccountRateAndCommissions.ExecuteAsync(),
                 "AccountRiskAndCommissions");
             
             return result;

@@ -293,9 +293,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAccountLOAs(accountNumber, contextFactory));
         }
         
-        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRiskAndCommissions()
+        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRateAndCommissions()
         {
-            return await ExecuteGet(async () => await query.GetAccountRiskAndCommissions(contextFactory));
+            return await ExecuteGet(async () => await query.GetAccountRateAndCommissions(contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,

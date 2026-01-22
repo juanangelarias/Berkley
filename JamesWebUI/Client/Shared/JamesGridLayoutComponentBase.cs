@@ -75,8 +75,7 @@ public abstract class JamesGridLayoutComponentBase<T> : JamesLayoutComponentBase
             return;
         }
         
-        // Forcing the refresh of the user settings
-        await UserSettingService.GetUserSettingAsync(GridSettingsKey, true);
+        await UserSettingService.GetUserSettingAsync(GridSettingsKey);
         
 
         NotifySuccessfulSave("user grid settings");

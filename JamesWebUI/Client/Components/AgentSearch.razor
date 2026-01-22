@@ -7,6 +7,7 @@
 <Theme />
 
 <RadzenAutoComplete @ref="@AutoComplete" MinLength="3" Style="width:100%"
+                    TextProperty="IdNavigation.FullName"
                     ValueChanged="ResultSelected"
                     Value="@_selectedAgent"
                     Placeholder="Search..." Data="@SearchResults" LoadData="SearchAgent"
@@ -20,42 +21,43 @@
 </RadzenAutoComplete>
 
 @code {
-    [Parameter, EditorRequired] 
+    [Parameter, EditorRequired]
     public Guid SelectedAgentId { get; set; }
-    
+
     [Parameter]
     public EventCallback<Guid> SelectedAgentIdChanged { get; set; }
-    
+
     private List<Agent> SearchResults { get; set; } = [];
     private RadzenAutoComplete AutoComplete { get; set; } = null!;
     private string _selectedAgent = "";
     private IDataAccessResult<List<Agent>> _searchResult = null!;
 
     private LoadItem AgentsLoad(string filter) => AddEventNotify(new LoadItem<List<Agent>>
+    {
+        Key = $"SearchResult{SelectedAgentId}",
+        AsyncLoadTask = async () => _searchResult = await DataAccess.SearchAgents(filter),
+        CacheLoadTask = cache => _searchResult = new DataAccessResult<List<Agent>>
         {
-            Key = $"SearchResult{SelectedAgentId}",
-            AsyncLoadTask = async () => _searchResult = await DataAccess.SearchAgents(filter),
-            CacheLoadTask = cache => _searchResult = new DataAccessResult<List<Agent>>
-            {
-                Data = (List<Agent>)cache!
-            },
-            ResultVariable = () => _searchResult,
-            AfterLoad = () => { SearchResults = _searchResult.Data!; },
-            CacheDuration = TimeSpan.FromSeconds(1)
-        }, "search result");
-    
+            Data = (List<Agent>)cache!
+        },
+        ResultVariable = () => _searchResult,
+        AfterLoad = () => { SearchResults = _searchResult.Data!; },
+        CacheDuration = TimeSpan.FromSeconds(1)
+    }, "search result");
+
     private async Task SearchAgent(LoadDataArgs args)
     {
         await DataAccess.GetCacheOrLoadDataAsync(AgentsLoad(args.Filter));
     }
-    
-    private async Task ResultSelected(dynamic args)
+
+    private async Task ResultSelected(string args)
     {
-        if (null == AutoComplete.Value || (AutoComplete.Value.GetType()) != typeof(Agent)) 
+        if (null == AutoComplete.Value)
             return;
-        
-        SelectedAgentId = ((Agent)AutoComplete.Value).Id;
-        _selectedAgent = ((Agent)AutoComplete.Value).IdNavigation.FullName;
+
+        //TODO: This is now broken with the recent changes to the Radzen Controls
+        //SelectedAgentId = ((Agent)AutoComplete.SelectedItem).Id;
+        //_selectedAgent = ((Agent)AutoComplete.SelectedItem).IdNavigation.FullName;
         await SelectedAgentIdChanged.InvokeAsync(SelectedAgentId);
     }
 }

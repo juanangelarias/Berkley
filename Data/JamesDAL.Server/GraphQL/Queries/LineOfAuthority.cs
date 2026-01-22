@@ -121,8 +121,18 @@ public partial class Query
 
     private async Task<int> GetAccountOpenBondsTotal(Guid accountId, IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
-        var relatedAccounts = await GetRelatedAccounts(accountId, false, contextFactory);
         var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var accountNum = ctx.Accounts.FirstOrDefault(f=>f.Id == accountId)?.AccountNum;
+        if(accountNum == null)
+            throw new GraphQLException($"No account exists with id {accountId}");
+        
+        var relatedAccounts = await ctx.AccountChildren
+            .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({accountNum})")
+            .Select(s => s.AccountNum)
+            .ToListAsync();
+            //await GetRelatedAccounts(accountId, false, contextFactory);
+        
         var openBondsTransaccion = await ctx.BondTransactions
             .Include(i => i.BondNumberNavigation)
             .ThenInclude(i => i.BondType)

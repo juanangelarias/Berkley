@@ -3,6 +3,14 @@
 </RadzenRow>
 <RadzenRow>
     <RadzenColumn Size="6">
+        <RadzenText Text="Bank"/>
+    </RadzenColumn>
+    <RadzenColumn Size="6">
+        <RadzenText Text="@Account.Bank" TextAlign="TextAlign.Right"/>
+    </RadzenColumn>
+</RadzenRow>
+<RadzenRow>
+    <RadzenColumn Size="6">
         <RadzenText Text="Amount"/>
     </RadzenColumn>
     <RadzenColumn Size="6">
@@ -14,7 +22,7 @@
         <RadzenText Text="Expires"/>
     </RadzenColumn>
     <RadzenColumn Size="6">
-        <RadzenText Text="@($"{Account.BankLocexpires:d}")" TextAlign="TextAlign.Right"/>
+        <RadzenText Text="@($"{Account.BankLocexpires:MM/dd/yyyy}")" TextAlign="TextAlign.Right"/>
     </RadzenColumn>
 </RadzenRow>
 <RadzenRow>
@@ -22,7 +30,7 @@
         <RadzenText Text="When"/>
     </RadzenColumn>
     <RadzenColumn Size="6">
-        <RadzenText Text="??/??/????" TextAlign="TextAlign.Right"/>
+        <RadzenText Text="@($"{Account.BankLochighDate:MM/dd/yyyy}")" TextAlign="TextAlign.Right"/>
     </RadzenColumn>
 </RadzenRow>
 <RadzenRow>

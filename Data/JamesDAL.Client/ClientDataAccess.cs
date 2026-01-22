@@ -464,10 +464,10 @@ namespace James.Data.Client
                 jamesClient.GetAccountLOAs.ExecuteAsync(accountNumber), "AccountLOAs");
         }
         
-        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRiskAndCommissions()
+        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRateAndCommissions()
         {
             var result = await ExecuteGet<AccountRateAndCommissionDto>(async () =>
-                    await jamesClient.GetAccountRiskAndCommissions.ExecuteAsync(),
+                    await jamesClient.GetAccountRateAndCommissions.ExecuteAsync(),
                 "AccountRiskAndCommissions");
             
             return result;
@@ -1418,11 +1418,11 @@ namespace James.Data.Client
 
         #region User Settings
 
-        public async Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings()
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
         {
             
             var settingList =
-                await ExecuteGet<List<KeyValue>>(
+                await ExecuteGet<Dictionary<string, string>>(
                     async () => await jamesClient.GetAllUserSettings.ExecuteAsync(), "AllUserSettings");
             return settingList;
         }

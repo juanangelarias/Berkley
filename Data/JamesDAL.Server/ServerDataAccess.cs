@@ -293,9 +293,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAccountLOAs(accountNumber, contextFactory));
         }
         
-        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRiskAndCommissions()
+        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRateAndCommissions()
         {
-            return await ExecuteGet(async () => await query.GetAccountRiskAndCommissions(contextFactory));
+            return await ExecuteGet(async () => await query.GetAccountRateAndCommissions(contextFactory));
         }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
@@ -995,9 +995,9 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
         }
         
-        public async Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings()
+        public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
         {
-            return await ExecuteGet(async () => new List<KeyValue>(await query.GetAllUserSettings(contextFactory, contextAccessor)));
+            return await ExecuteGet(async () => new Dictionary<string, string>(await query.GetAllUserSettings(contextFactory, contextAccessor)));
         }
 
         public async Task<ISaveDataResult> SetUserSetting(string key, string? value)

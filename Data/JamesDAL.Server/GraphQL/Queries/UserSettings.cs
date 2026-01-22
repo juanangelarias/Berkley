@@ -26,7 +26,7 @@ public partial class Query
     }
 
     [Authorize]
-    public async Task<List<KeyValue>> GetAllUserSettings(
+    public async Task<Dictionary<string, string>> GetAllUserSettings(
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
         [Service] IHttpContextAccessor contextAccessor)
     {
@@ -44,20 +44,12 @@ public partial class Query
             Task[] parallelTasks = [userSettingsTask, defaultSettingsTask];
             await Task.WhenAll(parallelTasks);
 
-            var settings = defaultSettingsTask.Result;
-            var userSettings = userSettingsTask.Result;
-
-            settings.AddRange(userSettings);
-
-            var result = settings
-                .Select(s => new KeyValue
-                {
-                    Key = s.Key,
-                    Value = s.Value
-                })
-                .ToList();
-
-            return result;
+            //Begin with defaults
+            var settings = defaultSettingsTask.Result.ToDictionary(k=>k.Key, v=>v.Value);
+            //Add user specific settings, overwriting defaults as needed
+            foreach (var setting in userSettingsTask.Result)
+                settings[setting.Key] = setting.Value;
+            return settings;
         }
         catch (Exception ex)
         {

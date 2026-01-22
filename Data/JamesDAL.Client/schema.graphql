@@ -634,7 +634,7 @@ type Query {
   allStates: [State!]!
   underwriters: [Underwriter!]!
   userSetting(key: String!): UserSetting
-  allUserSettings: [KeyValue!]!
+  allUserSettings: [KeyValuePairOfStringAndString!]!
 }
 
 type AgencyCommission {

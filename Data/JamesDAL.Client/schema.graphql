@@ -380,6 +380,12 @@ input SetEmployeeIsActiveInput {
   isActive: Boolean!
 }
 
+type RelatedAccount {
+  accountNum: String!
+  accountName: String!
+  accountStatus: String!
+}
+
 type Agency {
   id: UUID!
   created: DateTime!
@@ -554,6 +560,7 @@ type Query {
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
   accountRateAndCommissions: AccountRateAndCommissionDto!
+  relatedAccounts(accountNum: String!): AccountBondedPrinciple!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -1924,6 +1931,11 @@ type PersonalFinancialStatementTypeDm {
   modified: DateTime!
   type: String!
   personalFinancialHeaders: [PersonalFinancialHeader!]!
+}
+
+type AccountBondedPrinciple {
+  parentRelatedAccount: RelatedAccount!
+  relatedAccounts: [RelatedAccount!]!
 }
 
 type Indemnitor {

@@ -348,6 +348,11 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await generalMutation.DeleteCreditReport(id, contextFactory));
         }
+        
+        public async Task<IDataAccessResult<AccountBondedPrincipleDto>> GetRelatedAccounts(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetRelatedAccounts(accountNum, contextFactory));
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

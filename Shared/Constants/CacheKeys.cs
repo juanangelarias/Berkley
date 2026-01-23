@@ -43,6 +43,9 @@ public static class CacheKeys
         
         return key;
     }
+    
+    // R
+    public static string RelatedAccounts(string accountNumber) => $"RelatedAccounts-{accountNumber}";
 
     // Fixed
     // A

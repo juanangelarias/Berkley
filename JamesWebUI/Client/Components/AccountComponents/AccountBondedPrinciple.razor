@@ -1,0 +1,91 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+    <RadzenRow>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" JustifyContent="JustifyContent.Left">
+            <RadzenColumn Size="3">
+                <RadzenRow>
+                    <RadzenText Text="Parent Number" TextStyle="TextStyle.Subtitle1"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenText Text="@Data.ParentAccount.AccountNum"/>
+                </RadzenRow>
+            </RadzenColumn>
+            <RadzenColumn Size="3">
+                <RadzenRow>
+                    <RadzenText Text="Account Name" TextStyle="TextStyle.Subtitle1"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenText Text="@Data.ParentAccount.AccountName"/>
+                </RadzenRow>
+            </RadzenColumn>
+            <RadzenColumn Size="2">
+                <RadzenRow>
+                    <RadzenText Text="Status" TextStyle="TextStyle.Subtitle1"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenText Text="@Data.ParentAccount.AccountStatus"/>
+                </RadzenRow>
+            </RadzenColumn>
+        </RadzenStack>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-2">
+        <RadzenText Text="Bonded Principle" TextStyle="TextStyle.DisplayH5"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenDataGrid TItem="RelatedAccountDto" Data="@Data.RelatedAccounts">
+            <Columns>
+                <RadzenDataGridColumn Title="Account Number" Property="@nameof(RelatedAccountDto.AccountNum)"/>
+                <RadzenDataGridColumn Title="Account Name" Property="@nameof(RelatedAccountDto.AccountName)"/>
+                <RadzenDataGridColumn Title="Status" Property="@nameof(RelatedAccountDto.AccountStatus)"/>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired] public string AccountNum { get; set; }
+
+    private AccountBondedPrincipleDto Data { get; set; } = new();
+
+    #region Loaders
+
+    #region RelatedAccounts Load
+
+    private IDataAccessResult<AccountBondedPrincipleDto> _relatedAccountsResult = null!;
+
+    private LoadItem RelatedAccountsLoad => AddEventNotify(new LoadItem<AccountBondedPrincipleDto>
+    {
+        Key = CacheKeys.RelatedAccounts(AccountNum),
+        AsyncLoadTask = async () => _relatedAccountsResult = await DataAccess.GetRelatedAccounts(AccountNum),
+        CacheLoadTask = cache => _relatedAccountsResult = new DataAccessResult<AccountBondedPrincipleDto>
+        {
+            Data = (AccountBondedPrincipleDto)cache!
+        },
+        ResultVariable = () => _relatedAccountsResult,
+        AfterLoad = () =>
+        {
+            Data = _relatedAccountsResult.Data!;
+        }
+    }, "related accounts");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(RelatedAccountsLoad);
+    }
+}

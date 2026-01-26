@@ -395,7 +395,7 @@ query GetCreditReport($accountNum: String!) {
 
 query GetRelatedAccounts($accountNum: String!) {
     relatedAccounts(accountNum: $accountNum) {
-        parentRelatedAccount {
+        parentAccount {
             accountName
             accountNum
             accountStatus

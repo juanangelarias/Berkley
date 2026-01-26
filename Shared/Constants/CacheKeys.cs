@@ -34,6 +34,7 @@ public static class CacheKeys
     public static string LastPrivateEquity(string accountNumber) => $"LastPrivateEquity-{accountNumber}";
     
     // U
+    public static string UnderwriterRecommendation(string accountNum) => $"UnderwriterRecommendation-{accountNum}";
     public static string UserSettings(string userId, string? subKey)
     {
         var key = $"UserSettings-{userId.ToLower()}";

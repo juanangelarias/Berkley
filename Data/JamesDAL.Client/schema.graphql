@@ -380,12 +380,6 @@ input SetEmployeeIsActiveInput {
   isActive: Boolean!
 }
 
-type RelatedAccount {
-  accountNum: String!
-  accountName: String!
-  accountStatus: String!
-}
-
 type Agency {
   id: UUID!
   created: DateTime!
@@ -560,7 +554,7 @@ type Query {
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
   accountRateAndCommissions: AccountRateAndCommissionDto!
-  relatedAccounts(accountNum: String!): AccountBondedPrinciple!
+  relatedAccounts(accountNum: String!): AccountBondedPrincipleDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -635,6 +629,7 @@ type Query {
   activeDirectoryUsers(searchText: String!): [PotentialEmployeeActiveDirectoryInfo!]!
   allStates: [State!]!
   underwriters: [Underwriter!]!
+  underwriterRecommendationByAccount(accountNumber: String!): [UnderwriterRecommendation!]!
   userSetting(key: String!): UserSetting
   allUserSettings: [KeyValuePairOfStringAndString!]!
 }
@@ -1285,6 +1280,10 @@ type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
 }
 
+input DeleteUnderwriterRecommendationInput {
+  id: UUID!
+}
+
 type CommercialRate {
   id: UUID!
   created: DateTime!
@@ -1410,6 +1409,8 @@ type Mutation {
   createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
   setBondBlock(input: SetBondBlockInput!): SetBondBlockPayload!
   deleteBondBlock(input: DeleteBondBlockInput!): DeleteBondBlockPayload!
+  setUnderwriterRecommendation(input: SetUnderwriterRecommendationInput!): SetUnderwriterRecommendationPayload!
+  deleteUnderwriterRecommendation(input: DeleteUnderwriterRecommendationInput!): DeleteUnderwriterRecommendationPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
   logException(input: LogExceptionInput!): LogExceptionPayload!
   logUser(input: LogUserInput!): LogUserPayload!
@@ -1488,6 +1489,10 @@ type Address {
   state: String!
   country: String!
   countryCode: String!
+}
+
+type SetUnderwriterRecommendationPayload {
+  boolean: Boolean
 }
 
 type AccountReference {
@@ -1933,11 +1938,6 @@ type PersonalFinancialStatementTypeDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
-type AccountBondedPrinciple {
-  parentRelatedAccount: RelatedAccount!
-  relatedAccounts: [RelatedAccount!]!
-}
-
 type Indemnitor {
   id: UUID!
   created: DateTime!
@@ -2065,6 +2065,11 @@ type VoidedBond {
   voidedBy: UUID!
   agency: Agency!
   voidedByNavigation: UserProfile!
+}
+
+type AccountBondedPrincipleDto {
+  parentAccount: RelatedAccountDto!
+  relatedAccounts: [RelatedAccountDto!]!
 }
 
 type CommercialFinancial {
@@ -2277,6 +2282,10 @@ input SetAgencyProfitSharingInfoInput {
   agencyId: UUID!
   profitSharing: Boolean!
   profitSharingMinimumPremium: Int
+}
+
+type DeleteUnderwriterRecommendationPayload {
+  boolean: Boolean
 }
 
 enum ImagingDocumentCategory {
@@ -2733,6 +2742,12 @@ type NotificationGroupMember {
   employeeId: UUID!
   employee: Employee!
   groupNameNavigation: NotificationGroup!
+}
+
+type RelatedAccountDto {
+  accountNum: String!
+  accountName: String!
+  accountStatus: String!
 }
 
 type PersonalFinancialSubaccount {
@@ -3199,6 +3214,14 @@ type Collateral {
   bondSpecific: Boolean
   released: DateTime
   bondNumberNavigation: Bond
+}
+
+input SetUnderwriterRecommendationInput {
+  id: UUID!
+  accountNum: String!
+  postedBy: UUID!
+  comments: String!
+  description: String!
 }
 
 type SetAccountGeneralInfoPanelPayload {

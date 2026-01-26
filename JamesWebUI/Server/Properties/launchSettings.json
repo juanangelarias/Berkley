@@ -14,7 +14,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       //"launchUrl": "Agency/322",
-      "launchUrl": "account/67239?mn=0&ai=1",
+      "launchUrl": "account/67239?mn=1&ai=0",
       //"launchUrl": "Admin/SecurityRoles",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

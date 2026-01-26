@@ -1503,6 +1503,42 @@ namespace James.Data.Client
         }
 
         #endregion
+        
+        #region Underwriter
+
+        public async Task<IDataAccessResult<List<UnderwriterRecommendation>>> GetUnderwriterRecommendationByAccount(
+            string accountNum)
+        {
+            var result = await ExecuteGet<List<UnderwriterRecommendation>>(async () =>
+                    await jamesClient.GetUnderwriterRecommendationByAccount.ExecuteAsync(accountNum),
+                "UnderwriterRecommendationByAccount");
+            
+            return result;
+        }
+
+        public async Task<ISaveDataResult> SetUnderwriterRecommendation(Guid id, string accountNum, Guid postedBy,
+            string comments,
+            string description)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetUnderwriterRecommendation
+                .ExecuteAsync( new SetUnderwriterRecommendationInput
+                {
+                    Id = id,
+                    AccountNum = accountNum,
+                    PostedBy = postedBy,
+                    Comments = comments,
+                    Description = description
+                }));
+        }
+
+        public async Task<ISaveDataResult> DeleteUnderwriterRecommendation(Guid id)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.DeleteUnderwriterRecommendation
+                    .ExecuteAsync(new DeleteUnderwriterRecommendationInput { Id = id }));
+        }
+        
+        #endregion
 
         private static string ErrorToString(IClientError error)
         {

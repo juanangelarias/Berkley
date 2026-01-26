@@ -320,6 +320,15 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum);
         public Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum);
         public Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes();
+
+        #region Underwriter
+
+        public Task<IDataAccessResult<List<UnderwriterRecommendation>>> GetUnderwriterRecommendationByAccount(string accountNum);
+        public Task<ISaveDataResult> SetUnderwriterRecommendation(Guid id, string accountNum, Guid postedBy, string comments,
+            string description);
+        public Task<ISaveDataResult> DeleteUnderwriterRecommendation(Guid id);
+        
+        #endregion
     }
 
     public interface ISaveDataResult

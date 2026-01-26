@@ -1,0 +1,32 @@
+﻿@inherits JamesLayoutComponentBase
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+    <RadzenRow>
+        <RadzenText Text="Underwriting Recommendation" TextStyle="TextStyle.DisplayH6"/>
+    </RadzenRow>
+    <RadzenRow Style="max-height: 400px">
+        <AccountLineOfAuthorityUWRecommendation AccountNum="@Account.AccountNum"/>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-1">
+        <RadzenText Text="Account Program" TextStyle="TextStyle.DisplayH6"/>
+    </RadzenRow>
+    <RadzenRow Style="max-height: 400px">
+        
+    </RadzenRow>
+    <RadzenRow class="rz-mt-1">
+        <RadzenText Text="Account Line of Authority" TextStyle="TextStyle.DisplayH6"/>
+    </RadzenRow>
+    <RadzenRow Style="max-height: 400px">
+        
+    </RadzenRow>
+    <RadzenRow class="rz-mt-1">
+        <RadzenText Text="Agency Line of Authority" TextStyle="TextStyle.DisplayH6"/>
+    </RadzenRow>
+    <RadzenRow Style="max-height: 400px">
+        
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired] public Account Account { get; set; }
+}

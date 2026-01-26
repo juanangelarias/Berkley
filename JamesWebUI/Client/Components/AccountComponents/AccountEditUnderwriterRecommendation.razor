@@ -1,0 +1,67 @@
+﻿@inject DialogService DialogService
+
+<RadzenTemplateForm TItem="UnderwriterRecommendation" Submit="@OnSubmit" Data="@Recommendation" @ref="@_form">
+    <RadzenColumn Size="12">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <RadzenRow>
+                <RadzenText Text="@($"Posted: {Recommendation.Created:MM/dd/yyyy}")"/>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenFormField Text="Underwriter" Style="width: 100%">
+                    <RadzenDropDown TValue="Guid" @bind-Value="@Recommendation.PostedBy" Data="@Underwriters"
+                                    TextProperty="Name" ValueProperty="Id" Name="Underwriter" Style="width: 300px;"
+                                    AllowFiltering="true" FilterAsYouType="true" 
+                                    FilterOperator="StringFilterOperator.Contains"
+                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"/>
+                    <RadzenRequiredValidator Text="Underwriter is required." Component="Underwriter"/>
+                </RadzenFormField>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenFormField Text="Description" Style="width: 100%">
+                    <RadzenTextBox @bind-Value="@Recommendation.Description" Name="Description" Style="width: 300px;"/>
+                    <RadzenRequiredValidator Text="Description is required." Component="Description"/>
+                    <RadzenLengthValidator Min="5" Max="50" Component="Description"
+                                           Text="Description must be between 5 and 50 characters long."/>
+                </RadzenFormField>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenFormField Text="Recommendation" Style="width: 100%">
+                    <RadzenTextArea @bind-Value="@Recommendation.Comments" Name="Comments" Rows="10"
+                                    Style="width: 300px;"/>
+                    <RadzenRequiredValidator Text="Recommendation is required" Component="Comments"/>
+                    <RadzenLengthValidator Min="5" Text="Recommendation must be at least 5 characters long."
+                                           Component="Comments"/>
+                </RadzenFormField>
+            </RadzenRow>
+            <RadzenRow>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" JustifyContent="JustifyContent.Right"
+                             Style="width: 100%">
+                    <RadzenButton Text="Cancel" Icon="cancel" ButtonStyle="ButtonStyle.Light"
+                                  ButtonType="ButtonType.Reset"
+                                  Click="OnCancel"/>
+                    <RadzenButton Text="Save" Icon="save" ButtonType="ButtonType.Submit"/>
+                </RadzenStack>
+            </RadzenRow>
+        </RadzenStack>
+    </RadzenColumn>
+</RadzenTemplateForm>
+
+
+@code {
+    [Parameter, EditorRequired] public required List<JamesLookup> Underwriters { get; set; }
+    [Parameter, EditorRequired] public required UnderwriterRecommendation Recommendation { get; set; }
+
+    private RadzenTemplateForm<UnderwriterRecommendation> _form = null!;
+    private void OnCancel()
+    {
+        DialogService.Close(null);
+    }
+
+    private void OnSubmit()
+    {
+        if(!_form.IsValid)
+            return;
+        
+        DialogService.Close(Recommendation);
+    }
+}

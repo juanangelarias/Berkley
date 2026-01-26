@@ -1,0 +1,11 @@
+﻿mutation SetUnderwriterRecommendation($input: SetUnderwriterRecommendationInput!) {
+    setUnderwriterRecommendation(input: $input) {
+        boolean
+    }
+}
+
+mutation DeleteUnderwriterRecommendation($input: DeleteUnderwriterRecommendationInput!) {
+    deleteUnderwriterRecommendation(input: $input){
+        boolean
+    }
+}

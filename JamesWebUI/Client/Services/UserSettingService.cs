@@ -4,7 +4,7 @@ using James.Shared.Data;
 using JamesWebUI.Client.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Diagnostics;
-using Blazorise;
+using James.Shared.Dto;
 
 namespace JamesWebUI.Client.Services;
 
@@ -15,6 +15,7 @@ public interface IUserSettingService
     Task<string?> GetUserSettingAsync(string key, bool forceReload = false);
     Task<ISaveDataResult> SetUserSettingAsync(string key, string? value);
     Task<ISaveDataResult> SetDefaultUserSettingAsync(string key, string? value);
+    Task<UserInfoDto?> GetUserEmployeeInfoAsync();
 }
 
 public class UserSettingService(IDataAccess dataAccess, ILocalStorageService localStorageService, AuthenticationStateProvider authenticationStateProvider) : IUserSettingService
@@ -165,5 +166,18 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
         }
 
         return await dataAccess.SetDefaultUserSetting(key, value);
+    }
+    
+    public async Task<UserInfoDto?> GetUserEmployeeInfoAsync()
+    {
+        var userName = await GetUserName();
+        if(userName == null) 
+            return null;
+
+        var response = await dataAccess.GetUserEmployeeInfo(userName);
+        
+        return response.Success
+            ? response.Data!
+            : throw new Exception($"Error getting user employee info: {response.Errors.First()}");
     }
 }

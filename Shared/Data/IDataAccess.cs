@@ -291,6 +291,7 @@ namespace James.Shared.Data
         //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSetting(string key);
         public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
+        public Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName);
 
         #endregion
 

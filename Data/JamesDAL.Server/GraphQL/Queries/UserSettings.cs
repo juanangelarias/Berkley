@@ -13,11 +13,11 @@ public partial class Query
         [Service] IHttpContextAccessor contextAccessor)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
         if (null == username)
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-        
+
         var settings = await ctx.UserSettings
             .FirstOrDefaultAsync(r => r.Username == username && r.Key == key);
 
@@ -45,7 +45,7 @@ public partial class Query
             await Task.WhenAll(parallelTasks);
 
             //Begin with defaults
-            var settings = defaultSettingsTask.Result.ToDictionary(k=>k.Key, v=>v.Value);
+            var settings = defaultSettingsTask.Result.ToDictionary(k => k.Key, v => v.Value);
             //Add user specific settings, overwriting defaults as needed
             foreach (var setting in userSettingsTask.Result)
                 settings[setting.Key] = setting.Value;
@@ -55,5 +55,31 @@ public partial class Query
         {
             throw new GraphQLException($"Error when retrieving user settings.", ex);
         }
+    }
+
+    [Authorize]
+    public async Task<UserInfoDto?> GetUserEmployeeInfo(string username,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var employee = await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username);
+        
+        if(employee == null) 
+            return null;
+
+        var isUnderWriter = await ctx.Underwriters
+            .AnyAsync(a => a.Id == employee.Id);
+        
+        return new UserInfoDto
+        {
+            EmployeeId = employee.Id,
+            Username = employee.ActiveDirectoryAccount,
+            FullName = employee.FullName,
+            Title = employee.Title ?? "",
+            Email = employee.Email ?? "",
+            IsUnderwriter = isUnderWriter,
+        };
     }
 }

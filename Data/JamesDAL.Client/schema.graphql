@@ -632,6 +632,7 @@ type Query {
   underwriterRecommendationByAccount(accountNumber: String!): [UnderwriterRecommendation!]!
   userSetting(key: String!): UserSetting
   allUserSettings: [KeyValuePairOfStringAndString!]!
+  userEmployeeInfo(username: String!): UserInfoDto
 }
 
 type AgencyCommission {
@@ -1983,6 +1984,15 @@ type CreditReportHistory {
   definition: String
   remarks: String
   accountNumNavigation: Account!
+}
+
+type UserInfoDto {
+  employeeId: UUID!
+  username: String!
+  fullName: String!
+  title: String!
+  email: String!
+  isUnderwriter: Boolean!
 }
 
 type Security {

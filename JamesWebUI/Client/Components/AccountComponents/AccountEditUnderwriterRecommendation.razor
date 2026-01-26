@@ -1,4 +1,5 @@
 ﻿@inject DialogService DialogService
+@inject IUserSettingService UserSettingService
 
 <RadzenTemplateForm TItem="UnderwriterRecommendation" Submit="@OnSubmit" Data="@Recommendation" @ref="@_form">
     <RadzenColumn Size="12">
@@ -52,6 +53,25 @@
     [Parameter, EditorRequired] public required UnderwriterRecommendation Recommendation { get; set; }
 
     private RadzenTemplateForm<UnderwriterRecommendation> _form = null!;
+    private UserInfoDto? _userInfo;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _userInfo = await UserSettingService.GetUserEmployeeInfoAsync();
+
+        if (_userInfo is { IsUnderwriter: true } && Recommendation.PostedBy == null)
+        {
+            Recommendation.PostedBy = _userInfo.EmployeeId;
+            Recommendation.PostedByNavigation = new()
+            {
+                Id = _userInfo.EmployeeId,
+                FullName = _userInfo.FullName
+            };
+        }
+    }
+    
     private void OnCancel()
     {
         DialogService.Close(null);

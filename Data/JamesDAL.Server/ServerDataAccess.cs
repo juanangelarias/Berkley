@@ -1014,6 +1014,11 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService ));
         }
+        
+        public async  Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
+        {
+            return await ExecuteGet(async () => await query.GetUserEmployeeInfo(userName, contextFactory));
+        }
 
         #endregion
         

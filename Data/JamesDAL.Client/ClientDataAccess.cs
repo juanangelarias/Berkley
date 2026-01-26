@@ -1470,6 +1470,12 @@ namespace James.Data.Client
                     Value = value ?? ""
                 }), "SetDefaultUserSetting");
         }
+        
+        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
+        {
+            return await ExecuteGet<UserInfoDto?>(async () =>
+                await jamesClient.GetUserEmployeeInfo.ExecuteAsync(userName), "UserEmployeeInfo");
+        }
 
         #endregion
         

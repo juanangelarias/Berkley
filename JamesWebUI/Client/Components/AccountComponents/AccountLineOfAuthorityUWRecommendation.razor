@@ -2,7 +2,7 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations">
+<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid">
     <HeaderTemplate>
         <AuthorizeView Policy="InRoleCanAddUnderwritingRecommendation">
             <RadzenButton Icon="add" Text="New Recommendation" Variant="Variant.Text" Click="@InsertRow"/>
@@ -58,6 +58,7 @@
 
     private List<UnderwriterRecommendation> Recommendations { get; set; } = [];
     private List<JamesLookup> _underwritersLookup = [];
+    private RadzenDataGrid<UnderwriterRecommendation> _grid = null!;
 
     #region Loaders
 
@@ -185,7 +186,7 @@
             .OrderByDescending(o => o.Created)
             .ToList();
         
-        UpdateCache();
+        await UpdateCache();
     }
 
     private async Task EditRow(UnderwriterRecommendation recommendation)
@@ -220,11 +221,15 @@
             .OrderByDescending(o => o.Created)
             .ToList();
         
-        UpdateCache(); 
+        await UpdateCache(); 
     }
 
     private async Task DeleteRow(UnderwriterRecommendation recommendation)
     {
+        var confirmed = await DialogService.Confirm("Are you sure you want to delete this recommendation?", "Delete Recommendation");
+        if(confirmed != true)
+            return;
+        
         var response = await DataAccess.DeleteUnderwriterRecommendation(recommendation.Id);
         
         if (!response.Success)
@@ -238,7 +243,7 @@
         if(toDelete != null)
         {
             Recommendations.Remove(toDelete);
-            UpdateCache();  
+            await UpdateCache();  
         }
     }
 
@@ -254,8 +259,10 @@
         };
     }
 
-    private void UpdateCache()
+    private async Task UpdateCache()
     {
         DataAccess.UpdateCache(CacheKeys.UnderwriterRecommendation(AccountNum), Recommendations);
+
+        await _grid.Reload();
     }
 }

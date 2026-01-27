@@ -13,8 +13,8 @@
             <RadzenRow>
                 <RadzenText Text="@recommendation.Description" TextStyle="TextStyle.Subtitle1"/>
             </RadzenRow>
-            <RadzenRow>
-                <RadzenText Text="@recommendation.Comments" Style="width: 100%" TextStyle="TextStyle.Body1" 
+            <RadzenRow Style="max-height: 8rem; overflow: auto;">
+                <RadzenText Text="@recommendation.Comments" Style="width: 100%;" TextStyle="TextStyle.Body1" 
                             class="rz-text-wrap"/>
             </RadzenRow>
         </RadzenStack>

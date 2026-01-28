@@ -1545,6 +1545,79 @@ namespace James.Data.Client
         }
         
         #endregion
+        
+        #region Line Of Authority
+
+        public async Task<IDataAccessResult<List<AccountProgramDto>>> GetAccountPrograms(string accountNum)
+        {
+            var result = await ExecuteGet<List<AccountProgramDto>>(async () =>
+                    await jamesClient.GetAccountPrograms.ExecuteAsync(accountNum), "AccountPrograms"
+            );
+            
+            return result;
+        }
+
+        public async Task<IDataAccessResult<AccountProgramDto>> GetAccountProgramById(Guid id)
+        {
+            var result = await ExecuteGet<AccountProgramDto>(async () =>
+                    await jamesClient.GetAccountProgramById.ExecuteAsync(id), "AccountProgramById");
+            
+            return result;
+        }
+
+        public async Task<ISaveDataResult> CreateAccountProgram(AccountProgramDto input)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.CreateAccountProgram.ExecuteAsync(new CreateAccountProgramInput
+                {
+
+                    Input = new AccountProgramDtoInput
+                    {
+                        Id = input.Id,
+                        AccountNum = input.AccountNum,
+                        Effective = input.Effective,
+                        Expiration = input.Expiration,
+                        Single = input.Single,
+                        Aggregate = input.Aggregate,
+                        StatusId = input.StatusId,
+                        Status = input.Status,
+                        CreatedBy = input.CreatedBy,
+                        ApprovedBy = input.ApprovedBy,
+                        ApprovedDate = input.ApprovedDate,
+                        Logs = input.Logs
+                            .Select(s => new AccountProgramStatusLogDtoInput
+                            {
+                                Id = s.Id,
+                                NewStatusId = s.NewStatusId,
+                                NewStatus = s.NewStatus,
+                                OldStatus = s.OldStatus,
+                                OldStatusId = s.OldStatusId,
+                                OldSingle = s.OldSingle,
+                                OldAggregate = s.OldAggregate,
+                                NewSingle = s.NewSingle,
+                                NewAggregate = s.NewAggregate,
+                                StatusDate = s.StatusDate,
+                                StatusChangeBy = s.StatusChangeBy,
+                                StatusChangeByFullName = s.StatusChangeByFullName
+                            })
+                            .ToArray()
+                    }
+                }));
+        }
+
+        public async Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, Guid employeeId,
+            string newStatusTxt)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.AccountProgramChangeStatus.ExecuteAsync(new AccountProgramChangeStatusInput
+                {
+                    AccountProgramId = accountProgramId,
+                    EmployeeId = employeeId,
+                    NewStatusTxt = newStatusTxt
+                }));
+        }
+
+        #endregion
 
         private static string ErrorToString(IClientError error)
         {

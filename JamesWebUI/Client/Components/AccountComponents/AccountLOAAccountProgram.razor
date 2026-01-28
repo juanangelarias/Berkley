@@ -1,0 +1,64 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject IUserSettingService UserSettingService
+
+<RadzenDataGrid TItem="AccountProgramDto" Data="@Data" @ref="@_grid">
+    <HeaderTemplate>
+        <AuthorizeView Policy="InRoleCanProposeAccountProgram">
+            <RadzenButton Icon="add" Text="Add new Program" Variant="Variant.Text" Click="@InsertRow" />
+        </AuthorizeView>
+    </HeaderTemplate>
+    <Template Context="program">
+        <RadzenDataGrid TItem="AccountProgramStatusLogDto" Data="@program.Logs">
+            <Columns>
+                <RadzenDataGridColumn Title="Status Date" Property="@nameof(AccountProgramStatusHistory.StatusDate)" 
+                                      Width="100px"/>
+                <RadzenDataGridColumn Title="Previous Status" Width="135px"
+                                      Property="@nameof(AccountProgramStatusHistory.OldStatusNavigation.Description)"/>
+                <RadzenDataGridColumn Title="New Status" Width="135px"
+                                      Property="@nameof(AccountProgramStatusHistory.NewStatusNavigation.Description)"/>
+                <RadzenDataGridColumn Title="Single" Property="@nameof(AccountProgramStatusHistory.NewSingle)" 
+                                      Width="125px" FormatString="{0:C0}"/>
+                <RadzenDataGridColumn Title="Aggregate" Property="@nameof(AccountProgramStatusHistory.NewAggregate)" 
+                                      Width="125px" FormatString="{0:C0}"/>
+                <RadzenDataGridColumn Title="Status changed by"  
+                                      Width="125px" FormatString="{0:C0}"/>
+            </Columns>
+        </RadzenDataGrid>
+    </Template>
+    <Columns>
+        
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private List<AccountProgramDto> Data { get; set; } = [];
+    private RadzenDataGrid<AccountProgramDto> _grid = null!;
+    private UserInfoDto? _userInfo;
+
+    #region Loaders
+
+    
+
+    #endregion
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _userInfo = await UserSettingService.GetUserEmployeeInfoAsync();
+    }
+
+    private async Task LoadData()
+    {
+        await ShowLoading();
+    }
+
+    private Task InsertRow()
+    {
+        throw new NotImplementedException();
+    }
+}

@@ -330,6 +330,16 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteUnderwriterRecommendation(Guid id);
         
         #endregion
+
+        #region Line Of Authority
+
+        public Task<IDataAccessResult<List<AccountProgramDto>>> GetAccountPrograms(string accountNum);
+        public Task<IDataAccessResult<AccountProgramDto> >GetAccountProgramById(Guid id);
+        public Task<ISaveDataResult> CreateAccountProgram(AccountProgramDto input);
+        public Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, Guid employeeId,
+            string newStatusTxt);
+
+        #endregion
     }
 
     public interface ISaveDataResult

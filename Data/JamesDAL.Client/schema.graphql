@@ -44,6 +44,21 @@ type UserProfile {
   voidedBonds: [VoidedBond!]!
 }
 
+type AccountProgramDto {
+  id: UUID!
+  accountNum: String!
+  effective: DateTime!
+  expiration: DateTime!
+  single: Int!
+  aggregate: Int!
+  statusId: UUID!
+  status: String!
+  createdBy: String!
+  approvedBy: String
+  approvedDate: DateTime
+  logs: [AccountProgramStatusLogDto!]!
+}
+
 type ImagingTabType {
   id: UUID!
   created: DateTime!
@@ -615,6 +630,8 @@ type Query {
   allInsurers: [Insurer!]!
   loaLogsByAccount(accountNumber: String!): [LineOfAuthorityLog!]!
   accountLOAs(accountNum: String!): AccountLOAsDto!
+  accountPrograms(accountNum: String!): [AccountProgramDto!]!
+  accountProgramById(id: UUID!): AccountProgramDto!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -633,6 +650,7 @@ type Query {
   userSetting(key: String!): UserSetting
   allUserSettings: [KeyValuePairOfStringAndString!]!
   userEmployeeInfo(username: String!): UserInfoDto
+  userLOA(division: String!): AccountProgramUserAuthority
 }
 
 type AgencyCommission {
@@ -966,6 +984,21 @@ type Ratio {
   imagingId: UUID
   accountNumNavigation: Account!
   balanceSheets: [BalanceSheet!]!
+}
+
+input AccountProgramDtoInput {
+  id: UUID!
+  accountNum: String!
+  effective: DateTime!
+  expiration: DateTime!
+  single: Int!
+  aggregate: Int!
+  statusId: UUID!
+  status: String!
+  createdBy: String!
+  approvedBy: String
+  approvedDate: DateTime
+  logs: [AccountProgramStatusLogDtoInput!]!
 }
 
 type CreateAccountWatchPayload {
@@ -1302,6 +1335,25 @@ type CommercialRate {
   riskTypeNavigation: RiskTypeDm!
 }
 
+input AccountProgramStatusLogDtoInput {
+  id: UUID!
+  newStatusId: UUID!
+  newStatus: String!
+  oldStatusId: UUID
+  oldStatus: String
+  oldSingle: Int
+  newSingle: Int!
+  oldAggregate: Int
+  newAggregate: Int!
+  statusDate: DateTime!
+  statusChangeBy: UUID!
+  statusChangeByFullName: String
+}
+
+type AccountProgramChangeStatusPayload {
+  boolean: Boolean
+}
+
 type SicratioTypeDm {
   id: UUID!
   created: DateTime!
@@ -1410,6 +1462,8 @@ type Mutation {
   createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
   setBondBlock(input: SetBondBlockInput!): SetBondBlockPayload!
   deleteBondBlock(input: DeleteBondBlockInput!): DeleteBondBlockPayload!
+  createAccountProgram(input: CreateAccountProgramInput!): CreateAccountProgramPayload!
+  accountProgramChangeStatus(input: AccountProgramChangeStatusInput!): AccountProgramChangeStatusPayload!
   setUnderwriterRecommendation(input: SetUnderwriterRecommendationInput!): SetUnderwriterRecommendationPayload!
   deleteUnderwriterRecommendation(input: DeleteUnderwriterRecommendationInput!): DeleteUnderwriterRecommendationPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
@@ -1463,6 +1517,10 @@ type ResponsibilityDm {
   modified: DateTime!
   responsibility: String!
   keyPersonnel: [KeyPersonnel!]!
+}
+
+input CreateAccountProgramInput {
+  input: AccountProgramDtoInput!
 }
 
 type AccountAlertClaimDto {
@@ -1993,6 +2051,7 @@ type UserInfoDto {
   title: String!
   email: String!
   isUnderwriter: Boolean!
+  homeOfficeApprover: Boolean!
 }
 
 type Security {
@@ -2056,6 +2115,21 @@ type AccountProgram {
   accountNumNavigation: Account!
   accountProgramStatusHistories: [AccountProgramStatusHistory!]!
   status: AccountProgramStatusDm!
+}
+
+type AccountProgramStatusLogDto {
+  id: UUID!
+  newStatusId: UUID!
+  newStatus: String!
+  oldStatusId: UUID
+  oldStatus: String
+  oldSingle: Int
+  newSingle: Int!
+  oldAggregate: Int
+  newAggregate: Int!
+  statusDate: DateTime!
+  statusChangeBy: UUID!
+  statusChangeByFullName: String
 }
 
 "The `Decimal` scalar type represents a decimal floating-point number."
@@ -3416,6 +3490,10 @@ type ScalingDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
+type CreateAccountProgramPayload {
+  boolean: Boolean
+}
+
 type Subaccount {
   id: UUID!
   created: DateTime!
@@ -3504,6 +3582,12 @@ type State {
 
 type SetEmployeeEmailPayload {
   boolean: Boolean
+}
+
+input AccountProgramChangeStatusInput {
+  accountProgramId: UUID!
+  employeeId: UUID!
+  newStatusTxt: String!
 }
 
 input CreateAgencyStatusLogInput {

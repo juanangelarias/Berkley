@@ -1,0 +1,11 @@
+﻿mutation CreateAccountProgram ($input: CreateAccountProgramInput!) {
+    createAccountProgram(input: $input) {
+        boolean
+    }
+}
+
+mutation AccountProgramChangeStatus($input: AccountProgramChangeStatusInput!) {
+    accountProgramChangeStatus(input: $input) {
+        boolean
+    }
+}

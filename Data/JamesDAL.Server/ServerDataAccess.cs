@@ -1068,6 +1068,33 @@ namespace James.Data.Server
         }
         
         #endregion
+        
+        #region Line Of Authority
+
+        public async Task<IDataAccessResult<List<AccountProgramDto>>> GetAccountPrograms(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetAccountPrograms(accountNum, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<AccountProgramDto>> GetAccountProgramById(Guid id)
+        {
+            return await ExecuteGet(async () => await query.GetAccountProgramById(id, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> CreateAccountProgram(AccountProgramDto input)
+        {
+            return await ExecuteSave(async () => await generalMutation.CreateAccountProgram(input, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, Guid employeeId,
+            string newStatusTxt)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.AccountProgramChangeStatus(accountProgramId, employeeId, newStatusTxt,
+                    contextFactory));
+        }
+
+        #endregion
 
         private async Task<ImagingSearchCriteria> ImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true)

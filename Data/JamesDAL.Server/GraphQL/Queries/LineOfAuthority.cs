@@ -1,5 +1,6 @@
 ﻿using System.Web.Http;
 using James.Shared.Dto;
+using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -146,5 +147,126 @@ public partial class Query
             .Sum(s => s.BondAmount);
 
         return total;
+    }
+    
+    [Authorize]
+    public async Task<List<AccountProgramDto>> GetAccountPrograms(string accountNum, 
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var data = await ctx.AccountPrograms
+            .Include(i=>i.Status)
+            .Include(i=> i.AccountProgramStatusHistories)
+            .ThenInclude(i=>i.NewStatusNavigation)
+            .Include(i=> i.AccountProgramStatusHistories)
+            .ThenInclude(i=>i.OldStatusNavigation)
+            // ToDo: Add Include to Employee (StatusChangeByNavigation)
+            .Where(r => r.AccountNum == accountNum)
+            .OrderBy(o=>o.AccountNum)
+            .ThenByDescending(o=>o.Effective)
+            .ToListAsync();
+
+        var employees = await ctx.Employees
+            .ToListAsync();
+
+        var result = new List<AccountProgramDto>();
+        foreach (var program in data)
+        {
+            var prg = new AccountProgramDto
+            {
+                Id = program.Id,
+                Effective = program.Effective,
+                Expiration = program.Expiration,
+                Single = program.Single,
+                Aggregate = program.Aggregate,
+                StatusId = program.StatusId,
+                Status = program.Status.Description,
+                CreatedBy = program.CreatedBy,
+                ApprovedBy = program.ApprovedBy,
+                ApprovedDate = program.ApprovedDate
+            };
+            foreach (var hst in program.AccountProgramStatusHistories)
+            {
+                prg.Logs.Add(new AccountProgramStatusLogDto
+                {
+                    Id = hst.Id,
+                    NewStatusId = hst.NewStatus,
+                    NewStatus = hst.NewStatusNavigation.Description,
+                    OldStatusId = hst.OldStatus,
+                    OldStatus = hst.OldStatusNavigation?.Description,
+                    StatusDate = hst.StatusDate,
+                    StatusChangeBy = hst.StatusChangeBy,
+                    StatusChangeByFullName = employees
+                        .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
+                        .FullName ?? "",
+                    OldSingle = hst.OldSingle,
+                    NewSingle = hst.NewSingle,
+                    OldAggregate = hst.OldAggregate,
+                    NewAggregate = hst.NewAggregate,
+                });
+            }
+            
+            result.Add(prg);
+        }
+        
+        return result;
+    }
+
+    [Authorize]
+    public async Task<AccountProgramDto> GetAccountProgramById(Guid id,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var program = await ctx.AccountPrograms
+            .Include(i => i.Status)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.NewStatusNavigation)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.OldStatusNavigation)
+            // ToDo: Add Include to Employee (StatusChangeByNavigation)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (program == null)
+            throw new GraphQLException("Account program not found");
+
+        var employees = await ctx.Employees
+            .ToListAsync();
+
+        var prg = new AccountProgramDto
+        {
+            Id = program.Id,
+            Effective = program.Effective,
+            Expiration = program.Expiration,
+            Single = program.Single,
+            Aggregate = program.Aggregate,
+            StatusId = program.StatusId,
+            Status = program.Status.Description,
+            CreatedBy = program.CreatedBy,
+            ApprovedBy = program.ApprovedBy,
+            ApprovedDate = program.ApprovedDate
+        };
+        foreach (var hst in program.AccountProgramStatusHistories)
+        {
+            prg.Logs.Add(new AccountProgramStatusLogDto
+            {
+                Id = hst.Id,
+                NewStatusId = hst.NewStatus,
+                NewStatus = hst.NewStatusNavigation.Description,
+                OldStatusId = hst.OldStatus,
+                OldStatus = hst.OldStatusNavigation?.Description,
+                StatusDate = hst.StatusDate,
+                StatusChangeBy = hst.StatusChangeBy,
+                StatusChangeByFullName = employees
+                    .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
+                    .FullName ?? "",
+                OldSingle = hst.OldSingle,
+                NewSingle = hst.NewSingle,
+                OldAggregate = hst.OldAggregate,
+                NewAggregate = hst.NewAggregate,
+            });
+        }
+
+        return prg;
     }
 }

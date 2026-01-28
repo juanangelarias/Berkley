@@ -336,37 +336,3 @@ query GetAccountOutstandingLiability($accountNum: String!) {
         }
     }
 }
-
-query GetAccountRateAndCommissions {
-    accountRateAndCommissions {
-        commercialRates {
-            amountPerUnit
-            annualMinimum
-            commercialBondType
-            created
-            id
-            maximumAmount
-            minumumAmount
-            modified
-            rateGroup
-            riskType
-            unitSize
-        }
-        contractRates {
-            class
-            created
-            id
-            maximumAmount
-            minumumAmount
-            modified
-            premiumRate
-            rateGroup
-            rateType
-        }
-        commercialBondTypes
-        rateClasses
-        rateGroups
-        rateTypes
-        riskTypes
-    }
-}

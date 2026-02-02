@@ -47,12 +47,14 @@ type UserProfile {
 type AccountProgramDto {
   id: UUID!
   accountNum: String!
+  requireExpiration: Boolean!
   effective: DateTime!
-  expiration: DateTime!
+  expiration: DateTime
   single: Int!
   aggregate: Int!
   statusId: UUID!
   status: String!
+  createdById: UUID!
   createdBy: String!
   approvedBy: String
   approvedDate: DateTime
@@ -622,6 +624,7 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
+  allAccountProgramStatuses: [AccountProgramStatusDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -650,7 +653,7 @@ type Query {
   userSetting(key: String!): UserSetting
   allUserSettings: [KeyValuePairOfStringAndString!]!
   userEmployeeInfo(username: String!): UserInfoDto
-  userLOA(division: String!): AccountProgramUserAuthority
+  userLOAByDivision(division: String!): [UserLineOfAuthority!]!
 }
 
 type AgencyCommission {
@@ -986,27 +989,12 @@ type Ratio {
   balanceSheets: [BalanceSheet!]!
 }
 
-input AccountProgramDtoInput {
-  id: UUID!
-  accountNum: String!
-  effective: DateTime!
-  expiration: DateTime!
-  single: Int!
-  aggregate: Int!
-  statusId: UUID!
-  status: String!
-  createdBy: String!
-  approvedBy: String
-  approvedDate: DateTime
-  logs: [AccountProgramStatusLogDtoInput!]!
-}
-
 type CreateAccountWatchPayload {
   accountWatch: AccountWatch
 }
 
 type SetAccountProgramPayload {
-  accountProgram: AccountProgram
+  boolean: Boolean
 }
 
 enum ImagingPropertyDataType {
@@ -1335,21 +1323,6 @@ type CommercialRate {
   riskTypeNavigation: RiskTypeDm!
 }
 
-input AccountProgramStatusLogDtoInput {
-  id: UUID!
-  newStatusId: UUID!
-  newStatus: String!
-  oldStatusId: UUID
-  oldStatus: String
-  oldSingle: Int
-  newSingle: Int!
-  oldAggregate: Int
-  newAggregate: Int!
-  statusDate: DateTime!
-  statusChangeBy: UUID!
-  statusChangeByFullName: String
-}
-
 type AccountProgramChangeStatusPayload {
   boolean: Boolean
 }
@@ -1414,7 +1387,6 @@ type Mutation {
   setAccountGeneralInfoPanel(input: SetAccountGeneralInfoPanelInput!): SetAccountGeneralInfoPanelPayload!
   setAccountSystems(input: SetAccountSystemsInput!): SetAccountSystemsPayload!
   setAccountAdditionalInformation(input: SetAccountAdditionalInformationInput!): SetAccountAdditionalInformationPayload!
-  setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   createAccountWatch(input: CreateAccountWatchInput!): CreateAccountWatchPayload!
   updateAccountWatch(input: UpdateAccountWatchInput!): UpdateAccountWatchPayload!
   deleteAccountWatch(input: DeleteAccountWatchInput!): DeleteAccountWatchPayload!
@@ -1462,7 +1434,7 @@ type Mutation {
   createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
   setBondBlock(input: SetBondBlockInput!): SetBondBlockPayload!
   deleteBondBlock(input: DeleteBondBlockInput!): DeleteBondBlockPayload!
-  createAccountProgram(input: CreateAccountProgramInput!): CreateAccountProgramPayload!
+  setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   accountProgramChangeStatus(input: AccountProgramChangeStatusInput!): AccountProgramChangeStatusPayload!
   setUnderwriterRecommendation(input: SetUnderwriterRecommendationInput!): SetUnderwriterRecommendationPayload!
   deleteUnderwriterRecommendation(input: DeleteUnderwriterRecommendationInput!): DeleteUnderwriterRecommendationPayload!
@@ -1517,10 +1489,6 @@ type ResponsibilityDm {
   modified: DateTime!
   responsibility: String!
   keyPersonnel: [KeyPersonnel!]!
-}
-
-input CreateAccountProgramInput {
-  input: AccountProgramDtoInput!
 }
 
 type AccountAlertClaimDto {
@@ -2500,8 +2468,9 @@ type ImagingTab {
 
 input SetAccountProgramInput {
   programId: UUID!
+  accountNum: String!
   effective: DateTime!
-  expritation: DateTime!
+  expiration: DateTime
   single: Int!
   aggregate: Int!
   comments: String
@@ -3490,10 +3459,6 @@ type ScalingDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
-type CreateAccountProgramPayload {
-  boolean: Boolean
-}
-
 type Subaccount {
   id: UUID!
   created: DateTime!
@@ -3586,7 +3551,6 @@ type SetEmployeeEmailPayload {
 
 input AccountProgramChangeStatusInput {
   accountProgramId: UUID!
-  employeeId: UUID!
   newStatusTxt: String!
 }
 

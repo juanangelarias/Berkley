@@ -85,7 +85,7 @@ public partial class Query
     }
 
     [Authorize]
-    public async Task<AccountProgramUserAuthority?> GetUserLOA(string division,
+    public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
         [Service] IHttpContextAccessor contextAccessor)
     {
@@ -102,17 +102,8 @@ public partial class Query
         if(userId == null)
             throw new GraphQLException("User not found in employee table.");
         
-        // ToDo: This have to be changed once the "UserLineOfAuthority" table is modified to point to the "DivisionDM"
-        // ToDo: table instead of the "AccountClassDM" table."
-        
-        var accountClassId = (await ctx.AccountClassDms
-            .FirstOrDefaultAsync(f=>f.Name == division))?.Id;
-        if(accountClassId == null)
-            throw new GraphQLException($"Division {division} not found in AccountClassDM table.");
-        
-        // ToDo: End to do
-        
-        return await ctx.AccountProgramUserAuthorities
-            .FirstOrDefaultAsync(f => f.UserId == userId && f.AccountClassId == accountClassId);
+        return await ctx.UserLineOfAuthorities
+            .Where(f => f.UserId == userId && f.DivisionCode == division)
+            .ToListAsync();
     }
 }

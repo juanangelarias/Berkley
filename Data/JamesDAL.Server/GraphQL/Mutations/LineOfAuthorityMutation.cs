@@ -1,60 +1,105 @@
-﻿using James.Shared.Dto;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Mutations;
 
 public partial class GeneralMutation
 {
     [Authorize]
-    public async Task<bool> CreateAccountProgram(AccountProgramDto input, 
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    public async Task<bool> SetAccountProgram(Guid programId, string accountNum, DateTime effective,
+        DateTime? expiration, int single, int aggregate, string? comments, Guid statusId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
     {
-        var logInput = input.Logs.FirstOrDefault();
-        if(logInput == null)
-            throw new GraphQLException("The input must contain at least one log entry");
-        
-        var program = new AccountProgram
-        {
-            Id = input.Id,
-            AccountNum = input.AccountNum,
-            Effective = input.Effective,
-            Expiration = input.Expiration,
-            Single = input.Single,
-            Aggregate = input.Aggregate,
-            StatusId = input.StatusId,
-            CreatedBy = input.CreatedBy,
-            ApprovedBy = null,
-            ApprovedDate = null
-        };
-        
-        var log = new AccountProgramStatusHistory
-        {
-            Id = logInput.Id,
-            AccountProgramId = input.Id,
-            AccountNum = input.AccountNum,
-            OldStatus = null,
-            NewStatus = logInput.NewStatusId,
-            StatusDate = logInput.StatusDate,
-            OldSingle = null,
-            NewSingle = logInput.NewSingle,
-            OldAggregate = null,
-            NewAggregate = logInput.NewAggregate,
-            StatusChangeBy = logInput.StatusChangeBy
-        };
-        
         var ctx = await contextFactory.CreateDbContextAsync();
-        ctx.AccountPrograms.Add(program);
-        ctx.AccountProgramStatusHistories.Add(log);
+
+        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+        if (null == username)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+
+        var employee = (await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username));
+
+        if (employee == null)
+            throw new GraphQLException("User not found in employee table.");
+
+        AccountProgramStatusHistory CreateStatusLog(AccountProgramStatusHistory? lastLog) => new()
+        {
+            Id = Guid.NewGuid(),
+            AccountProgramId = programId,
+            AccountNum = accountNum,
+            OldStatus = lastLog?.NewStatus,
+            NewStatus = statusId,
+            StatusDate = DateTime.Now,
+            OldSingle = lastLog?.NewSingle,
+            NewSingle = single,
+            OldAggregate = lastLog?.NewAggregate,
+            NewAggregate = aggregate,
+            StatusChangeBy = employee.Id
+        };
+
+        var existent = await ctx.AccountPrograms
+            .FirstOrDefaultAsync(f => f.Id == programId);
+        if (existent != null)
+        {
+            existent.Effective = effective;
+            existent.Expiration = expiration ?? new DateTime(9999, 12, 31);
+            existent.Single = single;
+            existent.Aggregate = aggregate;
+            existent.Modified = DateTime.Now;
+            existent.CreatedBy = employee.FullName;
+            existent.Comments = comments;
+
+            var lastLog = await ctx.AccountProgramStatusHistories
+                .OrderBy(o => o.AccountProgramId)
+                .ThenByDescending(t => t.Created)
+                .FirstOrDefaultAsync(f => f.AccountProgramId == programId);
+
+            ctx.AccountProgramStatusHistories.Add(CreateStatusLog(lastLog));
+            ctx.Update(existent);
+        }
+        else
+        {
+            var program = new AccountProgram
+            {
+                Id = programId,
+                AccountNum = accountNum,
+                Effective = effective,
+                Expiration = expiration ?? new DateTime(9999, 12, 31),
+                Single = single,
+                Aggregate = aggregate,
+                StatusId = statusId,
+                Created = DateTime.Now,
+                CreatedBy = employee.FullName,
+                Modified = DateTime.Now,
+                ApprovedBy = null,
+                ApprovedDate = null,
+                Comments = comments
+            };
+            ctx.AccountPrograms.Add(program);
+            ctx.AccountProgramStatusHistories.Add(CreateStatusLog(null));
+        }
+
         await ctx.SaveChangesAsync();
-        
         return true;
     }
 
     [Authorize]
-    public async Task<bool> AccountProgramChangeStatus(Guid accountProgramId, Guid employeeId, string newStatusTxt,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    public async Task<bool> AccountProgramChangeStatus(Guid accountProgramId, string newStatusTxt,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+        if (null == username)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+
+        var employee = (await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username));
+        
+        if(employee == null)
+            throw new GraphQLException("User not found in employee table.");
 
         var newStatus = ctx.AccountProgramStatusDms
             .FirstOrDefault(f => f.Description.ToUpper() == newStatusTxt.ToUpper());
@@ -76,23 +121,24 @@ public partial class GeneralMutation
             Id = Guid.NewGuid(),
             AccountProgramId = program.Id,
             AccountNum = program.AccountNum,
-            OldStatus = lastLog!.NewStatus,
+            OldStatus = lastLog?.NewStatus,
             NewStatus = newStatus.Id,
             StatusDate = DateTime.Now,
-            OldSingle = lastLog!.NewSingle,
+            OldSingle = lastLog?.NewSingle,
             NewSingle = program.Single,
-            OldAggregate = lastLog!.NewAggregate,
+            OldAggregate = lastLog?.NewAggregate,
             NewAggregate = program.Aggregate,
-            StatusChangeBy = employeeId
+            StatusChangeBy = employee.Id
         };
         
         ctx.AccountProgramStatusHistories.Add(newLog);
-        program.StatusId = newStatus.Id;
+        program.StatusId = newStatus.Id; 
+        program.Modified = DateTime.Now;
         program.ApprovedDate = DateTime.Now;
 
         if (newStatusTxt.ToUpper() == "APPROVED")
         {
-            program.ApprovedBy = "employeeId";
+            program.ApprovedBy = employee.FullName;
             program.ApprovedDate = DateTime.Now;
         }
 

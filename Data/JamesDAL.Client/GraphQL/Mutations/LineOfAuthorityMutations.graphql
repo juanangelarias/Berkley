@@ -1,11 +1,11 @@
-﻿mutation CreateAccountProgram ($input: CreateAccountProgramInput!) {
-    createAccountProgram(input: $input) {
+﻿mutation AccountProgramChangeStatus($input: AccountProgramChangeStatusInput!) {
+    accountProgramChangeStatus(input: $input) {
         boolean
     }
 }
 
-mutation AccountProgramChangeStatus($input: AccountProgramChangeStatusInput!) {
-    accountProgramChangeStatus(input: $input) {
+mutation SetAccountProgram($input: SetAccountProgramInput!) {
+    setAccountProgram(input: $input) {
         boolean
     }
 }

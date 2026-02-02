@@ -253,5 +253,12 @@ query GetAccountLOAs($input: String!) {
             status
         },
         loaTotal
+    }    
+}
+
+query GetAllAccountProgramStatuses {
+    allAccountProgramStatuses {
+        id
+        description
     }
 }

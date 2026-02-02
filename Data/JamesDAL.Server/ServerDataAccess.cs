@@ -366,12 +366,11 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await generalMutation.DeleteLegalEntityEmail(id, contextFactory));
         }
 
-        public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective,
-            DateTime expiration, int single, int aggregate,
-            string? comments, Guid statusId)
+        public async Task<ISaveDataResult> SetAccountProgram(Guid programId, string accountNum, DateTime effective,
+            DateTime expiration, int single, int aggregate, string? comments, Guid statusId)
         {
-            return await ExecuteGet(async () => await accountMutation.SetAccountProgram(programId, effective,
-                expiration, single, aggregate, comments, statusId, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.SetAccountProgram(programId, accountNum, effective,
+                expiration, single, aggregate, comments, statusId, contextFactory, contextAccessor));
         }
 
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,
@@ -1019,6 +1018,12 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetUserEmployeeInfo(userName, contextFactory));
         }
+        
+        public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)
+        {
+            return await ExecuteGet(async () =>
+                await query.GetUserLOAByDivision(division, contextFactory, contextAccessor));
+        }
 
         #endregion
         
@@ -1081,20 +1086,20 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAccountProgramById(id, contextFactory));
         }
 
-        public async Task<ISaveDataResult> CreateAccountProgram(AccountProgramDto input)
-        {
-            return await ExecuteSave(async () => await generalMutation.CreateAccountProgram(input, contextFactory));
-        }
-
-        public async Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, Guid employeeId,
+        public async Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, 
             string newStatusTxt)
         {
             return await ExecuteSave(async () =>
-                await generalMutation.AccountProgramChangeStatus(accountProgramId, employeeId, newStatusTxt,
-                    contextFactory));
+                await generalMutation.AccountProgramChangeStatus(accountProgramId, newStatusTxt, contextFactory,
+                    contextAccessor));
         }
-
+        
         #endregion
+        
+        public async Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses()
+        {
+            return await ExecuteGet(async () => await query.GetAllAccountProgramStatuses(contextFactory));
+        }
 
         private async Task<ImagingSearchCriteria> ImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true)

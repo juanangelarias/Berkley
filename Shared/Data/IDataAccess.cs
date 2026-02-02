@@ -144,7 +144,7 @@ namespace James.Shared.Data
 
         public Task<ISaveDataResult> DeleteLegalEntityEmail(Guid id);
 
-        public Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective,
+        public Task<ISaveDataResult> SetAccountProgram(Guid programId, string accountNum, DateTime effective,
             DateTime expiration, int single, int aggregate, string? comments, Guid statusId);
 
         public Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,
@@ -284,7 +284,6 @@ namespace James.Shared.Data
         #region User Settings
         
         public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
-        
         public Task<ISaveDataResult> SetUserSetting(string key, string? value);
         //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSettings();
@@ -292,6 +291,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> ResetUserSetting(string key);
         public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
         public Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName);
+        public Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division);
 
         #endregion
 
@@ -335,11 +335,13 @@ namespace James.Shared.Data
 
         public Task<IDataAccessResult<List<AccountProgramDto>>> GetAccountPrograms(string accountNum);
         public Task<IDataAccessResult<AccountProgramDto> >GetAccountProgramById(Guid id);
-        public Task<ISaveDataResult> CreateAccountProgram(AccountProgramDto input);
-        public Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, Guid employeeId,
+        //public Task<ISaveDataResult> CreateAccountProgram(AccountProgramDto input);
+        public Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, 
             string newStatusTxt);
 
         #endregion
+        
+        public Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses();
     }
 
     public interface ISaveDataResult

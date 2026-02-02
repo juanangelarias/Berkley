@@ -176,6 +176,7 @@ public partial class Query
             var prg = new AccountProgramDto
             {
                 Id = program.Id,
+                RequireExpiration = true,           // ToDo: To be changed
                 Effective = program.Effective,
                 Expiration = program.Expiration,
                 Single = program.Single,

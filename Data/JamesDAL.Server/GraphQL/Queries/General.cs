@@ -237,5 +237,13 @@ namespace James.Data.Server.GraphQL.Queries
                 .OrderBy(o=>o.Code)
                 .ToListAsync();
         }
+
+        [Authorize]
+        public async Task<List<AccountProgramStatusDm>> GetAllAccountProgramStatuses(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            return await ctx.AccountProgramStatusDms.ToListAsync();
+        }
     }
 }

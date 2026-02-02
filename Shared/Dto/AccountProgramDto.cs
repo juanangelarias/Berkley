@@ -4,12 +4,14 @@ public class AccountProgramDto
 {
     public Guid Id { get; set; }
     public string AccountNum { get; set; } = string.Empty;
+    public bool RequireExpiration { get; set; } = true;
     public DateTime Effective { get; set; }
-    public DateTime Expiration { get; set; }
+    public DateTime? Expiration { get; set; }
     public int Single { get; set; }
     public int Aggregate { get; set; }
     public Guid StatusId { get; set; }
     public string Status { get; set; } = string.Empty;
+    public Guid CreatedById { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
     public string? ApprovedBy { get; set; } = string.Empty;
     public DateTime? ApprovedDate { get; set; }

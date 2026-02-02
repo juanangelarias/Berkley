@@ -181,7 +181,7 @@
     {
         await ShowLoading();
         Reset(program);
-        //This is where we handle row Updates.
+        /*//This is where we handle row Updates.
         var result = await DataAccess.SetAccountProgram(program.Id, program.Effective, program.Expiration, program.Single, program.Aggregate, program.Comments,
             program.StatusId);
 
@@ -192,7 +192,7 @@
         else
         {
             NotifySuccessfulSave("account program");
-        }
+        }*/
     }
     
     private async Task CancelProgramEdit(AccountProgram program)

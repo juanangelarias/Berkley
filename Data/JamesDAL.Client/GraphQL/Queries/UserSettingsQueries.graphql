@@ -15,3 +15,14 @@ query GetUserEmployeeInfo($userName: String!) {
         isUnderwriter
     }
 }
+
+query GetUserLOAByDivision($division: String!) {
+    userLOAByDivision(division: $division) {
+        id
+        divisionCode
+        bondType
+        expiration
+        single
+        aggregate
+    }
+}

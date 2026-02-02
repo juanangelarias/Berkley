@@ -13,8 +13,7 @@ public partial class GeneralMutation
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var record = ctx.CreditReportHistories
-            .FirstOrDefault(r => r.Id == id &&
-                r.CreditReport == creditReportAgency);
+            .FirstOrDefault(r => r.Id == id);
 
         if (record != null)
         {

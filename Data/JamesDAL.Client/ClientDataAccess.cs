@@ -1579,6 +1579,12 @@ namespace James.Data.Client
                 }));
         }
         
+        public async Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.DeleteAccountProgram.ExecuteAsync(accountProgramId), "DeleteAccountProgram"); 
+        }
+
         #endregion
         
         public async Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses()

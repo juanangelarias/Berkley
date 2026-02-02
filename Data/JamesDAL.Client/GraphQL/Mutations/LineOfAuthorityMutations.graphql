@@ -9,3 +9,9 @@ mutation SetAccountProgram($input: SetAccountProgramInput!) {
         boolean
     }
 }
+
+mutation DeleteAccountProgram($id: UUID!) {
+    deleteAccountProgram(input: {accountProgramId: $id}) {
+        boolean
+    }
+}

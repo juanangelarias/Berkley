@@ -85,6 +85,30 @@ public partial class GeneralMutation
     }
 
     [Authorize]
+    public async Task<bool> DeleteAccountProgram(Guid accountProgramId, 
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var record = await ctx.AccountPrograms
+            .FirstOrDefaultAsync(f => f.Id == accountProgramId);
+        
+        if(record == null)
+            throw new GraphQLException("Account program status dms not found.");
+
+        var history = await ctx.AccountProgramStatusHistories
+            .Where(f => f.AccountProgramId == accountProgramId)
+            .ToListAsync();
+        
+        ctx.AccountProgramStatusHistories.RemoveRange(history);
+        ctx.AccountPrograms.Remove(record);
+        
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+
+    [Authorize]
     public async Task<bool> AccountProgramChangeStatus(Guid accountProgramId, string newStatusTxt,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
         [Service] IHttpContextAccessor contextAccessor)

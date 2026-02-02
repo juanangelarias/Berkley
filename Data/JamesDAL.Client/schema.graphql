@@ -1435,6 +1435,7 @@ type Mutation {
   setBondBlock(input: SetBondBlockInput!): SetBondBlockPayload!
   deleteBondBlock(input: DeleteBondBlockInput!): DeleteBondBlockPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
+  deleteAccountProgram(input: DeleteAccountProgramInput!): DeleteAccountProgramPayload!
   accountProgramChangeStatus(input: AccountProgramChangeStatusInput!): AccountProgramChangeStatusPayload!
   setUnderwriterRecommendation(input: SetUnderwriterRecommendationInput!): SetUnderwriterRecommendationPayload!
   deleteUnderwriterRecommendation(input: DeleteUnderwriterRecommendationInput!): DeleteUnderwriterRecommendationPayload!
@@ -1489,6 +1490,10 @@ type ResponsibilityDm {
   modified: DateTime!
   responsibility: String!
   keyPersonnel: [KeyPersonnel!]!
+}
+
+input DeleteAccountProgramInput {
+  accountProgramId: UUID!
 }
 
 type AccountAlertClaimDto {
@@ -3184,6 +3189,10 @@ type AccountRateAndCommissionDto {
   commercialBondTypes: [String!]!
   riskTypes: [String!]!
   commercialRates: [CommercialRate!]!
+}
+
+type DeleteAccountProgramPayload {
+  boolean: Boolean
 }
 
 type BidSubcontractor {

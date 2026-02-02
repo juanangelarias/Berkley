@@ -1,7 +1,6 @@
 ﻿@inherits JamesGridLayoutComponentBase<AccountProgramDto>
 
 @inject IDataAccess DataAccess
-@inject IUserSettingService UserSettingService
 @inject TooltipService TooltipService
 
 <RadzenDataGrid TItem="AccountProgramDto" Data="@Data" @ref="@Grid" EditMode="DataGridEditMode.Single"
@@ -153,6 +152,12 @@
                                       MouseEnter="@(arg => ShowTooltip(arg, Action.RequestApproval))"
                                       Click="@(_ => RequestApproval(program))" @onclick:stopPropagation="true"/>
                     </AuthorizeView>
+                    <AuthorizeView Policy="InRoleCanProposeAccountProgram">
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                      Size="ButtonSize.Small" Visible="@ShowRequestApproval(program)"
+                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Remove))"
+                                      Click="@(_ => RemoveRow(program))" @onclick:stopPropagation="true"/>
+                    </AuthorizeView>
                     <AuthorizeView Policy="InRoleCanApproveAccountProgram">
                         <RadzenButton Icon="order_approve" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
                                       Size="ButtonSize.Small" Visible="@ShowApprove(program)"
@@ -187,7 +192,6 @@
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
     private List<AccountProgramDto> Data { get; set; } = [];
-    private UserInfoDto? _userInfo;
     private List<UserLineOfAuthority> _userLOA = [];
     private Dictionary<string, AccountProgramStatusDm> _statuses = new();
 
@@ -247,17 +251,14 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
+        _userLOA = await UserSettingService.GetUserLOAByDivision(Account.Division);
+        
         await LoadData();
     }
 
     private async Task LoadData()
     {
         await ShowLoading();
-
-        _userInfo = await UserSettingService.GetUserEmployeeInfoAsync();
-        _userLOA = await UserSettingService.GetUserLOAByDivision(Account.Division);
-
         await DataAccess.GetCacheOrLoadDataAsync(AccountProgramsLoad);
     }
 
@@ -280,27 +281,99 @@
 
     private async Task EditRow(AccountProgramDto program)
     {
-        throw new NotImplementedException();
+        await ShowLoading();
+        await Grid.EditRow(program);
+    }
+
+    private async Task RemoveRow(AccountProgramDto program)
+    {
+        var confirm = await ConfirmAction(Action.Remove);
+        if (!confirm)
+            return;
+        
+        var result = await DataAccess.DeleteAccountProgram(program.Id);
+
+        if (!result.Success)
+        {
+            NotifyDeleteError(result.Errors, "account program");
+            return;
+        }
+
+        var record = Data.FirstOrDefault(f => f.Id == program.Id);
+
+        if(record == null)
+            return;
+        
+        Data.Remove(record);
+        await Grid.Reload();
     }
 
     private async Task RequestApproval(AccountProgramDto program)
     {
-        throw new NotImplementedException();
+        var confirm = await ConfirmAction(Action.RequestApproval);
+        if (!confirm)
+            return;
+        
+        var result = await DataAccess.AccountProgramChangeStatus(program.Id, "APPROVAL REQUESTED");
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "Approval request");
+            return;
+        }
+
+        await ReloadData();
     }
 
     private async Task Approve(AccountProgramDto program)
     {
-        throw new NotImplementedException();
+        var confirm = await ConfirmAction(Action.Approve);
+        if (!confirm)
+            return;
+        
+        var result = await DataAccess.AccountProgramChangeStatus(program.Id, "APPROVED");
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "Approve");
+            return;
+        }
+
+        await ReloadData();
     }
 
     private async Task Decline(AccountProgramDto program)
     {
-        throw new NotImplementedException();
+        var confirm = await ConfirmAction(Action.Decline);
+        if (!confirm)
+            return;
+        
+        var result = await DataAccess.AccountProgramChangeStatus(program.Id, "DECLINED");
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "Decline");
+            return;
+        }
+
+        await ReloadData();
     }
 
     private async Task Cancel(AccountProgramDto program)
     {
-        throw new NotImplementedException();
+        var confirm = await ConfirmAction(Action.Cancel);
+        if (!confirm)
+            return;
+        
+        var result = await DataAccess.AccountProgramChangeStatus(program.Id, "CANCELED");
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "Cancel");
+            return;
+        }
+
+        await ReloadData();
     }
 
     private async Task Save(AccountProgramDto program)
@@ -343,7 +416,16 @@
         }
 
         NotifySuccessfulSave("account program");
-        DataAccess.UpdateCache(CacheKeys.AccountProgramStatuses, Data);
+
+        await ReloadData();
+    }
+
+    private async Task ReloadData()
+    {
+        DataAccess.Clear(CacheKeys.AccountPrograms(Account.AccountNum));
+        await LoadData();
+
+        await Grid.Reload();
     }
 
     private bool ValidateFields(AccountProgramDto program)
@@ -355,7 +437,7 @@
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Expiration date should be greater than effective date.",
-                Duration = 2000
+                Duration = 5000
             });
             flag = false;
         }
@@ -366,7 +448,7 @@
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Single value should be greater than or equal to zero.",
-                Duration = 2000
+                Duration = 5000
             });
             flag = false;
         }
@@ -377,7 +459,7 @@
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Aggregate value should be greater than or equal to zero.",
-                Duration = 2000
+                Duration = 5000
             });
             flag = false;
         }
@@ -388,7 +470,32 @@
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Aggregate value should be greater than or equal to single value.",
-                Duration = 2000
+                Duration = 5000
+            });
+            flag = false;
+        }
+
+        var userSingleMax = _userLOA.Max(m => m.Single);
+        var userAggregateMax = _userLOA.Max(m => m.Aggregate);
+
+        if (program.Single > userSingleMax)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Single value exceeds the user line of authority.",
+                Duration = 5000
+            });
+            flag = false;
+        }
+        
+        if (program.Aggregate > userAggregateMax)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Aggregate value exceeds the user line of authority.",
+                Duration = 5000
             });
             flag = false;
         }
@@ -402,22 +509,38 @@
         {
             Action.Edit => "Edit this row",
             Action.RequestApproval => "Request approval for this row",
+            Action.Remove => "Remove this row",
             Action.Approve => "Approve this row",
             Action.Decline => "Decline this row",
             Action.Cancel => "Cancel this row",
             _ => ""
         };
 
-        TooltipService.Open(element, message);
+        TooltipService.Open(element, message, options);
+    }
+
+    private async Task<bool> ConfirmAction(Action action)
+    {
+        var message = action switch
+        {
+            Action.RequestApproval => "Are you sure to submit for approval?",
+            Action.Remove => "Are you sure you want to remove this row?",
+            Action.Approve => "Are you sure you want to approve this row?",
+            Action.Decline => "Are you sure you want to decline this row?",
+            Action.Cancel => "Are you sure you want to cancel this row?",
+            _ => ""
+        };
+
+        return await DialogService.Confirm(message, "Confirmation") == true;
     }
 
     private enum Action
     {
         Edit,
         RequestApproval,
+        Remove,
         Approve,
         Decline,
         Cancel
     }
-
 }

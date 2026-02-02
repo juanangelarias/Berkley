@@ -1093,7 +1093,12 @@ namespace James.Data.Server
                 await generalMutation.AccountProgramChangeStatus(accountProgramId, newStatusTxt, contextFactory,
                     contextAccessor));
         }
-        
+        public async Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteAccountProgram(accountProgramId, 
+                contextFactory));
+        }
+
         #endregion
         
         public async Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses()

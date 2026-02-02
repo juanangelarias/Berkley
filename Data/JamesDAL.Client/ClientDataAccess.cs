@@ -529,14 +529,20 @@ namespace James.Data.Client
             return result;
         }
         
-        public async Task<IDataAccessResult<CreditReportDto>> GetCreditReport(string accountNum)
+        public async Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum)
         {
-            var result = await ExecuteGet<CreditReportDto>(async ()=>
+            throw new NotImplementedException();
+            /*var result = await ExecuteGet<CreditReportDto>(async ()=>
                 await jamesClient.GetCreditReport.ExecuteAsync(accountNum), "CreditReport");
 
-            return result;
+            return result;*/
         }
         
+        public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum, DateTime pulledDate, string rating,
             string definition, string remarks)
         {

@@ -128,8 +128,10 @@ namespace James.Shared.Data
         
         public Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum);
         
-        public Task<IDataAccessResult<CreditReportDto>> GetCreditReport(string accountNum);
+        public Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum);
 
+        public Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies();
+        
         public Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
             DateTime pulledDate, string rating, string definition, string remarks);
         

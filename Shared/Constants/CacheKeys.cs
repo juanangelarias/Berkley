@@ -59,6 +59,7 @@ public static class CacheKeys
     public const string CommercialRates = "CommercialRates";
     public const string ContractRates = "ContractRates";
     public const string Countries = "Countries";
+    public const string CreditReportAgencies = "CreditReportAgencies";
     // D
     public const string Divisions = "Divisions";
     // E

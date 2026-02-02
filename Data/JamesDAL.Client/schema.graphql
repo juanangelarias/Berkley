@@ -99,11 +99,6 @@ type WorkInProgressJob {
   workInProgressSummary: WorkInProgressSummary!
 }
 
-type CreditReportDto {
-  creditReportAgencies: [CreditReportDm!]!
-  creditReports: [CreditReportHistory!]!
-}
-
 type Insurer {
   id: UUID!
   created: DateTime!
@@ -553,7 +548,6 @@ type Query {
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
-  accountRateAndCommissions: AccountRateAndCommissionDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -586,7 +580,8 @@ type Query {
   bondsByBlock(bondBlockId: UUID!): [Bond!]!
   nextBondBlockInitialNumber(prefix: String!): Int!
   branches: [Branch!]!
-  creditReport(accountNumber: String!): CreditReportDto!
+  creditReport(accountNumber: String!): [CreditReportHistory!]!
+  creditReportAgencies: [CreditReportDm!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
   phoneNumber(phoneId: UUID!): PhoneNumber!
@@ -3099,16 +3094,6 @@ input CreateLicenseInput {
   licenseNumber: String
   state: String!
   isActive: Boolean!
-}
-
-type AccountRateAndCommissionDto {
-  rateGroups: [String!]!
-  rateClasses: [String!]!
-  rateTypes: [String!]!
-  contractRates: [ContractRate!]!
-  commercialBondTypes: [String!]!
-  riskTypes: [String!]!
-  commercialRates: [CommercialRate!]!
 }
 
 type BidSubcontractor {

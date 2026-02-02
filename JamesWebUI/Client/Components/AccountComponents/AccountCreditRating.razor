@@ -101,23 +101,43 @@
 
     #region CreditReports Load
 
-    private IDataAccessResult<CreditReportDto> _creditReportsResult = null!;
+    private IDataAccessResult<List<CreditReportHistory>> _creditReportsResult = null!;
 
-    private LoadItem CreditReportsLoad => AddEventNotify(new LoadItem<CreditReportDto>
+    private LoadItem CreditReportsLoad => AddEventNotify(new LoadItem<List<CreditReportHistory>>
     {
         Key = CacheKeys.CreditReport(Account.AccountNum),
         AsyncLoadTask = async () => _creditReportsResult = await DataAccess.GetCreditReport(Account.AccountNum),
-        CacheLoadTask = cache => _creditReportsResult = new DataAccessResult<CreditReportDto>
+        CacheLoadTask = cache => _creditReportsResult = new DataAccessResult<List<CreditReportHistory>>
         {
-            Data = (CreditReportDto)cache!
+            Data = (List<CreditReportHistory>)cache!
         },
         ResultVariable = () => _creditReportsResult,
         AfterLoad = () =>
         {
-            _creditReports = _creditReportsResult.Data!.CreditReports;
-            _creditReportSources = _creditReportsResult.Data!.CreditReportAgencies;
+            _creditReports = _creditReportsResult.Data!;
         }
     }, "credit reports");
+
+    #endregion
+
+    #region CreditReportAgencies Load
+
+    private IDataAccessResult<List<CreditReportDm>> _creditReportAgenciesResult = null!;
+
+    private LoadItem CreditReportAgenciesLoad => AddEventNotify(new LoadItem<List<CreditReportDm>>
+    {
+        Key = CacheKeys.CreditReportAgencies,
+        AsyncLoadTask = async () => _creditReportAgenciesResult = await DataAccess.GetCreditReportAgencies(),
+        CacheLoadTask = cache => _creditReportAgenciesResult = new DataAccessResult<List<CreditReportDm>>
+        {
+            Data = (List<CreditReportDm>)cache!
+        },
+        ResultVariable = () => _creditReportAgenciesResult,
+        AfterLoad = () =>
+        {
+            _creditReportSources = _creditReportAgenciesResult.Data!;
+        }
+    }, "credit report agencies");   
 
     #endregion
 
@@ -156,8 +176,6 @@
             Rating = string.Empty,
             Definition = string.Empty,
             Remarks = string.Empty,
-            Created = DateTime.Now,
-            Modified = DateTime.Now,
             AccountNumNavigation = Account
         };
 

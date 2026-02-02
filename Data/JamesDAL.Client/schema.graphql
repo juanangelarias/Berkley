@@ -269,11 +269,6 @@ input SetCurrentCreditReportLinkInput {
   imagingDocumentId: UUID
 }
 
-type KeyValue {
-  key: String!
-  value: String!
-}
-
 type EmailTypeDm {
   id: UUID!
   created: DateTime!
@@ -549,6 +544,7 @@ type Query {
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
+  accountRateAndCommissions: AccountRateAndCommissionDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -600,6 +596,11 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
+  allContractRates: [ContractRate!]!
+  allCommercialRates: [CommercialRate!]!
+  allRateGroups: [RateGroupDm!]!
+  allRiskTypes: [RiskTypeDm!]!
+  allCommercialBondTypes: [CommercialBondTypeDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -623,7 +624,7 @@ type Query {
   allStates: [State!]!
   underwriters: [Underwriter!]!
   userSetting(key: String!): UserSetting
-  allUserSettings: [KeyValue!]!
+  allUserSettings: [KeyValuePairOfStringAndString!]!
 }
 
 type AgencyCommission {
@@ -1266,6 +1267,23 @@ type AgencySearchDto {
 
 type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
+}
+
+type CommercialRate {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  commercialBondType: String!
+  riskType: String!
+  minumumAmount: Int!
+  maximumAmount: Int!
+  amountPerUnit: Float
+  unitSize: Int
+  annualMinimum: Int
+  commercialBondTypeNavigation: CommercialBondTypeDm!
+  rateGroupNavigation: RateGroupDm!
+  riskTypeNavigation: RiskTypeDm!
 }
 
 type SicratioTypeDm {
@@ -2074,6 +2092,14 @@ input AgencyLicenseBulkInput {
   isActive: Boolean!
 }
 
+type RiskTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  riskType: String!
+  commercialRates: [CommercialRate!]!
+}
+
 type BondRequest {
   id: UUID!
   created: DateTime!
@@ -2538,6 +2564,14 @@ type PowerOfAttorneyStatusDm {
   powerOfAttorneys: [PowerOfAttorney!]!
 }
 
+type CommercialBondTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  commercialBondType: String!
+  commercialRates: [CommercialRate!]!
+}
+
 type WatchStatusDm {
   id: UUID!
   created: DateTime!
@@ -2866,6 +2900,19 @@ type Account {
   emailAddresses: [LegalEntityEmail!]!
 }
 
+type ContractRate {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  class: String!
+  rateType: String!
+  minumumAmount: Int!
+  maximumAmount: Int!
+  premiumRate: Float
+  rateGroupNavigation: RateGroupDm!
+}
+
 type DivisionDm {
   id: UUID!
   created: DateTime!
@@ -3024,6 +3071,16 @@ input CreateLicenseInput {
   isActive: Boolean!
 }
 
+type AccountRateAndCommissionDto {
+  rateGroups: [String!]!
+  rateClasses: [String!]!
+  rateTypes: [String!]!
+  contractRates: [ContractRate!]!
+  commercialBondTypes: [String!]!
+  riskTypes: [String!]!
+  commercialRates: [CommercialRate!]!
+}
+
 type BidSubcontractor {
   id: UUID!
   created: DateTime!
@@ -3162,6 +3219,17 @@ type LawEntity {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type RateGroupDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  description: String!
+  createdBy: UUID
+  commercialRates: [CommercialRate!]!
+  contractRates: [ContractRate!]!
 }
 
 type AccountProgramStatusDm {

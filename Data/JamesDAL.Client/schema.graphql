@@ -606,6 +606,11 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
+  allContractRates: [ContractRate!]!
+  allCommercialRates: [CommercialRate!]!
+  allRateGroups: [RateGroupDm!]!
+  allRiskTypes: [RiskTypeDm!]!
+  allCommercialBondTypes: [CommercialBondTypeDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -3259,7 +3264,7 @@ type RateGroupDm {
   modified: DateTime!
   rateGroup: String!
   description: String!
-  createdBy: UUID!
+  createdBy: UUID
   commercialRates: [CommercialRate!]!
   contractRates: [ContractRate!]!
 }

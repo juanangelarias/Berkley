@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
 	 <RuntimeFrameworkVersion>9.0.4</RuntimeFrameworkVersion> 
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -9,6 +9,7 @@
 	<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
 	<CompressionEnabled>false</CompressionEnabled>
 	<NuGetAuditMode>all</NuGetAuditMode>
+	<LangVersion>14</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,13 +22,13 @@
 
   <ItemGroup>
     <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.11" />
-    <PackageReference Include="Blazorise.Animate" Version="1.8.8" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.11" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.11" />
-    <PackageReference Include="Radzen.Blazor" Version="8.4.1" />
-    <PackageReference Include="StrawberryShake.Blazor" Version="15.1.11" />
-    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="15.1.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
+    <PackageReference Include="Blazorise.Animate" Version="1.8.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
+    <PackageReference Include="Radzen.Blazor" Version="8.7.5" />
+    <PackageReference Include="StrawberryShake.Blazor" Version="15.1.12" />
+    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="15.1.12" />
   </ItemGroup>
 
   <ItemGroup>

@@ -55,7 +55,8 @@ public partial class GeneralMutation
                 .ThenByDescending(t => t.Created)
                 .FirstOrDefaultAsync(f => f.AccountProgramId == programId);
 
-            ctx.AccountProgramStatusHistories.Add(CreateStatusLog(lastLog));
+            var newLog = CreateStatusLog(lastLog);
+            ctx.AccountProgramStatusHistories.Add(newLog);
             ctx.Update(existent);
         }
         else
@@ -167,6 +168,11 @@ public partial class GeneralMutation
         }
 
         await ctx.SaveChangesAsync();
+
+        if (newStatusTxt.ToUpper() == "APPROVAL REQUESTED")
+        {
+            // ToDo: Send email to approver
+        }
         
         return true;
     }

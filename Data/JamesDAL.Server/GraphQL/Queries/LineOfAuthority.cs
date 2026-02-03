@@ -176,6 +176,7 @@ public partial class Query
             var prg = new AccountProgramDto
             {
                 Id = program.Id,
+                AccountNum = program.AccountNum,
                 RequireExpiration = true,           // ToDo: To be changed
                 Effective = program.Effective,
                 Expiration = program.Expiration,
@@ -183,15 +184,16 @@ public partial class Query
                 Aggregate = program.Aggregate,
                 StatusId = program.StatusId,
                 Status = program.Status.Description,
-                CreatedBy = program.CreatedBy,
-                ApprovedBy = program.ApprovedBy,
+                CreatedBy = program.CreatedBy,          // ToDo: Should be GUID pointing to employee
+                ApprovedBy = program.ApprovedBy,        // ToDo: Should be GUID pointing to employee
                 ApprovedDate = program.ApprovedDate
             };
-            foreach (var hst in program.AccountProgramStatusHistories)
+            foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o=>o.Created))
             {
                 prg.Logs.Add(new AccountProgramStatusLogDto
                 {
                     Id = hst.Id,
+                    AccountNum = hst.AccountNum,
                     NewStatusId = hst.NewStatus,
                     NewStatus = hst.NewStatusNavigation.Description,
                     OldStatusId = hst.OldStatus,
@@ -247,7 +249,7 @@ public partial class Query
             ApprovedBy = program.ApprovedBy,
             ApprovedDate = program.ApprovedDate
         };
-        foreach (var hst in program.AccountProgramStatusHistories)
+        foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o=>o.Created))
         {
             prg.Logs.Add(new AccountProgramStatusLogDto
             {

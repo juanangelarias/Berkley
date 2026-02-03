@@ -17,9 +17,9 @@
         <RadzenDataGrid TItem="AccountProgramStatusLogDto" Data="@program.Logs">
             <Columns>
                 <RadzenDataGridColumn Title="Status Date" Property="@nameof(AccountProgramStatusLogDto.StatusDate)"
-                                      MinWidth="120px" Width="120px">
+                                      MinWidth="125px" Width="125px" MaxWidth="125px">
                     <Template Context="row">
-                        <RadzenText Text="@($"{row.StatusDate:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+                        <RadzenText Text="@($"{row.StatusDate:MM/dd/yyyy hh:mm}")" TextStyle="TextStyle.Body2"/>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Previous Status" MinWidth="125px" Width="125px"
@@ -234,7 +234,8 @@
             Data = (List<AccountProgramStatusDm>)cache!
         },
         ResultVariable = () => _accounProgramStatusesResult,
-        AfterLoad = () => { _statuses = _accounProgramStatusesResult.Data!.ToDictionary(d => d.Description, d => d); }
+        AfterLoad = () => { _statuses = _accounProgramStatusesResult.Data!.ToDictionary(d => d.Description, d => d); },
+        CacheDuration = TimeSpan.FromDays(7)
     }, "account program statuses");
 
     #endregion
@@ -322,7 +323,7 @@
             return;
         }
 
-        await ReloadData();
+        await ReloadData(program.Id);
     }
 
     private async Task Approve(AccountProgramDto program)
@@ -339,7 +340,7 @@
             return;
         }
 
-        await ReloadData();
+        await ReloadData(program.Id);
     }
 
     private async Task Decline(AccountProgramDto program)
@@ -356,7 +357,7 @@
             return;
         }
 
-        await ReloadData();
+        await ReloadData(program.Id);
     }
 
     private async Task Cancel(AccountProgramDto program)
@@ -373,7 +374,7 @@
             return;
         }
 
-        await ReloadData();
+        await ReloadData(program.Id);
     }
 
     private async Task Save(AccountProgramDto program)
@@ -417,14 +418,31 @@
 
         NotifySuccessfulSave("account program");
 
-        await ReloadData();
+        
+
+        await ReloadData(program.Id);
     }
 
-    private async Task ReloadData()
+    private async Task ReloadData(Guid id)
     {
-        DataAccess.Clear(CacheKeys.AccountPrograms(Account.AccountNum));
-        await LoadData();
+        var editedResult = await DataAccess.GetAccountProgramById(id);
+        if (!editedResult.Success)
+        {
+            await HandleError("Error retrieving edited or created account program", editedResult.Errors);
+            return;
+        }
 
+        var toDelete = Data.FirstOrDefault(r => r.Id == id);
+        if(toDelete != null)
+            Data.Remove(toDelete);
+        
+        Data.Add(editedResult.Data!);
+        Data = Data
+            .OrderByDescending(o => o.Effective)
+            .ToList();
+        
+        DataAccess.UpdateCache(CacheKeys.AccountPrograms(Account.AccountNum), Data);
+        
         await Grid.Reload();
     }
 

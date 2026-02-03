@@ -21,6 +21,7 @@ public class AccountProgramDto
 public class AccountProgramStatusLogDto
 {
     public Guid Id { get; set; }
+    public string AccountNum { get; set; } = string.Empty;
     public Guid NewStatusId { get; set; }
     public string NewStatus { get; set; } = string.Empty;
     public Guid? OldStatusId { get; set; }

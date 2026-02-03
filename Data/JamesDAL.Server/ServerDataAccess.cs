@@ -326,6 +326,28 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAccountOutstandingLiability(accountNum, contextFactory)); 
         }
+        
+        public async Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetCreditReport(accountNum, contextFactory));
+        }
+        
+        public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
+        {
+            return await ExecuteGet(async () => await query.GetCreditReportAgencies(contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
+            DateTime pulledDate, string rating, string definition, string remarks)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetCreditReport(id, creditReportAgency,
+                accountNum, pulledDate, rating, definition, remarks, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteCreditReport(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteCreditReport(id, contextFactory));
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

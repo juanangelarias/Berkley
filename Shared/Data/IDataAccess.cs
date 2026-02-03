@@ -127,7 +127,16 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AccountCollateralDto>>> GetAccountBondCollaterals(string accountNum);
         
         public Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum);
+        
+        public Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum);
 
+        public Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies();
+        
+        public Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
+            DateTime pulledDate, string rating, string definition, string remarks);
+        
+        public Task<ISaveDataResult> DeleteCreditReport(Guid id);
+        
         public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type);
 

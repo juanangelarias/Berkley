@@ -22,6 +22,9 @@ public static class CacheKeys
     
     // B
     public static string BondByBlock(Guid bondBlockId) => $"BondByBlock-{bondBlockId}";
+    
+    // C
+    public static string CreditReport(string accountNumber) => $"BondTransactions-{accountNumber}";
 
     // L
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";
@@ -56,6 +59,7 @@ public static class CacheKeys
     public const string CommercialRates = "CommercialRates";
     public const string ContractRates = "ContractRates";
     public const string Countries = "Countries";
+    public const string CreditReportAgencies = "CreditReportAgencies";
     // D
     public const string Divisions = "Divisions";
     // E

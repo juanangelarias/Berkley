@@ -336,3 +336,22 @@ query GetAccountOutstandingLiability($accountNum: String!) {
         }
     }
 }
+
+query GetCreditReport($accountNum: String!) {
+    creditReport(accountNumber: $accountNum) {
+        accountNum
+        definition
+        id
+        pulled
+        rating
+        remarks
+        creditReport
+    }
+}
+
+query GetCreditReportAgencies {
+    creditReportAgencies {
+        id
+        creditReport
+    }
+}

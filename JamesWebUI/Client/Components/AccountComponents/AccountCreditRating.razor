@@ -136,7 +136,8 @@
         AfterLoad = () =>
         {
             _creditReportSources = _creditReportAgenciesResult.Data!;
-        }
+        },
+        CacheDuration = TimeSpan.FromDays(7)
     }, "credit report agencies");   
 
     #endregion

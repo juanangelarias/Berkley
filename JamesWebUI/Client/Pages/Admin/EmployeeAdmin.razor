@@ -56,12 +56,12 @@
                                     </JamesFormField>
                                     <JamesFormField Text="Email" >
                                         <ChildContent>
-                                            <RadzenDropDown @onfocusout="Callback" @bind-Value=@SelectedEmployeeEmail Data=@SelectedEmployeeEmailOptions />
+                                            <RadzenDropDown @onfocusout="@Callback" @bind-Value=@SelectedEmployeeEmail Data=@SelectedEmployeeEmailOptions />
                                         </ChildContent>
                                     </JamesFormField>
                                     <JamesFormField Text="Primary Branch" >
                                         <ChildContent>
-                                            <RadzenDropDown TValue="Branch" bind-Value=@_selectedEmployees[0].PrimaryBranchId
+                                            <RadzenDropDown TValue="Guid?" bind-Value=@_selectedEmployees[0].PrimaryBranchId
                                                             Data=@AllBranches TextProperty="@nameof(Branch.Name)"
                                                             ValueProperty="@nameof(Branch.Id)" />
                                         </ChildContent>
@@ -107,7 +107,7 @@
     private bool _activeOnly = true; //Should this be a user preference that persists?
     private async Task AddEmployee()
     {
-        var result = await DialogService.OpenAsync<AddEmployee>("Add Employee");
+        await DialogService.OpenAsync<AddEmployee>("Add Employee");
         //TODO: If no Employees were added, skip the below
         DataAccess.Clear("emp");
         DataAccess.Clear("empAll");
@@ -115,7 +115,7 @@
     }
 
     List<Employee> _employees = [];
-    IList<Employee> _selectedEmployees = null!;
+    IList<Employee>? _selectedEmployees;
 
     private IDataAccessResult<List<Employee>> _loadEmployeesResult = null!;
     private LoadItem<List<Employee>> EmployeesLoadItem(bool activeOnly) =>
@@ -175,14 +175,14 @@
     {
         get
         {
-            if (_selectedEmployees.Any())
+            if (_selectedEmployees != null && _selectedEmployees.Any())
             {
                 if (_userEmailOptions.ContainsKey(_selectedEmployees[0].ActiveDirectoryAccount))
                     return _userEmailOptions[_selectedEmployees[0].ActiveDirectoryAccount];
                 //Lookup options from ActiveDirectory
                 Task.Factory.StartNew(() => DataAccess.GetCacheOrLoadDataAsync(AdUsersLoadItem(_selectedEmployees[0].ActiveDirectoryAccount)));
             }
-            return [_selectedEmployees[0].Email ?? "", "Loading..."];
+            return [_selectedEmployees?[0].Email ?? "", "Loading..."];
         }
     }
 
@@ -193,8 +193,8 @@
         get
         {
             if (string.IsNullOrWhiteSpace(_selectedEmployeeEmail))
-                //Needs to reset when selected employee changes
-                _selectedEmployeeEmail = _selectedEmployees[0].Email ?? "";
+                //Needs to reset when a selected employee changes
+                _selectedEmployeeEmail = _selectedEmployees?[0].Email ?? "";
             return _selectedEmployeeEmail;
         }
         set => _selectedEmployeeEmail = value;
@@ -217,7 +217,7 @@
 
     RenderFragment RenderColumns()
     {
-        return __builder =>
+        return _ =>
         {
             if (_refresh)
             {
@@ -271,7 +271,7 @@
     private void UserSelectedChanged(IList<Employee> selectedEmployees)
     {
         _selectedEmployees = selectedEmployees;
-        //Clear employee email so dropdown will reload for new user
+        //Clear employee email so the dropdown will reload for the new user
         _selectedEmployeeEmail = "";
         //Force email options to reload
         _ = SelectedEmployeeEmailOptions;
@@ -280,9 +280,9 @@
 
     private async Task Callback()
     {
-        if (_selectedEmployeeEmail != (_selectedEmployees[0].Email ?? ""))
+        if (_selectedEmployees != null && _selectedEmployeeEmail != (_selectedEmployees[0].Email ?? ""))
         {
-            var result = await DataAccess.SetEmployeeEmail(_selectedEmployees[0].Id, _selectedEmployeeEmail);
+            var result = await DataAccess.SetEmployeeEmail(_selectedEmployees![0].Id, _selectedEmployeeEmail);
             if (result.Success)
             {
                 NotifySuccessfulSave("Email");

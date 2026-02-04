@@ -114,8 +114,6 @@ namespace James.Shared.Data
         
         public Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber);
 
-        public Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRateAndCommissions();
-
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);
 
@@ -130,8 +128,10 @@ namespace James.Shared.Data
         
         public Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum);
         
-        public Task<IDataAccessResult<CreditReportDto>> GetCreditReport(string accountNum);
+        public Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum);
 
+        public Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies();
+        
         public Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
             DateTime pulledDate, string rating, string definition, string remarks);
         
@@ -321,6 +321,16 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum);
         public Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum);
         public Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes();
+
+        #region General
+
+        public Task<IDataAccessResult<List<ContractRate>>> GetAllContractRates();
+        public Task<IDataAccessResult<List<CommercialRate>>> GetAllCommercialRates();
+        public Task<IDataAccessResult<List<RateGroupDm>>> GetAllRateGroups();
+        public Task<IDataAccessResult<List<RiskTypeDm>>> GetAllRiskTypes();
+        public Task<IDataAccessResult<List<CommercialBondTypeDm>>> GetAllCommercialBondTypes();
+
+        #endregion
 
         #region Underwriter
 

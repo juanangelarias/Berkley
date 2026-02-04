@@ -292,11 +292,6 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAccountLOAs(accountNumber, contextFactory));
         }
-        
-        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRateAndCommissions()
-        {
-            return await ExecuteGet(async () => await query.GetAccountRateAndCommissions(contextFactory));
-        }
 
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem,
@@ -332,9 +327,14 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAccountOutstandingLiability(accountNum, contextFactory)); 
         }
         
-        public async Task<IDataAccessResult<CreditReportDto>> GetCreditReport(string accountNum)
+        public async Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum)
         {
-            return await ExecuteGet(async () => await query.GetCreditReport(accountNum, contextFactory)); 
+            return await ExecuteGet(async () => await query.GetCreditReport(accountNum, contextFactory));
+        }
+        
+        public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
+        {
+            return await ExecuteGet(async () => await query.GetCreditReportAgencies(contextFactory));
         }
 
         public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
@@ -697,7 +697,7 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<AgencyDto>>> GetAllActiveAgencies()
         {
             var response = await ExecuteGet(async () => await query.GetAllActiveAgencies(contextFactory));
-            return response!;
+            return response;
         }
 
         public async Task<IDataAccessResult<BondRequestNumberType>> GetBondRequestNumberType(string bondNumber)
@@ -1041,9 +1041,48 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await generalMutation.DeleteBondBlock(id, contextFactory));
         }
 
-        public Task<IDataAccessResult<int>> NextBondBlockInitialNumber(string prefix)
+        public async Task<IDataAccessResult<int>> NextBondBlockInitialNumber(string prefix)
         {
-            return ExecuteGet(async () => await query.GetNextBondBlockInitialNumber(prefix, contextFactory));
+            return await ExecuteGet(async () => await query.GetNextBondBlockInitialNumber(prefix, contextFactory));
+        }
+
+        #endregion
+        
+        #region General
+
+        public async Task<IDataAccessResult<List<ContractRate>>> GetAllContractRates()
+        {
+            var result = await ExecuteGet(async () => await query.GetAllContractRates(contextFactory));
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<CommercialRate>>> GetAllCommercialRates()
+        {
+            var result = await ExecuteGet(async () => await query.GetAllCommercialRates(contextFactory));
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<RateGroupDm>>> GetAllRateGroups()
+        {
+            var result = await ExecuteGet(async () => await query.GetAllRateGroups(contextFactory));
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<RiskTypeDm>>> GetAllRiskTypes()
+        {
+            var result = await ExecuteGet(async () => await query.GetAllRiskTypes(contextFactory));
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<CommercialBondTypeDm>>> GetAllCommercialBondTypes()
+        {
+            var result = await ExecuteGet(async () => await query.GetAllCommercialBondTypes(contextFactory));
+            
+            return result;
         }
 
         #endregion

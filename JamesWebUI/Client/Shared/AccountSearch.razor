@@ -1,5 +1,4 @@
-﻿@using System.Diagnostics
-@inherits JamesLayoutComponentBase
+﻿@inherits JamesLayoutComponentBase
 
 @inject NavigationManager NavigationManager
 
@@ -54,8 +53,7 @@
         if (account == null)
             return;
         
-        //TODO: This is now broken with the recent changes to the Radzen Controls
-        //NavigationManager.NavigateTo("/Account/" + ((Account)AutoComplete.SelectedItem).AccountNum);
+        NavigationManager.NavigateTo($"account/{account.AccountNum}");
         AutoComplete.Value = "";
     }
 

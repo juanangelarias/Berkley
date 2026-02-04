@@ -116,11 +116,6 @@ type WorkInProgressJob {
   workInProgressSummary: WorkInProgressSummary!
 }
 
-type CreditReportDto {
-  creditReportAgencies: [CreditReportDm!]!
-  creditReports: [CreditReportHistory!]!
-}
-
 type Insurer {
   id: UUID!
   created: DateTime!
@@ -570,7 +565,6 @@ type Query {
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
-  accountRateAndCommissions: AccountRateAndCommissionDto!
   relatedAccounts(accountNum: String!): AccountBondedPrincipleDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
@@ -604,7 +598,8 @@ type Query {
   bondsByBlock(bondBlockId: UUID!): [Bond!]!
   nextBondBlockInitialNumber(prefix: String!): Int!
   branches: [Branch!]!
-  creditReport(accountNumber: String!): CreditReportDto!
+  creditReport(accountNumber: String!): [CreditReportHistory!]!
+  creditReportAgencies: [CreditReportDm!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
   phoneNumber(phoneId: UUID!): PhoneNumber!
@@ -624,6 +619,11 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
+  allContractRates: [ContractRate!]!
+  allCommercialRates: [CommercialRate!]!
+  allRateGroups: [RateGroupDm!]!
+  allRiskTypes: [RiskTypeDm!]!
+  allCommercialBondTypes: [CommercialBondTypeDm!]!
   allAccountProgramStatuses: [AccountProgramStatusDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
@@ -3181,20 +3181,6 @@ input CreateLicenseInput {
   isActive: Boolean!
 }
 
-type AccountRateAndCommissionDto {
-  rateGroups: [String!]!
-  rateClasses: [String!]!
-  rateTypes: [String!]!
-  contractRates: [ContractRate!]!
-  commercialBondTypes: [String!]!
-  riskTypes: [String!]!
-  commercialRates: [CommercialRate!]!
-}
-
-type DeleteAccountProgramPayload {
-  boolean: Boolean
-}
-
 type BidSubcontractor {
   id: UUID!
   created: DateTime!
@@ -3356,7 +3342,7 @@ type RateGroupDm {
   modified: DateTime!
   rateGroup: String!
   description: String!
-  createdBy: UUID!
+  createdBy: UUID
   commercialRates: [CommercialRate!]!
   contractRates: [ContractRate!]!
 }

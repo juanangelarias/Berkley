@@ -58,7 +58,6 @@ public static class CacheKeys
     public const string AccountProgramStatuses = "AccountProgramStatuses";
     public const string AddressTypes = "AddressTypes";
     public const string AgenciesDto = "AgenciesDto";
-
     public const string AgencyStatuses = "AgencyStatuses";
 
     // B
@@ -69,8 +68,12 @@ public static class CacheKeys
     public const string BusinessTypes = "BusinessTypes";
 
     // C
+    public const string CommercialBondTypes = "CommercialBondTypes";
+    public const string CommercialRates = "CommercialRates";
+    public const string ContractRates = "ContractRates";
     public const string Countries = "Countries";
 
+    public const string CreditReportAgencies = "CreditReportAgencies";
     // D
     public const string Divisions = "Divisions";
 
@@ -86,6 +89,9 @@ public static class CacheKeys
     public const string PhoneTypes = "PhoneTypes";
 
     // R
+    public const string RateGroups = "RateGroups";
+    public const string RateTypes = "RateTypes";
+    public const string RiskTypes = "RiskTypes";
     public const string RiskCommission = "RiskCommission";
 
     // S

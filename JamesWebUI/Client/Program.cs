@@ -32,7 +32,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>()
     .CreateClient("JamesAPI"));
 
 builder.Services.AddRadzenComponents();
-builder.Services.AddBlazoredLocalStorage(config =>
+builder.Services.AddBlazoredLocalStorageAsSingleton(config =>
 {
     config.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
@@ -41,8 +41,8 @@ builder.Services
     .AddScoped<AddressPhoneFormatService>()
     .AddScoped<ThemeService>()
     .AddSingleton<ILoggingService, LoggingService>()
-    .AddScoped<IDataAccess, ClientDataAccess>()
-    .AddScoped<IBrowserStorageCache, BlazorLocalStorageCache>()
+    .AddSingleton<IDataAccess, ClientDataAccess>()
+    .AddSingleton<IBrowserStorageCache, BlazorLocalStorageCache>()
     .AddScoped<IUserSettingService, UserSettingService>()
     .AddSingleton<IAuthorizationHandler, RoleRequirementHandler>()
     .AddSingleton<IAuthorizationPolicyProvider, RoleMembershipPolicyProvider>()

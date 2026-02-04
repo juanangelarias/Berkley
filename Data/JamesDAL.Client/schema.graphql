@@ -375,12 +375,6 @@ input SetEmployeeIsActiveInput {
   isActive: Boolean!
 }
 
-type RelatedAccount {
-  accountNum: String!
-  accountName: String!
-  accountStatus: String!
-}
-
 type Agency {
   id: UUID!
   created: DateTime!
@@ -554,8 +548,7 @@ type Query {
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
-  accountRateAndCommissions: AccountRateAndCommissionDto!
-  relatedAccounts(accountNum: String!): AccountBondedPrinciple!
+  relatedAccounts(accountNum: String!): AccountBondedPrincipleDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -1934,11 +1927,6 @@ type PersonalFinancialStatementTypeDm {
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
-type AccountBondedPrinciple {
-  parentRelatedAccount: RelatedAccount!
-  relatedAccounts: [RelatedAccount!]!
-}
-
 type Indemnitor {
   id: UUID!
   created: DateTime!
@@ -2066,6 +2054,11 @@ type VoidedBond {
   voidedBy: UUID!
   agency: Agency!
   voidedByNavigation: UserProfile!
+}
+
+type AccountBondedPrincipleDto {
+  parentAccount: RelatedAccountDto!
+  relatedAccounts: [RelatedAccountDto!]!
 }
 
 type CommercialFinancial {
@@ -2734,6 +2727,12 @@ type NotificationGroupMember {
   employeeId: UUID!
   employee: Employee!
   groupNameNavigation: NotificationGroup!
+}
+
+type RelatedAccountDto {
+  accountNum: String!
+  accountName: String!
+  accountStatus: String!
 }
 
 type PersonalFinancialSubaccount {

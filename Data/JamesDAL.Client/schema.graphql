@@ -2092,6 +2092,7 @@ type AccountProgram {
 
 type AccountProgramStatusLogDto {
   id: UUID!
+  accountNum: String!
   newStatusId: UUID!
   newStatus: String!
   oldStatusId: UUID
@@ -3179,6 +3180,10 @@ input CreateLicenseInput {
   licenseNumber: String
   state: String!
   isActive: Boolean!
+}
+
+type DeleteAccountProgramPayload {
+  boolean: Boolean
 }
 
 type BidSubcontractor {

@@ -464,15 +464,6 @@ namespace James.Data.Client
                 jamesClient.GetAccountLOAs.ExecuteAsync(accountNumber), "AccountLOAs");
         }
         
-        public async Task<IDataAccessResult<AccountRateAndCommissionDto>> GetAccountRateAndCommissions()
-        {
-            var result = await ExecuteGet<AccountRateAndCommissionDto>(async () =>
-                    await jamesClient.GetAccountRateAndCommissions.ExecuteAsync(),
-                "AccountRiskAndCommissions");
-            
-            return result;
-        }
-
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs)
         {
@@ -538,14 +529,20 @@ namespace James.Data.Client
             return result;
         }
         
-        public async Task<IDataAccessResult<CreditReportDto>> GetCreditReport(string accountNum)
+        public async Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum)
         {
-            var result = await ExecuteGet<CreditReportDto>(async ()=>
+            throw new NotImplementedException();
+            /*var result = await ExecuteGet<CreditReportDto>(async ()=>
                 await jamesClient.GetCreditReport.ExecuteAsync(accountNum), "CreditReport");
 
-            return result;
+            return result;*/
         }
         
+        public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum, DateTime pulledDate, string rating,
             string definition, string remarks)
         {
@@ -1500,6 +1497,50 @@ namespace James.Data.Client
                 {
                     BondBlockId = id
                 }), "DeleteBondBlock");
+        }
+
+        #endregion
+        
+        #region General
+
+        public async Task<IDataAccessResult<List<ContractRate>>> GetAllContractRates()
+        {
+            var result = await ExecuteGet<List<ContractRate>>(async () => 
+                    await jamesClient.GetAllContractRates.ExecuteAsync(), "AllContractRates");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<CommercialRate>>> GetAllCommercialRates()
+        {
+            var result = await ExecuteGet<List<CommercialRate>>(async () => 
+                await jamesClient.GetAllCommercialRates.ExecuteAsync(), "AllCommercialRates");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<RateGroupDm>>> GetAllRateGroups()
+        {
+            var result = await ExecuteGet<List<RateGroupDm>>(async () => 
+                await jamesClient.GetAllRateGroups.ExecuteAsync(), "AllRateGroups");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<RiskTypeDm>>> GetAllRiskTypes()
+        {
+            var result = await ExecuteGet<List<RiskTypeDm>>(async () => 
+                await jamesClient.GetAllRiskTypes.ExecuteAsync(), "AllRiskTypes");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<CommercialBondTypeDm>>> GetAllCommercialBondTypes()
+        {
+            var result = await ExecuteGet<List<CommercialBondTypeDm>>(async () =>
+                await jamesClient.GetAllCommercialBondTypes.ExecuteAsync(), "AllCommercialBondTypes");
+
+            return result;
         }
 
         #endregion

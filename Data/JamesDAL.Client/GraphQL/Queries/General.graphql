@@ -255,3 +255,49 @@ query GetAccountLOAs($input: String!) {
         loaTotal
     }
 }
+
+query GetAllContractRates {
+    allContractRates {
+        id
+        class
+        rateGroup
+        premiumRate
+        rateType
+        minumumAmount
+        maximumAmount
+    }
+}
+
+query GetAllCommercialRates {
+    allCommercialRates {
+        amountPerUnit
+        annualMinimum
+        commercialBondType
+        maximumAmount
+        minumumAmount
+        rateGroup
+        riskType
+        unitSize
+    }
+}
+
+query GetAllRateGroups {
+    allRateGroups {
+        id
+        rateGroup
+    }
+}
+
+query GetAllRiskTypes {
+    allRiskTypes {
+        id
+        riskType
+    }
+}
+
+query GetAllCommercialBondTypes {
+    allCommercialBondTypes {
+        id
+        commercialBondType
+    }
+}

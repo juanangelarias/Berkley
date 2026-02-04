@@ -13,7 +13,7 @@
     <RadzenRow>
         <RadzenColumn Size="4">
             <RadzenFormField Text="Rate Group">
-                <RadzenDropDown TValue="string" Data="@RateAndCommission.RateGroups" @bind-Value="@SelectedRateGroup"
+                <RadzenDropDown TValue="string" Data="@_rateGroups" @bind-Value="@SelectedRateGroup"
                                 Change="@OnCommercialFilterChanged" FilterAsYouType="true" AllowFiltering="true"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 Style="font-size: 0.75rem; height: 30px; max-width: 145px;"/>
@@ -21,7 +21,7 @@
         </RadzenColumn>
         <RadzenColumn Size="4">
             <RadzenFormField Text="Rate Type">
-                <RadzenDropDown TValue="string" Data="@RateAndCommission.CommercialBondTypes"
+                <RadzenDropDown TValue="string" Data="@_commercialBondTypes"
                                 @bind-Value="@SelectedBondType" Change="@OnCommercialFilterChanged"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 FilterAsYouType="true" AllowFiltering="true"
@@ -30,7 +30,7 @@
         </RadzenColumn>
         <RadzenColumn Size="4">
             <RadzenFormField Text="Risk Type">
-                <RadzenDropDown TValue="string" Data="@RateAndCommission.RiskTypes" @bind-Value="@SelectedRiskType"
+                <RadzenDropDown TValue="string" Data="@_riskTypes" @bind-Value="@SelectedRiskType"
                                 Change="@OnCommercialFilterChanged" FilterAsYouType="true" AllowFiltering="true"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 Style="font-size: 0.75rem; height: 30px; max-width: 145px;"/>
@@ -68,7 +68,7 @@
     <RadzenRow>
         <RadzenColumn Size="4">
             <RadzenFormField Text="Rate Group">
-                <RadzenDropDown TValue="string" Data="@RateAndCommission.RateGroups" @bind-Value="@SelectedRateGroup"
+                <RadzenDropDown TValue="string" Data="@_rateGroups" @bind-Value="@SelectedRateGroup"
                                 Change="@OnContractFilterChanged" FilterAsYouType="true" AllowFiltering="true"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 Style="font-size: 0.75rem; height: 30px; max-width: 145px;"/>
@@ -76,7 +76,7 @@
         </RadzenColumn>
         <RadzenColumn Size="4">
             <RadzenFormField Text="Rate Class">
-                <RadzenDropDown TValue="string" Data="@RateAndCommission.RateClasses" @bind-Value="@SelectedRateClass"
+                <RadzenDropDown TValue="string" Data="@_rateClasses" @bind-Value="@SelectedRateClass"
                                 Change="@OnContractFilterChanged" FilterAsYouType="true" AllowFiltering="true"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 Style="font-size: 0.75rem; height: 30px; max-width: 145px;"/>
@@ -84,7 +84,7 @@
         </RadzenColumn>
         <RadzenColumn Size="4">
             <RadzenFormField Text="Rate type">
-                <RadzenDropDown TValue="string" Data="@RateAndCommission.RateTypes" @bind-Value="@SelectedRateType"
+                <RadzenDropDown TValue="string" Data="@_rateTypes" @bind-Value="@SelectedRateType"
                                 Change="@OnContractFilterChanged" FilterAsYouType="true" AllowFiltering="true"
                                 FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
                                 Style="font-size: 0.75rem; height: 30px; max-width: 145px;"/>
@@ -132,14 +132,26 @@
 
 <style>
     .rz-dropdown-item, .rz-menuitem, .rz-autocomplete-list-item, .rz-multiselect-item, .rz-dropdown-items li, .rz-autocomplete-items li, .rz-multiselect-items li {
-        font-size: 0.75rem;
+        font-size: 0.75rem !important;
     }
 </style>
 
 @code {
     [Parameter] public string? InputType { get; set; }
 
-    private AccountRateAndCommissionDto RateAndCommission { get; set; } = new();
+    // Contract
+    private List<string> _rateGroups = [];
+    private List<string> _rateTypes= [];
+    private List<string> _rateClasses = [];
+    private List<ContractRate> _allContractRates = [];
+    private List<ContractRate> _contractRates = [];
+    
+    // Commercial
+    private List<string> _commercialBondTypes= [];
+    private List<string> _riskTypes = [];
+    private List<CommercialRate> _allCommercialRates = [];
+    private List<CommercialRate> _commercialRates = [];
+    
     private RadzenDataGrid<CommercialRate> _commercialGrid = null!;
     private RadzenDataGrid<ContractRate> _contractGrid = null!;
     private bool _selectTypeVisible;
@@ -150,28 +162,133 @@
     private string? SelectedRiskType { get; set; }
     private string? SelectedRateClass { get; set; }
     private string? SelectedRateType { get; set; }
-    private List<CommercialRate> _commercialRates = [];
-    private List<ContractRate> _contractRates = [];
+    
+    
     private List<string> _downloadDocumentType = ["Blank worksheet", "Rates worksheet"];
     private string _downloadDocument = "";
 
     #region Loaders
 
-    #region RiskCommission Load
+    #region ContractRates Load
 
-    private IDataAccessResult<AccountRateAndCommissionDto> _riskCommissionResult = null!;
+    private IDataAccessResult<List<ContractRate>> _contractRatesResult = null!;
 
-    private LoadItem RiskCommissionLoad => AddEventNotify(new LoadItem<AccountRateAndCommissionDto>
+    private LoadItem ContractRatesLoad => AddEventNotify(new LoadItem<List<ContractRate>>
     {
-        Key = CacheKeys.RiskCommission,
-        AsyncLoadTask = async () => _riskCommissionResult = await DataAccess.GetAccountRateAndCommissions(),
-        CacheLoadTask = cache => _riskCommissionResult = new DataAccessResult<AccountRateAndCommissionDto>
+        Key = CacheKeys.ContractRates,
+        AsyncLoadTask = async () => _contractRatesResult = await DataAccess.GetAllContractRates(),
+        CacheLoadTask = cache => _contractRatesResult = new DataAccessResult<List<ContractRate>>
         {
-            Data = (AccountRateAndCommissionDto)cache!
+            Data = (List<ContractRate>)cache!
         },
-        ResultVariable = () => _riskCommissionResult,
-        AfterLoad = () => { RateAndCommission = _riskCommissionResult.Data!; }
-    }, "account risk and commissions");
+        ResultVariable = () => _contractRatesResult,
+        AfterLoad = () =>
+        {
+            _allContractRates = _contractRatesResult.Data!;
+            
+            _rateClasses = _allContractRates
+                .OrderBy(o=> o.Class)
+                .Select(r => r.Class)
+                .Distinct()
+                .ToList();
+	
+            _rateTypes = _allContractRates
+                .OrderBy(o=>o.RateType)
+                .Select(r => r.RateType)
+                .Distinct()
+                .ToList();
+        }
+    }, "contract rates");
+
+    #endregion
+
+    #region CommercialRates Load
+
+    private IDataAccessResult<List<CommercialRate>> _commercialRatesResult = null!;
+
+    private LoadItem CommercialRatesLoad => AddEventNotify(new LoadItem<List<CommercialRate>>
+    {
+        Key = CacheKeys.CommercialRates,
+        AsyncLoadTask = async () => _commercialRatesResult = await DataAccess.GetAllCommercialRates(),
+        CacheLoadTask = cache => _commercialRatesResult = new DataAccessResult<List<CommercialRate>>
+        {
+            Data = (List<CommercialRate>)cache!
+        },
+        ResultVariable = () => _commercialRatesResult,
+        AfterLoad = () =>
+        {
+            _allCommercialRates = _commercialRatesResult.Data!;
+        }
+    }, "commercial rates");
+
+    #endregion
+
+    #region RateGroups Load
+
+    private IDataAccessResult<List<RateGroupDm>> _rateGroupsResult = null!;
+
+    private LoadItem RateGroupsLoad => AddEventNotify(new LoadItem<List<RateGroupDm>>
+    {
+        Key = CacheKeys.RateGroups,
+        AsyncLoadTask = async () => _rateGroupsResult = await DataAccess.GetAllRateGroups(),
+        CacheLoadTask = cache => _rateGroupsResult = new DataAccessResult<List<RateGroupDm>>
+        {
+            Data = (List<RateGroupDm>)cache!
+        },
+        ResultVariable = () => _rateGroupsResult,
+        AfterLoad = () =>
+        {
+            _rateGroups = _rateGroupsResult.Data!
+                .Select(s => s.RateGroup)
+                .ToList();
+        }
+    }, "rate groups");
+
+    #endregion
+
+    #region RiskTypes Load
+
+    private IDataAccessResult<List<RiskTypeDm>> _riskTypesResult = null!;
+
+    private LoadItem RiskTypesLoad => AddEventNotify(new LoadItem<List<RiskTypeDm>>
+    {
+        Key = CacheKeys.RiskTypes,
+        AsyncLoadTask = async () => _riskTypesResult = await DataAccess.GetAllRiskTypes(),
+        CacheLoadTask = cache => _riskTypesResult = new DataAccessResult<List<RiskTypeDm>>
+        {
+            Data = (List<RiskTypeDm>)cache!
+        },
+        ResultVariable = () => _riskTypesResult,
+        AfterLoad = () =>
+        {
+            _riskTypes = _riskTypesResult.Data!
+                .Select(s => s.RiskType)
+                .ToList();
+        }
+    }, "risk types");
+
+    #endregion
+
+    #region CommercialBondTypes Load
+
+    private IDataAccessResult<List<CommercialBondTypeDm>> _commercialBondTypesResult = null!;
+
+    private LoadItem CommercialBondTypesLoad => AddEventNotify(new LoadItem<List<CommercialBondTypeDm>>
+    {
+        Key = CacheKeys.CommercialBondTypes,
+        AsyncLoadTask = async () => _commercialBondTypesResult = await DataAccess.GetAllCommercialBondTypes(),
+        CacheLoadTask = cache => _commercialBondTypesResult = new DataAccessResult<List<CommercialBondTypeDm>>
+        {
+            Data = (List<CommercialBondTypeDm>)cache!
+        },
+        ResultVariable = () => _commercialBondTypesResult,
+        AfterLoad = () =>
+        {
+            _commercialBondTypes = _commercialBondTypesResult.Data!
+                .Select(s => s.CommercialBondType)
+                .ToList();
+        }
+    }, "commercial bond types");
 
     #endregion
 
@@ -181,7 +298,12 @@
     {
         await base.OnInitializedAsync();
 
-        await DataAccess.GetCacheOrLoadDataAsync(RiskCommissionLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(
+            ContractRatesLoad,
+            CommercialRatesLoad,
+            RateGroupsLoad,
+            RiskTypesLoad,
+            CommercialBondTypesLoad);
     }
 
     protected override async Task OnParametersSetAsync()
@@ -208,7 +330,7 @@
     {
         _commercialRates = SelectedRateGroup == null || SelectedBondType == null || SelectedRiskType == null
             ? []
-            : RateAndCommission.CommercialRates
+            : _allCommercialRates
                 .Where(r => string.Equals(r.RateGroup.Trim(), SelectedRateGroup.Trim(), StringComparison.CurrentCultureIgnoreCase) &&
                             string.Equals(r.CommercialBondType.Trim(), SelectedBondType.Trim(), StringComparison.CurrentCultureIgnoreCase) &&
                             string.Equals(r.RiskType.Trim(), SelectedRiskType.Trim(), StringComparison.CurrentCultureIgnoreCase))
@@ -225,7 +347,7 @@
     {
         _contractRates = SelectedRateGroup == null || SelectedRateClass == null || SelectedRateType == null
             ? []
-            : RateAndCommission.ContractRates
+            : _allContractRates
                 .Where(r => string.Equals(r.RateGroup.Trim(), SelectedRateGroup.Trim(), StringComparison.CurrentCultureIgnoreCase) &&
                             string.Equals(r.Class.Trim(), SelectedRateClass.Trim(), StringComparison.CurrentCultureIgnoreCase) &&
                             string.Equals(r.RateType.Trim(), SelectedRateType.Trim(), StringComparison.CurrentCultureIgnoreCase)

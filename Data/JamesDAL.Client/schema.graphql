@@ -99,11 +99,6 @@ type WorkInProgressJob {
   workInProgressSummary: WorkInProgressSummary!
 }
 
-type CreditReportDto {
-  creditReportAgencies: [CreditReportDm!]!
-  creditReports: [CreditReportHistory!]!
-}
-
 type Insurer {
   id: UUID!
   created: DateTime!
@@ -593,7 +588,8 @@ type Query {
   bondsByBlock(bondBlockId: UUID!): [Bond!]!
   nextBondBlockInitialNumber(prefix: String!): Int!
   branches: [Branch!]!
-  creditReport(accountNumber: String!): CreditReportDto!
+  creditReport(accountNumber: String!): [CreditReportHistory!]!
+  creditReportAgencies: [CreditReportDm!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
   phoneNumber(phoneId: UUID!): PhoneNumber!
@@ -613,6 +609,11 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
+  allContractRates: [ContractRate!]!
+  allCommercialRates: [CommercialRate!]!
+  allRateGroups: [RateGroupDm!]!
+  allRiskTypes: [RiskTypeDm!]!
+  allCommercialBondTypes: [CommercialBondTypeDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
@@ -3108,16 +3109,6 @@ input CreateLicenseInput {
   isActive: Boolean!
 }
 
-type AccountRateAndCommissionDto {
-  rateGroups: [String!]!
-  rateClasses: [String!]!
-  rateTypes: [String!]!
-  contractRates: [ContractRate!]!
-  commercialBondTypes: [String!]!
-  riskTypes: [String!]!
-  commercialRates: [CommercialRate!]!
-}
-
 type BidSubcontractor {
   id: UUID!
   created: DateTime!
@@ -3271,7 +3262,7 @@ type RateGroupDm {
   modified: DateTime!
   rateGroup: String!
   description: String!
-  createdBy: UUID!
+  createdBy: UUID
   commercialRates: [CommercialRate!]!
   contractRates: [ContractRate!]!
 }

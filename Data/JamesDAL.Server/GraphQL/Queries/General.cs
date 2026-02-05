@@ -1,4 +1,5 @@
 ﻿using HotChocolate.Authorization;
+using James.Shared.Dto;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries
@@ -234,6 +235,66 @@ namespace James.Data.Server.GraphQL.Queries
             
             return await ctx.IndustryCodeDms
                 .OrderBy(o=>o.Code)
+                .ToListAsync();
+        }
+        
+        [Authorize]
+        public async Task<List<ContractRate>> GetAllContractRates([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.ContractRates
+                .OrderBy(o => o.RateGroup)
+                .ThenBy(t1 => t1.Class)
+                .ThenBy(t2 => t2.RateType)
+                .ThenBy(t3 => t3.MaximumAmount)
+                .ToListAsync();
+        }
+
+        [Authorize]
+        public async Task<List<CommercialRate>> GetAllCommercialRates(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            return await ctx.CommercialRates
+                .OrderBy(o => o.RateGroup)
+                .ThenBy(t1 => t1.CommercialBondType)
+                .ThenBy(t2 => t2.RiskType)
+                .ThenBy(t3 => t3.MinumumAmount)
+                .ToListAsync();
+        }
+
+        [Authorize]
+        public async Task<List<RateGroupDm>> GetAllRateGroups(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            return await ctx.RateGroupDms
+                .OrderBy(o => o.RateGroup)
+                .ToListAsync();
+        }
+
+        [Authorize]
+        public async Task<List<RiskTypeDm>> GetAllRiskTypes(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            return await ctx.RiskTypeDms
+                .OrderBy(o=>o.RiskType)
+                .ToListAsync();
+        }
+
+        [Authorize]
+        public async Task<List<CommercialBondTypeDm>> GetAllCommercialBondTypes(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            return await ctx.CommercialBondTypeDms
+                .OrderBy(o => o.CommercialBondType)
                 .ToListAsync();
         }
     }

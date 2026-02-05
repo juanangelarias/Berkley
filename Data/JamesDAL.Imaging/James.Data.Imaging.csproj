@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>14</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,8 +25,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.WebApi" Version="5.3.0" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.5" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="10.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="WcfCoreMtomEncoderV2" Version="1.0.1" />
     <PackageReference Include="Winista.MimeDetect" Version="1.1.0" />
   </ItemGroup>

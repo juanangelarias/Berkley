@@ -111,6 +111,8 @@ namespace James.Shared.Data
 
         public Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, 
             string? businessType, string? industryCode, string? priorSuretyCompany);
+        
+        public Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber);
 
         public Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs);
@@ -120,6 +122,21 @@ namespace James.Shared.Data
             bool? fundedBuySell, bool? multipleActiveOwners, bool? trackCommAccount, bool? berkleyAffiliate,
             string? comments);
 
+        public Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum, string type);
+        
+        public Task<IDataAccessResult<List<AccountCollateralDto>>> GetAccountBondCollaterals(string accountNum);
+        
+        public Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum);
+        
+        public Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum);
+
+        public Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies();
+        
+        public Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
+            DateTime pulledDate, string rating, string definition, string remarks);
+        
+        public Task<ISaveDataResult> DeleteCreditReport(Guid id);
+        
         public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type);
 
@@ -264,7 +281,7 @@ namespace James.Shared.Data
 
         #region User Settings
         
-        public Task<IDataAccessResult<List<KeyValue>>> GetAllUserSettings();
+        public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
         
         public Task<ISaveDataResult> SetUserSetting(string key, string? value);
         //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
@@ -301,6 +318,16 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum);
         public Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum);
         public Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes();
+
+        #region General
+
+        public Task<IDataAccessResult<List<ContractRate>>> GetAllContractRates();
+        public Task<IDataAccessResult<List<CommercialRate>>> GetAllCommercialRates();
+        public Task<IDataAccessResult<List<RateGroupDm>>> GetAllRateGroups();
+        public Task<IDataAccessResult<List<RiskTypeDm>>> GetAllRiskTypes();
+        public Task<IDataAccessResult<List<CommercialBondTypeDm>>> GetAllCommercialBondTypes();
+
+        #endregion
     }
 
     public interface ISaveDataResult

@@ -139,6 +139,12 @@ type SetAgencyGeneralInfoPayload {
   boolean: Boolean
 }
 
+type AccountOutstandingLiabilityByTypeAndClassDto {
+  bondType: String!
+  bondClass: String!
+  amount: Int!
+}
+
 type NotebookEntry {
   id: UUID!
   created: DateTime!
@@ -222,6 +228,10 @@ type LogExceptionPayload {
   boolean: Boolean
 }
 
+input DeleteCreditReportInput {
+  id: UUID!
+}
+
 input LogInformationInput {
   eventId: Int!
   message: String!
@@ -261,11 +271,6 @@ input SetBondBlockInput {
 input SetCurrentCreditReportLinkInput {
   accountNum: String!
   imagingDocumentId: UUID
-}
-
-type KeyValue {
-  key: String!
-  value: String!
 }
 
 type EmailTypeDm {
@@ -529,6 +534,8 @@ type Query {
   accountByNumber(accountNumber: String): Account
   firstIndemnity(accountNum: String!): LocalDate
   searchAccounts(searchString: String!): [Account!]!
+  lastPrivateEquityByAccount(accountNum: String!): PrivateEquity
+  lastIndemnitorByAccount(accountNum: String!): Indemnitor
   accountActiveLinesOfAuthority(accountNumber: String!): InforceAccountLOA!
   accountProgramHistory(accountNumber: String!): [AccountProgram!]!
   accountOnly(accountNumber: String): Account
@@ -537,8 +544,10 @@ type Query {
   searchAccountsByAccountNumber(accountNumberFragment: String! activeOnly: Boolean!): [Account!]!
   searchAccountsByName(searchString: String! activeOnly: Boolean!): [Account!]!
   allAccountWatches(accountNum: String!): [AccountWatch!]!
-  lastPrivateEquityByAccount(accountNum: String!): PrivateEquity
-  lastIndemnitorByAccount(accountNum: String!): Indemnitor
+  allLineOfAuthorityLogs(accountNum: String!): [LineOfAuthorityLog!]!
+  accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
+  accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
+  accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -571,6 +580,8 @@ type Query {
   bondsByBlock(bondBlockId: UUID!): [Bond!]!
   nextBondBlockInitialNumber(prefix: String!): Int!
   branches: [Branch!]!
+  creditReport(accountNumber: String!): [CreditReportHistory!]!
+  creditReportAgencies: [CreditReportDm!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
   phoneNumber(phoneId: UUID!): PhoneNumber!
@@ -590,12 +601,19 @@ type Query {
   allBusinessTypes: [BusinessTypeDm!]!
   allSicCodes: [Sic!]!
   allIndustryCodes: [IndustryCodeDm!]!
+  allContractRates: [ContractRate!]!
+  allCommercialRates: [CommercialRate!]!
+  allRateGroups: [RateGroupDm!]!
+  allRiskTypes: [RiskTypeDm!]!
+  allCommercialBondTypes: [CommercialBondTypeDm!]!
   searchDocuments(imagingId: String! docCategory: ImagingDocumentCategory! documentType: String): [ImagingDocument!]!
   documentDetails(docCategory: ImagingDocumentCategory! documentId: UUID!): ImagingDocument
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
   allImagingTypes: [ImagingType!]!
   allImagingCategoryTabDivisionType: [VImagingCategoryTabDivisionType!]!
   allInsurers: [Insurer!]!
+  loaLogsByAccount(accountNumber: String!): [LineOfAuthorityLog!]!
+  accountLOAs(accountNum: String!): AccountLOAsDto!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -611,7 +629,7 @@ type Query {
   allStates: [State!]!
   underwriters: [Underwriter!]!
   userSetting(key: String!): UserSetting
-  allUserSettings: [KeyValue!]!
+  allUserSettings: [KeyValuePairOfStringAndString!]!
 }
 
 type AgencyCommission {
@@ -983,6 +1001,10 @@ type SecurityRole {
   securities: [Security!]!
 }
 
+type DeleteCreditReportPayload {
+  boolean: Boolean
+}
+
 type PhoneTypeDm {
   id: UUID!
   created: DateTime!
@@ -1273,6 +1295,23 @@ type CreateAgencyLicenseDocumentLinkPayload {
   boolean: Boolean
 }
 
+type CommercialRate {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  commercialBondType: String!
+  riskType: String!
+  minumumAmount: Int!
+  maximumAmount: Int!
+  amountPerUnit: Float
+  unitSize: Int
+  annualMinimum: Int
+  commercialBondTypeNavigation: CommercialBondTypeDm!
+  rateGroupNavigation: RateGroupDm!
+  riskTypeNavigation: RiskTypeDm!
+}
+
 type SicratioTypeDm {
   id: UUID!
   created: DateTime!
@@ -1360,6 +1399,8 @@ type Mutation {
   agencyLicenseBulkInsert(input: AgencyLicenseBulkInsertInput!): AgencyLicenseBulkInsertPayload!
   agencyLicenseBulkDelete(input: AgencyLicenseBulkDeleteInput!): AgencyLicenseBulkDeletePayload!
   setAgencyProfitSharingInfo(input: SetAgencyProfitSharingInfoInput!): SetAgencyProfitSharingInfoPayload!
+  setCreditReport(input: SetCreditReportInput!): SetCreditReportPayload!
+  deleteCreditReport(input: DeleteCreditReportInput!): DeleteCreditReportPayload!
   createAddress(input: CreateAddressInput!): CreateAddressPayload!
   createPhoneNumber(input: CreatePhoneNumberInput!): CreatePhoneNumberPayload!
   deleteAddress(input: DeleteAddressInput!): DeleteAddressPayload!
@@ -1932,6 +1973,10 @@ type Indemnitor {
   familyName: String
 }
 
+type SetCreditReportPayload {
+  boolean: Boolean
+}
+
 type CreditReportHistory {
   id: UUID!
   created: DateTime!
@@ -2077,6 +2122,14 @@ input AgencyLicenseBulkInput {
   termination: LocalDate
   appointingState: Boolean!
   isActive: Boolean!
+}
+
+type RiskTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  riskType: String!
+  commercialRates: [CommercialRate!]!
 }
 
 type BondRequest {
@@ -2239,6 +2292,14 @@ enum ImagingDocumentCategory {
   COMM_BID
   CONT_BID
   BILLING
+}
+
+type AccountCollateralDto {
+  bondNumber: String
+  bank: String!
+  type: String
+  amount: Int!
+  expirationDate: LocalDate
 }
 
 input UpdateAccountWatchInput {
@@ -2406,6 +2467,11 @@ type BondBlock {
   issuedByNavigation: UserProfile
 }
 
+type AccountAnnualPremiumDto {
+  trailingTwelveMonths: Int!
+  yearToDate: Int!
+}
+
 type AddressTypeDm {
   id: UUID!
   created: DateTime!
@@ -2458,6 +2524,15 @@ type Agent {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type AccountLOADetailDto {
+  bondType: String
+  effective: DateTime!
+  expiration: DateTime!
+  single: Int!
+  aggregate: Int!
+  status: String
 }
 
 type SetPowerOfAttorneyPayload {
@@ -2519,6 +2594,14 @@ type PowerOfAttorneyStatusDm {
   modified: DateTime!
   status: String!
   powerOfAttorneys: [PowerOfAttorney!]!
+}
+
+type CommercialBondTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  commercialBondType: String!
+  commercialRates: [CommercialRate!]!
 }
 
 type WatchStatusDm {
@@ -2849,6 +2932,19 @@ type Account {
   emailAddresses: [LegalEntityEmail!]!
 }
 
+type ContractRate {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  class: String!
+  rateType: String!
+  minumumAmount: Int!
+  maximumAmount: Int!
+  premiumRate: Float
+  rateGroupNavigation: RateGroupDm!
+}
+
 type DivisionDm {
   id: UUID!
   created: DateTime!
@@ -2924,6 +3020,16 @@ input CreateAgencyPOADocumentLinkInput {
   imagingDocumentId: UUID
 }
 
+input SetCreditReportInput {
+  id: UUID!
+  creditReportAgency: String!
+  accountNum: String!
+  pulledDate: DateTime!
+  rating: String!
+  definition: String!
+  remarks: String!
+}
+
 type KeyPersonnel {
   id: UUID!
   created: DateTime!
@@ -2956,6 +3062,12 @@ type KeyPersonnel {
 
 type CreateEmployeePayload {
   boolean: Boolean
+}
+
+type AccountLOAsDto {
+  accountLOAs: [AccountLOADetailDto!]!
+  agencyLOAs: [AccountLOADetailDto!]!
+  loaTotal: Int!
 }
 
 type ImagingCategory {
@@ -3119,6 +3231,13 @@ type PowerOfAttorneyDocumentStatus {
   poa: PowerOfAttorney!
 }
 
+type CreditReportDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  creditReport: String!
+}
+
 type LawEntity {
   id: UUID!
   created: DateTime!
@@ -3139,6 +3258,17 @@ type LawEntity {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type RateGroupDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  rateGroup: String!
+  description: String!
+  createdBy: UUID
+  commercialRates: [CommercialRate!]!
+  contractRates: [ContractRate!]!
 }
 
 type AccountProgramStatusDm {
@@ -3285,6 +3415,13 @@ type ProfitCenter {
 
 type SetPowerOfAttorneyDocumentStatusPayload {
   powerOfAttorneyDocumentStatus: PowerOfAttorneyDocumentStatus
+}
+
+type AccountOutstandingLiabilityDto {
+  outstandingCommercialLiability: Int!
+  outstandingContractLiability: Int!
+  largestBondEver: Int!
+  largestOutstandingBonds: [AccountOutstandingLiabilityByTypeAndClassDto!]!
 }
 
 input LogExceptionInput {

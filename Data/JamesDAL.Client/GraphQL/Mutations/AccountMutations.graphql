@@ -86,3 +86,15 @@ mutation SetAccountGeneralInfoPanel($input: SetAccountGeneralInfoPanelInput!) {
         boolean
     }
 }
+
+mutation SetCreditReport($input: SetCreditReportInput!) {
+    setCreditReport(input: $input) {
+        boolean
+    }
+}
+
+mutation DeleteCreditReport($input: DeleteCreditReportInput!) {
+    deleteCreditReport(input: $input) {
+        boolean
+    }
+}

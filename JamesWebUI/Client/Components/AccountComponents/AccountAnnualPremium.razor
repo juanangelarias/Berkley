@@ -1,0 +1,108 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject TooltipService TooltipService;
+@inject IDataAccess DataAccess;
+
+<RadzenRow class="rz-mb-3" JustifyContent="JustifyContent.End">
+    <RadzenColumn Size="5">
+        <RadzenDropDown TValue="string" Data="_options" @bind-Value="_selectedOption"
+                        Change="arg => OptionChange(arg)" class="rz-mr-3"/>
+    </RadzenColumn>
+</RadzenRow>
+<RadzenRow>
+    <RadzenTable>
+        <RadzenTableHeader>
+            <RadzenTableHeaderCell>
+                <RadzenText Text="TTM" TextAlign="TextAlign.Right" class="rz-mr-1"
+                            MouseEnter="@(arg => ShowTooltip(arg, "TTM"))"/>
+            </RadzenTableHeaderCell>
+            <RadzenTableHeaderCell>
+                <RadzenText Text="YTD" TextAlign="TextAlign.Right" class="rz-mr-1"
+                            MouseEnter="@(arg => ShowTooltip(arg, "YTD"))"/>
+            </RadzenTableHeaderCell>
+        </RadzenTableHeader>
+        <RadzenTableBody>
+            <RadzenTableRow>
+                <RadzenTableCell class="rz-w-25">
+                    <RadzenText Text="@(_annualPremium.TrailingTwelveMonths.ToString("C0"))"
+                                TextAlign="TextAlign.Right"/>
+                </RadzenTableCell>
+                <RadzenTableCell class="rz-w-25">
+                    <RadzenText Text="@(_annualPremium.YearToDate.ToString("C0"))"
+                                TextAlign="TextAlign.Right"/>
+                </RadzenTableCell>
+            </RadzenTableRow>
+        </RadzenTableBody>
+    </RadzenTable>
+</RadzenRow>
+
+@code {
+    [Parameter, EditorRequired] public Account Account { get; set; }
+
+    private AccountAnnualPremiumDto _annualPremium = new();
+    private List<string> _options = ["Account only", "Parent only", "All related"];
+    private string _selectedOption = "Account only";
+
+    #region Loaders
+
+    #region AccountPremiums Load
+
+    private IDataAccessResult<AccountAnnualPremiumDto> _accountPremiumsResult = null!;
+
+    private LoadItem AccountPremiumsLoad => AddEventNotify(new LoadItem<AccountAnnualPremiumDto>
+    {
+        Key = CacheKeys.AccountAnnualPremiums(Account.AccountNum, _selectedOption),
+        AsyncLoadTask = async () => _accountPremiumsResult = await DataAccess.GetAccountAnnualPremiums(Account.AccountNum, _selectedOption),
+        CacheLoadTask = cache => _accountPremiumsResult = new DataAccessResult<AccountAnnualPremiumDto>
+        {
+            Data = (AccountAnnualPremiumDto)cache!
+        },
+        ResultVariable = () => _accountPremiumsResult,
+        AfterLoad = () => { _annualPremium = _accountPremiumsResult.Data!; }
+    }, "account annual premiums");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadPremiums();
+    }
+
+    private void ShowTooltip(ElementReference element, string id)
+    {
+        var opts = new TooltipOptions
+        {
+            Position = TooltipPosition.Right
+        };
+        switch (id)
+        {
+            case "TTM":
+                TooltipService.Open(element, "Trailing Twelve Months", opts);
+                break;
+            case "YTD":
+                TooltipService.Open(element, "Year to Date", opts);
+                break;
+        }
+    }
+
+    private async Task OptionChange(object value)
+    {
+        var option = value as string;
+        if (option == null)
+            return;
+
+        await LoadPremiums();
+    }
+
+    private async Task LoadPremiums()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(AccountPremiumsLoad);
+    }
+
+}

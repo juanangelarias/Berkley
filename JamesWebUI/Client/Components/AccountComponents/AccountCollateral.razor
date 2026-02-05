@@ -1,0 +1,69 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="0">
+    <RadzenRow Gap="1">
+        <RadzenText Text="Bond specific or account general, and the bank it's held with or if its an ILOC or Cash"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenText Text="Data Points:"/>
+    </RadzenRow>
+    <RadzenTable>
+        <RadzenTableBody>
+            @foreach (var collateral in _collaterals)
+            {
+                <RadzenTableRow>
+                    <RadzenTableCell class="rz-my-2">
+                        <AccountCollateralDetail Collateral="@collateral"/>
+                    </RadzenTableCell>
+                </RadzenTableRow>
+            }
+        </RadzenTableBody>
+    </RadzenTable>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private List<AccountCollateralDto> _collaterals = [];
+
+    #region Loaders
+
+    #region Collaterals Load
+
+    private IDataAccessResult<List<AccountCollateralDto>> _collateralsResult = null!;
+
+    private LoadItem CollateralsLoad => AddEventNotify(new LoadItem<List<AccountCollateralDto>>
+    {
+        Key = CacheKeys.AccountCollaterals(Account.AccountNum),
+        AsyncLoadTask = async () => _collateralsResult = await DataAccess.GetAccountBondCollaterals(Account.AccountNum),
+        CacheLoadTask = cache => _collateralsResult = new DataAccessResult<List<AccountCollateralDto>>
+        {
+            Data = (List<AccountCollateralDto>)cache!
+        },
+        ResultVariable = () => _collateralsResult,
+        AfterLoad = () =>
+        {
+            _collaterals = _collateralsResult.Data!;
+        }
+    }, "account collaterals");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadCollaterals();
+    }
+
+    private async Task LoadCollaterals()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(CollateralsLoad);
+    }
+}

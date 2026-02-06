@@ -99,8 +99,8 @@ query agencyAccountBonds($accountNum: String!) {
     }
 }
 
-query GetAgencyBonds($agencyId: UUID!, $skip: Int!, $take: Int!) {
-  agencyBonds(agencyId: $agencyId, skip: $skip, take: $take) {
+query GetAgencyBonds($agencyId: UUID!, $accountNum: String!, $skip: Int!, $take: Int!) {
+  agencyBonds(agencyId: $agencyId, accountNum: $accountNum, skip: $skip, take: $take) {
       accountName
       accountNum
       beginDate
@@ -115,6 +115,7 @@ query GetAgencyBonds($agencyId: UUID!, $skip: Int!, $take: Int!) {
       status
       underWriterId
       underWriterName
+      amount
   }
 }
 
@@ -127,50 +128,17 @@ query GetAgencyBondsCount($agencyId: UUID!) {
 query GetAgencyAgents($agencyId: UUID!){
 	agencyAgents(agencyId: $agencyId){
         id
+        agencyId
+        agentId
         fullName
         givenName
         middleInitial
         familyName
-        mainEmailAddress
+        email
+        phoneNumber
+        extension        
         nationalProducerNumber
-        idNavigation {
-            givenName
-            middleInitial
-            familyName
-            fullName
-            legalEntityEmails {
-                id
-                type
-                emailAddress
-            }
-            legalEntityPhones {
-                type
-                phoneNumber {
-                    countryCode
-                    mainNumber
-                    extension
-                }
-            }
-        }
-        agencyLicenses {
-            id
-            licenseNumber
-            comments
-            appointment
-            termination
-            appointingState
-            state
-            isActive
-            isResident
-            insurerId
-            expiration
-            insurer {
-                id
-                idNavigation {
-                    fullName
-                }
-            }
-        }
+        aif
     }
 }
 
@@ -277,6 +245,9 @@ query GetAgencyInventory($agencyId: UUID!){
             city
             stateCode
             postalCode
+        }
+        approverNavigation {
+            fullName
         }
     }
 }

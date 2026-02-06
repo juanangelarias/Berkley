@@ -21,7 +21,8 @@
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="account">
-        <RadzenDataGrid Data="account.Bonds" TItem="AgencyAccountBondDto" Density="Density.Compact"
+        <AgencyBondsGrid Agency="@Agency" AccountNum="@account.AccountNum"/>
+        @*<RadzenDataGrid Data="account.Bonds" TItem="AgencyAccountBondDto" Density="Density.Compact"
                         Style="height: 400px; border-radius: 10px;">
             <Columns>
                 <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="Status" Property="Status" MinWidth="80px"
@@ -55,7 +56,7 @@
                 <RadzenDataGridColumn TItem="AgencyAccountBondDto" Title="End Date" Property="Expiration"
                                       FormatString="{0:dd/MM/yyyy}" MinWidth="120px" Resizable="true"/>
             </Columns>
-        </RadzenDataGrid>
+        </RadzenDataGrid>*@
     </Template>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyAccountDto" Title="Status" Property="Status" Frozen="true" Width="120px"
@@ -121,7 +122,7 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public required string AgencyNumber { get; set; }
+    [Parameter] public required Agency Agency { get; set; }
 
     private List<AgencyAccountDto> _agencyAccounts = new();
 
@@ -136,8 +137,8 @@
     
     private LoadItem AccountLoad => AddEventNotify(new LoadItem<List<Account>>
     {
-        Key = $"Accounts{AgencyNumber}",
-        AsyncLoadTask = async () => _accountResult = await DataAccess.GetAgencyAccounts(AgencyNumber),
+        Key = $"Accounts{Agency.AgencyNumber}",
+        AsyncLoadTask = async () => _accountResult = await DataAccess.GetAgencyAccounts(Agency.AgencyNumber),
         CacheLoadTask = cache => _accountResult = new DataAccessResult<List<AgencyAccountDto>>
         {
             Data = (List<AgencyAccountDto>)cache!
@@ -171,7 +172,7 @@
 
     private async Task LoadAgencyAccounts()
     {
-        if (string.IsNullOrEmpty(AgencyNumber))
+        if (string.IsNullOrEmpty(Agency.AgencyNumber))
             return;
 
         await DataAccess.GetCacheOrLoadDataAsync(AccountLoad);

@@ -139,7 +139,7 @@ namespace JamesWebUI.Server.Controllers
 
             var loads = new List<Func<Task>>
             {
-                async () => { contactsResult = await DataAccess.GetAgencyAgents(agencyId); },
+                async () => { contactsResult = await DataAccess.GetAgencyAgentsStandard(agencyId); },
                 async () => { agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId); }
             };
             await Task.WhenAll(loads.Select(l => l()));

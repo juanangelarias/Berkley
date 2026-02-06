@@ -16,4 +16,5 @@ public class AgencyBondDto
     public string ObligeeName { get; set; } = string.Empty;
     public string BondClass { get; set; } = string.Empty;
     public string Branch { get; set; } = string.Empty;
+    public int Amount { get; set; }
 }

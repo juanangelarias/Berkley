@@ -55,10 +55,18 @@
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Bond No." Property="BondNumber" Width="125px"
-                              Resizable="true"/>
-        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Account No." Property="AccountNum" Width="140px"
-                              Resizable="true"/>
-        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Account Name" Property="AccountName" Width="150px"
+                              Resizable="true">
+            <Template Context="bond">
+                <RadzenLink Text="@bond.BondNumber" Path=@($"bond/{bond.BondNumber}") Style="--rz-grid-cell-font-size: 0.9rem"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Account No." Property="AccountNum" Width="130px"
+                              Resizable="true">
+            <Template Context="bond">
+                <RadzenLink Text="@bond.AccountNum" Path=@($"account/{bond.AccountNum}") Style="--rz-grid-cell-font-size: 0.9rem"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Account Name" Property="AccountName" Width="200px"
                               Resizable="true"/>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Bond Type" Property="BondType" Width="130px"
                               FilterValue="_bondTypeFilter" FilterProperty="BondType" Resizable="true"
@@ -71,11 +79,17 @@
             </FilterTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Begin Date" Property="BeginDate" FormatString="{0:d}"
-                              Width="150px"
-                              Resizable="true"/>
+                              Width="150px" Resizable="true"/>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="End Date" Property="EndDate" FormatString="{0:d}"
-                              Width="150px"
-                              SortOrder="SortOrder.Descending" Resizable="true"/>
+                              Width="150px" SortOrder="SortOrder.Descending" Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Amount" Property="Amount" FormatString="{0:C0}"
+                              Width="125px" SortOrder="SortOrder.Descending" Resizable="true"
+                              TextAlign="TextAlign.Center">
+            <Template Context="bond">
+                <RadzenText Text="@bond.Amount.ToString("C0")" TextAlign="TextAlign.Right"
+                            Style="--rz-grid-cell-font-size: 0.9rem"/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="UW" Property="UnderWriterName" Width="175px"
                               Resizable="true"/>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Branch" Property="Branch" Width="100px"
@@ -105,7 +119,8 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public required Agency Agency { get; set; }
+    [Parameter] public string? AccountNum { get; set; }
 
     // ***
     //
@@ -135,14 +150,17 @@
 
     private LoadItem AgencyBondsLoad => AddEventNotify(new()
     {
-        Key = $"AgencyBondGrid{AgencyId}_{_skip}_{_take}",
-        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId, _skip, _take),
+        Key = $"AgencyBondGrid{Agency.Id}_{AccountNum}_{_skip}_{_take}",
+        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(Agency.Id, AccountNum, _skip, _take),
         CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<AgencyBondDto>>
         {
             Data = (List<AgencyBondDto>)cache!
         },
         ResultVariable = () => _agencyBondsResult,
-        AfterLoad = () => { _agencyBonds = _agencyBondsResult.Data!; }
+        AfterLoad = () =>
+        {
+            _agencyBonds = _agencyBondsResult.Data!;
+        }
     }, "agency bond grid");
 
     #endregion
@@ -164,10 +182,10 @@
 
     private async Task LoadAgencyBonds(LoadDataArgs? args)
     {
-        if (AgencyId == Guid.Empty)
+        if (Agency.Id == Guid.Empty)
             return;
 
-        var countResult = await DataAccess.GetAgencyBondsCount(AgencyId);
+        var countResult = await DataAccess.GetAgencyBondsCount(Agency.Id);
         if (countResult.Success)
             _count = countResult.Data!.Count;
 

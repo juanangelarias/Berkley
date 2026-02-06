@@ -9,9 +9,8 @@
                 <RadzenRow>
                     <RadzenText Text="Parent Number" TextStyle="TextStyle.Subtitle1"/>
                 </RadzenRow>
-                <RadzenRow>
-                    @*<RadzenText Text="@Data.ParentAccount.AccountNum"/>*@
-                    <RadzenLink Text="@Data.ParentAccount.AccountNum" Style="font-size: 0.9rem;"
+                <RadzenRow Style="font-size: 0.9rem">
+                    <RadzenLink Text="@Data.ParentAccount.AccountNum"
                                 Path="@($"Account/{Data.ParentAccount.AccountNum}")"/>
                 </RadzenRow>
             </RadzenColumn>
@@ -41,7 +40,8 @@
             <Columns>
                 <RadzenDataGridColumn Title="Account Number" Property="@nameof(RelatedAccountDto.AccountNum)">
                     <Template>
-                        <RadzenLink Text="@context.AccountNum" Path="@($"Account/{context.AccountNum}")"/>
+                        <RadzenLink Text="@context.AccountNum" Path="@($"Account/{context.AccountNum}")"
+                                    Style="--rz-grid-cell-font-size: 0.9rem"/>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Account Name" Property="@nameof(RelatedAccountDto.AccountName)"/>

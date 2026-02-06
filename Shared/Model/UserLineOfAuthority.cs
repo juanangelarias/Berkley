@@ -28,9 +28,9 @@ public partial class UserLineOfAuthority
 
     public Guid ModifiedBy { get; set; }
 
-    public virtual UserProfile CreatedByNavigation { get; set; } = null!;
+    public virtual Employee CreatedByNavigation { get; set; } = null!;
 
-    public virtual UserProfile ModifiedByNavigation { get; set; } = null!;
+    public virtual Employee ModifiedByNavigation { get; set; } = null!;
 
-    public virtual UserProfile User { get; set; } = null!;
+    public virtual Employee User { get; set; } = null!;
 }

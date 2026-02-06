@@ -20,5 +20,5 @@ public partial class DefaultGeneralLedgerAccount
 
     public bool FundedDebt { get; set; }
 
-    public virtual AccountClassDm AccountClassNavigation { get; set; } = null!;
+    public virtual DivisionDm AccountClassNavigation { get; set; } = null!;
 }

@@ -182,7 +182,7 @@ public partial class Account
 
     public virtual Branch BranchNavigation { get; set; } = null!;
 
-    public virtual UserProfile? BranchReviewByNavigation { get; set; }
+    public virtual Employee? BranchReviewByNavigation { get; set; }
 
     public virtual BusinessTypeClassCodeDm? BusinessTypeClassNavigation { get; set; }
 
@@ -204,7 +204,7 @@ public partial class Account
 
     public virtual ICollection<EmailHistory> EmailHistories { get; set; } = new List<EmailHistory>();
 
-    public virtual UserProfile? HomeOfficeReviewByNavigation { get; set; }
+    public virtual Employee? HomeOfficeReviewByNavigation { get; set; }
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 

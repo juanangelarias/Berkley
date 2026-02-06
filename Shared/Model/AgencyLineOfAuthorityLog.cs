@@ -40,7 +40,7 @@ public partial class AgencyLineOfAuthorityLog
 
     public virtual ICollection<AgencyLineOfAuthorityAgent> AgencyLineOfAuthorityAgents { get; set; } = new List<AgencyLineOfAuthorityAgent>();
 
-    public virtual UserProfile? CreatedByNavigation { get; set; }
+    public virtual Employee? CreatedByNavigation { get; set; }
 
     public virtual LineOfAuthorityStatusDm? StatusNavigation { get; set; }
 }

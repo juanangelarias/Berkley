@@ -42,9 +42,9 @@ public partial class LineOfAuthorityLog
 
     public Guid? CreatedBy { get; set; }
 
-    public virtual UserProfile? ApprovedByNavigation { get; set; }
+    public virtual Employee? ApprovedByNavigation { get; set; }
 
-    public virtual UserProfile? CreatedByNavigation { get; set; }
+    public virtual Employee? CreatedByNavigation { get; set; }
 
     public virtual DivisionDm? DivisionNavigation { get; set; }
 

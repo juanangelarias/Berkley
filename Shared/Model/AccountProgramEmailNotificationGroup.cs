@@ -16,5 +16,5 @@ public partial class AccountProgramEmailNotificationGroup
 
     public string? SendTo { get; set; }
 
-    public virtual UserProfile User { get; set; } = null!;
+    public virtual Employee User { get; set; } = null!;
 }

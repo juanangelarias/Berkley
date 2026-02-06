@@ -16,8 +16,6 @@ public partial class RateGroupDm
 
     public string Description { get; set; } = null!;
 
-    public Guid CreatedBy { get; set; }
-
     public virtual ICollection<CommercialRate> CommercialRates { get; set; } = new List<CommercialRate>();
 
     public virtual ICollection<ContractRate> ContractRates { get; set; } = new List<ContractRate>();

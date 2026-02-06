@@ -30,7 +30,7 @@ public partial class NotebookEntry
 
     public bool ColumnName { get; set; }
 
-    public virtual UserProfile CreatedByNavigation { get; set; } = null!;
+    public virtual Employee CreatedByNavigation { get; set; } = null!;
 
     public virtual Notebook Notebook { get; set; } = null!;
 

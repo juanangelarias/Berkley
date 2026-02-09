@@ -355,3 +355,18 @@ query GetCreditReportAgencies {
         creditReport
     }
 }
+
+query GetRelatedAccounts($accountNum: String!) {
+    relatedAccounts(accountNum: $accountNum) {
+        parentAccount {
+            accountName
+            accountNum
+            accountStatus
+        }
+        relatedAccounts {
+            accountName
+            accountNum
+            accountStatus
+        }
+    }    
+}

@@ -548,6 +548,7 @@ type Query {
   accountAnnualPremiums(accountNum: String! type: String!): AccountAnnualPremiumDto!
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
+  relatedAccounts(accountNum: String!): AccountBondedPrincipleDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -2074,6 +2075,11 @@ type VoidedBond {
   voidedByNavigation: UserProfile!
 }
 
+type AccountBondedPrincipleDto {
+  parentAccount: RelatedAccountDto!
+  relatedAccounts: [RelatedAccountDto!]!
+}
+
 type CommercialFinancial {
   id: UUID!
   created: DateTime!
@@ -2740,6 +2746,12 @@ type NotificationGroupMember {
   employeeId: UUID!
   employee: Employee!
   groupNameNavigation: NotificationGroup!
+}
+
+type RelatedAccountDto {
+  accountNum: String!
+  accountName: String!
+  accountStatus: String!
 }
 
 type PersonalFinancialSubaccount {

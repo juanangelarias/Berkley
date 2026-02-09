@@ -138,6 +138,8 @@ namespace James.Shared.Data
         
         public Task<ISaveDataResult> DeleteCreditReport(Guid id);
         
+        public Task<IDataAccessResult<AccountBondedPrincipleDto>> GetRelatedAccounts(string accountNum);
+        
         public Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type);
 

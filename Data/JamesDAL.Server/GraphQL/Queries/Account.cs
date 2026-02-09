@@ -442,4 +442,64 @@ public partial class Query
         
         return result;
     }
+    
+    [Authorize]
+    public async Task<AccountBondedPrincipleDto> GetRelatedAccounts(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var accountId = (await ctx.Accounts.FirstOrDefaultAsync(f=>f.AccountNum == accountNum))?.Id;
+        if(accountId == null)
+            throw new GraphQLException($"No account exist with Account Number {accountNum}");
+        
+        var parentAccountId = await GetParent(accountId!.Value, contextFactory);
+        var parentAccount = await ctx.Accounts
+            .Include(i=>i.IdNavigation)
+            .Include(i=>i.AccountStatusLogs)
+            .FirstOrDefaultAsync(f => f.Id == parentAccountId);
+        if(parentAccount == null)
+            throw new GraphQLException($"No parent account exist for account {accountNum}");
+        
+        var related = await ctx.AccountChildren
+            .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({accountNum})")
+            .Select(s => s.AccountNum)
+            .ToListAsync();
+        
+        related.Remove(parentAccount.AccountNum);
+
+        var relatedAccounts = await ctx.Accounts
+            .Include(i => i.IdNavigation)
+            .Include(i => i.AccountStatusLogs)
+            .Where(f => related.Contains(f.AccountNum))
+            .ToListAsync();
+
+        var response = new AccountBondedPrincipleDto
+        {
+            ParentAccount = new RelatedAccountDto
+            {
+                AccountNum = parentAccount.AccountNum,
+                AccountName = parentAccount.IdNavigation.FullName,
+                AccountStatus = parentAccount.AccountStatusLogs
+                    .OrderBy(o => o.AccountNum)
+                    .ThenByDescending(o => o.Effective)
+                    .FirstOrDefault()?
+                    .AccountStatus ?? "Unknown"
+            },
+            RelatedAccounts = relatedAccounts
+                .Select(s => new RelatedAccountDto
+                {
+                    AccountNum = s.AccountNum,
+                    AccountName = s.IdNavigation.FullName,
+                    AccountStatus = s.AccountStatusLogs
+                        .OrderBy(o => o.AccountNum)
+                        .ThenByDescending(o => o.Effective)
+                        .FirstOrDefault()?
+                        .AccountStatus ?? "Unknown"
+                })
+                .ToList()
+        };
+        
+        return response;
+    }
 }

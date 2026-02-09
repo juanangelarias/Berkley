@@ -571,6 +571,14 @@ namespace James.Data.Client
             return await ExecuteSave(async () =>
                 await jamesClient.DeleteCreditReport.ExecuteAsync(new DeleteCreditReportInput { Id = id }));
         }
+        
+        public async Task<IDataAccessResult<AccountBondedPrincipleDto>> GetRelatedAccounts(string accountNum)
+        {
+            var result = await ExecuteGet<AccountBondedPrincipleDto>(async () =>
+                await jamesClient.GetRelatedAccounts.ExecuteAsync(accountNum), "RelatedAccounts");
+            
+            return result;
+        }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
             string emailAddress, string type)

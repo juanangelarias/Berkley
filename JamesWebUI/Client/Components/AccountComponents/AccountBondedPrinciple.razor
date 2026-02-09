@@ -10,7 +10,8 @@
                     <RadzenText Text="Parent Number" TextStyle="TextStyle.Subtitle1"/>
                 </RadzenRow>
                 <RadzenRow>
-                    <RadzenText Text="@Data.ParentAccount.AccountNum"/>
+                    <RadzenLink Text="@Data.ParentAccount.AccountNum"
+                                Path="@($"Account/{Data.ParentAccount.AccountNum}")"/>
                 </RadzenRow>
             </RadzenColumn>
             <RadzenColumn Size="3">
@@ -37,7 +38,12 @@
     <RadzenRow>
         <RadzenDataGrid TItem="RelatedAccountDto" Data="@Data.RelatedAccounts">
             <Columns>
-                <RadzenDataGridColumn Title="Account Number" Property="@nameof(RelatedAccountDto.AccountNum)"/>
+                <RadzenDataGridColumn Title="Account Number" Property="@nameof(RelatedAccountDto.AccountNum)">
+                    <Template>
+                        <RadzenLink Text="@context.AccountNum" Path="@($"Account/{context.AccountNum}")"
+                                    Style="font-size: var(--rz-grid-cell-font-size)"/>
+                    </Template>
+                </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Account Name" Property="@nameof(RelatedAccountDto.AccountName)"/>
                 <RadzenDataGridColumn Title="Status" Property="@nameof(RelatedAccountDto.AccountStatus)"/>
             </Columns>
@@ -65,10 +71,7 @@
             Data = (AccountBondedPrincipleDto)cache!
         },
         ResultVariable = () => _relatedAccountsResult,
-        AfterLoad = () =>
-        {
-            Data = _relatedAccountsResult.Data!;
-        }
+        AfterLoad = () => { Data = _relatedAccountsResult.Data!; }
     }, "related accounts");
 
     #endregion

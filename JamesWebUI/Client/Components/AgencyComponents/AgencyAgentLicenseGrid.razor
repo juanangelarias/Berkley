@@ -202,7 +202,7 @@
 
 @code {
     [Parameter, EditorRequired] public required Agency Agency { get; set; }
-    [Parameter, EditorRequired] public Agent Agent { get; set; }
+    [Parameter, EditorRequired] public AgencyAgentDto Agent { get; set; }
 
     private List<AgencyLicense> Licenses { get; set; } = [];
     private List<AgencyLicense> _agencyLicensesBeforeBulkEdit = [];

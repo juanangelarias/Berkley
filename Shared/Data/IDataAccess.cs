@@ -85,14 +85,15 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AddressTypeDm>>> GetAddressTypes();
         public Task<IDataAccessResult<List<Address>>> GetAllLegalEntityAddresses(Guid legalEntityId);
         public Task<IDataAccessResult<List<PhoneNumber>>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId);
-        public Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take);
+        public Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, string? accountNum, int skip, int take);
         public Task<IDataAccessResult<QueryCount>> GetAgencyBondsCount(Guid agencyId);
         public Task<IDataAccessResult<List<LegalEntityEmail>>> GetAllLegalEntityEmails(Guid legalEntityId);
         public Task<IDataAccessResult<List<EmailTypeDm>>> GetAllEmailTypes();
         public Task<IDataAccessResult<List<WatchStatusDm>>> GetAllWatchStatuses();
         public Task<IDataAccessResult<List<AgencyInventory>>> GetAgencyInventory(Guid agencyId);
         public Task<IDataAccessResult<List<InventoryDocumentDm>>> GetAllInventoryDocTypes();
-        public Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId);
+        public Task<IDataAccessResult<List<Agent>>> GetAgencyAgentsStandard(Guid agencyId);
+        public Task<IDataAccessResult<List<AgencyAgentDto>>> GetAgencyAgents(Guid agencyId);
         public Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId);
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);

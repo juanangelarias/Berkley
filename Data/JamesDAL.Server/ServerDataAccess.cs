@@ -159,9 +159,9 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllInventoryDocTypes(contextFactory));
         }
-        public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take)
+        public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, string? accountNum, int skip, int take)
         {
-            return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, skip, take, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, accountNum, skip, take, contextFactory));
         }
 
         public async Task<IDataAccessResult<QueryCount>> GetAgencyBondsCount(Guid agencyId)
@@ -174,10 +174,16 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAllWatchStatuses(contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
+        public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgentsStandard(Guid agencyId)
+        {
+            return await ExecuteGet(async () => await query.GetAgencyAgentsStandard(agencyId, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<AgencyAgentDto>>> GetAgencyAgents(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyAgents(agencyId, contextFactory));
         }
+        
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId)
         {
             return await ExecuteGet(async () => await query.GetAgencyAgentLicenses(agencyId, agentId, contextFactory));

@@ -68,13 +68,13 @@
                 @relatedParty.Agency.MainAddress?.City
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="State" Width="100px" TextAlign="TextAlign.Center"
+        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="State" Width="150px" TextAlign="TextAlign.Center"
                               Property="Agency.IdNavigation.MainAddress.State" Filterable="true">
             <Template Context="relatedParty">
                 @relatedParty.Agency.MainAddress?.StateCode
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Zip Code" Width="110px" TextAlign="TextAlign.Center"
+        <RadzenDataGridColumn TItem="AgencyLocationsDto" Title="Zip Code" Width="175px" TextAlign="TextAlign.Center"
                               Property="Agency.IdNavigation.MainAddress.PostalCode" Visible="false" Filterable="true">
             <Template Context="relatedParty">
                 @relatedParty.Agency.MainAddress?.PostalCode

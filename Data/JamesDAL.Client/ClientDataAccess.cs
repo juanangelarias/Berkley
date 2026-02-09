@@ -342,10 +342,11 @@ namespace James.Data.Client
             return response;
         }
 
-        public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take)
+        public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, string? accountNum, int skip, int take)
         {
-            return await ExecuteGet<List<Bond>>(
-                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, skip, take), "AgencyBonds");
+            throw new NotImplementedException();
+            /*return await ExecuteGet<List<AgencyBondDto>>(
+                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, accountNum, skip, take), "AgencyBonds");*/
         }
         
         public async Task<IDataAccessResult<QueryCount>> GetAgencyBondsCount(Guid agencyId)
@@ -353,9 +354,15 @@ namespace James.Data.Client
             return await ExecuteGet<QueryCount>(async () => await jamesClient.GetAgencyBondsCount.ExecuteAsync(agencyId));
         }
 
-        public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
+
+        public Task<IDataAccessResult<List<Agent>>> GetAgencyAgentsStandard(Guid agencyId)
         {
-            return await ExecuteGet<List<Agent>>(
+            throw new NotImplementedException();
+        }
+
+        public async Task<IDataAccessResult<List<AgencyAgentDto>>> GetAgencyAgents(Guid agencyId)
+        {
+            return await ExecuteGet<List<AgencyAgentDto>>(
                 async () => await jamesClient.GetAgencyAgents.ExecuteAsync(agencyId), "AgencyAgents");
         }
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId)

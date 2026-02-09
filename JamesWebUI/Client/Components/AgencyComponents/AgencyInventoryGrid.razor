@@ -39,7 +39,13 @@
                 <RadzenDatePicker TValue="DateTime?" ShowTime="false" @bind-Value="@inventory.Sent"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyInventory" Title="Doc Type" Property="DocumentType">
+        <RadzenDataGridColumn TItem="AgencyInventory" Title="Comments" Property="Comments" Filterable="true"
+                              Width="200px">
+            <EditTemplate Context="inventory">
+                <RadzenTextBox @bind-Value="@inventory.Comments"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyInventory" Title="Doc Type" Property="DocumentType" Width="150px">
             <Template Context="inventory">
                 <RadzenText Text="@inventory.DocumentType"/>
             </Template>
@@ -47,6 +53,10 @@
                 <RadzenDropDown TValue="string" TextProperty="DocumentType" ValueProperty="DocumentType"
                                 @bind-Value="@inventory.DocumentType" Data="AllDocTypes"/>
             </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyInventory" Title="Approved by" Property="ApproverNavigation.FullName"
+                              Width="150px" Filterable="true">
+            
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyInventory" Title="Quantity" Property="Quantity"
                               Filterable="false" Width="125px">
@@ -185,7 +195,10 @@
             Data = (List<AgencyInventory>)cache!
         },
         ResultVariable = () => _inventoryResult,
-        AfterLoad = () => { AgencyInventories = _inventoryResult.Data!; }
+        AfterLoad = () =>
+        {
+            AgencyInventories = _inventoryResult.Data!;
+        }
     }, "agency inventory");
 
     private LoadItem StatesLoad => AddEventNotify(new LoadItem<List<State>>

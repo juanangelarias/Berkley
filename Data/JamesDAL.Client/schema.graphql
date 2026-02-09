@@ -557,9 +557,10 @@ type Query {
   agencyParent(agencyId: UUID!): Agency!
   agencyInventory(agencyId: UUID!): [AgencyInventory!]!
   agencyStatusLog(agencyNumber: String!): [AgencyStatusLog!]!
-  agencyBonds(agencyId: UUID! skip: Int! take: Int!): [Bond!]!
+  agencyBonds(agencyId: UUID! accountNum: String skip: Int! take: Int!): [AgencyBondDto!]!
   agencyBondsCount(agencyId: UUID!): QueryCount!
-  agencyAgents(agencyId: UUID!): [Agent!]!
+  agencyAgentsStandard(agencyId: UUID!): [Agent!]!
+  agencyAgents(agencyId: UUID!): [AgencyAgentDto!]!
   agencyAgentLicenses(agencyId: UUID! agentId: UUID!): [AgencyLicense!]!
   allActiveAgencies: [AgencyDto!]!
   agencyLicenses(agencyId: UUID! agents: Boolean!): [AgencyLicense!]!
@@ -1016,6 +1017,24 @@ type PhoneTypeDm {
 
 type DeleteBondBlockPayload {
   boolean: Boolean
+}
+
+type AgencyBondDto {
+  status: String!
+  bondNumber: String!
+  accountNum: String!
+  accountName: String!
+  bondType: String!
+  beginDate: DateTime!
+  endDate: DateTime!
+  underWriterId: UUID!
+  underWriterName: String!
+  sicCode: String!
+  obligeeId: UUID
+  obligeeName: String!
+  bondClass: String!
+  branch: String!
+  amount: Int!
 }
 
 input SetAccountGeneralInfoInput {
@@ -3521,6 +3540,21 @@ type AgencyLineOfAuthorityLog {
   agencyLineOfAuthorityAgents: [AgencyLineOfAuthorityAgent!]!
   createdByNavigation: UserProfile
   statusNavigation: LineOfAuthorityStatusDm
+}
+
+type AgencyAgentDto {
+  id: UUID!
+  agencyId: UUID!
+  agentId: UUID!
+  fullName: String!
+  givenName: String
+  middleInitial: String
+  familyName: String
+  nationalProducerNumber: String!
+  email: String!
+  phoneNumber: String!
+  extension: String!
+  aif: Boolean!
 }
 
 input DeleteAgencyInventoryInput {

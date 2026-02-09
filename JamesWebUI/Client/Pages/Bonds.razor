@@ -1,0 +1,13 @@
+﻿@page "/bond/{BondNumber?}"
+
+<RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" class="rz-h-100">
+    <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+        <RadzenText Text="To Be Developed" TextStyle="TextStyle.DisplayH3"/>
+        <RadzenText Text="@($"Bond Number: {BondNumber}")" TextStyle="TextStyle.DisplayH6"
+                    Visible="@(BondNumber != null)"/>
+    </RadzenStack>
+</RadzenRow>
+
+@code {
+    [Parameter] public string? BondNumber { get; set; }
+}

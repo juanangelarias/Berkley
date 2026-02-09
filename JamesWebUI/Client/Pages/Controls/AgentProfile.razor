@@ -1,0 +1,13 @@
+﻿@page "/Agent/{AgentId?}"
+
+<RadzenRow JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center" class="rz-h-100">
+    <RadzenStack JustifyContent="JustifyContent.Center" AlignItems="AlignItems.Center">
+        <RadzenText Text="To Be Developed" TextStyle="TextStyle.DisplayH3"/>
+        <RadzenText Text="@($"Agent Id: {AgentId}")" TextStyle="TextStyle.DisplayH6"
+                    Visible="@(AgentId != null)"/>
+    </RadzenStack>
+</RadzenRow>
+
+@code {
+    [Parameter] public Guid? AgentId { get; set; } 
+}

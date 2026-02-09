@@ -1,6 +1,6 @@
 ﻿@using System.Text.RegularExpressions
 @using SharedBusinessLogic
-@inherits JamesGridLayoutComponentBase<Agent>
+@inherits JamesGridLayoutComponentBase<AgencyAgentDto>
 
 @inject NavigationManager NavigationManager
 @inject TooltipService TooltipService
@@ -8,7 +8,7 @@
 
 <Theme/>
 
-<RadzenDataGrid TItem="Agent" Data="@Agents" @ref="@Grid" Density="Density.Compact"
+<RadzenDataGrid TItem="AgencyAgentDto" Data="@Agents" @ref="@Grid" Density="Density.Compact"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 @bind-Settings="@GridSettings" AllowColumnReorder="true"
                 GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single"
@@ -31,39 +31,44 @@
         <AgencyAgentLicenseGrid Agency="Agency" Agent="agent"/>
     </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="Agent" Title="First Name" Property="IdNavigation.GivenName" Width="200px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Property="IdNavigation.GivenName" Width="175px">
             <Template Context="agent">
-                <RadzenText Text="@agent.IdNavigation.GivenName"/>
+                <RadzenText Text="@agent.GivenName"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agent" Title="MI" Property="IdNavigation.MiddleInitial" Width="75px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Property="IdNavigation.MiddleInitial" Width="75px">
             <Template Context="agent">
-                <RadzenText Text="@agent.IdNavigation.MiddleInitial"/>
+                <RadzenText Text="@agent.MiddleInitial"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agent" Title="Last Name" Property="IdNavigation.FamilyName" Width="200px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Property="IdNavigation.FamilyName" Width="175px">
             <Template Context="agent">
-                <RadzenText Text="@agent.IdNavigation.FamilyName"/>
+                <RadzenText Text="@agent.FamilyName"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agent" Title="NPN" Property="NationalProducerNumber" Width="125px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="NPN" Property="NationalProducerNumber" Width="125px">
             <Template Context="agent">
                 <RadzenText Text="@agent.NationalProducerNumber"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agent" Title="Email" Width="300px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Email" Width="200px">
             <Template Context="agent">
-                <RadzenText Text="@GetEmail(agent)"/>
+                <RadzenText Text="@agent.Email"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agent" Title="Phone Number" Width="125px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Phone Number" Width="125px">
             <Template Context="agent">
-                <RadzenText Text="@GetPhoneNumber(agent)"/>
+                <RadzenText Text="@agent.PhoneNumber"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Agent" Title="Ext." Width="100px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Ext." Width="100px">
             <Template Context="agent">
-                <RadzenText Text="@GetPhoneNumber(agent, true)"/>
+                <RadzenText Text="@agent.Extension"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Width="100px" TextAlign="TextAlign.Center">
+            <Template Context="agent">
+                <RadzenCheckBox TValue="bool" Value="@agent.AIF" ReadOnly="true" Style="align-self: center"/>
             </Template>
         </RadzenDataGridColumn>
     </Columns>
@@ -73,19 +78,19 @@
 @code {
     [Parameter, EditorRequired] public Agency Agency { get; set; }
 
-    private List<Agent> Agents { get; set; } = [];
+    private List<AgencyAgentDto> Agents { get; set; } = [];
 
     #region Loaders
 
-    private IDataAccessResult<List<Agent>> _agentsResult = null!;
+    private IDataAccessResult<List<AgencyAgentDto>> _agentsResult = null!;
 
-    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<Agent>>
+    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<AgencyAgentDto>>
     {
         Key = $"AgencyContacts{Agency.Id}",
         AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(Agency.Id),
-        CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<Agent>>
+        CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<AgencyAgentDto>>
         {
-            Data = (List<Agent>)cache!
+            Data = (List<AgencyAgentDto>)cache!
         },
         ResultVariable = () => _agentsResult,
         AfterLoad = void () =>
@@ -175,5 +180,12 @@
         return string.IsNullOrEmpty(number)
             ? ""
             : Regex.Replace(number, @"(\d{3})(\d{3})(\d{4})", "($1) $2-$3");
+    }
+
+    private bool? GetAIF(Agent agent)
+    {
+        return agent.AgentsInAgencies
+            .FirstOrDefault(f => f.AgencyId == Agency.Id)?
+            .AttorneyInFact;
     }
 }

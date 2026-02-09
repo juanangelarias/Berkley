@@ -248,7 +248,7 @@
     private List<AgencyLicense> _toInsert = [];
     private static List<Insurer> AllInsurers { get; set; } = [];
     private static List<State> AllStates { get; set; } = [];
-    private List<Agent> AgencyAgents { get; set; } = [];
+    private List<AgencyAgentDto> AgencyAgents { get; set; } = [];
 
     private readonly DataGridEditMode _editMode = DataGridEditMode.Multiple;
     private bool _bulkMode;
@@ -329,15 +329,15 @@
 
     #region Agents Load
 
-    private IDataAccessResult<List<Agent>> _agentsResult = null!;
+    private IDataAccessResult<List<AgencyAgentDto>> _agentsResult = null!;
 
-    private LoadItem AgentsLoad => AddEventNotify(new LoadItem<List<Agent>>
+    private LoadItem AgentsLoad => AddEventNotify(new LoadItem<List<AgencyAgentDto>>
     {
         Key = CacheKeys.AgencyAgents(Agency.AgencyNumber),
         AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(Agency.Id),
-        CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<Agent>>
+        CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<AgencyAgentDto>>
         {
-            Data = (List<Agent>)cache!
+            Data = (List<AgencyAgentDto>)cache!
         },
         ResultVariable = () => _agentsResult,
         AfterLoad = () =>

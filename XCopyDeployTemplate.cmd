@@ -3,7 +3,7 @@ SET server="%1"
 SET DestinationPath=\James\
 SET DestinationSubFolder=JamesWebUI.Server
 SET noPath=^.
-SET NetVersion=NET9.0
+SET NetVersion=net10.0
 :: Allow shortcuts of dev/int/tst/prod to work
 if "%1"=="int" (set server=USILG01-ISI024)
 if /i "%1"=="dev" (set server=USILG01-ISD076)
@@ -31,6 +31,7 @@ c:
 pushd JamesWebUI\Server
 REM Choose debug or release for the environment
 SET Env=debug
+:: dotnet restore -f %NetVersion%
 dotnet publish -c %Env%  --self-contained -nologo -f %NetVersion% -r win-x64
 
 :BackupAppSettingsJson
@@ -47,7 +48,7 @@ if "%server:~0,5%" neq "wrbts" (
 )
 
 ECHO Copying program files
-robocopy Bin\Debug\%NetVersion%\win-x64\publish "\\%DestPath:"=%%DestinationSubFolder%" /MIR /ETA /w:5 /r:7 /XO /xf *.vshost.* appsettings.json appsettings.Development.json /xd Migrations
+robocopy Bin\Debug\%NetVersion%\win-x64\publish "\\%DestPath:"=%%DestinationSubFolder%" /MIR /ETA /MT:32 /w:5 /r:7 /XO /xf *.vshost.* appsettings.json appsettings.Development.json /xd Migrations
 REM robocopy wwwroot "\\%DestPath:"=%JamesWebUI.Server\\wwwroot" /S /w:5 /r:7 
 popd
 

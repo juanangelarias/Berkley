@@ -7,13 +7,40 @@ namespace James.Data.Server.GraphQL.Queries;
 public partial class Query
 {
     [Authorize]
-    public async Task<List<LineOfAuthorityLog>> GetLoaLogsByAccount(string accountNumber,
+    public async Task<List<AccountLOADto>> GetLoaLogsByAccount(string accountNumber,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var response = await ctx.LineOfAuthorityLogs
+            .Include(i=> i.CreatedByNavigation)
+            .Include(i=>i.ApprovedByNavigation)
             .Where(l => l.AccountNum == accountNumber)
+            .Select(s=> new AccountLOADto
+            {
+                Id = s.Id,
+                Created = s.Created,
+                CreatedById = s.CreatedBy,
+                CreatedByName = s.CreatedBy != null 
+                    ? s.CreatedByNavigation!.FullName 
+                    : null,
+                ApprovedById = s.ApprovedBy,
+                ApprovedByName = s.ApprovedBy != null 
+                    ? s.ApprovedByNavigation!.FullName 
+                    : null,
+                AccountNum = s.AccountNum,
+                SequenceNumber = s.SequenceNumber,
+                Effective = s.Effective,
+                Expiration = s.Expiration,
+                LoaSingle = s.Loasingle,
+                LoaAggregate = s.Loaaggregate,
+                Division = s.Division,
+                BondType = s.BondType,
+                HomeOfficeApproved = s.HomeOfficeApproved,
+                Comments = s.Comments,
+                Conditions = s.Conditions,
+                Status = s.Status
+            })
             .ToListAsync();
 
         return response;

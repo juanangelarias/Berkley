@@ -14,6 +14,7 @@ public static class CacheKeys
     public static string AccountAnnualPremiums(string accountNumber, string type) =>
         $"AccountAnnualPremiums-{accountNumber}-{type}";
     public static string AccountCollaterals(string accountNumber) => $"AccountCollaterals-{accountNumber}";
+    public static string AccountLOA(string accountNum) => $"AccountLOA-{accountNum}";
     public static string AccountOutstandingLiability(string accountNumber) =>
         $"AccountOutstandingLiability-{accountNumber}";
     public static string AccountPrograms(string accountNumber) => $"AccountPrograms-{accountNumber}";

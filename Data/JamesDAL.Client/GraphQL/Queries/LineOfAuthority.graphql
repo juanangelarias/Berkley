@@ -56,3 +56,26 @@ query GetAccountProgramById($id: UUID!) {
         }
     }
 }
+
+query GetLoaLogsByAccount($accountNum: String!) {
+    loaLogsByAccount(accountNumber: $accountNum) {
+        id
+        accountNum
+        approvedById
+        approvedByName
+        bondType
+        comments
+        conditions
+        created
+        createdById
+        createdByName
+        division
+        effective
+        expiration
+        homeOfficeApproved
+        loaAggregate
+        loaSingle
+        sequenceNumber
+        status
+    }
+}

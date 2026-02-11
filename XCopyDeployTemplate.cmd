@@ -31,7 +31,7 @@ c:
 pushd JamesWebUI\Server
 REM Choose debug or release for the environment
 SET Env=debug
-:: dotnet restore -f %NetVersion%
+dotnet restore -f %NetVersion%
 dotnet publish -c %Env%  --self-contained -nologo -f %NetVersion% -r win-x64
 
 :BackupAppSettingsJson

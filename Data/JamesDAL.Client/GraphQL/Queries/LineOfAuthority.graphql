@@ -70,5 +70,21 @@ query GetLoaLogsByAccount($accountNum: String!) {
         loaSingle
         sequenceNumber
         status
+    }    
+}
+
+query GetAccountAgencyLOA($accountNum: String!) {
+    accountAgencyLOA(accountNum: $accountNum) {
+        id
+        sequenceNumber
+        effective
+        expiration
+        created
+        createdById
+        createdByName
+        loaAggregate
+        loaSingle
+        division
+        bondType
     }
 }

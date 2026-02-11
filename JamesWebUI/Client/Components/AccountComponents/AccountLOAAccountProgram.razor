@@ -1,7 +1,7 @@
 ﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
-@inject UserSettingService UserSettingService
+@inject IUserSettingService UserSettingService
 @inject TooltipService TooltipService
 
 <RadzenDataGrid TItem="AccountProgramDto" Data="@Data" @ref="@_grid" EditMode="DataGridEditMode.Single"

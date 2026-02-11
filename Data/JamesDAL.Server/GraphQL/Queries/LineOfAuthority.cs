@@ -1,6 +1,5 @@
 ﻿using System.Web.Http;
 using James.Shared.Dto;
-using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -310,27 +309,20 @@ public partial class Query
             .Where(r => r.AccountNum == accountNum)
             .Select(s => new AccountAgencyLOADto
             {
-
+                Id = s.Id,
+                SequenceNumber = s.SequenceNumber,
+                Effective = s.Effective,
+                Expiration = s.Expiration,
+                LoaSingle = s.Loasingle,
+                LoaAggregate = s.Loaaggregate,
+                Division = s.Division,
+                BondType = s.BondType,
+                Created = s.Created,
+                CreatedById = s.CreatedBy,
+                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName 
             })
             .ToListAsync();
 
         return data;
     }
-}
-
-public class AccountAgencyLOADto()
-{
-    public Guid Id { get; set; }
-    public DateTime Affective { get; set; }
-    public DateTime Expiration { get; set; }
-    public int LoaSingle { get; set; }
-    public int LoaAggregate { get; set; }
-    public string Division { get; set; } = string.Empty;
-    public string BondType { get; set; } = string.Empty;
-    public DateTime Created { get; set; }
-    public DateTime AppDate { get; set; }
-    public bool HomeOfficeApproved { get; set; }
-    public int SequenceNumber { get; set; }
-    public Guid CreatedById { get; set; }
-    public string CreatedByName { get; set; } = string.Empty;
 }

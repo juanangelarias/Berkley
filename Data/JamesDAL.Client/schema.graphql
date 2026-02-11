@@ -636,6 +636,7 @@ type Query {
   accountLOAs(accountNum: String!): AccountLOAsDto!
   accountPrograms(accountNum: String!): [AccountProgramDto!]!
   accountProgramById(id: UUID!): AccountProgramDto!
+  accountAgencyLOA(accountNum: String!): [AccountAgencyLOADto!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -1987,6 +1988,20 @@ type PersonalFinancialStatementTypeDm {
   modified: DateTime!
   type: String!
   personalFinancialHeaders: [PersonalFinancialHeader!]!
+}
+
+type AccountAgencyLOADto {
+  id: UUID!
+  effective: DateTime!
+  expiration: DateTime!
+  loaSingle: Int!
+  loaAggregate: Int!
+  division: String
+  bondType: String
+  created: DateTime!
+  sequenceNumber: Int!
+  createdById: UUID
+  createdByName: String
 }
 
 type Indemnitor {

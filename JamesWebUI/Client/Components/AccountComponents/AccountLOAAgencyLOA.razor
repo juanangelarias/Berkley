@@ -92,13 +92,6 @@
                 <RadzenText Text="@loa.Expiration.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
             </Template>
         </RadzenDataGridColumn>
-        //App Date
-        <RadzenDataGridColumn Title="Home Office Approved" Property="@nameof(AccountLOADto.HomeOfficeApproved)"
-                              MinWidth="150px">
-            <Template Context="loa">
-                <RadzenCheckBox TValue="bool" @bind-Value="@loa.HomeOfficeApproved"/>
-            </Template>
-        </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="125px" Filterable="false" Frozen="true" Resizable="false"
                               reorderable="false" FrozenPosition="FrozenColumnPosition.Right">
             <Template Context="loa">
@@ -155,6 +148,7 @@
     [Parameter, EditorRequired] public required string AccountNum { get; set; }
 
     private RadzenDataGrid<AccountLOADto> _grid = null!;
+    private List<AccountAgencyLOADto> _data = [];
     private List<AccountLOADto> _accountLoaList = [];
     private List<DivisionDm> _divisions = [];
     private List<string> _bondTypes = [];

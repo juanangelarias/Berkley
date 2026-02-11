@@ -79,20 +79,20 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Effective Date" Property="@nameof(AccountProgramDto.Effective)" MinWidth="125px">
             <Template Context="program">
-                <RadzenText Text="@($"{program.Effective:MM-dd-yyyy}")" TextStyle="TextStyle.Body2"/>
+                <RadzenText Text="@($"{program.Effective:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
             </Template>
             <EditTemplate Context="program">
-                <RadzenDatePicker @bind-Value="@program.Effective" ShowTime="false" DateFormat="MM-dd-yyyy"
+                <RadzenDatePicker @bind-Value="@program.Effective" ShowTime="false" DateFormat="MM/dd/yyyy"
                                   Name="Effective" TextStyle="TextStyle.Body2" Style="display: block"/>
                 <RadzenRequiredValidator Text="Effective Date is required" Component="Effective" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Expiration Date" Property="@nameof(AccountProgramDto.Expiration)" MinWidth="125px">
             <Template Context="program">
-                <RadzenText Text="@($"{program.Expiration:MM-dd-yyyy}")" TextStyle="TextStyle.Body2"/>
+                <RadzenText Text="@($"{program.Expiration:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
             </Template>
             <EditTemplate Context="program">
-                <RadzenDatePicker @bind-Value="@program.Expiration" ShowTime="false" DateFormat="MM-dd-yyyy"
+                <RadzenDatePicker @bind-Value="@program.Expiration" ShowTime="false" DateFormat="MM/dd/yyyy"
                                   Name="Expiration" TextStyle="TextStyle.Body2" Style="display: block"/>
                 <RadzenRequiredValidator Text="Expiration Date is required" Component="Expiration" Popup="true"/>
                 <RadzenCompareValidator Value="@program.Effective" Component="Expiration" Popup="true"

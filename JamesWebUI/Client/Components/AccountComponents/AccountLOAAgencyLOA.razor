@@ -1,6 +1,7 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@inherits JamesGridLayoutComponentBase<AccountProgramDto>
 
 @inject IDataAccess DataAccess
+@inject TooltipService TooltipService
 
 <RadzenDataGrid TItem="AccountLOADto" Data="@_accountLoaList" @ref="@_grid" EditMode="DataGridEditMode.Single"
                 EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
@@ -8,15 +9,10 @@
                 Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading"
                 RowUpdate="UpdateGridRow" RowCreate="CreateGridRow">
     <HeaderTemplate>
-        <AuthorizeView Policy="InRoleCanProposeAccountLoa">
+        <AuthorizeView Policy="InRoleCanProposeAccountProgram">
             <RadzenButton Icon="add" Text="Add new LOA" Variant="Variant.Text" Click="@InsertRow"/>
         </AuthorizeView>
     </HeaderTemplate>
-    <Template>
-        <div style="display: flex; justify-content: space-between">
-            <h5>To Be Developed</h5>
-        </div>
-    </Template>
     <Columns>
         <RadzenDataGridColumn Title="Print LOA" MinWidth="100px">
             <Template Context="loa">
@@ -79,7 +75,6 @@
                                         Text="Aggregate must be less than or equal to Single"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Status" Property="@nameof(AccountLOADto.Status)" MinWidth="110px"/>
         <RadzenDataGridColumn Title="Division" Property="@nameof(AccountLOADto.Division)" MinWidth="110px">
             <EditTemplate Context="loa">
                 <RadzenDropDown TValue="string" @bind-Value="@loa.Division" Data="_divisions"
@@ -97,8 +92,8 @@
                 <RadzenText Text="@loa.Expiration.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Created By" Property="@nameof(AccountLOADto.CreatedByName)" MinWidth="125px"/>
-        <RadzenDataGridColumn Title="Home Office Approved" Property="@nameof(AccountLOADto.HomeOfficeApproved)" 
+        //App Date
+        <RadzenDataGridColumn Title="Home Office Approved" Property="@nameof(AccountLOADto.HomeOfficeApproved)"
                               MinWidth="150px">
             <Template Context="loa">
                 <RadzenCheckBox TValue="bool" @bind-Value="@loa.HomeOfficeApproved"/>
@@ -163,7 +158,7 @@
     private List<AccountLOADto> _accountLoaList = [];
     private List<DivisionDm> _divisions = [];
     private List<string> _bondTypes = [];
-    
+
     private bool ShowEdit(AccountLOADto loa) => loa.Status == "PROPOSED";
     private bool ShowRequestApproval(AccountLOADto loa) => loa.Status == "PROPOSED";
     private bool ShowApprove(AccountLOADto loa) => loa.Status == "APPROVAL REQUESTED";
@@ -185,10 +180,7 @@
             Data = (List<DivisionDm>)cache!
         },
         ResultVariable = () => _divisionsResult,
-        AfterLoad = () =>
-        {
-            _divisions = _divisionsResult.Data!;
-        }
+        AfterLoad = () => { _divisions = _divisionsResult.Data!; }
     }, "divisions");
 
     #endregion
@@ -206,10 +198,7 @@
             Data = (List<AccountLOADto>)cache!
         },
         ResultVariable = () => _accountLOAResult,
-        AfterLoad = () =>
-        {
-            _accountLoaList = _accountLOAResult.Data!;
-        }
+        AfterLoad = () => { _accountLoaList = _accountLOAResult.Data!; }
     }, "account LOA");
 
     #endregion
@@ -290,7 +279,7 @@
     private void ShowTooltip(ElementReference element, Action name, TooltipOptions? options = null)
     {
     }
-    
+
     private async Task<bool> ConfirmAction(Action action)
     {
         var message = action switch
@@ -314,7 +303,7 @@
             CloseDialogOnEsc = true
         });
     }
-    
+
     private enum Action
     {
         Edit,
@@ -324,4 +313,5 @@
         Decline,
         Cancel
     }
+
 }

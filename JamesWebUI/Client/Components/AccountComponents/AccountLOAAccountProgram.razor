@@ -1,9 +1,10 @@
-﻿@inherits JamesGridLayoutComponentBase<AccountProgramDto>
+﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
+@inject UserSettingService UserSettingService
 @inject TooltipService TooltipService
 
-<RadzenDataGrid TItem="AccountProgramDto" Data="@Data" @ref="@Grid" EditMode="DataGridEditMode.Single"
+<RadzenDataGrid TItem="AccountProgramDto" Data="@Data" @ref="@_grid" EditMode="DataGridEditMode.Single"
                 EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true" IsLoading="@IsLoading"
                 Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading"
@@ -191,6 +192,7 @@
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
+    private RadzenDataGrid<AccountProgramDto> _grid = null!;
     private List<AccountProgramDto> Data { get; set; } = [];
     private List<UserLineOfAuthority> _userLOA = [];
     private Dictionary<string, AccountProgramStatusDm> _statuses = new();
@@ -277,13 +279,13 @@
             Status = "PROPOSED",
         };
 
-        await Grid.InsertRow(newAccountProgram);
+        await _grid.InsertRow(newAccountProgram);
     }
 
     private async Task EditRow(AccountProgramDto program)
     {
         await ShowLoading();
-        await Grid.EditRow(program);
+        await _grid.EditRow(program);
     }
 
     private async Task RemoveRow(AccountProgramDto program)
@@ -306,7 +308,7 @@
             return;
         
         Data.Remove(record);
-        await Grid.Reload();
+        await _grid.Reload();
     }
 
     private async Task RequestApproval(AccountProgramDto program)
@@ -384,14 +386,14 @@
 
         await ShowLoading();
 
-        await Grid.UpdateRow(program);
+        await _grid.UpdateRow(program);
     }
 
     private async Task CancelEdit(AccountProgramDto program)
     {
         await ShowLoading();
 
-        Grid.CancelEditRow(program);
+        _grid.CancelEditRow(program);
     }
 
     private async Task UpdateGridRow(AccountProgramDto program)
@@ -443,7 +445,7 @@
         
         DataAccess.UpdateCache(CacheKeys.AccountPrograms(Account.AccountNum), Data);
         
-        await Grid.Reload();
+        await _grid.Reload();
     }
 
     private bool ValidateFields(AccountProgramDto program)

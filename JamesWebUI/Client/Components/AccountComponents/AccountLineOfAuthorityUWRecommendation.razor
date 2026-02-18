@@ -2,7 +2,7 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid">
+<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid" Density="Density.Compact">
     <HeaderTemplate>
         <AuthorizeView Policy="InRoleCanAddUnderwritingRecommendation">
             <RadzenButton Icon="add" Text="New Recommendation" Variant="Variant.Text" Click="@InsertRow"/>
@@ -51,6 +51,9 @@
             </Template>
         </RadzenDataGridColumn>
     </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
 </RadzenDataGrid>
 
 @code {
@@ -122,6 +125,8 @@
 
     protected override async Task OnParametersSetAsync()
     {
+        await ShowLoading();
+        
         await base.OnParametersSetAsync();
 
         await LoadRecommendations();
@@ -203,6 +208,8 @@
         if(dialogResponse == null)
             return;
         
+        await ShowLoading();
+        
         var updatedRecommendation = (UnderwriterRecommendation)dialogResponse;
         var response = await DataAccess.SetUnderwriterRecommendation(updatedRecommendation.Id, 
             updatedRecommendation.AccountNum, updatedRecommendation.PostedBy, updatedRecommendation.Comments!, 
@@ -226,6 +233,8 @@
 
     private async Task DeleteRow(UnderwriterRecommendation recommendation)
     {
+        await ShowLoading();
+
         var confirmed = await DialogService.Confirm("Are you sure you want to delete this recommendation?", "Delete Recommendation");
         if(confirmed != true)
             return;

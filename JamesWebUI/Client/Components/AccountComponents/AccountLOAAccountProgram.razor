@@ -193,6 +193,9 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
 </RadzenDataGrid>
 
 @code {
@@ -254,6 +257,9 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+        
+        await ShowLoading();
+        
         await DataAccess.GetCacheOrLoadDataAsync(AccountProgramStatusesLoad);
     }
 
@@ -267,6 +273,7 @@
     private async Task LoadData()
     {
         await ShowLoading();
+        
         await DataAccess.GetCacheOrLoadDataAsync(AccountProgramsLoad);
     }
 
@@ -309,6 +316,8 @@
 
     private async Task RemoveRow(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.Remove);
         if (!confirm)
             return;
@@ -328,6 +337,8 @@
 
     private async Task RequestApproval(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.RequestApproval);
         if (!confirm)
             return;
@@ -343,6 +354,8 @@
 
     private async Task Approve(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.Approve);
         if (!confirm)
             return;
@@ -358,6 +371,8 @@
 
     private async Task Decline(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.Decline);
         if (!confirm)
             return;
@@ -373,6 +388,8 @@
 
     private async Task Cancel(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.Cancel);
         if (!confirm)
             return;
@@ -412,6 +429,8 @@
 
     private async Task ExecuteSetAccountProgram(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var result = await DataAccess.SetAccountProgram(program.Id, program.AccountNum, program.Effective,
             program.Expiration ?? new DateTime(9999, 12, 31), program.Single, program.Aggregate,
             "", program.StatusId);

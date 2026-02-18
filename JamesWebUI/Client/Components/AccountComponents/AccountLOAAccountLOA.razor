@@ -203,6 +203,9 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
 </RadzenDataGrid>
 
 @code {
@@ -268,6 +271,8 @@
 
     private async Task LoadData()
     {
+        await ShowLoading();
+        
         _bondTypes = new(Enum.GetNames(typeof(BondType)));
 
         await DataAccess.ParallelGetCacheOrDataAsync(AccountLOALoad, DivisionsLoad);

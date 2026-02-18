@@ -2,7 +2,8 @@
 
 @inject IDataAccess DataAccess
 
-<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid" Density="Density.Compact">
+<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid" Density="Density.Compact"
+                Style="max-height: 400px;">
     <HeaderTemplate>
         <AuthorizeView Policy="InRoleCanAddUnderwritingRecommendation">
             <RadzenButton Icon="add" Text="New Recommendation" Variant="Variant.Text" Click="@InsertRow"/>

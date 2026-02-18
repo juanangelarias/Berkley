@@ -34,7 +34,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Effective Date" Property="@nameof(AccountLOADto.Effective)" MinWidth="125px">
             <HeaderTemplate>
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center"
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
                              JustifyContent="JustifyContent.Center" Gap="0">
                     <RadzenText Text="Effective" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
                                 TextStyle="TextStyle.Subtitle2"/>
@@ -53,7 +53,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Expiration Date" Property="@nameof(AccountLOADto.Expiration)" MinWidth="125px">
             <HeaderTemplate>
-                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center"
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
                              JustifyContent="JustifyContent.Center" Gap="0">
                     <RadzenText Text="Expiration" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
                                 TextStyle="TextStyle.Subtitle2"/>
@@ -116,8 +116,31 @@
                                         Text="Aggregate must be less than or equal to Single"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Status" Property="@nameof(AccountLOADto.Status)" MinWidth="110px"/>
+        <RadzenDataGridColumn Title="Status" Property="@nameof(AccountLOADto.Status)" MinWidth="110px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Status" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
+            <Template Context="loa">
+                <RadzenText Text="@loa.Status" TextAlign="TextAlign.Left"
+                            TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Division" Property="@nameof(AccountLOADto.Division)" MinWidth="110px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Division" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
+            <Template Context="loa">
+                <RadzenText Text="@loa.Division" TextAlign="TextAlign.Left"
+                            TextStyle="TextStyle.Body2"/>
+            </Template>
             <EditTemplate Context="loa">
                 <RadzenDropDown TValue="string" @bind-Value="@loa.Division" Data="_divisions"
                                 TextProperty="@nameof(DivisionDm.Division)"
@@ -125,16 +148,46 @@
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Bond Type" Property="@nameof(AccountLOADto.BondType)" MinWidth="110px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Bond Type" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
+            <Template Context="loa">
+                <RadzenText Text="@loa.BondType" TextAlign="TextAlign.Left"
+                            TextStyle="TextStyle.Body2"/>
+            </Template>
             <EditTemplate Context="loa">
                 <RadzenDropDown TValue="string" @bind-Value="@loa.BondType" Data="_bondTypes"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Enter Date" Property="@nameof(AccountLOADto.Created)" MinWidth="125px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Enter Date" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
             <Template Context="loa">
                 <RadzenText Text="@loa.Expiration.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Created By" Property="@nameof(AccountLOADto.CreatedByName)" MinWidth="125px"/>
+        <RadzenDataGridColumn Title="Created By" Property="@nameof(AccountLOADto.CreatedByName)" MinWidth="125px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Created By" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
+            <Template Context="loa">
+                <RadzenText Text="@loa.CreatedByName" TextAlign="TextAlign.Left"
+                            TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Home Office Approved" Property="@nameof(AccountLOADto.HomeOfficeApproved)"
                               MinWidth="175px">
             <HeaderTemplate>

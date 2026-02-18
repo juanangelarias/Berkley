@@ -36,15 +36,17 @@
     }
 </style>
 
-<RadzenLayout Style="width: 100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
+<RadzenLayout
+    Style="width: 100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader class="rz-shadow-0">
         <ChildContent>
             <RadzenRow Gap="0.5rem" Style="@_headerStyle">
                 <RadzenColumn Size="5">
                     <RadzenStack Orientation="Orientation.Horizontal">
-                        <RadzenButton Icon="menu" Click="() => _sidebarExpanded = !_sidebarExpanded" 
+                        <RadzenButton Icon="menu" Click="() => _sidebarExpanded = !_sidebarExpanded"
                                       ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"/>
-                        <RadzenText Text="Berkley Advanced Surety Information System" Style="color: #404040; margin-left: 7px; margin-top: 7px;"/>
+                        <RadzenText Text="Berkley Advanced Surety Information System"
+                                    Style="color: #404040; margin-left: 7px; margin-top: 7px;"/>
                     </RadzenStack>
                 </RadzenColumn>
                 <RadzenColumn Size="7">
@@ -109,8 +111,9 @@
             </RadzenStack>
         </RadzenRow>
         <RadzenRow>
-            <RadzenPanelMenu DisplayStyle="@(_sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
-                             Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
+            <RadzenPanelMenu
+                DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
+                Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
                 <RadzenPanelMenuItem Text="Dashboard" Icon="home" Path="Dashboard"/>
                 <RadzenPanelMenuItem Text="Bonds" Icon="description" Path="Bonds"/>
                 <RadzenPanelMenuItem Text="Accounts" Icon="account_balance" Path="Account"/>
@@ -132,19 +135,22 @@
                     //TODO: Remove this when confirmed that it doesn't show up on servers.
                     <RadzenPanelMenuItem Text="@Environment.MachineName" Icon="build" Path="GraphQl"/>
                 }
-
+                <RadzenPanelMenuItem Text="Tools" Icon="settings">
+                    <RadzenPanelMenuItem Text="Clear cache" Icon="cached" Click="@(ClearCache)"/>
+                </RadzenPanelMenuItem>
             </RadzenPanelMenu>
         </RadzenRow>
         <AuthorizeView Policy="InRoleChangePermissions">
             <RadzenRow>&nbsp;</RadzenRow>
             <RadzenRow>
-                <RadzenPanelMenu DisplayStyle="@(_sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
-                                 Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
+                <RadzenPanelMenu
+                    DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
+                    Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
                     <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true" Path="Admin">
-                        <RadzenPanelMenuItem Text="Employees" Icon="people" Path="Employees" />
-                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles" />
-                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions" />
-                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings" />
+                        <RadzenPanelMenuItem Text="Employees" Icon="people" Path="Employees"/>
+                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles"/>
+                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions"/>
+                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings"/>
                     </RadzenPanelMenuItem>
                 </RadzenPanelMenu>
             </RadzenRow>
@@ -167,6 +173,13 @@
 </RadzenLayout>
 <script>
     window.getAllLocalStorageKeys = () => Object.keys(localStorage);
+
+    window.clearCache = async () => {
+        const cachesNames = await caches.keys();
+        for (let i = 0; i < cachesNames.length; i++) {
+            await caches.delete(cachesNames[i]);
+        }
+    };
 </script>
 
 @code
@@ -188,10 +201,10 @@
 
         Notifications = new Notification[]
         {
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789"},
-            new Notification {Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890"}
+            new Notification { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 1234567" },
+            new Notification { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 2345678" },
+            new Notification { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 3456789" },
+            new Notification { Title = "Renew Bond", CreatedDate = DateTime.Today, Content = "Please renew bond 4567890" }
         };
     }
 
@@ -221,5 +234,14 @@
     private async Task SuperSearchClicked()
     {
         await DialogService.OpenAsync<SuperSearch>("Super Search", options: _superSearchDialogOptions);
+    }
+
+    private async Task ClearCache()
+    {
+        // Call the JavaScript function to clear all caches
+        await JS.InvokeVoidAsync("clearCache");
+
+        // Force a full page reload from the server (bypasses browser cache)
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     }
 }

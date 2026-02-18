@@ -8,7 +8,7 @@
                 EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true" IsLoading="@IsLoading"
                 Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading"
-                RowUpdate="UpdateGridRow" RowCreate="CreateGridRow">
+                RowUpdate="UpdateGridRow" RowCreate="CreateGridRow" Style="max-height: 400px;">
     <HeaderTemplate>
         <AuthorizeView Policy="InRoleCanProposeAccountProgram">
             <RadzenButton Icon="add" Text="Add new Program" Variant="Variant.Text" Click="@InsertRow"/>
@@ -98,7 +98,7 @@
                 <RadzenRequiredValidator Text="Expiration Date is required" Component="Expiration" Popup="true"/>
                 <RadzenCompareValidator Value="@program.Effective" Component="Expiration" Popup="true"
                                         Text="Expiration date should be greater or equal to Effective date."
-                                        Operator="CompareOperator.GreaterThanEqual" />
+                                        Operator="CompareOperator.GreaterThanEqual"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Single" Property="@nameof(AccountProgramDto.Single)" TextAlign="TextAlign.Right"
@@ -114,7 +114,7 @@
                 <RadzenNumeric @bind-Value="@program.Single" Format="c0" ShowUpDown="false" Name="Single"
                                TextStyle="TextStyle.Body2" Style="display: block"/>
                 <RadzenCompareValidator Component="Single" Operator="CompareOperator.GreaterThanEqual" Value="0"
-                                        Text="Single value should be greater or equal to zero." Popup="true" />
+                                        Text="Single value should be greater or equal to zero." Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Aggregate" Property="@nameof(AccountProgramDto.Aggregate)" MinWidth="125px"
@@ -146,6 +146,12 @@
                                       Size="ButtonSize.Small" Visible="@ShowEdit(program)"
                                       MouseEnter="@(arg => ShowTooltip(arg, Action.Edit))"
                                       Click="@(_ => EditRow(program))" @onclick:stopPropagation="true"/>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="InRoleCanProposeAccountProgram">
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                      Size="ButtonSize.Small" Visible="@ShowDelete(program)"
+                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Delete))"
+                                      Click="@(_ => DeleteRow(program))" @onclick:stopPropagation="true"/>
                     </AuthorizeView>
                     <AuthorizeView Policy="InRoleCanProposeAccountProgram">
                         <RadzenButton Icon="send" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat"
@@ -197,9 +203,10 @@
     private List<UserLineOfAuthority> _userLOA = [];
     private Dictionary<string, AccountProgramStatusDm> _statuses = new();
 
-    private bool ShowEdit(AccountProgramDto program) => program.Status == "PROPOSED";
+    private bool ShowEdit(AccountProgramDto program) => program.Status is "PROPOSED" or "DECLINED";
+    private bool ShowDelete(AccountProgramDto program) => program.Status == "PROPOSED";
     private bool ShowRequestApproval(AccountProgramDto program) => program.Status == "PROPOSED";
-    private bool ShowApprove(AccountProgramDto program) => program.Status == "APPROVAL REQUESTED";
+    private bool ShowApprove(AccountProgramDto program) => program.Status is "APPROVAL REQUESTED" or "DECLINED";
     private bool ShowDecline(AccountProgramDto program) => program.Status == "APPROVAL REQUESTED";
     private bool ShowCancel(AccountProgramDto program) => program.Status == "APPROVED";
 
@@ -247,7 +254,6 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
         await DataAccess.GetCacheOrLoadDataAsync(AccountProgramStatusesLoad);
     }
 
@@ -255,7 +261,6 @@
     {
         await base.OnParametersSetAsync();
         _userLOA = await UserSettingService.GetUserLOAByDivision(Account.Division);
-        
         await LoadData();
     }
 
@@ -268,7 +273,6 @@
     private async Task InsertRow()
     {
         await ShowLoading();
-
         var newAccountProgram = new AccountProgramDto
         {
             Id = Guid.NewGuid(),
@@ -278,7 +282,6 @@
             StatusId = _statuses["PROPOSED"].Id,
             Status = "PROPOSED",
         };
-
         await _grid.InsertRow(newAccountProgram);
     }
 
@@ -288,14 +291,28 @@
         await _grid.EditRow(program);
     }
 
+    private async Task DeleteRow(AccountProgramDto program)
+    {
+        await ShowLoading();
+        var response = await DataAccess.DeleteAccountProgram(program.Id);
+        if (!response.Success)
+        {
+            NotifyDeleteError(response.Errors, "account program");
+            return;
+        }
+
+        var toDelete = Data.FirstOrDefault(f => f.Id == program.Id);
+        if (toDelete != null)
+            Data.Remove(toDelete);
+        await _grid.Reload();
+    }
+
     private async Task RemoveRow(AccountProgramDto program)
     {
         var confirm = await ConfirmAction(Action.Remove);
         if (!confirm)
             return;
-        
         var result = await DataAccess.DeleteAccountProgram(program.Id);
-
         if (!result.Success)
         {
             NotifyDeleteError(result.Errors, "account program");
@@ -303,10 +320,8 @@
         }
 
         var record = Data.FirstOrDefault(f => f.Id == program.Id);
-
-        if(record == null)
+        if (record == null)
             return;
-        
         Data.Remove(record);
         await _grid.Reload();
     }
@@ -316,9 +331,7 @@
         var confirm = await ConfirmAction(Action.RequestApproval);
         if (!confirm)
             return;
-        
         var result = await DataAccess.AccountProgramChangeStatus(program.Id, "APPROVAL REQUESTED");
-
         if (!result.Success)
         {
             NotifySaveError(result.Errors, "Approval request");
@@ -333,9 +346,7 @@
         var confirm = await ConfirmAction(Action.Approve);
         if (!confirm)
             return;
-        
         var result = await DataAccess.AccountProgramChangeStatus(program.Id, "APPROVED");
-
         if (!result.Success)
         {
             NotifySaveError(result.Errors, "Approve");
@@ -350,9 +361,7 @@
         var confirm = await ConfirmAction(Action.Decline);
         if (!confirm)
             return;
-        
         var result = await DataAccess.AccountProgramChangeStatus(program.Id, "DECLINED");
-
         if (!result.Success)
         {
             NotifySaveError(result.Errors, "Decline");
@@ -367,9 +376,7 @@
         var confirm = await ConfirmAction(Action.Cancel);
         if (!confirm)
             return;
-        
         var result = await DataAccess.AccountProgramChangeStatus(program.Id, "CANCELED");
-
         if (!result.Success)
         {
             NotifySaveError(result.Errors, "Cancel");
@@ -383,16 +390,13 @@
     {
         if (!ValidateFields(program))
             return;
-
         await ShowLoading();
-
         await _grid.UpdateRow(program);
     }
 
     private async Task CancelEdit(AccountProgramDto program)
     {
         await ShowLoading();
-
         _grid.CancelEditRow(program);
     }
 
@@ -408,10 +412,9 @@
 
     private async Task ExecuteSetAccountProgram(AccountProgramDto program)
     {
-        var result = await DataAccess.SetAccountProgram(program.Id, program.AccountNum, program.Effective, 
-            program.Expiration ?? new DateTime(9999, 12, 31), program.Single, program.Aggregate, 
+        var result = await DataAccess.SetAccountProgram(program.Id, program.AccountNum, program.Effective,
+            program.Expiration ?? new DateTime(9999, 12, 31), program.Single, program.Aggregate,
             "", program.StatusId);
-
         if (!result.Success)
         {
             await HandleError("Error setting account program", result.Errors);
@@ -419,9 +422,6 @@
         }
 
         NotifySuccessfulSave("account program");
-
-        
-
         await ReloadData(program.Id);
     }
 
@@ -435,16 +435,13 @@
         }
 
         var toDelete = Data.FirstOrDefault(r => r.Id == id);
-        if(toDelete != null)
+        if (toDelete != null)
             Data.Remove(toDelete);
-        
         Data.Add(editedResult.Data!);
         Data = Data
             .OrderByDescending(o => o.Effective)
             .ToList();
-        
         DataAccess.UpdateCache(CacheKeys.AccountPrograms(Account.AccountNum), Data);
-        
         await _grid.Reload();
     }
 
@@ -497,7 +494,6 @@
 
         var userSingleMax = _userLOA.Max(m => m.Single);
         var userAggregateMax = _userLOA.Max(m => m.Aggregate);
-
         if (program.Single > userSingleMax)
         {
             NotificationService.Notify(new NotificationMessage
@@ -508,7 +504,7 @@
             });
             flag = false;
         }
-        
+
         if (program.Aggregate > userAggregateMax)
         {
             NotificationService.Notify(new NotificationMessage
@@ -535,7 +531,6 @@
             Action.Cancel => "Cancel this row",
             _ => ""
         };
-
         TooltipService.Open(element, message, options);
     }
 
@@ -550,17 +545,18 @@
             Action.Cancel => "Are you sure you want to cancel this row?",
             _ => ""
         };
-
         return await DialogService.Confirm(message, "Confirmation") == true;
     }
 
     private enum Action
     {
         Edit,
+        Delete,
         RequestApproval,
         Remove,
         Approve,
         Decline,
         Cancel
     }
+
 }

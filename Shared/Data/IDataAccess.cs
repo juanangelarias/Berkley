@@ -286,9 +286,9 @@ namespace James.Shared.Data
         
         public Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings();
         public Task<ISaveDataResult> SetUserSetting(string key, string? value);
-        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+        //HACK: This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSettings();
-        //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+        //HACK: This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSetting(string key);
         public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
         public Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName);
@@ -351,6 +351,17 @@ namespace James.Shared.Data
             string newStatusTxt);
         public Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId);
         public Task<IDataAccessResult<List<AccountLOADto>>> GetLoaLogsByAccount(string accountNum);
+        public Task<IDataAccessResult<List<AccountAgencyLOADto>>> GetAccountAgencyLOA(string accountNum);
+        public Task<IDataAccessResult<AccountAgencyLOADto?>> GetAccountAgencyLOAById(Guid id);
+        public Task<ISaveDataResult> SetLoaLog(Guid id, string accountNum, DateTime effective, DateTime expiration,
+            int loaSingle, int loaAggregate, string comments, string status, string division, string bondType,
+            string conditions, bool homeOfficeApproved);
+        public Task<ISaveDataResult> LoaLogDelete(Guid id);
+        public Task<ISaveDataResult> LoaLogChangeStatus(Guid id, string newStatus);
+        public Task<ISaveDataResult> SetAgencyLoa(Guid id, string agencyNumber, string accountNum,
+            DateTime effective, DateTime expiration, int loaSinge, int loaAggregate, string comments, string division,
+            string bondType, string conditions);
+        public Task<ISaveDataResult> AgencyLoaDelete(Guid id);
 
         #endregion
         

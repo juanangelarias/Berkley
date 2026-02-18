@@ -9,6 +9,7 @@ public static class CacheKeys
     // Calculated
     // A
     public static string Account(string accountNumber) => $"Account-{accountNumber}";
+    public static string AccountAgencyLoa(string accountNum) => $"AccountAgencyLoa-{accountNum}";
     public static string AccountAlerts(string alertPeriod, string accountNumber) =>
         $"AccountAlerts-{alertPeriod}-{accountNumber}";
     public static string AccountAnnualPremiums(string accountNumber, string type) =>

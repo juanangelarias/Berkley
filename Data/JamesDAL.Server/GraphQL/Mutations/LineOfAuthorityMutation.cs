@@ -13,15 +13,7 @@ public partial class GeneralMutation
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
-        if (null == username)
-            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-
-        var employee = (await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username));
-
-        if (employee == null)
-            throw new GraphQLException("User not found in employee table.");
+        var employee = await GetEmployee(contextAccessor, ctx);
 
         AccountProgramStatusHistory CreateStatusLog(AccountProgramStatusHistory? lastLog) => new()
         {
@@ -47,7 +39,7 @@ public partial class GeneralMutation
             existent.Single = single;
             existent.Aggregate = aggregate;
             existent.Modified = DateTime.Now;
-            existent.CreatedBy = employee.FullName;
+            existent.CreatedBy = employee!.FullName;
             existent.Comments = comments;
 
             var lastLog = await ctx.AccountProgramStatusHistories
@@ -71,7 +63,7 @@ public partial class GeneralMutation
                 Aggregate = aggregate,
                 StatusId = statusId,
                 Created = DateTime.Now,
-                CreatedBy = employee.FullName,
+                CreatedBy = employee!.FullName,
                 Modified = DateTime.Now,
                 ApprovedBy = null,
                 ApprovedDate = null,
@@ -86,26 +78,26 @@ public partial class GeneralMutation
     }
 
     [Authorize]
-    public async Task<bool> DeleteAccountProgram(Guid accountProgramId, 
+    public async Task<bool> DeleteAccountProgram(Guid accountProgramId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var record = await ctx.AccountPrograms
             .FirstOrDefaultAsync(f => f.Id == accountProgramId);
-        
-        if(record == null)
+
+        if (record == null)
             throw new GraphQLException("Account program status dms not found.");
 
         var history = await ctx.AccountProgramStatusHistories
             .Where(f => f.AccountProgramId == accountProgramId)
             .ToListAsync();
-        
+
         ctx.AccountProgramStatusHistories.RemoveRange(history);
         ctx.AccountPrograms.Remove(record);
-        
+
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 
@@ -115,31 +107,23 @@ public partial class GeneralMutation
         [Service] IHttpContextAccessor contextAccessor)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
-        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
-        if (null == username)
-            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
 
-        var employee = (await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username));
-        
-        if(employee == null)
-            throw new GraphQLException("User not found in employee table.");
+        var employee = await GetEmployee(contextAccessor, ctx);
 
         var newStatus = ctx.AccountProgramStatusDms
             .FirstOrDefault(f => f.Description.ToUpper() == newStatusTxt.ToUpper());
-        
-        if(newStatus == null)
+
+        if (newStatus == null)
             throw new GraphQLException($"'{newStatusTxt}' status not found");
-        
+
         var program = await ctx.AccountPrograms.FindAsync(accountProgramId);
-        if(program == null)
+        if (program == null)
             throw new GraphQLException("Account program not found");
-        
+
         var lastLog = await ctx.AccountProgramStatusHistories
-            .OrderBy(o=>o.AccountProgramId)
-            .ThenByDescending(t=>t.Created)
-            .FirstOrDefaultAsync(f=>f.AccountProgramId == accountProgramId);
+            .OrderBy(o => o.AccountProgramId)
+            .ThenByDescending(t => t.Created)
+            .FirstOrDefaultAsync(f => f.AccountProgramId == accountProgramId);
 
         var newLog = new AccountProgramStatusHistory
         {
@@ -153,11 +137,11 @@ public partial class GeneralMutation
             NewSingle = program.Single,
             OldAggregate = lastLog?.NewAggregate,
             NewAggregate = program.Aggregate,
-            StatusChangeBy = employee.Id
+            StatusChangeBy = employee!.Id
         };
-        
+
         ctx.AccountProgramStatusHistories.Add(newLog);
-        program.StatusId = newStatus.Id; 
+        program.StatusId = newStatus.Id;
         program.Modified = DateTime.Now;
         program.ApprovedDate = DateTime.Now;
 
@@ -173,7 +157,190 @@ public partial class GeneralMutation
         {
             // ToDo: Send email to approver
         }
+
+        if (newStatusTxt.ToUpper() == "APPROVED")
+        {
+            // ToDo: Send approval email to the requester
+        }
+
+        if (newStatusTxt.ToUpper() == "DECLINED")
+        {
+            // ToDo: Send decline email to the requester
+        }
+
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> SetLoaLog(Guid id, string accountNum, DateTime effective, DateTime expiration,
+        int loaSingle, int loaAggregate, string comments, string status, string division, string bondType,
+        string conditions, bool homeOfficeApproved, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var employee = await GetEmployee(contextAccessor, ctx);
+
+        var loa = await ctx.LineOfAuthorityLogs.FindAsync(id);
+        if (loa == null)
+        {
+            loa = new()
+            {
+                Id = id,
+                AccountNum = accountNum,
+                Effective = effective,
+                Expiration = expiration,
+                Loasingle = loaSingle,
+                Loaaggregate = loaAggregate,
+                Comments = comments,
+                Status = status,
+                Division = division,
+                BondType = bondType,
+                Conditions = conditions,
+                HomeOfficeApproved = homeOfficeApproved,
+                CreatedBy = employee!.Id
+            };
+
+            ctx.LineOfAuthorityLogs.Add(loa);
+        }
+        else
+        {
+            loa.AccountNum = accountNum;
+            loa.Effective = effective;
+            loa.Expiration = expiration;
+            loa.Loasingle = loaSingle;
+            loa.Loaaggregate = loaAggregate;
+            loa.Comments = comments;
+            loa.Status = status;
+            loa.Division = division;
+            loa.BondType = bondType;
+            loa.Conditions = conditions;
+            loa.HomeOfficeApproved = homeOfficeApproved;
+            loa.CreatedBy = employee!.Id;
+        }
+
+        // ToDo: add functionality to add the LoaHistory when creating or updating a LOA
+
+        await ctx.SaveChangesAsync();
+
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> LoaLogDelete(Guid accountLoaId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var loa = await ctx.LineOfAuthorityLogs.FindAsync(accountLoaId);
+        if (loa == null)
+            return false;
+
+        ctx.LineOfAuthorityLogs.Remove(loa);
+        await ctx.SaveChangesAsync();
+
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> LoaLogChangeStatus(Guid accountLoaId, string newStatusTxt,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var loa = await ctx.LineOfAuthorityLogs.FindAsync(accountLoaId);
+        if (loa == null)
+            throw new GraphQLException("Line of authority log not found");
+
+        var employee = await GetEmployee(contextAccessor, ctx);
+
+        // ToDo: add functionality to change the LoaHistory status when changing the LOA status
+
+        loa.Status = newStatusTxt;
+        loa.Modified = DateTime.Now;
+        await ctx.SaveChangesAsync();
+
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> SetAgencyLoa(Guid id, string agencyNumber, string accountNum,
+        DateTime effective, DateTime expiration, int loaSinge, int loaAggregate, string comments, string division,
+        string bondType, string conditions, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var employee = await GetEmployee(contextAccessor, ctx);
+        
+        var loa = await ctx.AgencyLineOfAuthorityLogs.FindAsync(id);
+        if (loa == null)
+        {
+            loa = new()
+            {
+                Id = id,
+                AgencyNumber = agencyNumber,
+                AccountNum = accountNum,
+                Effective = effective,
+                Expiration = expiration,
+                Loasingle = loaSinge,
+                Loaaggregate = loaAggregate,
+                Comments = comments,
+                Division = division,
+                BondType = bondType,
+                CreatedBy = employee!.Id,
+                Conditions = conditions
+            };
+            
+            ctx.AgencyLineOfAuthorityLogs.Add(loa);
+        }
+        else
+        {
+            loa.AgencyNumber = agencyNumber;
+            loa.AccountNum = accountNum;
+            loa.Effective = effective;
+            loa.Expiration = expiration;
+            loa.Loasingle = loaSinge;
+            loa.Loaaggregate = loaAggregate;
+            loa.Comments = comments;
+            loa.Division = division;
+            loa.BondType = bondType;
+            loa.Conditions = conditions;
+        }
+        
+        await ctx.SaveChangesAsync();
         
         return true;
+    }
+
+    [Authorize]
+    public async Task<bool> AgencyLoaDelete(Guid agencyLoaId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IHttpContextAccessor contextAccessor)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var loa = await ctx.AgencyLineOfAuthorityLogs.FindAsync(agencyLoaId);
+        if (loa == null)
+            throw new GraphQLException("Agency line of authority log not found");
+
+        ctx.AgencyLineOfAuthorityLogs.Remove(loa);
+        await ctx.SaveChangesAsync();
+
+        return true;
+    }
+
+    private static async Task<Employee?> GetEmployee(IHttpContextAccessor contextAccessor, JamesDatabaseContext ctx)
+    {
+        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+        if (null == username)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+
+        var employee = (await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username));
+
+        if (employee == null)
+            throw new GraphQLException("User not found in employee table.");
+        return employee;
     }
 }

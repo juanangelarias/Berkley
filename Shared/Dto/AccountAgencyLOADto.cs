@@ -3,6 +3,8 @@
 public class AccountAgencyLOADto()
 {
     public Guid Id { get; set; }
+    public string AccountNum { get; set; } = string.Empty;
+    public string AgencyNumber { get; set; } = string.Empty;
     public DateTime Effective { get; set; }
     public DateTime Expiration { get; set; }
     public int LoaSingle { get; set; }
@@ -13,4 +15,5 @@ public class AccountAgencyLOADto()
     public int SequenceNumber { get; set; }
     public Guid? CreatedById { get; set; }
     public string? CreatedByName { get; set; } = string.Empty;
+    public string? Status { get; set; } = string.Empty;
 }

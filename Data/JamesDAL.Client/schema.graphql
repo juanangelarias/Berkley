@@ -79,6 +79,11 @@ type SetLegalEntityEmailPayload {
   legalEntityEmail: LegalEntityEmail
 }
 
+input LoaLogChangeStatusInput {
+  accountLoaId: UUID!
+  newStatusTxt: String!
+}
+
 type WorkInProgressJob {
   id: UUID!
   created: DateTime!
@@ -183,6 +188,20 @@ type NotebookEntry {
 type KeyValuePairOfStringAndString {
   key: String!
   value: String!
+}
+
+input SetAgencyLoaInput {
+  id: UUID!
+  agencyNumber: String!
+  accountNum: String!
+  effective: DateTime!
+  expiration: DateTime!
+  loaSinge: Int!
+  loaAggregate: Int!
+  comments: String!
+  division: String!
+  bondType: String!
+  conditions: String!
 }
 
 type AgencyLicenseBulkUpdatePayload {
@@ -637,6 +656,7 @@ type Query {
   accountPrograms(accountNum: String!): [AccountProgramDto!]!
   accountProgramById(id: UUID!): AccountProgramDto!
   accountAgencyLOA(accountNum: String!): [AccountAgencyLOADto!]!
+  accountAgencyLOAById(id: UUID!): AccountAgencyLOADto
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -1234,6 +1254,10 @@ type SubscriptionResultOfGuid {
   result: UUID!
 }
 
+type SetLoaLogPayload {
+  boolean: Boolean
+}
+
 type AgencyDto {
   id: UUID!
   agencyNumber: String!
@@ -1457,6 +1481,11 @@ type Mutation {
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   deleteAccountProgram(input: DeleteAccountProgramInput!): DeleteAccountProgramPayload!
   accountProgramChangeStatus(input: AccountProgramChangeStatusInput!): AccountProgramChangeStatusPayload!
+  setLoaLog(input: SetLoaLogInput!): SetLoaLogPayload!
+  loaLogDelete(input: LoaLogDeleteInput!): LoaLogDeletePayload!
+  loaLogChangeStatus(input: LoaLogChangeStatusInput!): LoaLogChangeStatusPayload!
+  setAgencyLoa(input: SetAgencyLoaInput!): SetAgencyLoaPayload!
+  agencyLoaDelete(input: AgencyLoaDeleteInput!): AgencyLoaDeletePayload!
   setUnderwriterRecommendation(input: SetUnderwriterRecommendationInput!): SetUnderwriterRecommendationPayload!
   deleteUnderwriterRecommendation(input: DeleteUnderwriterRecommendationInput!): DeleteUnderwriterRecommendationPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
@@ -1514,6 +1543,10 @@ type ResponsibilityDm {
 
 input DeleteAccountProgramInput {
   accountProgramId: UUID!
+}
+
+type LoaLogChangeStatusPayload {
+  boolean: Boolean
 }
 
 type AccountAlertClaimDto {
@@ -1679,6 +1712,10 @@ type LegalEntityAddress {
   typeNavigation: AddressTypeDm!
 }
 
+type AgencyLoaDeletePayload {
+  boolean: Boolean
+}
+
 type AgencyErrorAndOmission {
   id: UUID!
   created: DateTime!
@@ -1822,6 +1859,10 @@ type BalanceSheet {
   accountNumNavigation: Account!
   ratio: Ratio!
   subaccounts: [Subaccount!]!
+}
+
+type SetAgencyLoaPayload {
+  boolean: Boolean
 }
 
 type LegalEntityTypeDm {
@@ -1992,6 +2033,8 @@ type PersonalFinancialStatementTypeDm {
 
 type AccountAgencyLOADto {
   id: UUID!
+  accountNum: String!
+  agencyNumber: String!
   effective: DateTime!
   expiration: DateTime!
   loaSingle: Int!
@@ -2002,6 +2045,7 @@ type AccountAgencyLOADto {
   sequenceNumber: Int!
   createdById: UUID
   createdByName: String
+  status: String
 }
 
 type Indemnitor {
@@ -2359,6 +2403,10 @@ type AdditionalRelatedParty {
   comments: String
   accountNumNavigation: Account!
   idNavigation: LegalEntity!
+}
+
+input LoaLogDeleteInput {
+  accountLoaId: UUID!
 }
 
 type ResetUserSettingPayload {
@@ -3367,6 +3415,10 @@ type PowerOfAttorneyDocumentStatus {
   poa: PowerOfAttorney!
 }
 
+input AgencyLoaDeleteInput {
+  agencyLoaId: UUID!
+}
+
 type CreditReportDm {
   id: UUID!
   created: DateTime!
@@ -3609,6 +3661,21 @@ input AccountProgramChangeStatusInput {
   newStatusTxt: String!
 }
 
+input SetLoaLogInput {
+  id: UUID!
+  accountNum: String!
+  effective: DateTime!
+  expiration: DateTime!
+  loaSingle: Int!
+  loaAggregate: Int!
+  comments: String!
+  status: String!
+  division: String!
+  bondType: String!
+  conditions: String!
+  homeOfficeApproved: Boolean!
+}
+
 input CreateAgencyStatusLogInput {
   id: UUID!
   agencyNumber: String!
@@ -3633,6 +3700,10 @@ type AgencyStatusLog {
   changedByNavigation: Employee
   newStatusNavigation: AgencyStatusDm
   oldStatusNavigation: AgencyStatusDm
+}
+
+type LoaLogDeletePayload {
+  boolean: Boolean
 }
 
 type WorkInProgressSummary {

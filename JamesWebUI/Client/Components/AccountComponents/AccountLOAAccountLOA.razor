@@ -6,7 +6,7 @@
                 EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true" IsLoading="@IsLoading"
                 Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading"
-                RowUpdate="UpdateGridRow" RowCreate="CreateGridRow">
+                RowUpdate="UpdateGridRow" RowCreate="CreateGridRow" Style="max-height: 400px;">
     <HeaderTemplate>
         <AuthorizeView Policy="InRoleCanProposeAccountLoa">
             <RadzenButton Icon="add" Text="Add new LOA" Variant="Variant.Text" Click="@InsertRow"/>
@@ -18,12 +18,30 @@
         </div>
     </Template>
     <Columns>
-        <RadzenDataGridColumn Title="Print LOA" MinWidth="100px">
+        <RadzenDataGridColumn Title="Print LOA" MinWidth="60px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Print" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                    <RadzenText Text="LOA" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
             <Template Context="loa">
                 <RadzenButton Icon="picture_as_pdf" Variant="Variant.Text" Click="@(() => PrintLoa(loa))"/>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Effective Date" Property="@nameof(AccountLOADto.Effective)" MinWidth="125px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Effective" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                    <RadzenText Text="Date" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-0"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
             <Template Context="loa">
                 <RadzenText Text="@loa.Effective.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
             </Template>
@@ -34,6 +52,15 @@
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Expiration Date" Property="@nameof(AccountLOADto.Expiration)" MinWidth="125px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Expiration" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                    <RadzenText Text="Date" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-0"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
             <Template Context="loa">
                 <RadzenText Text="@loa.Expiration.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
             </Template>
@@ -44,10 +71,15 @@
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="LOA Single" Property="@nameof(AccountLOADto.LoaSingle)"
-                              TextAlign="TextAlign.Right" MinWidth="125px">
+                              TextAlign="TextAlign.Right" MinWidth="125x">
             <HeaderTemplate>
-                <RadzenText Text="LOA Single" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
-                            TextStyle="TextStyle.Subtitle2"/>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="LOA" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                    <RadzenText Text="Single" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-0"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
             </HeaderTemplate>
             <Template Context="loa">
                 <RadzenText Text="@($"{loa.LoaSingle:C0}")" TextAlign="TextAlign.Right" TextStyle="TextStyle.Body2"/>
@@ -62,8 +94,13 @@
         <RadzenDataGridColumn Title="LOA Aggregate" Property="@nameof(AccountLOADto.LoaAggregate)" MinWidth="125px"
                               TextAlign="TextAlign.Right">
             <HeaderTemplate>
-                <RadzenText Text="LOA Aggregate" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
-                            TextStyle="TextStyle.Subtitle2"/>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="LOA" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                    <RadzenText Text="Aggregate" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-0"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
             </HeaderTemplate>
             <Template Context="loa">
                 <RadzenText Text="@($"{loa.LoaAggregate:C0}")" TextAlign="TextAlign.Right"
@@ -98,10 +135,22 @@
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Created By" Property="@nameof(AccountLOADto.CreatedByName)" MinWidth="125px"/>
-        <RadzenDataGridColumn Title="Home Office Approved" Property="@nameof(AccountLOADto.HomeOfficeApproved)" 
-                              MinWidth="150px">
+        <RadzenDataGridColumn Title="Home Office Approved" Property="@nameof(AccountLOADto.HomeOfficeApproved)"
+                              MinWidth="175px">
+            <HeaderTemplate>
+                <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
+                             JustifyContent="JustifyContent.Center" Gap="0">
+                    <RadzenText Text="Home Office" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-2"
+                                TextStyle="TextStyle.Subtitle2"/>
+                    <RadzenText Text="Approved" TextAlign="TextAlign.Center" class="rz-pr-4 rz-pt-0"
+                                TextStyle="TextStyle.Subtitle2"/>
+                </RadzenStack>
+            </HeaderTemplate>
             <Template Context="loa">
-                <RadzenCheckBox TValue="bool" @bind-Value="@loa.HomeOfficeApproved"/>
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0"
+                             class="rz-w-100" AlignItems="AlignItems.Center">
+                    <RadzenCheckBox TValue="bool" @bind-Value="@loa.HomeOfficeApproved"/>
+                </RadzenStack>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="125px" Filterable="false" Frozen="true" Resizable="false"
@@ -163,7 +212,7 @@
     private List<AccountLOADto> _accountLoaList = [];
     private List<DivisionDm> _divisions = [];
     private List<string> _bondTypes = [];
-    
+
     private bool ShowEdit(AccountLOADto loa) => loa.Status == "PROPOSED";
     private bool ShowRequestApproval(AccountLOADto loa) => loa.Status == "PROPOSED";
     private bool ShowApprove(AccountLOADto loa) => loa.Status == "APPROVAL REQUESTED";
@@ -185,10 +234,7 @@
             Data = (List<DivisionDm>)cache!
         },
         ResultVariable = () => _divisionsResult,
-        AfterLoad = () =>
-        {
-            _divisions = _divisionsResult.Data!;
-        }
+        AfterLoad = () => { _divisions = _divisionsResult.Data!; }
     }, "divisions");
 
     #endregion
@@ -206,10 +252,7 @@
             Data = (List<AccountLOADto>)cache!
         },
         ResultVariable = () => _accountLOAResult,
-        AfterLoad = () =>
-        {
-            _accountLoaList = _accountLOAResult.Data!;
-        }
+        AfterLoad = () => { _accountLoaList = _accountLOAResult.Data!; }
     }, "account LOA");
 
     #endregion
@@ -290,7 +333,7 @@
     private void ShowTooltip(ElementReference element, Action name, TooltipOptions? options = null)
     {
     }
-    
+
     private async Task<bool> ConfirmAction(Action action)
     {
         var message = action switch
@@ -314,7 +357,7 @@
             CloseDialogOnEsc = true
         });
     }
-    
+
     private enum Action
     {
         Edit,
@@ -324,4 +367,5 @@
         Decline,
         Cancel
     }
+
 }

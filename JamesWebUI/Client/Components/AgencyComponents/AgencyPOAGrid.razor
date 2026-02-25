@@ -19,7 +19,8 @@
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <AuthorizeView Policy="InRoleCanAddAgencyPOA">
-                <RadzenButton Icon="add" Text="New POA" Variant="Variant.Text" Click="@InsertPOARow"/>
+                <RadzenButton Icon="add" Text="New POA" Variant="Variant.Text" Click="@InsertPOARow"
+                              Visible="@(ActiveOnly)"/>
             </AuthorizeView>
             <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="DefaultExportFormat"/>
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
@@ -122,7 +123,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
                               Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="75px"
-                              MinWidth="80px">
+                              MinWidth="80px" Pickable="false" Visible="@(ActiveOnly)" >
             <Template Context="poa">
                 <AuthorizeView Policy="InRoleCanEditAgencyPOA">
                     <RadzenButton Variant="Variant.Flat"

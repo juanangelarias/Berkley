@@ -1,15 +1,15 @@
-﻿@inherits JamesGridLayoutComponentBase<Bond>
+﻿@inherits JamesGridLayoutComponentBase<AgencyBondDto>
 
 @inject TooltipService TooltipService
 @inject IDataAccess DataAccess
 
 <Theme/>
 
-<RadzenDataGrid TItem="Bond" @ref="@Grid" Data="@_agencyBonds" Count="@_count" LoadData="@LoadAgencyBonds"
+<RadzenDataGrid TItem="AgencyBondDto" @ref="@Grid" Data="@_agencyBonds" Count="@_count" LoadData="@LoadAgencyBonds"
                 AllowVirtualization="true" @bind-Settings="@GridSettings" AllowColumnReorder="true"
                 Density="Density.Compact" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
                 AllowColumnPicking="true">
-    
+
     @*AllowGrouping="true" AllowSorting="true" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading" 
                 Sort="@ShowLoading"
                 GridLines="DataGridGridLines.Vertical" AllowFiltering="true" FilterMode="FilterMode.Advanced"
@@ -26,7 +26,8 @@
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
-        <RadzenDataGridColumn TItem="Bond" Filterable="true" FilterValue="@_statusFilter" FilterProperty="Status"
+        <RadzenDataGridColumn TItem="AgencyBondDto" Filterable="true" FilterValue="@_statusFilter"
+                              FilterProperty="Status"
                               FilterOperator="FilterOperator.Contains" Resizable="true"
                               Title="Status" Property="Status" Width="125px" Type="typeof(List<string>)">
             <Template Context="bond">
@@ -53,31 +54,51 @@
                                 Data="@_agencyBonds.Select(b => b.Status).Distinct().ToList()"/>
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Bond" Title="Bond No." Property="BondNumber" Width="125px" Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Account No." Property="AccountNumNavigation.AccountNum"
-                              Width="140px" Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Account Name" Property="AccountNumNavigation.IdNavigation.FullName"
-                              Width="150px" Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Bond Type" Property="BondType.BondType" Width="130px"
-                              FilterValue="_bondTypeFilter" FilterProperty="BondType.BondType" Resizable="true"
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Bond No." Property="BondNumber" Width="125px"
+                              Resizable="true">
+            <Template Context="bond">
+                <RadzenLink Text="@bond.BondNumber" Path=@($"bond/{bond.BondNumber}") Style="--rz-grid-cell-font-size: 0.9rem"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Account No." Property="AccountNum" Width="130px"
+                              Resizable="true">
+            <Template Context="bond">
+                <RadzenLink Text="@bond.AccountNum" Path=@($"account/{bond.AccountNum}") Style="--rz-grid-cell-font-size: 0.9rem"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Account Name" Property="AccountName" Width="200px"
+                              Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Bond Type" Property="BondType" Width="130px"
+                              FilterValue="_bondTypeFilter" FilterProperty="BondType" Resizable="true"
                               FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@_bondTypeFilter" @ref="BondTypeFilterDropDown"
                                 Change="BondTypeFilterChange"
                                 TValue="List<string>" Multiple="true" AllowClear="true"
-                                Data="@_agencyBonds.Select(b => b.BondType?.BondType).Distinct().ToList()"/>
+                                Data="@_agencyBonds.Select(b => b.BondType).Distinct().ToList()"/>
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="Bond" Title="Begin Date" Property="Effective" FormatString="{0:d}" Width="150px"
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Begin Date" Property="BeginDate" FormatString="{0:d}"
+                              Width="150px" Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="End Date" Property="EndDate" FormatString="{0:d}"
+                              Width="150px" SortOrder="SortOrder.Descending" Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Amount" Property="Amount" FormatString="{0:C0}"
+                              Width="125px" SortOrder="SortOrder.Descending" Resizable="true"
+                              TextAlign="TextAlign.Center">
+            <Template Context="bond">
+                <RadzenText Text="@bond.Amount.ToString("C0")" TextAlign="TextAlign.Right"
+                            Style="--rz-grid-cell-font-size: 0.9rem"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="UW" Property="UnderWriterName" Width="175px"
                               Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="End Date" Property="Expiration" FormatString="{0:d}" Width="150px"
-                              SortOrder="SortOrder.Descending" Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="UW" Property="UnderWriter.IdNavigation.FullName" Width="175px"
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Branch" Property="Branch" Width="100px"
                               Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Class Code" Property="Siccode" FormatString="{0:d}" Width="125px"
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Class Code" Property="SicCode" Width="125px"
                               Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Obligee" Property="Obligee.FullName" Width="200px" Resizable="true"/>
-        <RadzenDataGridColumn TItem="Bond" Title="Class" Property="BondClass" Resizable="true"
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Obligee" Property="ObligeeName" Width="200px"
+                              Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Class" Property="BondClass" Resizable="true"
                               Filterable="true" FilterValue="@_classFilter" FilterProperty="BondClass"
                               FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)"
                               FormatString="{0:d}" Width="180px">
@@ -85,7 +106,6 @@
                 <RadzenDropDown @bind-Value="@_classFilter" @ref="ClassFilterDropDown" Change="ClassFilterChange"
                                 TValue="List<string>" Multiple="true" AllowClear="true"
                                 Data="@_agencyBonds.OrderBy(b => b.BondClass).Select(b => b.BondClass).Distinct().ToList()">
-
                 </RadzenDropDown>
             </FilterTemplate>
         </RadzenDataGridColumn>
@@ -99,19 +119,20 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter] public Guid AgencyId { get; set; }
+    [Parameter, EditorRequired] public required Agency Agency { get; set; }
+    [Parameter] public string? AccountNum { get; set; }
 
     // ***
     //
     // ToDo: We need to add filters and orders to the virtualization!!!
     //
     // ***
-    
-    private List<Bond> _agencyBonds = [];
+
+    private List<AgencyBondDto> _agencyBonds = [];
     private List<string>? _statusFilter;
     private List<string>? _classFilter;
     private List<string>? _bondTypeFilter;
-    
+
     private int _skip;
     private int _take;
     private int _count = 1000;
@@ -125,22 +146,25 @@
 
     #region AgencyBonds Load
 
-    private IDataAccessResult<List<Bond>> _agencyBondsResult = null!;
+    private IDataAccessResult<List<AgencyBondDto>> _agencyBondsResult = null!;
 
     private LoadItem AgencyBondsLoad => AddEventNotify(new()
     {
-        Key = $"AgencyBondGrid{AgencyId}",
-        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(AgencyId, _skip, _take),
-        CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<Bond>>
+        Key = $"AgencyBondGrid{Agency.Id}_{AccountNum}_{_skip}_{_take}",
+        AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(Agency.Id, AccountNum, _skip, _take),
+        CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<AgencyBondDto>>
         {
-            Data = (List<Bond>)cache!
+            Data = (List<AgencyBondDto>)cache!
         },
         ResultVariable = () => _agencyBondsResult,
-        AfterLoad = () => { _agencyBonds = _agencyBondsResult.Data!; }
+        AfterLoad = () =>
+        {
+            _agencyBonds = _agencyBondsResult.Data!;
+        }
     }, "agency bond grid");
 
     #endregion
-    
+
     #endregion
 
     protected override async Task OnParametersSetAsync()
@@ -148,9 +172,9 @@
         await base.OnParametersSetAsync();
 
         GridSettingsKey = "AgencyBondsGrid";
-        
+
         await ShowLoading();
-        
+
         await GetGridSettings();
 
         await LoadAgencyBonds(null);
@@ -158,22 +182,22 @@
 
     private async Task LoadAgencyBonds(LoadDataArgs? args)
     {
-        if (AgencyId == Guid.Empty)
+        if (Agency.Id == Guid.Empty)
             return;
 
-        var countResult = await DataAccess.GetAgencyBondsCount(AgencyId);
+        var countResult = await DataAccess.GetAgencyBondsCount(Agency.Id);
         if (countResult.Success)
             _count = countResult.Data!.Count;
-        
+
         if (!string.IsNullOrEmpty(args?.Filter) && _lastFilter != args.Filter)
         {
             _lastFilter = args.Filter;
             args.Skip = 0;
         }
-        
+
         _skip = args == null ? 0 : args.Skip!.Value;
         _take = args == null ? 15 : args.Top!.Value;
-        
+
         await DataAccess.GetCacheOrLoadDataAsync(AgencyBondsLoad);
     }
 

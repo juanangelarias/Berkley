@@ -202,7 +202,7 @@
 
 @code {
     [Parameter, EditorRequired] public required Agency Agency { get; set; }
-    [Parameter, EditorRequired] public Agent Agent { get; set; }
+    [Parameter, EditorRequired] public AgencyAgentDto Agent { get; set; }
 
     private List<AgencyLicense> Licenses { get; set; } = [];
     private List<AgencyLicense> _agencyLicensesBeforeBulkEdit = [];
@@ -212,7 +212,7 @@
 
     private readonly DataGridEditMode _editMode = DataGridEditMode.Multiple;
     private bool _bulkMode;
-    private string LicensesKey => CacheKeys.AgencyAgentLicenses(Agency.Id.ToString(), Agent.Id.ToString());
+    private string LicensesKey => CacheKeys.AgencyAgentLicenses(Agency.Id.ToString(), Agent.AgentId.ToString());
 
     #region Loaders
 
@@ -223,7 +223,7 @@
     private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem<List<AgencyLicense>>
     {
         Key = LicensesKey,
-        AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyAgentLicenses(Agency.Id, Agent.Id),
+        AsyncLoadTask = async () => _licenses = await DataAccess.GetAgencyAgentLicenses(Agency.Id, Agent.AgentId),
         CacheLoadTask = cache => _licenses = new DataAccessResult<List<AgencyLicense>>
         {
             Data = (List<AgencyLicense>)cache!

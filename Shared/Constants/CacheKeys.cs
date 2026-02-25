@@ -10,14 +10,21 @@ public static class CacheKeys
     // A
     public static string Account(string accountNumber) => $"Account-{accountNumber}";
     public static string AccountAlerts(string alertPeriod, string accountNumber) => $"AccountAlerts-{alertPeriod}-{accountNumber}";
+    public static string AccountAnnualPremiums(string accountNumber, string type) => $"AccountAnnualPremiums-{accountNumber}-{type}";
+    public static string AccountCollaterals(string accountNumber) => $"AccountCollaterals-{accountNumber}";
+    public static string AccountOutstandingLiability(string accountNumber) => $"AccountOutstandingLiability-{accountNumber}";
     public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
     public static string Agency(string agencyNumber) => $"Agency-{agencyNumber}";
     public static string AgencyAgents(string id) => $"AgencyAgents-{id}";
     public static string AgencyAgentLicenses(string agencyId, string agentId) => $"AgencyAgentLicenses-{agencyId}-{agentId}";
     public static string AgencyLicenses(string id) => $"AgencyLicenses-{id}";
+    public static string AccountLOAs(string accountNumber) => $"AccountLOAs-{accountNumber}";
     
     // B
     public static string BondByBlock(Guid bondBlockId) => $"BondByBlock-{bondBlockId}";
+    
+    // C
+    public static string CreditReport(string accountNumber) => $"BondTransactions-{accountNumber}";
 
     // L
     public static string LegalEntityAddresses(Guid id) => $"LegalEntityAddresses-{id}";
@@ -36,6 +43,9 @@ public static class CacheKeys
         
         return key;
     }
+    
+    // R
+    public static string RelatedAccounts(string accountNumber) => $"RelatedAccounts-{accountNumber}";
 
     // Fixed
     // A
@@ -48,7 +58,11 @@ public static class CacheKeys
     public const string BusinessClasses = "BusinessClasses";
     public const string BusinessTypes = "BusinessTypes";
     // C
+    public const string CommercialBondTypes = "CommercialBondTypes";
+    public const string CommercialRates = "CommercialRates";
+    public const string ContractRates = "ContractRates";
     public const string Countries = "Countries";
+    public const string CreditReportAgencies = "CreditReportAgencies";
     // D
     public const string Divisions = "Divisions";
     // E
@@ -58,6 +72,11 @@ public static class CacheKeys
     public const string Insurers = "Insurers";
     // P
     public const string PhoneTypes = "PhoneTypes";
+    // R
+    public const string RateGroups = "RateGroups";
+    public const string RateTypes = "RateTypes";
+    public const string RiskTypes = "RiskTypes";
+    public const string RiskCommission = "RiskCommission";
     // S
     public const string SecRoles = "SecRoles";
     public const string SicCodes = "SicCodes";

@@ -41,7 +41,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<Sic>>> GetAllSicCodes()
         {
             return await ExecuteGet<List<Sic>>(async () =>
-                await jamesClient.GetAllSicCodes.ExecuteAsync());
+                await jamesClient.GetAllSicCodes.ExecuteAsync(), "AllSicCodes");
         }
 
         public async Task<IDataAccessResult<Account>> GetAccountByNumber(string accountNumber)
@@ -342,10 +342,11 @@ namespace James.Data.Client
             return response;
         }
 
-        public async Task<IDataAccessResult<List<Bond>>> GetAgencyBonds(Guid agencyId, int skip, int take)
+        public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, string? accountNum, int skip, int take)
         {
-            return await ExecuteGet<List<Bond>>(
-                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, skip, take), "AgencyBonds");
+            throw new NotImplementedException();
+            /*return await ExecuteGet<List<AgencyBondDto>>(
+                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, accountNum, skip, take), "AgencyBonds");*/
         }
         
         public async Task<IDataAccessResult<QueryCount>> GetAgencyBondsCount(Guid agencyId)
@@ -353,9 +354,15 @@ namespace James.Data.Client
             return await ExecuteGet<QueryCount>(async () => await jamesClient.GetAgencyBondsCount.ExecuteAsync(agencyId));
         }
 
-        public async Task<IDataAccessResult<List<Agent>>> GetAgencyAgents(Guid agencyId)
+
+        public Task<IDataAccessResult<List<Agent>>> GetAgencyAgentsStandard(Guid agencyId)
         {
-            return await ExecuteGet<List<Agent>>(
+            throw new NotImplementedException();
+        }
+
+        public async Task<IDataAccessResult<List<AgencyAgentDto>>> GetAgencyAgents(Guid agencyId)
+        {
+            return await ExecuteGet<List<AgencyAgentDto>>(
                 async () => await jamesClient.GetAgencyAgents.ExecuteAsync(agencyId), "AgencyAgents");
         }
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId)
@@ -458,7 +465,12 @@ namespace James.Data.Client
             
             return GraphQLSaveResult(result);
         }
-
+        public async Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber)
+        {
+            return await ExecuteGet<AccountLOAsDto>(async () => await
+                jamesClient.GetAccountLOAs.ExecuteAsync(accountNumber), "AccountLOAs");
+        }
+        
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs)
         {
@@ -496,6 +508,76 @@ namespace James.Data.Client
                     TrackCommAccount = trackCommAccount
                 });
             return GraphQLSaveResult(result);
+        }
+        
+        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum, string type)
+        {
+            var result = await ExecuteGet<AccountAnnualPremiumDto>(async () => 
+                await jamesClient.GetAccountAnnualPremiums.ExecuteAsync(accountNum, type), 
+                "AccountAnnualPremiums");
+            
+            return result;
+        }
+        
+        public async Task<IDataAccessResult<List<AccountCollateralDto>>> GetAccountBondCollaterals(string accountNum)
+        {
+            var result = await ExecuteGet<List<AccountCollateralDto>>(async () =>
+                await jamesClient.GetAccountBondCollaterals.ExecuteAsync(accountNum),
+                "AccountBondCollaterals");
+            
+            return result;
+        }
+        public async Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum)
+        {
+            var result = await ExecuteGet<AccountOutstandingLiabilityDto>(async () =>
+                await jamesClient.GetAccountOutstandingLiability.ExecuteAsync(accountNum),
+                "AccountOutstandingLiability");
+            
+            return result;
+        }
+        
+        public async Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum)
+        {
+            throw new NotImplementedException();
+            /*var result = await ExecuteGet<CreditReportDto>(async ()=>
+                await jamesClient.GetCreditReport.ExecuteAsync(accountNum), "CreditReport");
+
+            return result;*/
+        }
+        
+        public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum, DateTime pulledDate, string rating,
+            string definition, string remarks)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.SetCreditReport.ExecuteAsync(new SetCreditReportInput
+                {
+                    Id = id,
+                    CreditReportAgency = creditReportAgency,
+                    AccountNum = accountNum,
+                    PulledDate = pulledDate,
+                    Rating = rating,
+                    Definition = definition,
+                    Remarks = remarks
+                }));
+        }
+        
+        public async Task<ISaveDataResult> DeleteCreditReport(Guid id)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.DeleteCreditReport.ExecuteAsync(new DeleteCreditReportInput { Id = id }));
+        }
+        
+        public async Task<IDataAccessResult<AccountBondedPrincipleDto>> GetRelatedAccounts(string accountNum)
+        {
+            var result = await ExecuteGet<AccountBondedPrincipleDto>(async () =>
+                await jamesClient.GetRelatedAccounts.ExecuteAsync(accountNum), "RelatedAccounts");
+            
+            return result;
         }
 
         public async Task<IDataAccessResult<LegalEntityEmail>> SetLegalEntityEmail(Guid id, Guid legalEntityId,
@@ -1422,6 +1504,50 @@ namespace James.Data.Client
                 {
                     BondBlockId = id
                 }), "DeleteBondBlock");
+        }
+
+        #endregion
+        
+        #region General
+
+        public async Task<IDataAccessResult<List<ContractRate>>> GetAllContractRates()
+        {
+            var result = await ExecuteGet<List<ContractRate>>(async () => 
+                    await jamesClient.GetAllContractRates.ExecuteAsync(), "AllContractRates");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<CommercialRate>>> GetAllCommercialRates()
+        {
+            var result = await ExecuteGet<List<CommercialRate>>(async () => 
+                await jamesClient.GetAllCommercialRates.ExecuteAsync(), "AllCommercialRates");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<RateGroupDm>>> GetAllRateGroups()
+        {
+            var result = await ExecuteGet<List<RateGroupDm>>(async () => 
+                await jamesClient.GetAllRateGroups.ExecuteAsync(), "AllRateGroups");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<RiskTypeDm>>> GetAllRiskTypes()
+        {
+            var result = await ExecuteGet<List<RiskTypeDm>>(async () => 
+                await jamesClient.GetAllRiskTypes.ExecuteAsync(), "AllRiskTypes");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<CommercialBondTypeDm>>> GetAllCommercialBondTypes()
+        {
+            var result = await ExecuteGet<List<CommercialBondTypeDm>>(async () =>
+                await jamesClient.GetAllCommercialBondTypes.ExecuteAsync(), "AllCommercialBondTypes");
+
+            return result;
         }
 
         #endregion

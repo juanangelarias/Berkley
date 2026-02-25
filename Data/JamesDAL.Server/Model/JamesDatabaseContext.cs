@@ -14,6 +14,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<Account> Accounts { get; set; }
 
+    public DbSet<AccountChild> AccountChildren { get; set; }
+
     public virtual DbSet<AccountParentAncestorSafe> AccountParentAncestorSaves { get; set; }
 
     public virtual DbSet<AccountParentAncestorUnsafe> AccountParentAncestorUnsaves { get; set; }
@@ -381,7 +383,7 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<WorkInProgressSummary> WorkInProgressSummaries { get; set; }
 
     public virtual DbSet<WritingCompanyDm> WritingCompanyDms { get; set; }
-
+    
     //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     //    => optionsBuilder.UseSqlServer(_connectionString);
 
@@ -557,6 +559,11 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_Account_UnderWriter");
         });
 
+        modelBuilder.Entity<AccountChild>(entity =>
+        {
+            entity.HasNoKey();
+            entity.ToFunction("fnGetAllRelatedAccounts");
+        });
         modelBuilder.Entity<AccountParentAncestorSafe>(entity =>
         {
             entity

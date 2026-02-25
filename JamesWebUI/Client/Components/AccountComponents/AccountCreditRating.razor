@@ -1,0 +1,354 @@
+﻿@inherits JamesGridLayoutComponentBase<CreditReportHistory>
+
+@inject IDataAccess DataAccess
+@inject TooltipService TooltipService
+
+<RadzenDataGrid TItem="CreditReportHistory" Data="_creditReports" FilterMode="FilterMode.Advanced" @ref="@Grid"
+                RowUpdate="UpdateGridRow" RowCreate="InsertGridRow" EmptyText="No records to display"
+                @bind-Settings="@GridSettings" AllowColumnReorder="true" AllowSorting="true" Density="Density.Compact"
+                SelectionMode="DataGridSelectionMode.Single" llowFiltering="true" AllowColumnPicking="true" 
+                AllowGrouping="true" AllowColumnResize="true" IsLoading="@IsLoading" Sort="@ShowLoading" 
+                Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading">
+    <HeaderTemplate>
+        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <AuthorizeView Policy="InRoleCanAddEditAccountCreditReport">
+                <RadzenButton Icon="add" Text="New Credit Report" Variant="Variant.Text" Click="@InsertRow"
+                              Disabled="_editing"/>
+            </AuthorizeView>
+            <RadzenButton Icon="settings" Click="SaveGridSettings"
+                          MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                          Visible="@UserSettingsChanged"/>
+            <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
+                          MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                          Visible="@UserSettingsLoaded"/>
+        </RadzenStack>
+    </HeaderTemplate>
+    <Columns>
+        <RadzenDataGridColumn Title="Source" MinWidth="150px" Width="200px">
+            <Template Context="report">
+                <RadzenText Text="@report.CreditReport"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenDropDown TValue="string" Data="@_creditReportSources" TextProperty="CreditReport"
+                                ValueProperty="CreditReport" @bind-Value="@report.CreditReport"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Date" MinWidth="100px" Width="150px">
+            <Template Context="report">
+                <RadzenText Text="@report.Pulled.ToString("MM/dd/yyyy")"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenDatePicker TValue="DateTime" @bind-Value="@report.Pulled"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Rating" MinWidth="150px" Width="200px">
+            <Template Context="report">
+                <RadzenText Text="@report.Rating"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenTextBox @bind-Value="@report.Rating"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Definition" MinWidth="150px" Width="200px">
+            <Template Context="report">
+                <RadzenText Text="@report.Definition"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenTextBox @bind-Value="@report.Definition"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Outlook/Remarks" MinWidth="150px" Width="200px">
+            <Template Context="report">
+                <RadzenText Text="@report.Remarks"/>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenTextBox @bind-Value="@report.Remarks"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn MinWidth="90px" Width="90px" MaxWidth="90px" Frozen="true"
+                              FrozenPosition="FrozenColumnPosition.Right">
+            <Template Context="report">
+                <AuthorizeView Policy="InRoleCanAddEditAccountCreditReport">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                  Size="ButtonSize.Small" Click="@(_ => EditRow(report))"
+                                  @onclick:stopPropagation="true" Disabled="_editing"/>
+                </AuthorizeView>
+                <AuthorizeView Policy="InRoleCanDeleteAccountCreditReport">
+                    <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="delete" Variant="Variant.Flat"
+                                  Shade="Shade.Lighter" Size="ButtonSize.Small" class="my-1 ms-1"
+                                  Click="@(_ => DeleteRow(report))" @onclick:stopPropagation="true"
+                                  Disabled="_editing"/>
+                </AuthorizeView>
+            </Template>
+            <EditTemplate Context="report">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" Click="@(_ => SaveRow(report))"/>
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                              Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelEdit(report))"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private List<CreditReportHistory> _creditReports = [];
+    private List<CreditReportDm> _creditReportSources = [];
+    private bool _editing;
+
+    #region Loaders
+
+    #region CreditReports Load
+
+    private IDataAccessResult<List<CreditReportHistory>> _creditReportsResult = null!;
+
+    private LoadItem CreditReportsLoad => AddEventNotify(new LoadItem<List<CreditReportHistory>>
+    {
+        Key = CacheKeys.CreditReport(Account.AccountNum),
+        AsyncLoadTask = async () => _creditReportsResult = await DataAccess.GetCreditReport(Account.AccountNum),
+        CacheLoadTask = cache => _creditReportsResult = new DataAccessResult<List<CreditReportHistory>>
+        {
+            Data = (List<CreditReportHistory>)cache!
+        },
+        ResultVariable = () => _creditReportsResult,
+        AfterLoad = () =>
+        {
+            _creditReports = _creditReportsResult.Data!;
+        }
+    }, "credit reports");
+
+    #endregion
+
+    #region CreditReportAgencies Load
+
+    private IDataAccessResult<List<CreditReportDm>> _creditReportAgenciesResult = null!;
+
+    private LoadItem CreditReportAgenciesLoad => AddEventNotify(new LoadItem<List<CreditReportDm>>
+    {
+        Key = CacheKeys.CreditReportAgencies,
+        AsyncLoadTask = async () => _creditReportAgenciesResult = await DataAccess.GetCreditReportAgencies(),
+        CacheLoadTask = cache => _creditReportAgenciesResult = new DataAccessResult<List<CreditReportDm>>
+        {
+            Data = (List<CreditReportDm>)cache!
+        },
+        ResultVariable = () => _creditReportAgenciesResult,
+        AfterLoad = () =>
+        {
+            _creditReportSources = _creditReportAgenciesResult.Data!;
+        },
+        CacheDuration = TimeSpan.FromDays(7)
+    }, "credit report agencies");   
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        GridSettingsKey = "AccountCreditRating";
+        
+        await GetGridSettings();
+        await LoadCreditReports();
+
+        _editing = false;
+    }
+
+    private async Task LoadCreditReports()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(CreditReportsLoad);
+    }
+
+    private async Task InsertRow(MouseEventArgs arg)
+    {
+        _editing = true;
+
+        await ShowLoading();
+
+        var newReport = new CreditReportHistory
+        {
+            Id = Guid.NewGuid(),
+            AccountNum = Account.AccountNum,
+            Pulled = DateTime.Now,
+            Rating = string.Empty,
+            Definition = string.Empty,
+            Remarks = string.Empty,
+            AccountNumNavigation = Account
+        };
+
+        await Grid.InsertRow(newReport);
+    }
+
+    private async Task EditRow(CreditReportHistory report)
+    {
+        _editing = true;
+
+        await ShowLoading();
+        await Grid.EditRow(report);
+    }
+
+    private async Task DeleteRow(CreditReportHistory report)
+    {
+        var deleteConfirmed = await DialogService.Confirm("Are you sure you want to delete this credit report?",
+            "Delete Credit Report", new ConfirmOptions { OkButtonText = "Yes", CancelButtonText = "No" });
+
+        if (deleteConfirmed != true)
+            return;
+
+        _editing = true;
+
+        await ShowLoading();
+        var result = await DataAccess.DeleteCreditReport(report.Id);
+
+        if (result.Success)
+        {
+            var toDelete = _creditReports.FirstOrDefault(f => f.Id == report.Id);
+
+            if (toDelete != null)
+            {
+                _creditReports.Remove(toDelete);
+                DataAccess.UpdateCache(CacheKeys.CreditReport(Account.AccountNum), _creditReports);
+            }
+
+            await Grid.Reload();
+
+            await LoadCreditReports();
+        }
+        else
+        {
+            await HandleError("Error deleting Credit Report", result.Errors);
+        }
+
+        _editing = false;
+    }
+
+    private async Task SaveRow(CreditReportHistory report)
+    {
+        if (!ValidateRecord(report))
+            return;
+
+        await ShowLoading();
+        await Grid.UpdateRow(report);
+    }
+
+    private void CancelEdit(CreditReportHistory report)
+    {
+        Grid.CancelEditRow(report);
+
+        _editing = false;
+    }
+
+    private bool ValidateRecord(CreditReportHistory report)
+    {
+        var flag = true;
+
+        if (string.IsNullOrEmpty(report.CreditReport))
+        {
+            flag = false;
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Credit report agency has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+        }
+
+        if (string.IsNullOrEmpty(report.AccountNum))
+        {
+            flag = false;
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Account number has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+        }
+
+        var pulled = new DateTime(report.Pulled.Year, report.Pulled.Month, report.Pulled.Day);
+        if (pulled != DateTime.Today)
+        {
+            flag = false;
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "The Pulled date should be today. Please correct and try again.",
+                Duration = 2000
+            });
+        }
+
+        if (string.IsNullOrEmpty(report.Rating))
+        {
+            flag = false;
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Rating has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+        }
+
+        if (string.IsNullOrEmpty(report.Definition))
+        {
+            flag = false;
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Definition has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+        }
+
+        if (string.IsNullOrEmpty(report.Remarks))
+        {
+            flag = false;
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Outlook/Remarks has not been defined. Please correct and try again.",
+                Duration = 2000
+            });
+        }
+
+        return flag;
+    }
+
+    private async Task UpdateGridRow(CreditReportHistory report)
+    {
+        await ShowLoading();
+
+        await DataAccess.SetCreditReport(report.Id, report.CreditReport, report.AccountNum, report.Pulled,
+            report.Rating!, report.Definition!, report.Remarks!);
+
+        _editing = false;
+    }
+
+    private async Task InsertGridRow(CreditReportHistory report)
+    {
+        await ShowLoading();
+
+        await DataAccess.SetCreditReport(report.Id, report.CreditReport, report.AccountNum, report.Pulled,
+            report.Rating!, report.Definition!, report.Remarks!);
+
+        _editing = false;
+    }
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
+    }
+}

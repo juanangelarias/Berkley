@@ -1,7 +1,4 @@
-﻿@using James.Shared.Constants
-@using JamesWebUI.Client.Model
-
-@inject IDataAccess DataAccess
+﻿@inject IDataAccess DataAccess
 @inject TooltipService TooltipService
 
 @inherits JamesLayoutComponentBase
@@ -163,9 +160,9 @@ else
     private AccountAgencyAgentModel? _model;
     private Agency? _agency;
     private string _agencyNumber = "";
-    private Agent? _agent;
+    private AgencyAgentDto? _agent;
     private List<AgencyDto> _allAgencies = [];
-    private List<Agent> _agencyAgents = [];
+    private List<AgencyAgentDto> _agencyAgents = [];
     private List<JamesLookup> _agencyAgentsLookup = [];
 
     private IconStyle AgencyStatusStyle => _agency?.Status.ToLower() switch
@@ -192,23 +189,23 @@ else
 
     private string AgencyStatus => _agency?.Status ?? "";
 
-    private string AgentName => _agent?.IdNavigation.FullName ?? "";
-    private string AgentEmail => _agent?.IdNavigation.GetMainEmail() ?? "";
+    private string AgentName => _agent?.FullName ?? "";
+    private string AgentEmail => _agent?.Email ?? "";
 
     #region Loaders
 
     #region Agency Agents
 
-    private IDataAccessResult<List<Agent>> _agencyAgentsResult = null!;
+    private IDataAccessResult<List<AgencyAgentDto>> _agencyAgentsResult = null!;
 
-    private LoadItem AgencyAgentsLoad => AddEventNotify(new LoadItem<List<Agent>>
+    private LoadItem AgencyAgentsLoad => AddEventNotify(new LoadItem<List<AgencyAgentDto>>
     {
         Key = CacheKeys.AgencyAgents(_model?.AgencyNumber ?? Account.AgencyNumber ?? ""),
         AsyncLoadTask = async () =>
             _agencyAgentsResult = await DataAccess.GetAgencyAgents(_agency?.Id ?? Account.AgencyNumberNavigation?.Id ?? Guid.Empty),
-        CacheLoadTask = cache => _agencyAgentsResult = new DataAccessResult<List<Agent>>
+        CacheLoadTask = cache => _agencyAgentsResult = new DataAccessResult<List<AgencyAgentDto>>
         {
-            Data = (List<Agent>)cache!
+            Data = (List<AgencyAgentDto>)cache!
         },
         ResultVariable = () => _agencyAgentsResult,
         AfterLoad = () =>
@@ -217,9 +214,9 @@ else
             _agencyAgentsLookup = _agencyAgents
                 .Select(s => new JamesLookup
                 {
-                    Id = s.Id,
+                    Id = s.AgentId,
                     Code = "",
-                    Name = s.IdNavigation.FullName
+                    Name = s.FullName
                 })
                 .ToList();
         }
@@ -275,7 +272,7 @@ else
         await LoadAgents();
 
         await LoadAgency(Account.AgencyNumber ?? "");
-        _agent = _agencyAgents.FirstOrDefault(f => f.Id == Account.AgentId);
+        _agent = _agencyAgents.FirstOrDefault(f => f.AgentId == Account.AgentId);
     }
 
     private async Task LoadAgency(string agencyNumber)

@@ -261,7 +261,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .OrderBy(o => o.RateGroup)
                 .ThenBy(t1 => t1.CommercialBondType)
                 .ThenBy(t2 => t2.RiskType)
-                .ThenBy(t3 => t3.MinumumAmount)
+                .ThenBy(t3 => t3.MinimumAmount)
                 .ToListAsync();
         }
 

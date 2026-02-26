@@ -110,3 +110,26 @@ query GetAccountAgencyLOAById($id: UUID!) {
         status
     }
 }
+
+query GetLoaLogById($id: UUID!) {
+    loaLogById(id: $id) {
+        accountNum
+        approvedById
+        approvedByName
+        bondType
+        comments
+        conditions
+        created
+        createdById
+        createdByName
+        division
+        effective
+        expiration
+        homeOfficeApproved
+        id
+        loaAggregate
+        loaSingle
+        sequenceNumber
+        status
+    }
+}

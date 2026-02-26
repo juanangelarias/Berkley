@@ -45,6 +45,44 @@ public partial class Query
         return response;
     }
 
+    public async Task<AccountLOADto> GetLoaLogById(Guid id,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var response = await ctx.LineOfAuthorityLogs
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.ApprovedByNavigation)
+            .Select(s => new AccountLOADto
+            {
+                Id = s.Id,
+                Created = s.Created,
+                CreatedById = s.CreatedBy,
+                CreatedByName = s.CreatedBy != null
+                    ? s.CreatedByNavigation!.FullName
+                    : null,
+                ApprovedById = s.ApprovedBy,
+                ApprovedByName = s.ApprovedBy != null
+                    ? s.ApprovedByNavigation!.FullName
+                    : null,
+                AccountNum = s.AccountNum,
+                SequenceNumber = s.SequenceNumber,
+                Effective = s.Effective,
+                Expiration = s.Expiration,
+                LoaSingle = s.Loasingle,
+                LoaAggregate = s.Loaaggregate,
+                Division = s.Division,
+                BondType = s.BondType,
+                HomeOfficeApproved = s.HomeOfficeApproved,
+                Comments = s.Comments,
+                Conditions = s.Conditions,
+                Status = s.Status
+            })
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+        return response;
+    }
+    
     [Authorize]
     public async Task<AccountLOAsDto> GetAccountLOAs(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

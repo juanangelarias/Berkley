@@ -652,6 +652,7 @@ type Query {
   allImagingCategoryTabDivisionType: [VImagingCategoryTabDivisionType!]!
   allInsurers: [Insurer!]!
   loaLogsByAccount(accountNumber: String!): [AccountLOADto!]!
+  loaLogById(id: UUID!): AccountLOADto!
   accountLOAs(accountNum: String!): AccountLOAsDto!
   accountPrograms(accountNum: String!): [AccountProgramDto!]!
   accountProgramById(id: UUID!): AccountProgramDto!

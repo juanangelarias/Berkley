@@ -1,6 +1,7 @@
 ﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
+@inject TooltipService TooltipService
 
 <RadzenDataGrid TItem="AccountLOADto" Data="@_accountLoaList" @ref="@_grid" EditMode="DataGridEditMode.Single"
                 EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
@@ -144,7 +145,7 @@
             <EditTemplate Context="loa">
                 <RadzenDropDown TValue="string" @bind-Value="@loa.Division" Data="_divisions"
                                 TextProperty="@nameof(DivisionDm.Division)"
-                                ValueProperty="@nameof(DivisionDm.Division)"/>
+                                ValueProperty="@nameof(DivisionDm.DivisionCode)"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Bond Type" Property="@nameof(AccountLOADto.BondType)" MinWidth="110px">
@@ -189,7 +190,7 @@
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Home Office Approved" Property="@nameof(AccountLOADto.HomeOfficeApproved)"
-                              MinWidth="175px">
+                              MinWidth="190px">
             <HeaderTemplate>
                 <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.End"
                              JustifyContent="JustifyContent.Center" Gap="0">
@@ -269,10 +270,10 @@
     private List<DivisionDm> _divisions = [];
     private List<string> _bondTypes = [];
 
-    private bool ShowEdit(AccountLOADto loa) => loa.Status == "PROPOSED";
+    private bool ShowEdit(AccountLOADto loa) => loa.Status is "PROPOSED" or "DECLINED";
     private bool ShowRequestApproval(AccountLOADto loa) => loa.Status == "PROPOSED";
-    private bool ShowApprove(AccountLOADto loa) => loa.Status == "APPROVAL REQUESTED";
-    private bool ShowDecline(AccountLOADto loa) => loa.Status == "APPROVAL REQUESTED";
+    private bool ShowApprove(AccountLOADto loa) => loa.Status is "APP. REQ." or "DECLINED";
+    private bool ShowDecline(AccountLOADto loa) => loa.Status == "APP. REQ.";
     private bool ShowCancel(AccountLOADto loa) => loa.Status == "APPROVED";
 
     #region Loaders
@@ -333,63 +334,237 @@
 
     private async Task InsertRow()
     {
+        await ShowLoading();
+
+        var newAccountLOA = new AccountLOADto
+        {
+            Id = Guid.NewGuid(),
+            CreatedById = null,
+            CreatedByName = UserPrincipal.Identity.Name,
+            AccountNum = AccountNum,
+            Status = "PROPOSED"
+        };
+        
+        await _grid.InsertRow(newAccountLOA);
     }
 
     private async Task EditRow(AccountLOADto loa)
     {
+        await ShowLoading();
+        await _grid.EditRow(loa);
     }
 
     private async Task RemoveRow(AccountLOADto loa)
     {
+        await ShowLoading();
+        var confirm = await ConfirmAction(Action.Remove);
+        if(!confirm) 
+            return;
+        
+        //ToDo Implement removal
     }
 
     private async Task RequestApproval(AccountLOADto loa)
     {
+        await ShowLoading();
+        
+        var confirm = await ConfirmAction(Action.RequestApproval);
+        if(!confirm) 
+            return;
+        
+        var result = await DataAccess.LoaLogChangeStatus(loa.Id, "APP. REQ.");
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "Approval request");
+            return;
+        }
+
+        await ReloadData(loa.Id);
     }
 
     private async Task Approve(AccountLOADto loa)
     {
+        await ShowLoading();
+        
+        var confirm = await ConfirmAction(Action.Approve);
+        if(!confirm) 
+            return;
+        
+        var result = await DataAccess.LoaLogChangeStatus(loa.Id, "APPROVED");
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "Approve");
+            return;
+        }
+
+        await ReloadData(loa.Id);
     }
 
     private async Task Decline(AccountLOADto loa)
     {
+        await ShowLoading();
+        
+        var confirm = await ConfirmAction(Action.Decline);
+        if(!confirm) 
+            return;
+        
+        var result = await DataAccess.LoaLogChangeStatus(loa.Id, "DECLINED");
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "Decline");
+            return;
+        }
+
+        await ReloadData(loa.Id);
     }
 
     private async Task Cancel(AccountLOADto loa)
     {
+        await ShowLoading();
+        
+        var confirm = await ConfirmAction(Action.Cancel);
+        if(!confirm) 
+            return;
+        
+        var result = await DataAccess.LoaLogChangeStatus(loa.Id, "CANCELED");
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "Cancel");
+            return;
+        }
+
+        await ReloadData(loa.Id);
     }
 
     private async Task Save(AccountLOADto loa)
     {
+        if(!ValidateFields(loa))
+            return;
+        
+        await ShowLoading();
+        await _grid.UpdateRow(loa);
     }
 
     private async Task CancelEdit(AccountLOADto loa)
     {
+        await ShowLoading();
+        _grid.CancelEditRow(loa);
     }
 
     private async Task UpdateGridRow(AccountLOADto loa)
     {
+        await ExecuteSetAccountLoa(loa);
     }
 
     private async Task CreateGridRow(AccountLOADto loa)
     {
+        await ExecuteSetAccountLoa(loa);
     }
 
     private async Task ExecuteSetAccountLoa(AccountLOADto loa)
     {
+        await ShowLoading();
+
+        var result = await DataAccess.SetLoaLog(loa.Id, loa.AccountNum, loa.Effective, loa.Expiration, loa.LoaSingle, 
+            loa.LoaAggregate, loa.Comments, loa.Status, loa.Division, loa.BondType, loa.Conditions, 
+            loa.HomeOfficeApproved);
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "LOA log");
+            await ReloadData(loa.Id);
+        }
     }
 
     private async Task ReloadData(Guid id)
     {
+        var editedResult = await DataAccess.GetLoaLogById(id);
+        if (!editedResult.Success)
+        {
+            await HandleError("Error retrieving edited LOA log", editedResult.Errors);
+            return;
+        }
+        
+        var toDelete = _accountLoaList.Find(x => x.Id == id);
+        if(toDelete != null)
+            _accountLoaList.Remove(toDelete);
+        
+        _accountLoaList.Add(editedResult.Data!);
+        _accountLoaList = _accountLoaList
+            .OrderByDescending(o => o.Effective)
+            .ToList();
+        
+        DataAccess.UpdateCache(CacheKeys.AccountLOA(AccountNum), _accountLoaList);
+        
+        await _grid.Reload();
     }
 
-    private bool ValidateFields(AccountProgramDto program)
+    private bool ValidateFields(AccountLOADto loa)
     {
-        return true;
+        var flag = true;
+
+        if (loa.Expiration < loa.Effective)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Expiration date cannot be before effective date",
+                Duration = 5000
+            });
+            flag = false;
+        }
+
+        if (loa.LoaSingle < 0)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Single LOA cannot be negative",
+                Duration = 5000
+            });
+            flag = false;
+        }
+
+        if (loa.LoaAggregate < 0)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Aggregate LOA cannot be negative",
+                Duration = 5000
+            });
+            flag = false;
+        }
+
+        if (loa.LoaSingle > loa.LoaAggregate)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Single LOA cannot be greater than aggregate LOA",
+                Duration = 5000
+            });
+            flag = false;
+        }
+        
+        // ToDo: Check that the LOA is in the confinement of the AccountProgram
+        
+        return flag;
     }
 
     private void ShowTooltip(ElementReference element, Action name, TooltipOptions? options = null)
     {
+        var message = name switch
+        {
+            Action.Edit => "Edit this row",
+            Action.RequestApproval => "Request approval for this row",
+            Action.Remove => "Remove this row",
+            Action.Approve => "Approve this row",
+            Action.Decline => "Decline this row",
+            Action.Cancel => "Cancel this row",
+            _ => ""
+        };
+        TooltipService.Open(element, message, options);
     }
 
     private async Task<bool> ConfirmAction(Action action)

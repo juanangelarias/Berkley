@@ -351,6 +351,7 @@ namespace James.Shared.Data
             string newStatusTxt);
         public Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId);
         public Task<IDataAccessResult<List<AccountLOADto>>> GetLoaLogsByAccount(string accountNum);
+        public Task<IDataAccessResult<AccountLOADto>> GetLoaLogById(Guid id);
         public Task<IDataAccessResult<List<AccountAgencyLOADto>>> GetAccountAgencyLOA(string accountNum);
         public Task<IDataAccessResult<AccountAgencyLOADto?>> GetAccountAgencyLOAById(Guid id);
         public Task<ISaveDataResult> SetLoaLog(Guid id, string accountNum, DateTime effective, DateTime expiration,

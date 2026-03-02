@@ -70,7 +70,7 @@ public partial class VBond
 
     public double? RateMultiplier { get; set; }
 
-    public string? CeritifiedMailNumber { get; set; }
+    public string? CertifiedMailNumber { get; set; }
 
     public DateTime? NonrenewalLetterMailed { get; set; }
 

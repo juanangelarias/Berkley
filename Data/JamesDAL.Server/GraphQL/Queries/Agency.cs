@@ -1,5 +1,4 @@
 ﻿using HotChocolate.Authorization;
-using James.Shared;
 using James.Shared.Dto;
 using SharedBusinessLogic;
 
@@ -68,7 +67,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(a => a.Address)
                 .Include(a => a.AgencyErrorAndOmissions)
                 .FirstOrDefaultAsync();
-            
+
             return result ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
         }
 
@@ -88,7 +87,7 @@ namespace James.Data.Server.GraphQL.Queries
             var result = await ctx.Agencies.Where(a => a.Id == agencyId)
                 .Include(a => a.IdNavigation)
                 .FirstOrDefaultAsync();
-            
+
             return result ?? throw new GraphQLException($"No agency exists with Id {agencyId}.");
         }
 
@@ -108,24 +107,24 @@ namespace James.Data.Server.GraphQL.Queries
                 .ToListAsync();
 
             var response = view.Select(account => new AgencyAccountDto
+            {
+                Status = account.AccountStatus,
+                AccountNum = account.AccountNum,
+                Name = account.FullName,
+                Branch = account.Branch,
+                BranchFullName = account.BranchName,
+                MainAddress = new Address
                 {
-                    Status = account.AccountStatus,
-                    AccountNum = account.AccountNum,
-                    Name = account.FullName,
-                    Branch = account.Branch,
-                    BranchFullName = account.BranchName,
-                    MainAddress = new Address
-                    {
-                        Id = Guid.NewGuid(),
-                        Address1 = account.Address1 ?? "",
-                        Address2 = account.Address2,
-                        Address3 = account.Address3,
-                        City = account.City ?? "",
-                        StateCode = account.StateCode,
-                        PostalCode = account.PostalCode,
-                    },
-                    Bonds = []
-                })
+                    Id = Guid.NewGuid(),
+                    Address1 = account.Address1 ?? "",
+                    Address2 = account.Address2,
+                    Address3 = account.Address3,
+                    City = account.City ?? "",
+                    StateCode = account.StateCode,
+                    PostalCode = account.PostalCode,
+                },
+                Bonds = []
+            })
                 .ToList();
 
             return response ?? throw new GraphQLException($"No agency exists with agencyNumber {agencyNumber}.");
@@ -195,7 +194,7 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.AgencyInventories.Where(a => a.AgencyId == agencyId)
                 .Include(a => a.Address)
-                .Include(i=>i.ApproverNavigation)
+                .Include(i => i.ApproverNavigation)
                 .ToListAsync();
 
             return result ?? throw new GraphQLException($"No agency inventory exists with agencyId {agencyId}.");
@@ -239,39 +238,39 @@ namespace James.Data.Server.GraphQL.Queries
                 .Skip(skip)
                 .Take(take)
                 .ToListAsync();
-            
-            if(bonds == null || bonds.Count == 0)
+
+            if (bonds == null || bonds.Count == 0)
                 throw new GraphQLException($"There are no bonds for agencyId: {agencyId}.");
-            
+
             var bondNumbers = bonds.Select(b => b.BondNumber).ToList();
             var transactions = ctx.BondTransactions
                 .Where(t => bondNumbers.Contains(t.BondNumber))
                 .OrderBy(o => o.BondNumber)
-                .ThenByDescending(t=>t.Effective)
+                .ThenByDescending(t => t.Effective)
                 .ToList();
 
             return bonds.Select(bond => new AgencyBondDto()
-                {
-                    Status = bond.Status,
-                    BondNumber = bond.BondNumber,
-                    AccountNum = bond.AccountNum,
-                    AccountName = bond.AccountNumNavigation.IdNavigation.FullName,
-                    BondType = bond.BondType?.BondType ?? "",
-                    BeginDate = bond.Effective,
-                    EndDate = bond.Expiration,
-                    UnderWriterId = bond.UnderWriterId,
-                    UnderWriterName = bond.UnderWriter.IdNavigation.FullName,
-                    SicCode = bond.Siccode ?? "",
-                    ObligeeId = bond.ObligeeId,
-                    ObligeeName = bond.Obligee?.FullName ?? "",
-                    BondClass = bond.BondClass,
-                    Branch = transactions
+            {
+                Status = bond.Status,
+                BondNumber = bond.BondNumber,
+                AccountNum = bond.AccountNum,
+                AccountName = bond.AccountNumNavigation.IdNavigation.FullName,
+                BondType = bond.BondType?.BondType ?? "",
+                BeginDate = bond.Effective,
+                EndDate = bond.Expiration,
+                UnderWriterId = bond.UnderWriterId,
+                UnderWriterName = bond.UnderWriter.IdNavigation.FullName,
+                SicCode = bond.Siccode ?? "",
+                ObligeeId = bond.ObligeeId,
+                ObligeeName = bond.Obligee?.FullName ?? "",
+                BondClass = bond.BondClass,
+                Branch = transactions
                         .FirstOrDefault(t => t.BondNumber == bond.BondNumber)?
                         .Branch ?? "",
-                    Amount = transactions
-                        .FirstOrDefault(t=>t.BondNumber == bond.BondNumber)?
+                Amount = transactions
+                        .FirstOrDefault(t => t.BondNumber == bond.BondNumber)?
                         .BondAmount ?? 0,
-                })
+            })
                 .ToList();
         }
 
@@ -281,8 +280,8 @@ namespace James.Data.Server.GraphQL.Queries
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.Bonds.CountAsync(a => a.AgencyId == agencyId);
-            
-            return new QueryCount{Count = result};
+
+            return new QueryCount { Count = result };
         }
 
         [Authorize]
@@ -305,7 +304,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Where(ag => ag.AgencyId == agencyId)
                 .Select(aia => aia.Agent)
                 .ToListAsync();
-            
+
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
         }
 
@@ -314,14 +313,14 @@ namespace James.Data.Server.GraphQL.Queries
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            var agentsInAgency =  await ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
+            var agentsInAgency = await ctx.AgentsInAgencies.Where(ag => ag.AgencyId == agencyId)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.IdNavigation)
-                .ThenInclude(agi=>agi.LegalEntityEmails)
+                .ThenInclude(agi => agi.LegalEntityEmails)
                 .Include(ag => ag.Agent)
-                .ThenInclude(ag=>ag.IdNavigation)
-                .ThenInclude(ag=>ag.LegalEntityPhones)
-                .ThenInclude(ag=>ag.PhoneNumber)
+                .ThenInclude(ag => ag.IdNavigation)
+                .ThenInclude(ag => ag.LegalEntityPhones)
+                .ThenInclude(ag => ag.PhoneNumber)
                 .Include(ag => ag.Agent)
                 .ThenInclude(ag => ag.AgencyLicenses)
                 .ThenInclude(ag => ag.Insurer)
@@ -345,10 +344,10 @@ namespace James.Data.Server.GraphQL.Queries
                     PhoneNumber = LegalEntityGetMains.GetMainPhoneNumber(s.Agent.IdNavigation)?.MainNumber ?? "",
                     Extension = LegalEntityGetMains.GetMainPhoneNumber(s.Agent.IdNavigation)?.Extension ?? "",
                     AIF = s.AttorneyInFact
-                    
+
                 })
                 .ToList();
-            
+
             return result ?? throw new GraphQLException($"No agency exists with agencyId {agencyId}.");
         }
 
@@ -362,7 +361,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(lic => lic.Insurer)
                 .ThenInclude(lic => lic.IdNavigation)
                 .ToListAsync();
-            
+
             return result;
         }
 
@@ -387,10 +386,10 @@ namespace James.Data.Server.GraphQL.Queries
                         .NewStatus ?? ""
                 })
                 .ToListAsync();
-            
+
             return agencies;
         }
-        
+
         [Authorize]
         public async Task<List<AgencyLicense>> GetAgencyLicenses(Guid agencyId, bool agents,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -439,7 +438,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(p => p.StatusNavigation)
                 .Include(p => p.Agency)
                 .ToListAsync();
-            
+
             return result;
         }
 

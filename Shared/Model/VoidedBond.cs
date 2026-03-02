@@ -22,5 +22,5 @@ public partial class VoidedBond
 
     public virtual Agency Agency { get; set; } = null!;
 
-    public virtual UserProfile VoidedByNavigation { get; set; } = null!;
+    public virtual Employee VoidedByNavigation { get; set; } = null!;
 }

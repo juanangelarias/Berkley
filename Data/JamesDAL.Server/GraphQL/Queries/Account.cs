@@ -265,7 +265,7 @@ public partial class Query
 
         return result;
     }
-    
+
     [Authorize]
     public async Task<List<LineOfAuthorityLog>> GetAllLineOfAuthorityLogs(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -273,12 +273,12 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
         var result = await ctx.LineOfAuthorityLogs
             .Where(r => r.AccountNum == accountNum)
-            .OrderByDescending(o=>o.Effective)
+            .OrderByDescending(o => o.Effective)
             .ToListAsync();
 
         return result;
     }
-    
+
     [Authorize]
     public async Task<AccountAnnualPremiumDto> GetAccountAnnualPremiums(string accountNum, string type,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -286,11 +286,11 @@ public partial class Query
         var startDate = Today.AddYears(-1);
         var endDate = Today;
         var yearStart = new DateTime(endDate.Year, 1, 1);
-        
+
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var account = ctx.Accounts
-            .FirstOrDefault(f=>f.AccountNum == accountNum);
+            .FirstOrDefault(f => f.AccountNum == accountNum);
 
         if (account == null)
             return new();
@@ -301,36 +301,36 @@ public partial class Query
                 .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({account.AccountNum})")
                 .Select(s => s.AccountNum)
                 .ToListAsync();
-        
+
         var premiums = await ctx.BondTransactions
             .OrderBy(o => o.Effective)
             .Where(r => r.Effective >= startDate &&
                         r.Effective <= endDate &&
                         accountList.Contains(r.AccountNum))
-            .Select(s => new {s.Effective,s.Premium})
+            .Select(s => new { s.Effective, s.Premium })
             .ToListAsync();
-        
+
         var response = new AccountAnnualPremiumDto
         {
             TrailingTwelveMonths = premiums.Sum(s => s.Premium),
             YearToDate = premiums.Where(r => r.Effective >= yearStart).Sum(s => s.Premium)
         };
-        
+
         return response;
     }
-    
+
     private async Task<Guid?> GetParent(Guid legalEntityId, IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var legalEntity = await ctx.LegalEntities
             .FirstOrDefaultAsync(r => r.Id == legalEntityId);
-        
-        if(legalEntity == null)
+
+        if (legalEntity == null)
             return null;
-        
-        return legalEntity.Parent != legalEntity.Id 
-            ? await GetParent(legalEntity.Parent, contextFactory) 
+
+        return legalEntity.Parent != legalEntity.Id
+            ? await GetParent(legalEntity.Parent, contextFactory)
             : legalEntity.Parent;
     }
 
@@ -355,7 +355,7 @@ public partial class Query
                 ExpirationDate = s.Expiration
             })
             .ToList();
-        
+
         return collaterals;
     }
 
@@ -385,14 +385,14 @@ public partial class Query
                 s.CurrentBondLiability
             })
             .ToListAsync();
-        
+
         var bondNumbers = bonds
-            .Where(r=> r.Status == "Open")
+            .Where(r => r.Status == "Open")
             .Select(s => s.BondNumber).ToList();
-        
+
         var bondMods = await ctx.BondModTransactions
-            .OrderBy(o=>o.BondNumber)
-            .ThenByDescending(t=>t.Effective)
+            .OrderBy(o => o.BondNumber)
+            .ThenByDescending(t => t.Effective)
             .Where(r => bondNumbers.Contains(r.BondNumber))
             .ToListAsync();
 
@@ -406,8 +406,8 @@ public partial class Query
                     : AccountProgramBusinessLogic.CalculateProratedBondAmount(bond.CurrentBondLiability, mod.Effective,
                         mod.Expiration)
                 : bond.CurrentBondLiability;
-            
-            if(proratedAmount == 0) 
+
+            if (proratedAmount == 0)
                 continue;
 
             switch (bond.BondType)
@@ -423,7 +423,7 @@ public partial class Query
             var exist = result.LargestOutstandingBonds
                 .FirstOrDefault(f => f.BondType == bond.BondType &&
                                      f.BondClass == bond.BondClass);
-            
+
             if (exist != null && proratedAmount > exist.Amount)
                 exist.Amount = proratedAmount;
 
@@ -439,33 +439,33 @@ public partial class Query
         result.LargestBondEver = bonds
             .OrderByDescending(o => o.CurrentBondLiability)
             .FirstOrDefault()?.CurrentBondLiability ?? 0;
-        
+
         return result;
     }
-    
+
     [Authorize]
     public async Task<AccountBondedPrincipleDto> GetRelatedAccounts(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
-        var accountId = (await ctx.Accounts.FirstOrDefaultAsync(f=>f.AccountNum == accountNum))?.Id;
-        if(accountId == null)
+
+        var accountId = (await ctx.Accounts.FirstOrDefaultAsync(f => f.AccountNum == accountNum))?.Id;
+        if (accountId == null)
             throw new GraphQLException($"No account exist with Account Number {accountNum}");
-        
+
         var parentAccountId = await GetParent(accountId!.Value, contextFactory);
         var parentAccount = await ctx.Accounts
-            .Include(i=>i.IdNavigation)
-            .Include(i=>i.AccountStatusLogs)
+            .Include(i => i.IdNavigation)
+            .Include(i => i.AccountStatusLogs)
             .FirstOrDefaultAsync(f => f.Id == parentAccountId);
-        if(parentAccount == null)
+        if (parentAccount == null)
             throw new GraphQLException($"No parent account exist for account {accountNum}");
-        
+
         var related = await ctx.AccountChildren
             .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({accountNum})")
             .Select(s => s.AccountNum)
             .ToListAsync();
-        
+
         related.Remove(parentAccount.AccountNum);
 
         var relatedAccounts = await ctx.Accounts
@@ -499,7 +499,7 @@ public partial class Query
                 })
                 .ToList()
         };
-        
+
         return response;
     }
 }

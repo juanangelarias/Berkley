@@ -26,5 +26,5 @@ public partial class AgencyCompetition
 
     public virtual Agency Agency { get; set; } = null!;
 
-    public virtual UserProfile EnteredByNavigation { get; set; } = null!;
+    public virtual Employee EnteredByNavigation { get; set; } = null!;
 }

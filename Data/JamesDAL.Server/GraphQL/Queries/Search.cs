@@ -1,7 +1,6 @@
 ﻿using HotChocolate.Subscriptions;
 using James.Shared;
 using James.Shared.Constants;
-using James.Shared.Data;
 
 namespace James.Data.Server.GraphQL.Queries
 {

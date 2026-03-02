@@ -1,9 +1,6 @@
-﻿using HotChocolate.Types;
-using James.Data.Server.Model;
-
-namespace James.Data.Server.GraphQL.TypeExtensions
+﻿namespace James.Data.Server.GraphQL.TypeExtensions
 {
-    [ExtendObjectType(typeof(AgencyLicense), IgnoreProperties = new []{"Insurer"}, IgnoreFields = null)]
+    [ExtendObjectType(typeof(AgencyLicense), IgnoreProperties = new[] { "Insurer" }, IgnoreFields = null)]
     public class AgencyLicenseExtensions
     {
         public async Task<Insurer> Insurer([Parent] AgencyLicense license,
@@ -13,7 +10,7 @@ namespace James.Data.Server.GraphQL.TypeExtensions
             if (license.Insurer == null)
             {
                 var ctx = await contextFactory.CreateDbContextAsync();
-                var insurer = (await ctx.Insurers.Include(i=>i.IdNavigation).SingleOrDefaultAsync(i => i.Id == license.InsurerId));
+                var insurer = (await ctx.Insurers.Include(i => i.IdNavigation).SingleOrDefaultAsync(i => i.Id == license.InsurerId));
                 if (insurer == null)
                     throw new GraphQLException(
                         $"AgencyLicense Id {license.Id} has an InsurerId of {license.InsurerId}, which has no corresponding insurer");

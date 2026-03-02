@@ -72,13 +72,13 @@ public partial class BondRequestCommercial
 
     public virtual Bond? BondNumberNavigation { get; set; }
 
-    public virtual UserProfile? CctoNavigation { get; set; }
+    public virtual Employee? CctoNavigation { get; set; }
 
-    public virtual UserProfile? HomeOfficeApprovedByNavigation { get; set; }
+    public virtual Employee? HomeOfficeApprovedByNavigation { get; set; }
 
     public virtual LegalEntity? Obligee { get; set; }
 
-    public virtual UserProfile? RecordedByNavigation { get; set; }
+    public virtual Employee? RecordedByNavigation { get; set; }
 
     public virtual Sfaa? SfaaCodeNavigation { get; set; }
 

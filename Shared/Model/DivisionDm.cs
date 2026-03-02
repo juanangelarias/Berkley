@@ -22,6 +22,10 @@ public partial class DivisionDm
 
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
+    public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
+
+    public virtual ICollection<DefaultGeneralLedgerAccount> DefaultGeneralLedgerAccounts { get; set; } = new List<DefaultGeneralLedgerAccount>();
+
     public virtual ICollection<ImagingCategoryTabDivision> ImagingCategoryTabDivisions { get; set; } = new List<ImagingCategoryTabDivision>();
 
     public virtual ICollection<LineOfAuthorityLog> LineOfAuthorityLogs { get; set; } = new List<LineOfAuthorityLog>();

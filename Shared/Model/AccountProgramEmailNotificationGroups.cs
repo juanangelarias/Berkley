@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class AccountProgramEmailNotificationGroup
+public partial class AccountProgramEmailNotificationGroups
 {
     public Guid Id { get; set; }
 

@@ -1,5 +1,4 @@
-﻿using FileNetP8SoapService;
-using HotChocolate.Authorization;
+﻿using HotChocolate.Authorization;
 using System.DirectoryServices;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
@@ -106,7 +105,7 @@ namespace James.Data.Server.GraphQL.Queries
                                     Emails = emails,
                                     Initials =
                                         $"{result.Properties["givenName"]?[0].ToString()?[0]}{(initials.Length > 0 ? initials[0] ?? "" : "")}{result.Properties["sn"]?[0].ToString()?[0]}".ToUpperInvariant(),
-                                    Title = result.Properties["title"]?[0].ToString()??""
+                                    Title = result.Properties["title"]?[0].ToString() ?? ""
                                 };
                                 users.Add(siteUser);
                             }

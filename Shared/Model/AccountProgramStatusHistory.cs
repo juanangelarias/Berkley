@@ -37,4 +37,6 @@ public partial class AccountProgramStatusHistory
     public virtual AccountProgramStatusDm NewStatusNavigation { get; set; } = null!;
 
     public virtual AccountProgramStatusDm? OldStatusNavigation { get; set; }
+
+    public virtual Employee StatusChangeByNavigation { get; set; } = null!;
 }

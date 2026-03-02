@@ -72,7 +72,7 @@ public partial class BondTransaction
 
     public string Region { get; set; } = null!;
 
-    public string AccountClass { get; set; } = null!;
+    public string Division { get; set; } = null!;
 
     public bool SurchargeApply { get; set; }
 
@@ -94,8 +94,6 @@ public partial class BondTransaction
 
     public Guid? InsurerId { get; set; }
 
-    public virtual AccountClassDm AccountClassNavigation { get; set; } = null!;
-
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual Agency Agency { get; set; } = null!;
@@ -103,6 +101,8 @@ public partial class BondTransaction
     public virtual Bond BondNumberNavigation { get; set; } = null!;
 
     public virtual ICollection<BondTransactionPurpose> BondTransactionPurposes { get; set; } = new List<BondTransactionPurpose>();
+
+    public virtual DivisionDm DivisionNavigation { get; set; } = null!;
 
     public virtual Insurer? Insurer { get; set; }
 

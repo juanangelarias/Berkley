@@ -18,7 +18,7 @@ public partial class CommercialRate
 
     public string RiskType { get; set; } = null!;
 
-    public int MinumumAmount { get; set; }
+    public int MinimumAmount { get; set; }
 
     public int MaximumAmount { get; set; }
 

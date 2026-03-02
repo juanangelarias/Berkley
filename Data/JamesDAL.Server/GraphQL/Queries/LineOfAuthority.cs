@@ -1,6 +1,5 @@
-﻿using System.Web.Http;
 using James.Shared.Dto;
-using Microsoft.AspNetCore.Http;
+using System.Web.Http;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -25,33 +24,33 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var account = await ctx.Accounts.SingleOrDefaultAsync(a => a.AccountNum == accountNum);
-        if(account == null)
+        if (account == null)
             throw new GraphQLException($"No account exists with account number {accountNum}");
 
         var parentAccountId = await GetParent(account.Id, contextFactory);
-        if(parentAccountId == null) 
+        if (parentAccountId == null)
             throw new GraphQLException($"No parent account exists for account {accountNum}");
-        
+
         var parentAccountNum = (await ctx.Accounts.FirstOrDefaultAsync(a => a.Id == parentAccountId))?.AccountNum;
-        if(parentAccountNum == null)
+        if (parentAccountNum == null)
             throw new GraphQLException($"No parent account exists for account {accountNum}`");
-        
+
         var ctx1 = await contextFactory.CreateDbContextAsync();
         var ctx2 = await contextFactory.CreateDbContextAsync();
 
         var approvedLOAByAccountTask = GetApprovedLOAByAccount(parentAccountNum, ctx1);
-        var approvedAgencyLOAByAccountTask = GetApprovedAgencyLOAByAccount(parentAccountNum, ctx2);
+        var agencyLOAByAccountTask = GetAgencyLOAByAccount(parentAccountNum, ctx2);
         var openBondsTotalTask = GetAccountOpenBondsTotal(parentAccountId.Value, contextFactory);
-        await Task.WhenAll(approvedAgencyLOAByAccountTask, approvedLOAByAccountTask, openBondsTotalTask);
+        await Task.WhenAll(agencyLOAByAccountTask, approvedLOAByAccountTask, openBondsTotalTask);
 
         var approvedLOAByAccount = approvedLOAByAccountTask.Result;
-        var approvedAgencyLOAByAccount = approvedAgencyLOAByAccountTask.Result;
+        var agencyLOAByAccount = agencyLOAByAccountTask.Result;
         var openBondsTotal = openBondsTotalTask.Result;
 
         var response = new AccountLOAsDto
         {
             AccountLOAs = approvedLOAByAccount,
-            AgencyLOAs = approvedAgencyLOAByAccount,
+            AgencyLOAs = agencyLOAByAccount,
             LOATotal = openBondsTotal
         };
 
@@ -89,22 +88,21 @@ public partial class Query
         return result;
     }
 
-    private async Task<List<AccountLOADetailDto>> GetApprovedAgencyLOAByAccount(string accountNum,
+    private async Task<List<AccountLOADetailDto>> GetAgencyLOAByAccount(string accountNum,
         JamesDatabaseContext ctx)
     {
         var data = await ctx.AgencyLineOfAuthorityLogs
             .OrderBy(o => o.AccountNum)
             .ThenBy(t => t.BondType)
             .ThenByDescending(t => t.Effective)
-            .Where(r => r.AccountNum == accountNum && r.Status == "Approved")
+            .Where(r => r.AccountNum == accountNum)
             .Select(s => new AccountLOADetailDto
             {
                 Aggregate = s.Loaaggregate,
                 BondType = s.BondType,
                 Effective = s.Effective,
                 Expiration = s.Expiration,
-                Single = s.Loasingle,
-                Status = s.Status
+                Single = s.Loasingle
             })
             .ToListAsync();
 
@@ -123,17 +121,17 @@ public partial class Query
     private async Task<int> GetAccountOpenBondsTotal(Guid accountId, IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
-        var accountNum = ctx.Accounts.FirstOrDefault(f=>f.Id == accountId)?.AccountNum;
-        if(accountNum == null)
+
+        var accountNum = ctx.Accounts.FirstOrDefault(f => f.Id == accountId)?.AccountNum;
+        if (accountNum == null)
             throw new GraphQLException($"No account exists with id {accountId}");
-        
+
         var relatedAccounts = await ctx.AccountChildren
             .FromSqlInterpolated($"SELECT * FROM dbo.fnGetAllRelatedAccounts({accountNum})")
             .Select(s => s.AccountNum)
             .ToListAsync();
-            //await GetRelatedAccounts(accountId, false, contextFactory);
-        
+        //await GetRelatedAccounts(accountId, false, contextFactory);
+
         var openBondsTransaccion = await ctx.BondTransactions
             .Include(i => i.BondNumberNavigation)
             .ThenInclude(i => i.BondType)

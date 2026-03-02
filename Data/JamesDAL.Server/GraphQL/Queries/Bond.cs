@@ -17,7 +17,7 @@ public partial class Query
             return null;
         return new BondRequestNumberType() { BondRequestNumber = commercialBond.BondRequestNumber.Trim(), Type = "Commercial" };
     }
-    
+
     [Authorize]
     public async Task<string?> GetBondNumber(string bondRequestNumber, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
@@ -74,18 +74,18 @@ public partial class Query
             .OrderBy(o => o.Prefix)
             .ThenBy(t => t.FirstNumber)
             .ToListAsync();
-        
+
         return response;
     }
-    
+
     [Authorize]
     public async Task<List<Bond>> GetBondsByBlock(Guid bondBlockId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var block = await ctx.BondBlocks
             .FirstOrDefaultAsync(b => b.Id == bondBlockId);
-        
-        if(block == null)
+
+        if (block == null)
             throw new GraphQLException($"No bond block exists with id {bondBlockId}");
 
         // ToDo: If the Bond Number is formatted the same way this block will work.
@@ -101,7 +101,7 @@ public partial class Query
         //     .Where(r => r.AgencyId == block.AgencyId &&
         //                 numbers.Contains(r.BondNumber))
         //     .ToListAsync();
-        
+
         // ToDo: This will work for any bond number format.
         //       It is not the most efficient way to do this.
         //       One way to manage this would be to have a field in the Bond table (BondBlockId) that points
@@ -118,10 +118,10 @@ public partial class Query
         foreach (var bond in agBonds)
         {
             var (prefix, number) = GetBondNumberParts(bond.BondNumber);
-            if(block.Prefix.Trim() == prefix && number >= block.FirstNumber && number <= block.LastNumber)
+            if (block.Prefix.Trim() == prefix && number >= block.FirstNumber && number <= block.LastNumber)
                 bonds.Add(bond);
         }
-        
+
         return bonds;
     }
 
@@ -140,7 +140,7 @@ public partial class Query
             ? 1
             : last.LastNumber + 1;
     }
-    
+
     private (string, int) GetBondNumberParts(string bondNumber)
     {
         var prefix = "";
@@ -151,11 +151,11 @@ public partial class Query
                 number += c;
             else
             {
-                if(c != ' ')
+                if (c != ' ')
                     prefix += c;
             }
-        }   
-        
+        }
+
         return (prefix.Trim(), int.Parse(number));
     }
 }

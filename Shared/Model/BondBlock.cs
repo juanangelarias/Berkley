@@ -28,5 +28,7 @@ public partial class BondBlock
 
     public Guid? AgencyId { get; set; }
 
-    public virtual UserProfile? IssuedByNavigation { get; set; }
+    public Guid? InsuredId { get; set; }
+
+    public virtual Employee? IssuedByNavigation { get; set; }
 }

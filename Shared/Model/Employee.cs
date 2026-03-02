@@ -70,6 +70,8 @@ public partial class Employee
 
     public virtual ICollection<LineOfAuthorityLog> LineOfAuthorityLogCreatedByNavigations { get; set; } = new List<LineOfAuthorityLog>();
 
+    public virtual ICollection<LineOfAuthorityReason> LineOfAuthorityReasons { get; set; } = new List<LineOfAuthorityReason>();
+
     public virtual ICollection<NotebookEntry> NotebookEntries { get; set; } = new List<NotebookEntry>();
 
     public virtual ICollection<NotificationGroupMember> NotificationGroupMembers { get; set; } = new List<NotificationGroupMember>();

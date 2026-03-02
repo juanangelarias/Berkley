@@ -122,6 +122,10 @@ public partial class Bond
 
     public bool? EnforceNmls { get; set; }
 
+    public DateOnly? NextStatusLetter { get; set; }
+
+    public bool SendStatusLetter { get; set; }
+
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual ICollection<AdditionalObligee> AdditionalObligeesNavigation { get; set; } = new List<AdditionalObligee>();

@@ -64,7 +64,7 @@ namespace James.Data.Server.GraphQL.TypeExtensions
                 var ctx = await contextFactory.CreateDbContextAsync();
                 if (null == company.IdNavigation)
                 {
-                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityAddresses).ThenInclude(lea=>lea.Address)
+                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityAddresses).ThenInclude(lea => lea.Address)
                         .SingleAsync(le => le.Id == company.Id);
                 }
                 else if (company.IdNavigation.LegalEntityAddresses.Count == 0)
@@ -82,7 +82,7 @@ namespace James.Data.Server.GraphQL.TypeExtensions
                 var ctx = await contextFactory.CreateDbContextAsync();
                 if (null == company.IdNavigation)
                 {
-                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityPhones).ThenInclude(lep=>lep.PhoneNumber)
+                    company.IdNavigation = await ctx.LegalEntities.Include(le => le.LegalEntityPhones).ThenInclude(lep => lep.PhoneNumber)
                         .SingleAsync(le => le.Id == company.Id);
                 }
                 else if (company.IdNavigation.LegalEntityPhones.Count == 0)

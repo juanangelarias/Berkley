@@ -28,7 +28,7 @@ public partial class AccountProgram
 
     public Guid CreatedBy { get; set; }
 
-    public string? ApprovedBy { get; set; }
+    public Guid? ApprovedBy { get; set; }
 
     public DateTime? ApprovedDate { get; set; }
 

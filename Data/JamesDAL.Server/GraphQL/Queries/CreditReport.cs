@@ -1,5 +1,4 @@
-﻿using James.Shared.Dto;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -12,10 +11,10 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
         var creditReports = await ctx.CreditReportHistories
             .Where(c => c.AccountNum == accountNumber)
-            .OrderBy(o=>o.AccountNum)
-            .ThenByDescending(o=>o.Pulled)
+            .OrderBy(o => o.AccountNum)
+            .ThenByDescending(o => o.Pulled)
             .ToListAsync();
-        
+
         return creditReports;
     }
 
@@ -25,7 +24,7 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var creditReports = await ctx.CreditReportDms
-            .OrderBy(o=>o.CreditReport)
+            .OrderBy(o => o.CreditReport)
             .ToListAsync();
         return creditReports;
     }

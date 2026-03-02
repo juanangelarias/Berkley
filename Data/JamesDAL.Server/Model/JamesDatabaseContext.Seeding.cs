@@ -1,9 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using James.Shared;
-using James.Shared.Model;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
 
 namespace James.Data.Server.Model
 {
@@ -145,12 +141,16 @@ namespace James.Data.Server.Model
                 string.Equals(di.Name, "Migrations", StringComparison.InvariantCultureIgnoreCase));
             var fiInsertSqlFile = diMigrations.GetFiles("InsertData.sql").First();
             //NOTE: Must have sqlcmd installed on machine for this to work.
-            var sqlCmdProc = new Process{StartInfo = new ProcessStartInfo("SqlCmd", " -i "+ fiInsertSqlFile.FullName)
+            var sqlCmdProc = new Process
             {
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-                UseShellExecute = true, WindowStyle = ProcessWindowStyle.Hidden
-            }};
+                StartInfo = new ProcessStartInfo("SqlCmd", " -i " + fiInsertSqlFile.FullName)
+                {
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    UseShellExecute = true,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                }
+            };
             var srError = sqlCmdProc.StandardError;
             var srOutput = sqlCmdProc.StandardOutput;
             if (!sqlCmdProc.Start())
@@ -160,7 +160,7 @@ namespace James.Data.Server.Model
             }
 
             await sqlCmdProc.WaitForExitAsync();
-            var CheckOutputTasks = new Task<string>[]{ srError.ReadToEndAsync(), srOutput.ReadToEndAsync()};
+            var CheckOutputTasks = new Task<string>[] { srError.ReadToEndAsync(), srOutput.ReadToEndAsync() };
             Task.WaitAll(CheckOutputTasks);
             var error = CheckOutputTasks[0].Result;
             var output = CheckOutputTasks[1].Result;
@@ -173,13 +173,13 @@ namespace James.Data.Server.Model
                 var forOutput = "SqlCmd returned the following Error:\r\n" + error;
                 if (Environment.UserInteractive)
                     Console.WriteLine(forOutput);
-                else 
+                else
                     Debug.WriteLine(output);
                 throw new Exception(forOutput);
             }
-            
+
         }
-        public void SeedTestData(ModelBuilder modelBuilder) 
+        public void SeedTestData(ModelBuilder modelBuilder)
         {
             //Free conums obtained by the following query:
             //SELECT TOP 25 Number

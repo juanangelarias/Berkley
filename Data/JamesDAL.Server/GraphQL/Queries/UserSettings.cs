@@ -1,6 +1,4 @@
 ﻿using HotChocolate.Authorization;
-using James.Shared;
-using James.Shared.Dto;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries;
@@ -13,11 +11,11 @@ public partial class Query
         [Service] IHttpContextAccessor contextAccessor)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
         if (null == username)
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-        
+
         var settings = await ctx.UserSettings
             .FirstOrDefaultAsync(r => r.Username == username && r.Key == key);
 
@@ -45,7 +43,7 @@ public partial class Query
             await Task.WhenAll(parallelTasks);
 
             //Begin with defaults
-            var settings = defaultSettingsTask.Result.ToDictionary(k=>k.Key, v=>v.Value);
+            var settings = defaultSettingsTask.Result.ToDictionary(k => k.Key, v => v.Value);
             //Add user specific settings, overwriting defaults as needed
             foreach (var setting in userSettingsTask.Result)
                 settings[setting.Key] = setting.Value;

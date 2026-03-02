@@ -1,7 +1,4 @@
-﻿using HotChocolate.Types;
-using James.Data.Server.Model;
-
-namespace James.Data.Server.GraphQL.TypeExtensions
+﻿namespace James.Data.Server.GraphQL.TypeExtensions
 {
     //TODO:Figure out how to unit test
     [ExtendObjectType(typeof(Agency), IgnoreProperties = new[] { "BillingContact", "OnlineBondSystems" }, IgnoreFields = null)]
@@ -44,7 +41,7 @@ namespace James.Data.Server.GraphQL.TypeExtensions
                 if (!agency.Accounts.Any())
                 {
                     agency.Accounts = await ctx.Accounts.Where(ac => ac.AgencyNumber == agency.AgencyNumber).ToArrayAsync();
-                    
+
                 }
             }
             return agency.Accounts.ToArray();

@@ -17,7 +17,7 @@ namespace James.Data.Server.GraphQL
 
         [Subscribe(With = nameof(SubscribeToOnAddressCollectionModifiedAsync))]
         [Topic(nameof(OnAddressCollectionModified))]
-        public SubscriptionResult<Guid> OnAddressCollectionModified([ID] Guid legalEntityId, [EventMessage] SubscriptionResult<Guid>  result, CancellationToken cancellationToken) => result;
+        public SubscriptionResult<Guid> OnAddressCollectionModified([ID] Guid legalEntityId, [EventMessage] SubscriptionResult<Guid> result, CancellationToken cancellationToken) => result;
 
         public async ValueTask<ISourceStream<SubscriptionResult<Guid>>> SubscribeToOnAddressCollectionModifiedAsync(
             Guid legalEntityId, [Service] ITopicEventReceiver eventReceiver, CancellationToken cancellationToken) =>

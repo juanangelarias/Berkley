@@ -1,5 +1,4 @@
 ﻿using HotChocolate.Authorization;
-using James.Shared.Dto;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries
@@ -47,7 +46,7 @@ namespace James.Data.Server.GraphQL.Queries
             }
         }
         [Authorize]
-        public async Task<List<Branch>> GetAllBranches([Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<Branch>> GetAllBranches([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try
             {
@@ -62,7 +61,7 @@ namespace James.Data.Server.GraphQL.Queries
             }
         }
         [Authorize]
-        public async Task<List<Address>> GetAllLegalEntityAddresses(Guid legalEntityId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<Address>> GetAllLegalEntityAddresses(Guid legalEntityId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try
             {
@@ -82,7 +81,7 @@ namespace James.Data.Server.GraphQL.Queries
             }
         }
         [Authorize]
-        public async Task<List<PhoneNumber>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId, [Service]IDbContextFactory<JamesDatabaseContext> contextFactory)
+        public async Task<List<PhoneNumber>> GetAllLegalEntityPhoneNumbers(Guid legalEntityId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.PhoneNumbers
@@ -104,10 +103,10 @@ namespace James.Data.Server.GraphQL.Queries
             var result = await ctx.LegalEntityEmails
                 .Where(a => a.LegalEntityId == legalEntityId)
                 .ToListAsync();
-            
+
             return result;
         }
-        
+
         [Authorize]
         public async Task<List<PhoneTypeDm>> GetPhoneTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -123,7 +122,7 @@ namespace James.Data.Server.GraphQL.Queries
                 throw new GraphQLException($"Error when retrieving Phone Types.", ex);
             }
         }
-        
+
         [Authorize]
         public async Task<List<AddressTypeDm>> GetAddressTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -148,10 +147,10 @@ namespace James.Data.Server.GraphQL.Queries
             var result = await ctx.EmailTypeDms
                 .OrderBy(o => o.Type)
                 .ToListAsync();
-            
+
             return result;
         }
-        
+
         [Authorize]
         public async Task<List<CountryDm>> GetAllCountries([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
@@ -175,10 +174,10 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.WatchStatusDms
                 .ToListAsync();
-            
+
             return result;
         }
-        
+
         [Authorize]
         public async Task<List<KeyValuePair<string, string>>> GetUserSettings([Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IHttpContextAccessor contextAccessor)
         {
@@ -203,46 +202,46 @@ namespace James.Data.Server.GraphQL.Queries
                 throw new GraphQLException($"Error when retrieving user settings.", ex);
             }
         }
-        
+
         [Authorize]
         public async Task<List<BusinessTypeClassCodeDm>> GetAllBusinessTypeClassCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            
+
             return await ctx.BusinessTypeClassCodeDms.ToListAsync();
         }
-        
+
         [Authorize]
         public async Task<List<BusinessTypeDm>> GetAllBusinessTypes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            
+
             return await ctx.BusinessTypeDms.ToListAsync();
         }
-        
+
         [Authorize]
         public async Task<List<Sic>> GetAllSicCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            
+
             return await ctx.Sics.ToListAsync();
         }
-        
+
         [Authorize]
         public async Task<List<IndustryCodeDm>> GetAllIndustryCodes([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            
+
             return await ctx.IndustryCodeDms
-                .OrderBy(o=>o.Code)
+                .OrderBy(o => o.Code)
                 .ToListAsync();
         }
-        
+
         [Authorize]
         public async Task<List<ContractRate>> GetAllContractRates([Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            
+
             return await ctx.ContractRates
                 .OrderBy(o => o.RateGroup)
                 .ThenBy(t1 => t1.Class)
@@ -261,7 +260,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .OrderBy(o => o.RateGroup)
                 .ThenBy(t1 => t1.CommercialBondType)
                 .ThenBy(t2 => t2.RiskType)
-                .ThenBy(t3 => t3.MinumumAmount)
+                .ThenBy(t3 => t3.MinimumAmount)
                 .ToListAsync();
         }
 
@@ -281,9 +280,9 @@ namespace James.Data.Server.GraphQL.Queries
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
-            
+
             return await ctx.RiskTypeDms
-                .OrderBy(o=>o.RiskType)
+                .OrderBy(o => o.RiskType)
                 .ToListAsync();
         }
 

@@ -1,8 +1,4 @@
-﻿using James.Data.Server.Model;
-using James.Shared.Model;
-using Microsoft.EntityFrameworkCore;
-
-namespace James.Data.Server.GraphQL.TypeExtensions
+﻿namespace James.Data.Server.GraphQL.TypeExtensions
 {
     [ExtendObjectType(typeof(ILegalEntityIndividual))]
     public class ILegalEntityIndividualExtensions

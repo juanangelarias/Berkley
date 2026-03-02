@@ -26,9 +26,9 @@ public partial class AccountProgram
 
     public Guid StatusId { get; set; }
 
-    public string CreatedBy { get; set; } = null!;
+    public Guid CreatedBy { get; set; }
 
-    public string? ApprovedBy { get; set; }
+    public Guid? ApprovedBy { get; set; }
 
     public DateTime? ApprovedDate { get; set; }
 

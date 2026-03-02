@@ -9,7 +9,7 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         return await ctx.Underwriters
-            .Include(i=>i.IdNavigation)
+            .Include(i => i.IdNavigation)
             .ToListAsync();
     }
 

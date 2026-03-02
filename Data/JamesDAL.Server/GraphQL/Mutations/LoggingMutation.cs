@@ -1,6 +1,5 @@
-﻿using James.Shared.Server;
+﻿using James.Shared;
 using System.Security.Claims;
-using James.Shared;
 
 namespace James.Data.Server.GraphQL.Mutations
 {
@@ -17,17 +16,17 @@ namespace James.Data.Server.GraphQL.Mutations
             _userShared = userShared;
         }
 
-        public async Task<bool> LogInformation(int eventId, string message, string details, Severity severity, 
+        public async Task<bool> LogInformation(int eventId, string message, string details, Severity severity,
             ClaimsPrincipal claimsPrincipal, string category = "General",
             Dictionary<string, string>? data = null)
         {
             //Add username if it is included
-            var username= claimsPrincipal.FindFirstValue("nickname");
+            var username = claimsPrincipal.FindFirstValue("nickname");
             if (null != username)
             {
                 data ??= new Dictionary<string, string>();
                 //If the username was sent in, but the username sent in does not match the claims principal, save as "sentInUsername"
-                var sentInUserName = data.ContainsKey("username")?data[ILoggingShared.UserNameKeyString]:null;
+                var sentInUserName = data.ContainsKey("username") ? data[ILoggingShared.UserNameKeyString] : null;
                 if (null != sentInUserName && sentInUserName != username)
                     data["sentInUsername"] = data["username"];
                 data[ILoggingShared.UserNameKeyString] = username;
@@ -47,12 +46,12 @@ namespace James.Data.Server.GraphQL.Mutations
             Dictionary<string, string>? data = null)
         {
             //Add username if it is included
-            var username= claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var username = claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
             if (null != username)
             {
                 data ??= new Dictionary<string, string>();
                 //If the username was sent in, but the username sent in does not match the claims principal, save as "sentInUsername"
-                var sentInUserName = data.ContainsKey("username")?data[ILoggingShared.UserNameKeyString]:null;
+                var sentInUserName = data.ContainsKey("username") ? data[ILoggingShared.UserNameKeyString] : null;
                 if (null != sentInUserName && sentInUserName != username)
                     data["sentInUsername"] = data["username"];
                 data[ILoggingShared.UserNameKeyString] = username;

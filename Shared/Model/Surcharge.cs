@@ -26,7 +26,7 @@ public partial class Surcharge
 
     public Guid CreatedBy { get; set; }
 
-    public virtual UserProfile CreatedByNavigation { get; set; } = null!;
+    public virtual Employee CreatedByNavigation { get; set; } = null!;
 
     public virtual State StateNavigation { get; set; } = null!;
 

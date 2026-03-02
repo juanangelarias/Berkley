@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.17.1" />
+    <PackageReference Include="HotChocolate.Abstractions" Version="15.1.12" />
     <PackageReference Include="HotChocolate.AspNetCore.Authorization" Version="15.1.12" />
     <PackageReference Include="HotChocolate.Data.EntityFramework" Version="15.1.12" />
     <PackageReference Include="HotChocolate.Types.Analyzers" Version="15.1.12">

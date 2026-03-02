@@ -11,9 +11,8 @@ public class AccountProgramDto
     public int Aggregate { get; set; }
     public Guid StatusId { get; set; }
     public string Status { get; set; } = string.Empty;
-    public Guid CreatedById { get; set; }
-    public string CreatedBy { get; set; } = string.Empty;
-    public string? ApprovedBy { get; set; } = string.Empty;
+    public Guid CreatedBy { get; set; }
+    public Guid? ApprovedBy { get; set; }
     public DateTime? ApprovedDate { get; set; }
     public List<AccountProgramStatusLogDto> Logs { get; set; } = [];
 }

@@ -39,7 +39,7 @@ public partial class GeneralMutation
             existent.Single = single;
             existent.Aggregate = aggregate;
             existent.Modified = DateTime.Now;
-            existent.CreatedBy = employee!.FullName;
+            existent.CreatedBy = employee!.Id;
             existent.Comments = comments;
 
             var lastLog = await ctx.AccountProgramStatusHistories
@@ -63,7 +63,7 @@ public partial class GeneralMutation
                 Aggregate = aggregate,
                 StatusId = statusId,
                 Created = DateTime.Now,
-                CreatedBy = employee!.FullName,
+                CreatedBy = employee!.Id,
                 Modified = DateTime.Now,
                 ApprovedBy = null,
                 ApprovedDate = null,
@@ -147,7 +147,7 @@ public partial class GeneralMutation
 
         if (newStatusTxt.ToUpper() == "APPROVED")
         {
-            program.ApprovedBy = employee.FullName;
+            program.ApprovedBy = employee.Id;
             program.ApprovedDate = DateTime.Now;
         }
 

@@ -1,5 +1,5 @@
 ﻿using James.Shared.Dto;
-using System.Web.Http;
+using Microsoft.AspNetCore.Authorization;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -187,7 +187,6 @@ public partial class Query
             .ThenInclude(i => i.NewStatusNavigation)
             .Include(i => i.AccountProgramStatusHistories)
             .ThenInclude(i => i.OldStatusNavigation)
-            // ToDo: Add Include to Employee (StatusChangeByNavigation)
             .Where(r => r.AccountNum == accountNum)
             .OrderBy(o => o.AccountNum)
             .ThenByDescending(o => o.Effective)
@@ -210,8 +209,8 @@ public partial class Query
                 Aggregate = program.Aggregate,
                 StatusId = program.StatusId,
                 Status = program.Status.Description,
-                CreatedBy = program.CreatedBy, // ToDo: Should be GUID pointing to employee
-                ApprovedBy = program.ApprovedBy, // ToDo: Should be GUID pointing to employee
+                CreatedBy = program.CreatedBy,
+                ApprovedBy = program.ApprovedBy,
                 ApprovedDate = program.ApprovedDate
             };
             foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
@@ -320,8 +319,7 @@ public partial class Query
                 BondType = s.BondType,
                 Created = s.Created,
                 CreatedById = s.CreatedBy,
-                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName ,
-                Status = s.Status
+                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName
             })
             .ToListAsync();
 
@@ -348,8 +346,7 @@ public partial class Query
                 BondType = s.BondType,
                 Created = s.Created,
                 CreatedById = s.CreatedBy,
-                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName,
-                Status = s.Status
+                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName
             })
             .FirstOrDefaultAsync(r => r.Id == id);
 

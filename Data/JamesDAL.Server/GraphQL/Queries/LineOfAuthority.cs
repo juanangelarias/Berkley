@@ -39,18 +39,18 @@ public partial class Query
         var ctx2 = await contextFactory.CreateDbContextAsync();
 
         var approvedLOAByAccountTask = GetApprovedLOAByAccount(parentAccountNum, ctx1);
-        var approvedAgencyLOAByAccountTask = GetApprovedAgencyLOAByAccount(parentAccountNum, ctx2);
+        var agencyLOAByAccountTask = GetAgencyLOAByAccount(parentAccountNum, ctx2);
         var openBondsTotalTask = GetAccountOpenBondsTotal(parentAccountId.Value, contextFactory);
-        await Task.WhenAll(approvedAgencyLOAByAccountTask, approvedLOAByAccountTask, openBondsTotalTask);
+        await Task.WhenAll(agencyLOAByAccountTask, approvedLOAByAccountTask, openBondsTotalTask);
 
         var approvedLOAByAccount = approvedLOAByAccountTask.Result;
-        var approvedAgencyLOAByAccount = approvedAgencyLOAByAccountTask.Result;
+        var agencyLOAByAccount = agencyLOAByAccountTask.Result;
         var openBondsTotal = openBondsTotalTask.Result;
 
         var response = new AccountLOAsDto
         {
             AccountLOAs = approvedLOAByAccount,
-            AgencyLOAs = approvedAgencyLOAByAccount,
+            AgencyLOAs = agencyLOAByAccount,
             LOATotal = openBondsTotal
         };
 
@@ -88,7 +88,7 @@ public partial class Query
         return result;
     }
 
-    private async Task<List<AccountLOADetailDto>> GetApprovedAgencyLOAByAccount(string accountNum,
+    private async Task<List<AccountLOADetailDto>> GetAgencyLOAByAccount(string accountNum,
         JamesDatabaseContext ctx)
     {
         var data = await ctx.AgencyLineOfAuthorityLogs

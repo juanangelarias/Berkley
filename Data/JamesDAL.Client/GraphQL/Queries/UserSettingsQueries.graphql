@@ -4,3 +4,14 @@
         value
     }
 }
+
+query GetUserEmployeeInfo($userName: String!) {
+    userEmployeeInfo(username: $userName){
+        employeeId
+        username
+        fullName
+        title
+        email
+        isUnderwriter
+    }
+}

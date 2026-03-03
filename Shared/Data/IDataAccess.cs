@@ -292,6 +292,7 @@ namespace James.Shared.Data
         //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
         public Task<ISaveDataResult> ResetUserSetting(string key);
         public Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value);
+        public Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName);
 
         #endregion
 
@@ -330,6 +331,15 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<RiskTypeDm>>> GetAllRiskTypes();
         public Task<IDataAccessResult<List<CommercialBondTypeDm>>> GetAllCommercialBondTypes();
 
+        #endregion
+
+        #region Underwriter
+
+        public Task<IDataAccessResult<List<UnderwriterRecommendation>>> GetUnderwriterRecommendationByAccount(string accountNum);
+        public Task<ISaveDataResult> SetUnderwriterRecommendation(Guid id, string accountNum, Guid postedBy, string comments,
+            string description);
+        public Task<ISaveDataResult> DeleteUnderwriterRecommendation(Guid id);
+        
         #endregion
     }
 

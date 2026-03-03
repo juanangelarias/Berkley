@@ -1474,6 +1474,12 @@ namespace James.Data.Client
                     Value = value ?? ""
                 }), "SetDefaultUserSetting");
         }
+        
+        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
+        {
+            return await ExecuteGet<UserInfoDto?>(async () =>
+                await jamesClient.GetUserEmployeeInfo.ExecuteAsync(userName), "UserEmployeeInfo");
+        }
 
         #endregion
         
@@ -1550,6 +1556,42 @@ namespace James.Data.Client
             return result;
         }
 
+        #endregion
+        
+        #region Underwriter
+
+        public async Task<IDataAccessResult<List<UnderwriterRecommendation>>> GetUnderwriterRecommendationByAccount(
+            string accountNum)
+        {
+            var result = await ExecuteGet<List<UnderwriterRecommendation>>(async () =>
+                    await jamesClient.GetUnderwriterRecommendationByAccount.ExecuteAsync(accountNum),
+                "UnderwriterRecommendationByAccount");
+            
+            return result;
+        }
+
+        public async Task<ISaveDataResult> SetUnderwriterRecommendation(Guid id, string accountNum, Guid postedBy,
+            string comments,
+            string description)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetUnderwriterRecommendation
+                .ExecuteAsync( new SetUnderwriterRecommendationInput
+                {
+                    Id = id,
+                    AccountNum = accountNum,
+                    PostedBy = postedBy,
+                    Comments = comments,
+                    Description = description
+                }));
+        }
+
+        public async Task<ISaveDataResult> DeleteUnderwriterRecommendation(Guid id)
+        {
+            return await ExecuteSave(async () =>
+                await jamesClient.DeleteUnderwriterRecommendation
+                    .ExecuteAsync(new DeleteUnderwriterRecommendationInput { Id = id }));
+        }
+        
         #endregion
 
         private static string ErrorToString(IClientError error)

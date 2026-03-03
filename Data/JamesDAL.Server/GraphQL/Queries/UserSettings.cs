@@ -1,4 +1,5 @@
 ﻿using HotChocolate.Authorization;
+using James.Shared.Dto;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries;
@@ -53,5 +54,44 @@ public partial class Query
         {
             throw new GraphQLException($"Error when retrieving user settings.", ex);
         }
+    }
+
+    [Authorize]
+    public async Task<UserInfoDto?> GetUserEmployeeInfo(string username,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+
+        #region Recheck
+
+        // ToDo: Once we rethink how we will identify the user, it will be necessary to rewrite this region.
+        
+        var employee = await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username);
+        
+        if(employee == null) 
+            return null;
+        
+        var index = employee.Email.IndexOf("@");
+        var userName = index != -1 
+            ? employee.Email.Substring(0, index) 
+            : employee.ActiveDirectoryAccount;
+        
+        #endregion
+        
+        
+        var isUnderWriter = await ctx.Underwriters
+            .AnyAsync(a => a.Id == employee.Id);
+        
+        return new UserInfoDto
+        {
+            EmployeeId = employee.Id,
+            Username = userName,
+            FullName = employee.FullName,
+            Title = employee.Title ?? "",
+            Email = employee.Email ?? "",
+            IsUnderwriter = isUnderWriter
+        };
     }
 }

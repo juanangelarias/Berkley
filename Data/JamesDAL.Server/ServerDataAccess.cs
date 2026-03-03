@@ -1020,6 +1020,11 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService));
         }
+        
+        public async  Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
+        {
+            return await ExecuteGet(async () => await query.GetUserEmployeeInfo(userName, contextFactory));
+        }
 
         #endregion
 
@@ -1081,6 +1086,32 @@ namespace James.Data.Server
             return result;
         }
 
+        #endregion
+        
+        #region Underwriter
+
+        public async Task<IDataAccessResult<List<UnderwriterRecommendation>>> GetUnderwriterRecommendationByAccount(
+            string accountNum)
+        {
+            var result = await ExecuteGet(async () => await query.GetUnderwriterRecommendationByAccount(accountNum, contextFactory));
+            
+            return result;
+        }
+
+        public async Task<ISaveDataResult> SetUnderwriterRecommendation(Guid id, string accountNum, Guid postedBy,
+            string comments,
+            string description)
+        {
+            return await ExecuteSave(async () => await generalMutation
+                .SetUnderwriterRecommendation(id, accountNum, postedBy, comments, description, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteUnderwriterRecommendation(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation
+                .DeleteUnderwriterRecommendation(id, contextFactory));
+        }
+        
         #endregion
 
         private async Task<ImagingSearchCriteria> ImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,

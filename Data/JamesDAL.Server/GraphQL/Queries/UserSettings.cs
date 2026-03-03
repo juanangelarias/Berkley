@@ -62,6 +62,11 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
+
+        #region Recheck
+
+        // ToDo: Once we rethink how we will identify the user, it will be necessary to rewrite this region.
+        
         var employee = await ctx.Employees
             .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username);
         
@@ -72,7 +77,10 @@ public partial class Query
         var userName = index != -1 
             ? employee.Email.Substring(0, index) 
             : employee.ActiveDirectoryAccount;
-
+        
+        #endregion
+        
+        
         var isUnderWriter = await ctx.Underwriters
             .AnyAsync(a => a.Id == employee.Id);
         

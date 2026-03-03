@@ -118,7 +118,8 @@ public partial class Query
         return result;
     }
 
-    private async Task<int> GetAccountOpenBondsTotal(Guid accountId, IDbContextFactory<JamesDatabaseContext> contextFactory)
+    private async Task<int> GetAccountOpenBondsTotal(Guid accountId,
+        IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
@@ -146,27 +147,29 @@ public partial class Query
 
         return total;
     }
-    
+
     [Authorize]
-    public async Task<List<AccountProgramDto>> GetAccountPrograms(string accountNum, 
+    public async Task<List<AccountProgramDto>> GetAccountPrograms(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var data = await ctx.AccountPrograms
-            .Include(i=>i.Status)
-            .Include(i=> i.AccountProgramStatusHistories)
-            .ThenInclude(i=>i.NewStatusNavigation)
-            .Include(i=> i.AccountProgramStatusHistories)
-            .ThenInclude(i=>i.OldStatusNavigation)
+            .Include(i => i.Status)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.NewStatusNavigation)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.OldStatusNavigation)
             // ToDo: Add Include to Employee (StatusChangeByNavigation)
             .Where(r => r.AccountNum == accountNum)
-            .OrderBy(o=>o.AccountNum)
-            .ThenByDescending(o=>o.Effective)
+            .OrderBy(o => o.AccountNum)
+            .ThenByDescending(o => o.Effective)
             .ToListAsync();
 
         var employees = await ctx.Employees
             .ToListAsync();
+        var createdByName = employees.FirstOrDefault(e => e.Id == data.FirstOrDefault()?.CreatedBy)?.FullName;
+        var approvedByName = employees.FirstOrDefault(e => e.Id == data.FirstOrDefault()?.ApprovedBy)?.FullName;
 
         var result = new List<AccountProgramDto>();
         foreach (var program in data)
@@ -175,18 +178,20 @@ public partial class Query
             {
                 Id = program.Id,
                 AccountNum = program.AccountNum,
-                RequireExpiration = true,           // ToDo: To be changed
+                RequireExpiration = true, // ToDo: To be changed
                 Effective = program.Effective,
                 Expiration = program.Expiration,
                 Single = program.Single,
                 Aggregate = program.Aggregate,
                 StatusId = program.StatusId,
                 Status = program.Status.Description,
-                CreatedBy = program.CreatedBy,          // ToDo: Should be GUID pointing to employee
-                ApprovedBy = program.ApprovedBy,        // ToDo: Should be GUID pointing to employee
+                CreatedById = program.CreatedBy,
+                CreatedByName = createdByName,
+                ApprovedById = program.ApprovedBy,
+                ApprovedByName = approvedByName,
                 ApprovedDate = program.ApprovedDate
             };
-            foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o=>o.Created))
+            foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
             {
                 prg.Logs.Add(new AccountProgramStatusLogDto
                 {
@@ -207,10 +212,10 @@ public partial class Query
                     NewAggregate = hst.NewAggregate,
                 });
             }
-            
+
             result.Add(prg);
         }
-        
+
         return result;
     }
 
@@ -233,6 +238,9 @@ public partial class Query
 
         var employees = await ctx.Employees
             .ToListAsync();
+        
+        var createdByName = employees.FirstOrDefault(e => e.Id == program.CreatedBy)?.FullName;
+        var approvedByName = employees.FirstOrDefault(e => e.Id == program.ApprovedBy)?.FullName;
 
         var prg = new AccountProgramDto
         {
@@ -243,11 +251,13 @@ public partial class Query
             Aggregate = program.Aggregate,
             StatusId = program.StatusId,
             Status = program.Status.Description,
-            CreatedBy = program.CreatedBy,
-            ApprovedBy = program.ApprovedBy,
+            CreatedById = program.CreatedBy,
+            CreatedByName = createdByName,
+            ApprovedById = program.ApprovedBy,
+            ApprovedByName = approvedByName,
             ApprovedDate = program.ApprovedDate
         };
-        foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o=>o.Created))
+        foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
         {
             prg.Logs.Add(new AccountProgramStatusLogDto
             {

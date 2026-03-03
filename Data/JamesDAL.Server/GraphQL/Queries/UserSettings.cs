@@ -67,6 +67,11 @@ public partial class Query
         
         if(employee == null) 
             return null;
+        
+        var index = employee.Email.IndexOf("@");
+        var userName = index != -1 
+            ? employee.Email.Substring(0, index) 
+            : employee.ActiveDirectoryAccount;
 
         var isUnderWriter = await ctx.Underwriters
             .AnyAsync(a => a.Id == employee.Id);
@@ -74,11 +79,11 @@ public partial class Query
         return new UserInfoDto
         {
             EmployeeId = employee.Id,
-            Username = employee.ActiveDirectoryAccount,
+            Username = userName,
             FullName = employee.FullName,
             Title = employee.Title ?? "",
             Email = employee.Email ?? "",
-            IsUnderwriter = isUnderWriter,
+            IsUnderwriter = isUnderWriter
         };
     }
 }

@@ -4,7 +4,7 @@ namespace James.Data.Server.GraphQL.Mutations;
 
 public partial class GeneralMutation
 {
-    [Authorize]
+    [Authorize(Policy = "InRoleSetAddUnderwritingRecommendation")]
     public async Task<bool> SetUnderwriterRecommendation(Guid id, string accountNum, Guid postedBy, string comments,
         string description, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {

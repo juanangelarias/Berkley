@@ -230,7 +230,6 @@ public partial class Query
             .ThenInclude(i => i.NewStatusNavigation)
             .Include(i => i.AccountProgramStatusHistories)
             .ThenInclude(i => i.OldStatusNavigation)
-            // ToDo: Add Include to Employee (StatusChangeByNavigation)
             .FirstOrDefaultAsync(r => r.Id == id);
 
         if (program == null)

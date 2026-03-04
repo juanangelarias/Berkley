@@ -175,7 +175,7 @@ public partial class Query
         return total;
     }
 
-    [Authorize]
+    /*[Authorize]
     public async Task<List<AccountProgramDto>> GetAccountPrograms(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
@@ -239,9 +239,9 @@ public partial class Query
         }
 
         return result;
-    }
+    }*/
 
-    [Authorize]
+    /*[Authorize]
     public async Task<AccountProgramDto> GetAccountProgramById(Guid id,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
@@ -298,7 +298,7 @@ public partial class Query
         }
 
         return prg;
-    }
+    }*/
 
     [Authorize]
     public async Task<List<AccountAgencyLOADto>> GetAccountAgencyLOA(string accountNum,
@@ -393,7 +393,7 @@ public partial class Query
                 StatusId = program.StatusId,
                 Status = program.Status.Description,
                 CreatedById = program.CreatedBy,
-                CreatedByName = createdByName,
+                CreatedByName = createdByName ?? "",
                 ApprovedById = program.ApprovedBy,
                 ApprovedByName = approvedByName,
                 ApprovedDate = program.ApprovedDate
@@ -459,9 +459,9 @@ public partial class Query
             StatusId = program.StatusId,
             Status = program.Status.Description,
             CreatedById = program.CreatedBy,
-            CreatedByName = createdByName,
+            CreatedByName = createdByName ?? "",
             ApprovedById = program.ApprovedBy,
-            ApprovedByName = approvedByName,
+            ApprovedByName = approvedByName ?? "",
             ApprovedDate = program.ApprovedDate
         };
         foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))

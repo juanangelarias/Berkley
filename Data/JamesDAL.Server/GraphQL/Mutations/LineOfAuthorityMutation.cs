@@ -273,7 +273,7 @@ public partial class GeneralMutation
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var employee = await GetEmployee(contextAccessor, ctx);
-        
+
         var loa = await ctx.AgencyLineOfAuthorityLogs.FindAsync(id);
         if (loa == null)
         {
@@ -292,7 +292,7 @@ public partial class GeneralMutation
                 CreatedBy = employee!.Id,
                 Conditions = conditions
             };
-            
+
             ctx.AgencyLineOfAuthorityLogs.Add(loa);
         }
         else
@@ -308,14 +308,15 @@ public partial class GeneralMutation
             loa.BondType = bondType;
             loa.Conditions = conditions;
         }
-        
+
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 
     [Authorize]
-    public async Task<bool> AgencyLoaDelete(Guid agencyLoaId, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+    public async Task<bool> AgencyLoaDelete(Guid agencyLoaId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
         [Service] IHttpContextAccessor contextAccessor)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
@@ -336,11 +337,11 @@ public partial class GeneralMutation
         if (null == username)
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
 
-        var employee = (await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username));
+        var employee = await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username) ??
+                       await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.Email.StartsWith(username));
 
-        if (employee == null)
-            throw new GraphQLException("User not found in employee table.");
-        return employee;
+        return employee ?? throw new GraphQLException("User not found in employee table.");
     }
 }

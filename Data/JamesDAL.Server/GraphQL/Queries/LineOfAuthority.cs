@@ -185,9 +185,7 @@ public partial class Query
                 Aggregate = program.Aggregate,
                 StatusId = program.StatusId,
                 Status = program.Status.Description,
-                CreatedById = program.CreatedBy,
                 CreatedByName = createdByName ?? "",
-                ApprovedById = program.ApprovedBy,
                 ApprovedByName = approvedByName,
                 ApprovedDate = program.ApprovedDate
             };
@@ -250,9 +248,7 @@ public partial class Query
             Aggregate = program.Aggregate,
             StatusId = program.StatusId,
             Status = program.Status.Description,
-            CreatedById = program.CreatedBy,
             CreatedByName = createdByName ?? "",
-            ApprovedById = program.ApprovedBy,
             ApprovedByName = approvedByName,
             ApprovedDate = program.ApprovedDate
         };

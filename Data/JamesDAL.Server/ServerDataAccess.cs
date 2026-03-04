@@ -1028,7 +1028,7 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)
         {
             return await ExecuteGet(async () =>
-                await query.GetUserLOAByDivision(division, contextFactory, contextAccessor));
+                await query.GetUserLOAByDivision(division, contextFactory, userShared));
         }
 
         #endregion

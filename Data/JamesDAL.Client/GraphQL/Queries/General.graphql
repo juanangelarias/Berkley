@@ -281,7 +281,7 @@ query GetAllCommercialRates {
         annualMinimum
         commercialBondType
         maximumAmount
-        minumumAmount
+        minimumAmount
         rateGroup
         riskType
         unitSize

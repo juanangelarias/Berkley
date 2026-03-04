@@ -11,11 +11,11 @@ namespace James.Data.Server.GraphQL.Queries
 
             var agent = await ctx.Agents
                 .Include(a => a.IdNavigation)
-                .ThenInclude(a=>a.LegalEntityEmails)
+                .ThenInclude(a => a.LegalEntityEmails)
                 .Include(a => a.AgencyLicenses)
                 .ThenInclude(a => a.Insurer.IdNavigation)
                 .Where(a => a.Id == agentId).FirstOrDefaultAsync();
-            
+
             return agent ?? throw new Exception("Agent Id not found");
         }
         [Authorize]

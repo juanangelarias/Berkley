@@ -4,46 +4,6 @@ schema {
   subscription: Subscription
 }
 
-type UserProfile {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  initials: String!
-  fullName: String!
-  title: String
-  primaryBranchId: UUID
-  username: String!
-  underwriter: Boolean!
-  homeOfficeApprover: Boolean!
-  accountBranchReviewByNavigations: [Account!]!
-  accountHomeOfficeReviewByNavigations: [Account!]!
-  accountProgramEmailNotificationGroups: [AccountProgramEmailNotificationGroup!]!
-  accountProgramUserAuthorityCreatedByNavigations: [AccountProgramUserAuthority!]!
-  accountProgramUserAuthorityModifiedByNavigations: [AccountProgramUserAuthority!]!
-  accountProgramUserAuthorityUsers: [AccountProgramUserAuthority!]!
-  accountStatusLogs: [AccountStatusLog!]!
-  agencyCompetitions: [AgencyCompetition!]!
-  agencyInventories: [AgencyInventory!]!
-  agencyLineOfAuthorityLogs: [AgencyLineOfAuthorityLog!]!
-  bondBlocks: [BondBlock!]!
-  bondHolds: [BondHold!]!
-  bondRequestCctoNavigations: [BondRequest!]!
-  bondRequestCommercialCctoNavigations: [BondRequestCommercial!]!
-  bondRequestCommercialHomeOfficeApprovedByNavigations: [BondRequestCommercial!]!
-  bondRequestCommercialRecordedByNavigations: [BondRequestCommercial!]!
-  bondRequestHomeOfficeApproverNavigations: [BondRequest!]!
-  lineOfAuthorityLogApprovedByNavigations: [LineOfAuthorityLog!]!
-  lineOfAuthorityLogCreatedByNavigations: [LineOfAuthorityLog!]!
-  notebookEntries: [NotebookEntry!]!
-  obligees: [Obligee!]!
-  surcharges: [Surcharge!]!
-  underwriterRecommendations: [UnderwriterRecommendation!]!
-  userLineOfAuthorityCreatedByNavigations: [UserLineOfAuthority!]!
-  userLineOfAuthorityModifiedByNavigations: [UserLineOfAuthority!]!
-  userLineOfAuthorityUsers: [UserLineOfAuthority!]!
-  voidedBonds: [VoidedBond!]!
-}
-
 type AccountProgramDto {
   id: UUID!
   accountNum: String!
@@ -55,8 +15,9 @@ type AccountProgramDto {
   statusId: UUID!
   status: String!
   createdById: UUID!
-  createdBy: String!
-  approvedBy: String
+  createdByName: String!
+  approvedById: UUID
+  approvedByName: String
   approvedDate: DateTime
   logs: [AccountProgramStatusLogDto!]!
 }
@@ -175,7 +136,7 @@ type NotebookEntry {
   completion: DateTime
   reminderTime: DateTime
   columnName: Boolean!
-  createdByNavigation: UserProfile!
+  createdByNavigation: Employee!
   notebook: Notebook!
   typeNavigation: NotebookEntryTypeDm!
 }
@@ -221,6 +182,7 @@ type AccountProgramStatusHistory {
   accountProgram: AccountProgram!
   newStatusNavigation: AccountProgramStatusDm!
   oldStatusNavigation: AccountProgramStatusDm
+  statusChangeByNavigation: Employee!
 }
 
 type CreatePhoneNumberPayload {
@@ -530,13 +492,39 @@ type Employee {
   active: Boolean!
   entraId: String
   activeDirectoryTitle: String
+  accountBranchReviewByNavigations: [Account!]!
+  accountHomeOfficeReviewByNavigations: [Account!]!
+  accountProgramEmailNotificationGroups: [AccountProgramEmailNotificationGroup!]!
+  accountProgramStatusHistories: [AccountProgramStatusHistory!]!
+  accountStatusLogs: [AccountStatusLog!]!
+  agencyCompetitions: [AgencyCompetition!]!
+  agencyInventories: [AgencyInventory!]!
+  agencyLineOfAuthorityLogs: [AgencyLineOfAuthorityLog!]!
   agencyStatusLogs: [AgencyStatusLog!]!
+  bondBlocks: [BondBlock!]!
+  bondHolds: [BondHold!]!
+  bondRequestCctoNavigations: [BondRequest!]!
+  bondRequestCommercialCctoNavigations: [BondRequestCommercial!]!
+  bondRequestCommercialHomeOfficeApprovedByNavigations: [BondRequestCommercial!]!
+  bondRequestCommercialRecordedByNavigations: [BondRequestCommercial!]!
+  bondRequestHomeOfficeApproverNavigations: [BondRequest!]!
   branches: [Branch!]!
+  lineOfAuthorityLogApprovedByNavigations: [LineOfAuthorityLog!]!
+  lineOfAuthorityLogCreatedByNavigations: [LineOfAuthorityLog!]!
+  lineOfAuthorityReasons: [LineOfAuthorityReason!]!
+  notebookEntries: [NotebookEntry!]!
   notificationGroupMembers: [NotificationGroupMember!]!
+  obligees: [Obligee!]!
   privateEquities: [PrivateEquity!]!
+  surcharges: [Surcharge!]!
   underwriterHomeOfficeLeadNavigations: [Underwriter!]!
   underwriterIdNavigation: Underwriter
+  underwriterRecommendations: [UnderwriterRecommendation!]!
   underwriterReportsToNavigations: [Underwriter!]!
+  userLineOfAuthorityCreatedByNavigations: [UserLineOfAuthority!]!
+  userLineOfAuthorityModifiedByNavigations: [UserLineOfAuthority!]!
+  userLineOfAuthorityUsers: [UserLineOfAuthority!]!
+  voidedBonds: [VoidedBond!]!
 }
 
 type WritingCompanyDm {
@@ -781,7 +769,7 @@ type BondHold {
   agency: LegalEntity
   agent: LegalEntity
   bondType: BondTypeDm
-  homeOfficeApprovedByNavigation: UserProfile
+  homeOfficeApprovedByNavigation: Employee
   insurer: Insurer
   obligee: LegalEntity
   responsibleParty: LegalEntity
@@ -866,7 +854,7 @@ type LineOfAuthorityLog {
   loasingle: Int!
   loaaggregate: Int!
   comments: String
-  status: String
+  status: String!
   approvedBy: UUID
   approved: DateTime
   division: String
@@ -874,10 +862,12 @@ type LineOfAuthorityLog {
   conditions: String
   homeOfficeApproved: Boolean!
   createdBy: UUID
-  approvedByNavigation: UserProfile
-  createdByNavigation: UserProfile
+  reasonId: UUID
+  approvedByNavigation: Employee
+  createdByNavigation: Employee
   divisionNavigation: DivisionDm
-  statusNavigation: LineOfAuthorityStatusDm
+  reason: LineOfAuthorityReason
+  statusNavigation: LineOfAuthorityStatusDm!
 }
 
 type SubscriptionResultOfAddress {
@@ -1158,7 +1148,6 @@ type LineOfAuthorityStatusDm {
   created: DateTime!
   modified: DateTime!
   status: String!
-  agencyLineOfAuthorityLogs: [AgencyLineOfAuthorityLog!]!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
 }
 
@@ -1332,7 +1321,7 @@ type CommercialRate {
   rateGroup: String!
   commercialBondType: String!
   riskType: String!
-  minumumAmount: Int!
+  minimumAmount: Int!
   maximumAmount: Int!
   amountPerUnit: Float
   unitSize: Int
@@ -1359,23 +1348,6 @@ input SetLegalEntityEmailInput {
   legalEntityId: UUID!
   emailAddress: String!
   type: String!
-}
-
-type AccountProgramUserAuthority {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  userId: UUID!
-  accountClassId: UUID!
-  effective: DateTime!
-  expiration: DateTime!
-  single: Int!
-  aggregate: Int!
-  createdBy: UUID!
-  modifiedBy: UUID!
-  createdByNavigation: UserProfile!
-  modifiedByNavigation: UserProfile!
-  user: UserProfile!
 }
 
 type Underwriter {
@@ -1593,7 +1565,7 @@ type Bond {
   responsiblePartyId: UUID
   rateGroup: String!
   rateMultiplier: Float
-  ceritifiedMailNumber: String
+  certifiedMailNumber: String
   nonrenewalLetterMailed: DateTime
   hasCollateral: Boolean!
   subjectToRunoff: Boolean!
@@ -1618,10 +1590,13 @@ type Bond {
   externalRemarks: String
   sfaabondType: String
   enforceNmls: Boolean
+  nextStatusLetter: LocalDate
+  sendStatusLetter: Boolean!
   accountNumNavigation: Account!
   additionalObligeesNavigation: [AdditionalObligee!]!
   agent: LegalEntity
   attorneyInFact: LawEntity
+  bondModTransactions: [BondModTransaction!]!
   bondRequest: BondRequest
   bondRequestCommercial: BondRequestCommercial
   bondStatusLetters: [BondStatusLetter!]!
@@ -1886,7 +1861,7 @@ type AgencyInventory {
   comments: String
   address: Address
   agency: Agency!
-  approverNavigation: UserProfile!
+  approverNavigation: Employee!
   documentTypeNavigation: InventoryDocumentDm!
 }
 
@@ -1898,7 +1873,7 @@ type DefaultGeneralLedgerAccount {
   accountClass: String!
   accountType: String!
   fundedDebt: Boolean!
-  accountClassNavigation: AccountClassDm!
+  accountClassNavigation: DivisionDm!
 }
 
 input AddSecurityRoleInput {
@@ -1907,10 +1882,43 @@ input AddSecurityRoleInput {
   ord: Int!
 }
 
+type BondModTransaction {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  bondNumber: String!
+  bondMod: Int!
+  effective: LocalDate!
+  expiration: LocalDate!
+  modPremium: Int!
+  status: String!
+  bondNumberNavigation: Bond!
+}
+
 input SetAccountAgencyAndAgentInput {
   accountId: UUID!
   agencyNumber: String!
   agentId: UUID
+}
+
+type LineOfAuthorityReason {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  createdBy: UUID!
+  type: String!
+  recommendation: String
+  businessOverview: String
+  bondRisk: String
+  financialAnalysis: String
+  debtHighlights: String
+  followUpConditions: String
+  keyChanges: String
+  outlook: String
+  accountNumNavigation: Account!
+  createdByNavigation: Employee!
+  lineOfAuthorityLogs: [LineOfAuthorityLog!]!
 }
 
 type UserSetting {
@@ -1942,7 +1950,7 @@ type AccountProgramEmailNotificationGroup {
   modified: DateTime
   userId: UUID!
   sendTo: String
-  user: UserProfile!
+  user: Employee!
 }
 
 type AgencyLicenseBulkInsertPayload {
@@ -2100,8 +2108,8 @@ type AccountProgram {
   aggregate: Int!
   comments: String
   statusId: UUID!
-  createdBy: String!
-  approvedBy: String
+  createdBy: UUID!
+  approvedBy: UUID
   approvedDate: DateTime
   homeOfficeApproved: Boolean!
   accountNumNavigation: Account!
@@ -2141,7 +2149,7 @@ type VoidedBond {
   comments: String
   voidedBy: UUID!
   agency: Agency!
-  voidedByNavigation: UserProfile!
+  voidedByNavigation: Employee!
 }
 
 type AccountBondedPrincipleDto {
@@ -2240,9 +2248,9 @@ type BondRequest {
   newContractsLowBids: Int
   estimatedBacklogRunoff: Int
   totalWorkOnHand: Long
-  lineOfCreditSingle: Int
-  lineOfCreditAggregate: Int
-  lineOfCreditExpiration: LocalDate
+  lineOfAuthoritySingle: Int
+  lineOfAuthorityAggregate: Int
+  lineOfAuthorityExpiration: LocalDate
   requestedBy: String
   approvedBy: String
   bondNumber: String
@@ -2270,8 +2278,8 @@ type BondRequest {
   bidResultNavigation: BidResultDm
   bidSubcontractors: [BidSubcontractor!]!
   bondNumberNavigation: Bond
-  cctoNavigation: UserProfile
-  homeOfficeApproverNavigation: UserProfile
+  cctoNavigation: Employee
+  homeOfficeApproverNavigation: Employee
   obligee: Obligee
   otherBids: [OtherBid!]!
   statusNavigation: BidStatusDm!
@@ -2304,19 +2312,6 @@ type Branch {
 input AddPrincipalToSecurityRoleInput {
   principalId: UUID!
   role: String!
-}
-
-type AccountClassDm {
-  id: UUID!
-  created: DateTime!
-  modified: DateTime!
-  accountClass: String!
-  name: String!
-  divisionGeneralLedgerCode: Int
-  active: Boolean!
-  lineOfAuthorityNotificationGroup: String
-  bondTransactions: [BondTransaction!]!
-  defaultGeneralLedgerAccounts: [DefaultGeneralLedgerAccount!]!
 }
 
 input AgencyCommissionInput {
@@ -2432,7 +2427,7 @@ type AgencyCompetition {
   enteredBy: UUID!
   accountNumNavigation: Account!
   agency: Agency!
-  enteredByNavigation: UserProfile!
+  enteredByNavigation: Employee!
 }
 
 type BondTransaction {
@@ -2469,7 +2464,7 @@ type BondTransaction {
   sfaaCode: Int!
   directBill: Boolean!
   region: String!
-  accountClass: String!
+  division: String!
   surchargeApply: Boolean!
   agencyChange: UUID
   transactionPurpose: String
@@ -2480,11 +2475,11 @@ type BondTransaction {
   underwriterId: UUID!
   state: String
   insurerId: UUID
-  accountClassNavigation: AccountClassDm!
   accountNumNavigation: Account!
   agency: Agency!
   bondNumberNavigation: Bond!
   bondTransactionPurposes: [BondTransactionPurpose!]!
+  divisionNavigation: DivisionDm!
   insurer: Insurer
   regionNavigation: RegionDm!
   sfaaCodeNavigation: Sfaa!
@@ -2567,7 +2562,8 @@ type BondBlock {
   issuedBy: UUID
   comments: String
   agencyId: UUID
-  issuedByNavigation: UserProfile
+  insuredId: UUID
+  issuedByNavigation: Employee
 }
 
 type AccountAnnualPremiumDto {
@@ -2794,7 +2790,7 @@ type Obligee {
   printStatusLetter: Boolean!
   notes: String
   bondRequests: [BondRequest!]!
-  editedByNavigation: UserProfile
+  editedByNavigation: Employee
   idNavigation: LegalEntity!
   typeNavigation: ObligeeTypeDm
   fullName: String!
@@ -2821,9 +2817,9 @@ type UserLineOfAuthority {
   bondType: String!
   createdBy: UUID!
   modifiedBy: UUID!
-  createdByNavigation: UserProfile!
-  modifiedByNavigation: UserProfile!
-  user: UserProfile!
+  createdByNavigation: Employee!
+  modifiedByNavigation: Employee!
+  user: Employee!
 }
 
 type DeleteLicensePayload {
@@ -2913,7 +2909,7 @@ type Surcharge {
   exclude: Boolean!
   type: String!
   createdBy: UUID!
-  createdByNavigation: UserProfile!
+  createdByNavigation: Employee!
   stateNavigation: State!
   typeNavigation: SurchargeTypeDm!
 }
@@ -2991,6 +2987,8 @@ type Account {
   sicCode: String
   industryCode: String
   sharedSurety: String
+  isPrivatelyOwned: Boolean
+  estimatedAnnualPremium: Int
   accountPrograms: [AccountProgram!]!
   accountStatusLogs: [AccountStatusLog!]!
   accountWatches: [AccountWatch!]!
@@ -3007,7 +3005,7 @@ type Account {
   bondTransactions: [BondTransaction!]!
   bonds: [Bond!]!
   branchNavigation: Branch!
-  branchReviewByNavigation: UserProfile
+  branchReviewByNavigation: Employee
   businessTypeClassNavigation: BusinessTypeClassCodeDm
   businessTypeNavigation: BusinessTypeDm
   businessTypeRiskCode: BusinessTypeRiskCodeDm
@@ -3018,12 +3016,13 @@ type Account {
   creditReportHistories: [CreditReportHistory!]!
   divisionNavigation: DivisionDm!
   emailHistories: [EmailHistory!]!
-  homeOfficeReviewByNavigation: UserProfile
+  homeOfficeReviewByNavigation: Employee
   idNavigation: LegalEntity!
   indemnitors: [Indemnitor!]!
   industryCodeNavigation: IndustryCodeDm
   keyPersonnel: [KeyPersonnel!]!
   lawFirm: LawEntity
+  lineOfAuthorityReasons: [LineOfAuthorityReason!]!
   personalFinancialStatements: [PersonalFinancialStatement!]!
   privateEquities: [PrivateEquity!]!
   ratios: [Ratio!]!
@@ -3063,6 +3062,8 @@ type DivisionDm {
   loanotificationGroup: String!
   active: Boolean!
   accounts: [Account!]!
+  bondTransactions: [BondTransaction!]!
+  defaultGeneralLedgerAccounts: [DefaultGeneralLedgerAccount!]!
   imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
   profitCenters: [ProfitCenter!]!
@@ -3306,6 +3307,7 @@ type Collateral {
   bondNumber: String
   bondSpecific: Boolean
   released: DateTime
+  bank: String
   bondNumberNavigation: Bond
 }
 
@@ -3387,7 +3389,6 @@ type RateGroupDm {
   modified: DateTime!
   rateGroup: String!
   description: String!
-  createdBy: UUID
   commercialRates: [CommercialRate!]!
   contractRates: [ContractRate!]!
 }
@@ -3445,10 +3446,10 @@ type BondRequestCommercial {
   approvedBidAmount: Int
   accountNumNavigation: Account!
   bondNumberNavigation: Bond
-  cctoNavigation: UserProfile
-  homeOfficeApprovedByNavigation: UserProfile
+  cctoNavigation: Employee
+  homeOfficeApprovedByNavigation: Employee
   obligee: LegalEntity
-  recordedByNavigation: UserProfile
+  recordedByNavigation: Employee
   sfaaCodeNavigation: Sfaa
   statusNavigation: BidStatusDm!
   underWriter: Underwriter
@@ -3656,14 +3657,12 @@ type AgencyLineOfAuthorityLog {
   loasingle: Int!
   loaaggregate: Int!
   comments: String
-  status: String
   division: String
   bondType: String
   createdBy: UUID
   conditions: String
   agencyLineOfAuthorityAgents: [AgencyLineOfAuthorityAgent!]!
-  createdByNavigation: UserProfile
-  statusNavigation: LineOfAuthorityStatusDm
+  createdByNavigation: Employee
 }
 
 type AgencyAgentDto {
@@ -3711,7 +3710,7 @@ type UnderwriterRecommendation {
   comments: String
   description: String
   accountNumNavigation: Account!
-  postedByNavigation: UserProfile!
+  postedByNavigation: Employee!
 }
 
 enum Severity {
@@ -3756,7 +3755,7 @@ type AccountStatusLog {
   effective: DateTime!
   accountNumNavigation: Account!
   accountStatusNavigation: AccountStatusDm!
-  modifiedByNavigation: UserProfile!
+  modifiedByNavigation: Employee!
 }
 
 input KeyValuePairOfStringAndStringInput {

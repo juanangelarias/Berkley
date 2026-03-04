@@ -28,8 +28,6 @@ public partial class AgencyLineOfAuthorityLog
 
     public string? Comments { get; set; }
 
-    public string? Status { get; set; }
-
     public string? Division { get; set; }
 
     public string? BondType { get; set; }
@@ -40,7 +38,5 @@ public partial class AgencyLineOfAuthorityLog
 
     public virtual ICollection<AgencyLineOfAuthorityAgent> AgencyLineOfAuthorityAgents { get; set; } = new List<AgencyLineOfAuthorityAgent>();
 
-    public virtual UserProfile? CreatedByNavigation { get; set; }
-
-    public virtual LineOfAuthorityStatusDm? StatusNavigation { get; set; }
+    public virtual Employee? CreatedByNavigation { get; set; }
 }

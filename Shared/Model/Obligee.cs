@@ -24,7 +24,7 @@ public partial class Obligee
 
     public virtual ICollection<BondRequest> BondRequests { get; set; } = new List<BondRequest>();
 
-    public virtual UserProfile? EditedByNavigation { get; set; }
+    public virtual Employee? EditedByNavigation { get; set; }
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 

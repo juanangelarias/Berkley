@@ -1,6 +1,4 @@
-﻿using HotChocolate.Types;
-using James.Data.Server.Model;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace James.Data.Server.GraphQL.TypeExtensions
 {
@@ -14,7 +12,7 @@ namespace James.Data.Server.GraphQL.TypeExtensions
             if (null == address.StateCodeNavigation)
             {
                 ctx = await contextFactory.CreateDbContextAsync();
-                address.StateCodeNavigation = await ctx.States.Include(s=>s.CountryCodeNavigation).SingleAsync(ad => ad.Code == address.StateCode);
+                address.StateCodeNavigation = await ctx.States.Include(s => s.CountryCodeNavigation).SingleAsync(ad => ad.Code == address.StateCode);
             }
             else if (null == address.StateCodeNavigation.CountryCodeNavigation)
             {

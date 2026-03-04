@@ -72,7 +72,7 @@ public partial class Bond
 
     public double? RateMultiplier { get; set; }
 
-    public string? CeritifiedMailNumber { get; set; }
+    public string? CertifiedMailNumber { get; set; }
 
     public DateTime? NonrenewalLetterMailed { get; set; }
 
@@ -122,6 +122,10 @@ public partial class Bond
 
     public bool? EnforceNmls { get; set; }
 
+    public DateOnly? NextStatusLetter { get; set; }
+
+    public bool SendStatusLetter { get; set; }
+
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual ICollection<AdditionalObligee> AdditionalObligeesNavigation { get; set; } = new List<AdditionalObligee>();
@@ -131,6 +135,8 @@ public partial class Bond
     public virtual LegalEntity? Agent { get; set; }
 
     public virtual LawEntity? AttorneyInFact { get; set; }
+
+    public virtual ICollection<BondModTransaction> BondModTransactions { get; set; } = new List<BondModTransaction>();
 
     public virtual BondRequest? BondRequest { get; set; }
 

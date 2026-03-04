@@ -9,12 +9,8 @@
             </RadzenRow>
             <RadzenRow>
                 <RadzenFormField Text="Underwriter" Style="width: 100%">
-                    <RadzenDropDown TValue="Guid" @bind-Value="@Recommendation.PostedBy" Data="@Underwriters"
-                                    TextProperty="Name" ValueProperty="Id" Name="Underwriter" Style="width: 300px;"
-                                    AllowFiltering="true" FilterAsYouType="true" 
-                                    FilterOperator="StringFilterOperator.Contains"
-                                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"/>
-                    <RadzenRequiredValidator Text="Underwriter is required." Component="Underwriter"/>
+                    <RadzenTextBox Value="@(Recommendation?.PostedByNavigation?.FullName ?? "")"
+                                   ReadOnly="true"/>
                 </RadzenFormField>
             </RadzenRow>
             <RadzenRow>
@@ -61,7 +57,7 @@
 
         _userInfo = await UserSettingService.GetUserEmployeeInfoAsync();
 
-        if (_userInfo is { IsUnderwriter: true } && Recommendation.PostedBy == null)
+        if (_userInfo is { IsUnderwriter: true } && (Recommendation.PostedBy == Guid.Empty))
         {
             Recommendation.PostedBy = _userInfo.EmployeeId;
             Recommendation.PostedByNavigation = new()

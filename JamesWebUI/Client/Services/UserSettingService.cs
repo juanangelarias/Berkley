@@ -78,7 +78,6 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
         return _settings!;
     }
 
-
     private async Task<string?> GetUserName()
     {
         var username = Environment.UserName;

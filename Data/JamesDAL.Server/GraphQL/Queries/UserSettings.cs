@@ -1,4 +1,4 @@
-﻿using James.Shared.Dto;
+using James.Shared.Dto;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -45,14 +45,14 @@ public partial class Query
 
             //Begin with defaults
             var settings = defaultSettingsTask.Result.ToDictionary(k => k.Key, v => v.Value);
-            //Add user specific settings, overwriting defaults as needed
+            //Add user-specific settings, overwriting defaults as needed
             foreach (var setting in userSettingsTask.Result)
                 settings[setting.Key] = setting.Value;
             return settings;
         }
         catch (Exception ex)
         {
-            throw new GraphQLException($"Error when retrieving user settings.", ex);
+            throw new GraphQLException("Error when retrieving user settings.", ex);
         }
     }
 
@@ -61,20 +61,20 @@ public partial class Query
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-
-        var employee = await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username);
         
-        if(employee == null) 
-            return null;
-
+        var response = await GetEmployeeUserName(username, ctx);
+        if(response.Item1 == null)
+            throw new GraphQLException($"User {username} not found.");
+        
+        var employee = response.Item1;
+        
         var isUnderWriter = await ctx.Underwriters
             .AnyAsync(a => a.Id == employee.Id);
         
-        return new UserInfoDto
+        return new()
         {
             EmployeeId = employee.Id,
-            Username = employee.ActiveDirectoryAccount,
+            Username = response.Item2,
             FullName = employee.FullName,
             Title = employee.Title ?? "",
             Email = employee.Email ?? "",
@@ -90,19 +90,42 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         
-        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
-        if (null == username)
+        var loggedUser = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
+        if(loggedUser == null)
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-
-        var userId = (await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username))?
-            .Id;
         
-        if(userId == null)
-            throw new GraphQLException("User not found in employee table.");
+        var employee = await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser);
+        
+        if (employee == null)
+        {
+            employee = await ctx.Employees
+                .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser));
+            
+            if(employee == null)
+                throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        }
         
         return await ctx.UserLineOfAuthorities
-            .Where(f => f.UserId == userId && f.DivisionCode == division)
+            .Where(f => f.UserId == employee.Id && f.DivisionCode == division)
             .ToListAsync();
+    }
+
+    private async Task<(Employee?, string)> GetEmployeeUserName(string loggedUser, JamesDatabaseContext ctx)
+    {
+        // ToDo: Once we rethink how we will identify the user, it will be necessary to rewrite this region.
+
+        var employee = await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser) ?? await ctx.Employees
+            .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser));
+
+        if(employee == null)
+            return (null, "");
+
+        var index = employee.Email!.IndexOf("@", StringComparison.Ordinal);
+
+        return (employee, index != -1
+            ? employee.Email.Substring(0, index)
+            : employee.ActiveDirectoryAccount);
     }
 }

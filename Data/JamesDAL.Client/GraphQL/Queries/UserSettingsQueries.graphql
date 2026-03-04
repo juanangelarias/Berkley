@@ -7,12 +7,13 @@
 
 query GetUserEmployeeInfo($userName: String!) {
     userEmployeeInfo(username: $userName){
-        employeeId
-        username
-        fullName
-        title
         email
+        employeeId
+        fullName
         isUnderwriter
+        title
+        username
+        homeOfficeApprover
     }
 }
 

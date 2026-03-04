@@ -39,7 +39,7 @@ public partial class GeneralMutation
             existent.Single = single;
             existent.Aggregate = aggregate;
             existent.Modified = DateTime.Now;
-            existent.CreatedBy = employee!.Id;
+            existent.CreatedBy = employee.Id;
             existent.Comments = comments;
 
             var lastLog = await ctx.AccountProgramStatusHistories
@@ -63,7 +63,7 @@ public partial class GeneralMutation
                 Aggregate = aggregate,
                 StatusId = statusId,
                 Created = DateTime.Now,
-                CreatedBy = employee!.Id,
+                CreatedBy = employee.Id,
                 Modified = DateTime.Now,
                 ApprovedBy = null,
                 ApprovedDate = null,
@@ -137,7 +137,7 @@ public partial class GeneralMutation
             NewSingle = program.Single,
             OldAggregate = lastLog?.NewAggregate,
             NewAggregate = program.Aggregate,
-            StatusChangeBy = employee!.Id
+            StatusChangeBy = employee.Id
         };
 
         ctx.AccountProgramStatusHistories.Add(newLog);

@@ -4,13 +4,17 @@ namespace James.Data.Server.GraphQL.Queries;
 
 public partial class Query
 {
+    [Authorize]
     public async Task<List<Underwriter>> GetUnderwriters(
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        return await ctx.Underwriters
+        var response = await ctx.Underwriters
             .Include(i => i.IdNavigation)
+            .Where(r=>r.Active)
             .ToListAsync();
+        
+        return response;
     }
 
     [Authorize]

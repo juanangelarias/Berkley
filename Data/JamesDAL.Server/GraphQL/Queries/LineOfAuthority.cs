@@ -195,12 +195,9 @@ public partial class Query
                 {
                     Id = hst.Id,
                     AccountNum = hst.AccountNum,
-                    NewStatusId = hst.NewStatus,
                     NewStatus = hst.NewStatusNavigation.Description,
-                    OldStatusId = hst.OldStatus,
                     OldStatus = hst.OldStatusNavigation?.Description,
                     StatusDate = hst.StatusDate,
-                    StatusChangeBy = hst.StatusChangeBy,
                     StatusChangeByFullName = employees
                         .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
                         .FullName ?? "",
@@ -257,12 +254,9 @@ public partial class Query
             prg.Logs.Add(new AccountProgramStatusLogDto
             {
                 Id = hst.Id,
-                NewStatusId = hst.NewStatus,
                 NewStatus = hst.NewStatusNavigation.Description,
-                OldStatusId = hst.OldStatus,
                 OldStatus = hst.OldStatusNavigation?.Description,
                 StatusDate = hst.StatusDate,
-                StatusChangeBy = hst.StatusChangeBy,
                 StatusChangeByFullName = employees
                     .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
                     .FullName ?? "",

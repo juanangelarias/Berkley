@@ -186,7 +186,7 @@ public partial class Query
                 StatusId = program.StatusId,
                 Status = program.Status.Description,
                 CreatedById = program.CreatedBy,
-                CreatedByName = createdByName,
+                CreatedByName = createdByName ?? "",
                 ApprovedById = program.ApprovedBy,
                 ApprovedByName = approvedByName,
                 ApprovedDate = program.ApprovedDate
@@ -238,7 +238,7 @@ public partial class Query
 
         var employees = await ctx.Employees
             .ToListAsync();
-        
+
         var createdByName = employees.FirstOrDefault(e => e.Id == program.CreatedBy)?.FullName;
         var approvedByName = employees.FirstOrDefault(e => e.Id == program.ApprovedBy)?.FullName;
 
@@ -252,7 +252,7 @@ public partial class Query
             StatusId = program.StatusId,
             Status = program.Status.Description,
             CreatedById = program.CreatedBy,
-            CreatedByName = createdByName,
+            CreatedByName = createdByName ?? "",
             ApprovedById = program.ApprovedBy,
             ApprovedByName = approvedByName,
             ApprovedDate = program.ApprovedDate

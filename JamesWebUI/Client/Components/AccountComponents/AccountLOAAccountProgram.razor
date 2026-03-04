@@ -97,7 +97,7 @@
                 <RadzenRequiredValidator Text="Expiration Date is required" Component="Expiration" Popup="true"/>
                 <RadzenCompareValidator Value="@program.Effective" Component="Expiration" Popup="true"
                                         Text="Expiration date should be greater or equal to Effective date."
-                                        Operator="CompareOperator.GreaterThanEqual" />
+                                        Operator="CompareOperator.GreaterThanEqual"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Single" Property="@nameof(AccountProgramDto.Single)" TextAlign="TextAlign.Right"
@@ -113,7 +113,7 @@
                 <RadzenNumeric @bind-Value="@program.Single" Format="c0" ShowUpDown="false" Name="Single"
                                TextStyle="TextStyle.Body2" Style="display: block"/>
                 <RadzenCompareValidator Component="Single" Operator="CompareOperator.GreaterThanEqual" Value="0"
-                                        Text="Single value should be greater or equal to zero." Popup="true" />
+                                        Text="Single value should be greater or equal to zero." Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Aggregate" Property="@nameof(AccountProgramDto.Aggregate)" MinWidth="125px"
@@ -216,10 +216,7 @@
             Data = (List<AccountProgramDto>)cache!
         },
         ResultVariable = () => _accountProgramsResult,
-        AfterLoad = () =>
-        {
-            Data = _accountProgramsResult.Data!;
-        }
+        AfterLoad = () => { Data = _accountProgramsResult.Data!; }
     }, "account programs");
 
     #endregion
@@ -237,12 +234,27 @@
             Data = (List<AccountProgramStatusDm>)cache!
         },
         ResultVariable = () => _accountProgramStatusesResult,
-        AfterLoad = () =>
-        {
-            _statuses = _accountProgramStatusesResult.Data!.ToDictionary(d => d.Description, d => d);
-        },
+        AfterLoad = () => { _statuses = _accountProgramStatusesResult.Data!.ToDictionary(d => d.Description, d => d); },
         CacheDuration = TimeSpan.FromDays(7)
     }, "account program statuses");
+
+    #endregion
+
+    #region UserLOAByDivision Load
+
+    private IDataAccessResult<List<UserLineOfAuthority>> _userLOAByDivisionResult = null!;
+
+    private LoadItem UserLOAByDivisionLoad => AddEventNotify(new LoadItem<List<UserLineOfAuthority>>
+    {
+        Key = CacheKeys.UserLOA(Account.Division),
+        AsyncLoadTask = async () => _userLOAByDivisionResult = await DataAccess.GetUserLOAByDivision(Account.Division),
+        CacheLoadTask = cache => _userLOAByDivisionResult = new DataAccessResult<List<UserLineOfAuthority>>
+        {
+            Data = (List<UserLineOfAuthority>)cache!
+        },
+        ResultVariable = () => _userLOAByDivisionResult,
+        AfterLoad = () => { }
+    }, "user LOA by division");
 
     #endregion
 
@@ -259,22 +271,13 @@
     {
         await base.OnParametersSetAsync();
 
-        try
-        {
-            _userLOA = await UserSettingService.GetUserLOAByDivision(Account.Division);
-            await LoadData();
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
+        await LoadData();
     }
 
     private async Task LoadData()
     {
         await ShowLoading();
-        await DataAccess.GetCacheOrLoadDataAsync(AccountProgramsLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(AccountProgramsLoad, UserLOAByDivisionLoad);
     }
 
     private async Task InsertRow()
@@ -305,7 +308,7 @@
         var confirm = await ConfirmAction(Action.Remove);
         if (!confirm)
             return;
-        
+
         var result = await DataAccess.DeleteAccountProgram(program.Id);
 
         if (!result.Success)
@@ -316,9 +319,9 @@
 
         var record = Data.FirstOrDefault(f => f.Id == program.Id);
 
-        if(record == null)
+        if (record == null)
             return;
-        
+
         Data.Remove(record);
         await Grid.Reload();
     }
@@ -328,7 +331,7 @@
         var confirm = await ConfirmAction(Action.RequestApproval);
         if (!confirm)
             return;
-        
+
         var result = await DataAccess.AccountProgramChangeStatus(program.Id, "APPROVAL REQUESTED");
 
         if (!result.Success)
@@ -345,7 +348,7 @@
         var confirm = await ConfirmAction(Action.Approve);
         if (!confirm)
             return;
-        
+
         var result = await DataAccess.AccountProgramChangeStatus(program.Id, "APPROVED");
 
         if (!result.Success)
@@ -362,7 +365,7 @@
         var confirm = await ConfirmAction(Action.Decline);
         if (!confirm)
             return;
-        
+
         var result = await DataAccess.AccountProgramChangeStatus(program.Id, "DECLINED");
 
         if (!result.Success)
@@ -379,7 +382,7 @@
         var confirm = await ConfirmAction(Action.Cancel);
         if (!confirm)
             return;
-        
+
         var result = await DataAccess.AccountProgramChangeStatus(program.Id, "CANCELED");
 
         if (!result.Success)
@@ -420,8 +423,8 @@
 
     private async Task ExecuteSetAccountProgram(AccountProgramDto program)
     {
-        var result = await DataAccess.SetAccountProgram(program.Id, program.AccountNum, program.Effective, 
-            program.Expiration ?? new DateTime(9999, 12, 31), program.Single, program.Aggregate, 
+        var result = await DataAccess.SetAccountProgram(program.Id, program.AccountNum, program.Effective,
+            program.Expiration ?? new DateTime(9999, 12, 31), program.Single, program.Aggregate,
             "", program.StatusId);
 
         if (!result.Success)
@@ -431,8 +434,6 @@
         }
 
         NotifySuccessfulSave("account program");
-
-        
 
         await ReloadData(program.Id);
     }
@@ -447,16 +448,16 @@
         }
 
         var toDelete = Data.FirstOrDefault(r => r.Id == id);
-        if(toDelete != null)
+        if (toDelete != null)
             Data.Remove(toDelete);
-        
+
         Data.Add(editedResult.Data!);
         Data = Data
             .OrderByDescending(o => o.Effective)
             .ToList();
-        
+
         DataAccess.UpdateCache(CacheKeys.AccountPrograms(Account.AccountNum), Data);
-        
+
         await Grid.Reload();
     }
 
@@ -521,7 +522,7 @@
             });
             flag = false;
         }
-        
+
         if (program.Aggregate > userAggregateMax)
         {
             var message = new NotificationMessage
@@ -577,4 +578,5 @@
         Decline,
         Cancel
     }
+
 }

@@ -161,7 +161,6 @@ public partial class Query
             .ThenInclude(i => i.NewStatusNavigation)
             .Include(i => i.AccountProgramStatusHistories)
             .ThenInclude(i => i.OldStatusNavigation)
-            // ToDo: Add Include to Employee (StatusChangeByNavigation)
             .Where(r => r.AccountNum == accountNum)
             .OrderBy(o => o.AccountNum)
             .ThenByDescending(o => o.Effective)

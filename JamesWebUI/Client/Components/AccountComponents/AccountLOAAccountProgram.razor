@@ -216,25 +216,31 @@
             Data = (List<AccountProgramDto>)cache!
         },
         ResultVariable = () => _accountProgramsResult,
-        AfterLoad = () => { Data = _accountProgramsResult.Data!; }
+        AfterLoad = () =>
+        {
+            Data = _accountProgramsResult.Data!;
+        }
     }, "account programs");
 
     #endregion
 
     #region AccounProgramStatuses Load
 
-    private IDataAccessResult<List<AccountProgramStatusDm>> _accounProgramStatusesResult = null!;
+    private IDataAccessResult<List<AccountProgramStatusDm>> _accountProgramStatusesResult = null!;
 
     private LoadItem AccountProgramStatusesLoad => AddEventNotify(new LoadItem<List<AccountProgramStatusDm>>
     {
         Key = CacheKeys.AccountProgramStatuses,
-        AsyncLoadTask = async () => _accounProgramStatusesResult = await DataAccess.GetAllAccountProgramStatuses(),
-        CacheLoadTask = cache => _accounProgramStatusesResult = new DataAccessResult<List<AccountProgramStatusDm>>
+        AsyncLoadTask = async () => _accountProgramStatusesResult = await DataAccess.GetAllAccountProgramStatuses(),
+        CacheLoadTask = cache => _accountProgramStatusesResult = new DataAccessResult<List<AccountProgramStatusDm>>
         {
             Data = (List<AccountProgramStatusDm>)cache!
         },
-        ResultVariable = () => _accounProgramStatusesResult,
-        AfterLoad = () => { _statuses = _accounProgramStatusesResult.Data!.ToDictionary(d => d.Description, d => d); },
+        ResultVariable = () => _accountProgramStatusesResult,
+        AfterLoad = () =>
+        {
+            _statuses = _accountProgramStatusesResult.Data!.ToDictionary(d => d.Description, d => d);
+        },
         CacheDuration = TimeSpan.FromDays(7)
     }, "account program statuses");
 
@@ -252,9 +258,17 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        _userLOA = await UserSettingService.GetUserLOAByDivision(Account.Division);
-        
-        await LoadData();
+
+        try
+        {
+            _userLOA = await UserSettingService.GetUserLOAByDivision(Account.Division);
+            await LoadData();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
 
     private async Task LoadData()
@@ -274,7 +288,7 @@
             RequireExpiration = true,
             Effective = DateTime.Today,
             StatusId = _statuses["PROPOSED"].Id,
-            Status = "PROPOSED",
+            Status = "PROPOSED"
         };
 
         await Grid.InsertRow(newAccountProgram);
@@ -451,7 +465,7 @@
         var flag = true;
         if (program.Expiration < program.Effective)
         {
-            NotificationService.Notify(new NotificationMessage
+            NotificationService.Notify(new()
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Expiration date should be greater than effective date.",
@@ -462,7 +476,7 @@
 
         if (program.Single < 0)
         {
-            NotificationService.Notify(new NotificationMessage
+            NotificationService.Notify(new()
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Single value should be greater than or equal to zero.",
@@ -473,18 +487,19 @@
 
         if (program.Aggregate < 0)
         {
-            NotificationService.Notify(new NotificationMessage
+            var message = new NotificationMessage
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Aggregate value should be greater than or equal to zero.",
                 Duration = 5000
-            });
+            };
+            NotificationService.Notify(message);
             flag = false;
         }
 
         if (program.Single > program.Aggregate)
         {
-            NotificationService.Notify(new NotificationMessage
+            NotificationService.Notify(new()
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Aggregate value should be greater than or equal to single value.",
@@ -498,7 +513,7 @@
 
         if (program.Single > userSingleMax)
         {
-            NotificationService.Notify(new NotificationMessage
+            NotificationService.Notify(new()
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Single value exceeds the user line of authority.",
@@ -509,12 +524,13 @@
         
         if (program.Aggregate > userAggregateMax)
         {
-            NotificationService.Notify(new NotificationMessage
+            var message = new NotificationMessage
             {
                 Severity = NotificationSeverity.Error,
                 Summary = "Aggregate value exceeds the user line of authority.",
                 Duration = 5000
-            });
+            };
+            NotificationService.Notify(message);
             flag = false;
         }
 

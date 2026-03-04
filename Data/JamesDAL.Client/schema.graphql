@@ -4,6 +4,24 @@ schema {
   subscription: Subscription
 }
 
+type AccountProgramDto {
+  id: UUID!
+  accountNum: String!
+  requireExpiration: Boolean!
+  effective: DateTime!
+  expiration: DateTime
+  single: Int!
+  aggregate: Int!
+  statusId: UUID!
+  status: String!
+  createdById: UUID!
+  createdByName: String!
+  approvedById: UUID
+  approvedByName: String
+  approvedDate: DateTime
+  logs: [AccountProgramStatusLogDto!]!
+}
+
 type ImagingTabType {
   id: UUID!
   created: DateTime!

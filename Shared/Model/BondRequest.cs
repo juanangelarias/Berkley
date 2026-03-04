@@ -66,11 +66,11 @@ public partial class BondRequest
 
     public long? TotalWorkOnHand { get; set; }
 
-    public int? LineOfCreditSingle { get; set; }
+    public int? LineOfAuthoritySingle { get; set; }
 
-    public int? LineOfCreditAggregate { get; set; }
+    public int? LineOfAuthorityAggregate { get; set; }
 
-    public DateOnly? LineOfCreditExpiration { get; set; }
+    public DateOnly? LineOfAuthorityExpiration { get; set; }
 
     public string? RequestedBy { get; set; }
 
@@ -126,9 +126,9 @@ public partial class BondRequest
 
     public virtual Bond? BondNumberNavigation { get; set; }
 
-    public virtual UserProfile? CctoNavigation { get; set; }
+    public virtual Employee? CctoNavigation { get; set; }
 
-    public virtual UserProfile? HomeOfficeApproverNavigation { get; set; }
+    public virtual Employee? HomeOfficeApproverNavigation { get; set; }
 
     public virtual Obligee? Obligee { get; set; }
 

@@ -1,7 +1,7 @@
 ﻿namespace James.Data.Server.GraphQL.TypeExtensions
 {
 
-    [ExtendObjectType(typeof(Bond), IgnoreProperties = new[]{ "BondType", "Agency", "Obligee", "ResponsibleParty" })]
+    [ExtendObjectType(typeof(Bond), IgnoreProperties = new[] { "BondType", "Agency", "Obligee", "ResponsibleParty" })]
     public class BondExtensions
     {
         public async Task<BondTypeDm> GetBondType([Parent] Bond bond,

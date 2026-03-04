@@ -26,7 +26,7 @@ public partial class LineOfAuthorityLog
 
     public string? Comments { get; set; }
 
-    public string? Status { get; set; }
+    public string Status { get; set; } = null!;
 
     public Guid? ApprovedBy { get; set; }
 
@@ -42,11 +42,15 @@ public partial class LineOfAuthorityLog
 
     public Guid? CreatedBy { get; set; }
 
-    public virtual UserProfile? ApprovedByNavigation { get; set; }
+    public Guid? ReasonId { get; set; }
 
-    public virtual UserProfile? CreatedByNavigation { get; set; }
+    public virtual Employee? ApprovedByNavigation { get; set; }
+
+    public virtual Employee? CreatedByNavigation { get; set; }
 
     public virtual DivisionDm? DivisionNavigation { get; set; }
 
-    public virtual LineOfAuthorityStatusDm? StatusNavigation { get; set; }
+    public virtual LineOfAuthorityReason? Reason { get; set; }
+
+    public virtual LineOfAuthorityStatusDm StatusNavigation { get; set; } = null!;
 }

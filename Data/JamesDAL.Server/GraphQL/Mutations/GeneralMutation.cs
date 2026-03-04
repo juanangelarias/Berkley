@@ -315,16 +315,16 @@ public partial class GeneralMutation
         var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
         if (null == username)
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-        
+
         var settings = await ctx.UserSettings
             .Where(r => r.Username == username)
             .ToListAsync();
-        
+
         ctx.UserSettings.RemoveRange(settings);
         await ctx.SaveChangesAsync();
         return true;
     }
-    
+
     [Authorize]
     public async Task<bool> ResetUserSetting(string key, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
         [Service] IHttpContextAccessor contextAccessor)
@@ -335,11 +335,11 @@ public partial class GeneralMutation
         var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
         if (null == username)
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-        
+
         var settings = await ctx.UserSettings
             .Where(r => r.Username == username && r.Key == key)
             .ToListAsync();
-        
+
         ctx.UserSettings.RemoveRange(settings);
         await ctx.SaveChangesAsync();
         return true;

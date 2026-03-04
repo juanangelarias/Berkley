@@ -30,5 +30,7 @@ public partial class Collateral
 
     public DateTime? Released { get; set; }
 
+    public string? Bank { get; set; }
+
     public virtual Bond? BondNumberNavigation { get; set; }
 }

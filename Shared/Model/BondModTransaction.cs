@@ -23,4 +23,6 @@ public partial class BondModTransaction
     public int ModPremium { get; set; }
 
     public string Status { get; set; } = null!;
+
+    public virtual Bond BondNumberNavigation { get; set; } = null!;
 }

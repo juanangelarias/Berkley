@@ -12,8 +12,9 @@ public class AccountProgramDto
     public Guid StatusId { get; set; }
     public string Status { get; set; } = string.Empty;
     public Guid CreatedById { get; set; }
-    public string CreatedBy { get; set; } = string.Empty;
-    public string? ApprovedBy { get; set; } = string.Empty;
+    public string CreatedByName { get; set; } = string.Empty;
+    public Guid? ApprovedById { get; set; }
+    public string? ApprovedByName { get; set; } = string.Empty;
     public DateTime? ApprovedDate { get; set; }
     public List<AccountProgramStatusLogDto> Logs { get; set; } = [];
 }

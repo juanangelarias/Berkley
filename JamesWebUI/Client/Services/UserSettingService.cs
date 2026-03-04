@@ -5,7 +5,6 @@ using JamesWebUI.Client.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Diagnostics;
 using James.Shared.Dto;
-using James.Shared.Model;
 
 namespace JamesWebUI.Client.Services;
 

@@ -1,5 +1,6 @@
 using James.Shared.Dto;
 using System.Web.Http;
+using James.Shared;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -279,5 +280,27 @@ public partial class Query
         }
 
         return prg;
+    }
+    
+    [HotChocolate.Authorization.Authorize]
+    public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var loggedUser = await userShared.GetCurrentUser();
+        if(loggedUser == null)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        
+        var employee = await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser.Username) ?? await ctx.Employees
+            .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser.Username));
+
+        if(employee == null)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        
+        return await ctx.UserLineOfAuthorities
+            .Where(f => f.UserId == employee.Id && f.DivisionCode == division)
+            .ToListAsync();
     }
 }

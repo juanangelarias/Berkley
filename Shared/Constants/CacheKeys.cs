@@ -42,6 +42,7 @@ public static class CacheKeys
 
     // U
     public static string UnderwriterRecommendation(string accountNum) => $"UnderwriterRecommendation-{accountNum}";
+    public static string UserLOA(string division) => $"UserLOA-{division}";
     public static string UserSettings(string userId, string? subKey)
     {
         var key = $"UserSettings-{userId.ToLower()}";

@@ -376,7 +376,7 @@ namespace James.Data.Server
             DateTime expiration, int single, int aggregate, string? comments, Guid statusId)
         {
             return await ExecuteSave(async () => await generalMutation.SetAccountProgram(programId, accountNum, effective,
-                expiration, single, aggregate, comments, statusId, contextFactory, contextAccessor));
+                expiration, single, aggregate, comments, statusId, contextFactory, userShared));
         }
 
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,
@@ -994,14 +994,14 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> ResetUserSettings()
         {
-            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+            //HACK: This was written for developer testing and has not been fully tested to be used in the actual application.
             return await ExecuteSave(async () =>
                 await generalMutation.ResetUserSettings(contextFactory, contextAccessor));
         }
 
         public async Task<ISaveDataResult> ResetUserSetting(string key)
         {
-            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+            //HACK: This was written for developer testing and has not been fully tested to be used in the actual application.
             return await ExecuteSave(async () => await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
         }
 
@@ -1028,7 +1028,7 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)
         {
             return await ExecuteGet(async () =>
-                await query.GetUserLOAByDivision(division, contextFactory, contextAccessor));
+                await query.GetUserLOAByDivision(division, contextFactory, userShared));
         }
 
         #endregion
@@ -1136,7 +1136,7 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () =>
                 await generalMutation.AccountProgramChangeStatus(accountProgramId, newStatusTxt, contextFactory,
-                    contextAccessor));
+                    userShared));
         }
         
         public async Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId)

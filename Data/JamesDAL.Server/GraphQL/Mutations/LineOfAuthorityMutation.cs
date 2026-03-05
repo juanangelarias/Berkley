@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using James.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Mutations;
@@ -8,12 +9,18 @@ public partial class GeneralMutation
     [Authorize]
     public async Task<bool> SetAccountProgram(Guid programId, string accountNum, DateTime effective,
         DateTime? expiration, int single, int aggregate, string? comments, Guid statusId,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var employee = await GetEmployee(contextAccessor, ctx);
+        var user = await userShared.GetCurrentUser();
+        var employee = await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
+                       await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
+
+        if (employee == null)
+            throw new GraphQLException("User not found in employee table.");
 
         AccountProgramStatusHistory CreateStatusLog(AccountProgramStatusHistory? lastLog) => new()
         {
@@ -104,11 +111,18 @@ public partial class GeneralMutation
     [Authorize]
     public async Task<bool> AccountProgramChangeStatus(Guid accountProgramId, string newStatusTxt,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var employee = await GetEmployee(contextAccessor, ctx);
+        var user = await userShared.GetCurrentUser();
+        var employee = await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
+                       await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
+
+        if (employee == null)
+            throw new GraphQLException("User not found in employee table.");
 
         var newStatus = ctx.AccountProgramStatusDms
             .FirstOrDefault(f => f.Description.ToUpper() == newStatusTxt.ToUpper());

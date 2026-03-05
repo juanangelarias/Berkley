@@ -1,5 +1,6 @@
+using HotChocolate.Authorization;
+using James.Shared;
 using James.Shared.Dto;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Queries;
@@ -81,34 +82,6 @@ public partial class Query
             IsUnderwriter = isUnderWriter,
             HomeOfficeApprover = employee.HomeOfficeApprover
         };
-    }
-
-    [Authorize]
-    public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
-    {
-        var ctx = await contextFactory.CreateDbContextAsync();
-        
-        var loggedUser = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
-        if(loggedUser == null)
-            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-        
-        var employee = await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser);
-        
-        if (employee == null)
-        {
-            employee = await ctx.Employees
-                .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser));
-            
-            if(employee == null)
-                throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-        }
-        
-        return await ctx.UserLineOfAuthorities
-            .Where(f => f.UserId == employee.Id && f.DivisionCode == division)
-            .ToListAsync();
     }
 
     private async Task<(Employee?, string)> GetEmployeeUserName(string loggedUser, JamesDatabaseContext ctx)

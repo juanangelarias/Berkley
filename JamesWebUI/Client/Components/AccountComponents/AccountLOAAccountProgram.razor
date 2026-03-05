@@ -255,6 +255,24 @@
 
     #endregion
 
+    #region UserLOAByDivision Load
+
+    private IDataAccessResult<List<UserLineOfAuthority>> _userLOAByDivisionResult = null!;
+
+    private LoadItem UserLOAByDivisionLoad => AddEventNotify(new LoadItem<List<UserLineOfAuthority>>
+    {
+        Key = CacheKeys.UserLOA(Account.Division),
+        AsyncLoadTask = async () => _userLOAByDivisionResult = await DataAccess.GetUserLOAByDivision(Account.Division),
+        CacheLoadTask = cache => _userLOAByDivisionResult = new DataAccessResult<List<UserLineOfAuthority>>
+        {
+            Data = (List<UserLineOfAuthority>)cache!
+        },
+        ResultVariable = () => _userLOAByDivisionResult,
+        AfterLoad = () => { }
+    }, "user LOA by division");
+
+    #endregion
+
     #endregion
 
     protected override async Task OnInitializedAsync()
@@ -277,7 +295,7 @@
     {
         await ShowLoading();
         
-        await DataAccess.GetCacheOrLoadDataAsync(AccountProgramsLoad);
+        await DataAccess.ParallelGetCacheOrDataAsync(AccountProgramsLoad, UserLOAByDivisionLoad);
     }
 
     private async Task InsertRow()

@@ -5,7 +5,6 @@ using JamesWebUI.Client.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using System.Diagnostics;
 using James.Shared.Dto;
-using James.Shared.Model;
 
 namespace JamesWebUI.Client.Services;
 
@@ -17,7 +16,6 @@ public interface IUserSettingService
     Task<ISaveDataResult> SetUserSettingAsync(string key, string? value);
     Task<ISaveDataResult> SetDefaultUserSettingAsync(string key, string? value);
     Task<UserInfoDto?> GetUserEmployeeInfoAsync();
-    Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division);
 }
 
 public class UserSettingService(IDataAccess dataAccess, ILocalStorageService localStorageService, AuthenticationStateProvider authenticationStateProvider) : IUserSettingService
@@ -180,14 +178,5 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
         return response.Success
             ? response.Data!
             : throw new Exception($"Error getting user employee info: {response.Errors.First()}");
-    }
-    
-    public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division)
-    {
-        var response = await dataAccess.GetUserLOAByDivision(division);
-        
-        return response.Success
-            ? response.Data!
-            : throw new Exception($"Error getting user LOA by division: {response.Errors.First()}");
     }
 }

@@ -278,7 +278,6 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        _userLOA = await UserSettingService.GetUserLOAByDivision(Account.Division);
         await LoadData();
     }
 

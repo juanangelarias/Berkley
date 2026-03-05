@@ -1,5 +1,6 @@
 ﻿using James.Shared;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Mutations;
 

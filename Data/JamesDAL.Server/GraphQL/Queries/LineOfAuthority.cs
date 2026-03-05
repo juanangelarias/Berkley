@@ -298,6 +298,61 @@ public partial class Query
     }
     
     [Authorize]
+    public async Task<List<AccountAgencyLOADto>> GetAccountAgencyLOA(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var data = await ctx.AgencyLineOfAuthorityLogs
+            .Where(r => r.AccountNum == accountNum)
+            .Select(s => new AccountAgencyLOADto
+            {
+                Id = s.Id,
+                AccountNum = s.AccountNum,
+                AgencyNumber = s.AgencyNumber,
+                SequenceNumber = s.SequenceNumber,
+                Effective = s.Effective,
+                Expiration = s.Expiration,
+                LoaSingle = s.Loasingle,
+                LoaAggregate = s.Loaaggregate,
+                Division = s.Division,
+                BondType = s.BondType,
+                Created = s.Created,
+                CreatedById = s.CreatedBy,
+                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName
+            })
+            .ToListAsync();
+
+        return data;
+    }
+
+    [Authorize]
+    public async Task<AccountAgencyLOADto?> GetAccountAgencyLOAById(Guid id,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var data = await ctx.AgencyLineOfAuthorityLogs
+            .Select(s => new AccountAgencyLOADto
+            {
+                Id = s.Id,
+                AccountNum = s.AccountNum,
+                AgencyNumber = s.AgencyNumber,
+                SequenceNumber = s.SequenceNumber,
+                Effective = s.Effective,
+                Expiration = s.Expiration,
+                LoaSingle = s.Loasingle,
+                LoaAggregate = s.Loaaggregate,
+                Division = s.Division,
+                BondType = s.BondType,
+                Created = s.Created,
+                CreatedById = s.CreatedBy,
+                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName
+            })
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        return data;
+    }
+    
+    [Authorize]
     public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
     {

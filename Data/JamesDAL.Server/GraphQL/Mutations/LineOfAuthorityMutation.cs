@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using James.Shared;
+using Microsoft.AspNetCore.Authorization;
 
 namespace James.Data.Server.GraphQL.Mutations;
 
@@ -8,17 +8,15 @@ public partial class GeneralMutation
     [Authorize]
     public async Task<bool> SetAccountProgram(Guid programId, string accountNum, DateTime effective,
         DateTime? expiration, int single, int aggregate, string? comments, Guid statusId,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
-        if (null == username)
-            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-
-        var employee = (await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username));
+        var user = await userShared.GetCurrentUser();
+        var employee = await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
+                       await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
 
         if (employee == null)
             throw new GraphQLException("User not found in employee table.");
@@ -86,60 +84,59 @@ public partial class GeneralMutation
     }
 
     [Authorize]
-    public async Task<bool> DeleteAccountProgram(Guid accountProgramId, 
+    public async Task<bool> DeleteAccountProgram(Guid accountProgramId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var record = await ctx.AccountPrograms
             .FirstOrDefaultAsync(f => f.Id == accountProgramId);
-        
-        if(record == null)
+
+        if (record == null)
             throw new GraphQLException("Account program status dms not found.");
 
         var history = await ctx.AccountProgramStatusHistories
             .Where(f => f.AccountProgramId == accountProgramId)
             .ToListAsync();
-        
+
         ctx.AccountProgramStatusHistories.RemoveRange(history);
         ctx.AccountPrograms.Remove(record);
-        
+
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 
     [Authorize]
     public async Task<bool> AccountProgramChangeStatus(Guid accountProgramId, string newStatusTxt,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
-        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
-        if (null == username)
-            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
 
-        var employee = (await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username));
-        
-        if(employee == null)
+        var user = await userShared.GetCurrentUser();
+        var employee = await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
+                       await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
+
+        if (employee == null)
             throw new GraphQLException("User not found in employee table.");
 
         var newStatus = ctx.AccountProgramStatusDms
             .FirstOrDefault(f => f.Description.ToUpper() == newStatusTxt.ToUpper());
-        
-        if(newStatus == null)
+
+        if (newStatus == null)
             throw new GraphQLException($"'{newStatusTxt}' status not found");
-        
+
         var program = await ctx.AccountPrograms.FindAsync(accountProgramId);
-        if(program == null)
+        if (program == null)
             throw new GraphQLException("Account program not found");
-        
+
         var lastLog = await ctx.AccountProgramStatusHistories
-            .OrderBy(o=>o.AccountProgramId)
-            .ThenByDescending(t=>t.Created)
-            .FirstOrDefaultAsync(f=>f.AccountProgramId == accountProgramId);
+            .OrderBy(o => o.AccountProgramId)
+            .ThenByDescending(t => t.Created)
+            .FirstOrDefaultAsync(f => f.AccountProgramId == accountProgramId);
 
         var newLog = new AccountProgramStatusHistory
         {
@@ -155,9 +152,9 @@ public partial class GeneralMutation
             NewAggregate = program.Aggregate,
             StatusChangeBy = employee.Id
         };
-        
+
         ctx.AccountProgramStatusHistories.Add(newLog);
-        program.StatusId = newStatus.Id; 
+        program.StatusId = newStatus.Id;
         program.Modified = DateTime.Now;
         program.ApprovedDate = DateTime.Now;
 
@@ -173,7 +170,7 @@ public partial class GeneralMutation
         {
             // ToDo: Send email to approver
         }
-        
+
         return true;
     }
 }

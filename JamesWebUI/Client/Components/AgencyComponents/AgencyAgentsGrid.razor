@@ -12,8 +12,8 @@
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
                 @bind-Settings="@GridSettings" AllowColumnReorder="true"
                 GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single"
-                AllowRowSelectOnRowClick="true" AllowPaging="true" PageSize="10" AllowSorting="true"
-                AllowColumnResize="true" AllowFiltering="true" FilterMode="FilterMode.Advanced">
+                AllowRowSelectOnRowClick="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true"
+                FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="DefaultExportFormat"/>
@@ -93,10 +93,7 @@
             Data = (List<AgencyAgentDto>)cache!
         },
         ResultVariable = () => _agentsResult,
-        AfterLoad = void () =>
-        {
-            Agents = _agentsResult.Data!;
-        }
+        AfterLoad = void () => { Agents = _agentsResult.Data!; }
     }, "agency contacts");
 
     #endregion
@@ -104,9 +101,9 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        
+
         GridSettingsKey = "AgencyAgentsGrid";
-        
+
         await GetGridSettings();
         IsLoading = false;
     }
@@ -188,4 +185,5 @@
             .FirstOrDefault(f => f.AgencyId == Agency.Id)?
             .AttorneyInFact;
     }
+
 }

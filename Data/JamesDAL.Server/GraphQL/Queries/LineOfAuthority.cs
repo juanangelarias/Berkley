@@ -1,5 +1,6 @@
 using James.Shared.Dto;
-using Microsoft.AspNetCore.Authorization;
+using System.Web.Http;
+using James.Shared;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -175,186 +176,6 @@ public partial class Query
         return total;
     }
 
-    /*[Authorize]
-    public async Task<List<AccountProgramDto>> GetAccountPrograms(string accountNum,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-    {
-        var ctx = await contextFactory.CreateDbContextAsync();
-
-        var data = await ctx.AccountPrograms
-            .Include(i => i.Status)
-            .Include(i => i.AccountProgramStatusHistories)
-            .ThenInclude(i => i.NewStatusNavigation)
-            .Include(i => i.AccountProgramStatusHistories)
-            .ThenInclude(i => i.OldStatusNavigation)
-            .Where(r => r.AccountNum == accountNum)
-            .OrderBy(o => o.AccountNum)
-            .ThenByDescending(o => o.Effective)
-            .ToListAsync();
-
-        var employees = await ctx.Employees
-            .ToListAsync();
-
-        var result = new List<AccountProgramDto>();
-        foreach (var program in data)
-        {
-            var prg = new AccountProgramDto
-            {
-                Id = program.Id,
-                AccountNum = program.AccountNum,
-                RequireExpiration = true, // ToDo: To be changed
-                Effective = program.Effective,
-                Expiration = program.Expiration,
-                Single = program.Single,
-                Aggregate = program.Aggregate,
-                StatusId = program.StatusId,
-                Status = program.Status.Description,
-                ApprovedById = program.ApprovedById,
-                ApprovedByName = program.Status.ApprovedByName,
-                ApprovedDate = program.ApprovedDate
-            };
-            foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
-            {
-                prg.Logs.Add(new AccountProgramStatusLogDto
-                {
-                    Id = hst.Id,
-                    AccountNum = hst.AccountNum,
-                    NewStatusId = hst.NewStatus,
-                    NewStatus = hst.NewStatusNavigation.Description,
-                    OldStatusId = hst.OldStatus,
-                    OldStatus = hst.OldStatusNavigation?.Description,
-                    StatusDate = hst.StatusDate,
-                    StatusChangeBy = hst.StatusChangeBy,
-                    StatusChangeByFullName = employees
-                        .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
-                        .FullName ?? "",
-                    OldSingle = hst.OldSingle,
-                    NewSingle = hst.NewSingle,
-                    OldAggregate = hst.OldAggregate,
-                    NewAggregate = hst.NewAggregate,
-                });
-            }
-
-            result.Add(prg);
-        }
-
-        return result;
-    }*/
-
-    /*[Authorize]
-    public async Task<AccountProgramDto> GetAccountProgramById(Guid id,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-    {
-        var ctx = await contextFactory.CreateDbContextAsync();
-        var program = await ctx.AccountPrograms
-            .Include(i => i.Status)
-            .Include(i => i.AccountProgramStatusHistories)
-            .ThenInclude(i => i.NewStatusNavigation)
-            .Include(i => i.AccountProgramStatusHistories)
-            .ThenInclude(i => i.OldStatusNavigation)
-            // ToDo: Add Include to Employee (StatusChangeByNavigation)
-            .FirstOrDefaultAsync(r => r.Id == id);
-
-        if (program == null)
-            throw new GraphQLException("Account program not found");
-
-        var employees = await ctx.Employees
-            .ToListAsync();
-
-        var prg = new AccountProgramDto
-        {
-            Id = program.Id,
-            Effective = program.Effective,
-            Expiration = program.Expiration,
-            Single = program.Single,
-            Aggregate = program.Aggregate,
-            StatusId = program.StatusId,
-            Status = program.Status.Description,
-            CreatedById = program.CreatedBy,
-            CreatedByName = program.CreatedByName,
-            ApprovedById = program.ApprovedBy,
-            ApprovedByName = program.ApprovedByName,
-            ApprovedDate = program.ApprovedDate
-        };
-        foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
-        {
-            prg.Logs.Add(new AccountProgramStatusLogDto
-            {
-                Id = hst.Id,
-                NewStatusId = hst.NewStatus,
-                NewStatus = hst.NewStatusNavigation.Description,
-                OldStatusId = hst.OldStatus,
-                OldStatus = hst.OldStatusNavigation?.Description,
-                StatusDate = hst.StatusDate,
-                StatusChangeBy = hst.StatusChangeBy,
-                StatusChangeByFullName = employees
-                    .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
-                    .FullName ?? "",
-                OldSingle = hst.OldSingle,
-                NewSingle = hst.NewSingle,
-                OldAggregate = hst.OldAggregate,
-                NewAggregate = hst.NewAggregate,
-            });
-        }
-
-        return prg;
-    }*/
-
-    [Authorize]
-    public async Task<List<AccountAgencyLOADto>> GetAccountAgencyLOA(string accountNum,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-    {
-        var ctx = await contextFactory.CreateDbContextAsync();
-        var data = await ctx.AgencyLineOfAuthorityLogs
-            .Where(r => r.AccountNum == accountNum)
-            .Select(s => new AccountAgencyLOADto
-            {
-                Id = s.Id,
-                AccountNum = s.AccountNum,
-                AgencyNumber = s.AgencyNumber,
-                SequenceNumber = s.SequenceNumber,
-                Effective = s.Effective,
-                Expiration = s.Expiration,
-                LoaSingle = s.Loasingle,
-                LoaAggregate = s.Loaaggregate,
-                Division = s.Division,
-                BondType = s.BondType,
-                Created = s.Created,
-                CreatedById = s.CreatedBy,
-                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName
-            })
-            .ToListAsync();
-
-        return data;
-    }
-
-    [Authorize]
-    public async Task<AccountAgencyLOADto?> GetAccountAgencyLOAById(Guid id,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
-    {
-        var ctx = await contextFactory.CreateDbContextAsync();
-        var data = await ctx.AgencyLineOfAuthorityLogs
-            .Select(s => new AccountAgencyLOADto
-            {
-                Id = s.Id,
-                AccountNum = s.AccountNum,
-                AgencyNumber = s.AgencyNumber,
-                SequenceNumber = s.SequenceNumber,
-                Effective = s.Effective,
-                Expiration = s.Expiration,
-                LoaSingle = s.Loasingle,
-                LoaAggregate = s.Loaaggregate,
-                Division = s.Division,
-                BondType = s.BondType,
-                Created = s.Created,
-                CreatedById = s.CreatedBy,
-                CreatedByName = s.CreatedBy == null ? null : s.CreatedByNavigation!.FullName
-            })
-            .FirstOrDefaultAsync(r => r.Id == id);
-
-        return data;
-    }
-
     [Authorize]
     public async Task<List<AccountProgramDto>> GetAccountPrograms(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -367,7 +188,6 @@ public partial class Query
             .ThenInclude(i => i.NewStatusNavigation)
             .Include(i => i.AccountProgramStatusHistories)
             .ThenInclude(i => i.OldStatusNavigation)
-            // ToDo: Add Include to Employee (StatusChangeByNavigation)
             .Where(r => r.AccountNum == accountNum)
             .OrderBy(o => o.AccountNum)
             .ThenByDescending(o => o.Effective)
@@ -392,9 +212,7 @@ public partial class Query
                 Aggregate = program.Aggregate,
                 StatusId = program.StatusId,
                 Status = program.Status.Description,
-                CreatedById = program.CreatedBy,
                 CreatedByName = createdByName ?? "",
-                ApprovedById = program.ApprovedBy,
                 ApprovedByName = approvedByName,
                 ApprovedDate = program.ApprovedDate
             };
@@ -404,12 +222,9 @@ public partial class Query
                 {
                     Id = hst.Id,
                     AccountNum = hst.AccountNum,
-                    NewStatusId = hst.NewStatus,
                     NewStatus = hst.NewStatusNavigation.Description,
-                    OldStatusId = hst.OldStatus,
                     OldStatus = hst.OldStatusNavigation?.Description,
                     StatusDate = hst.StatusDate,
-                    StatusChangeBy = hst.StatusChangeBy,
                     StatusChangeByFullName = employees
                         .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
                         .FullName ?? "",
@@ -437,7 +252,6 @@ public partial class Query
             .ThenInclude(i => i.NewStatusNavigation)
             .Include(i => i.AccountProgramStatusHistories)
             .ThenInclude(i => i.OldStatusNavigation)
-            // ToDo: Add Include to Employee (StatusChangeByNavigation)
             .FirstOrDefaultAsync(r => r.Id == id);
 
         if (program == null)
@@ -445,7 +259,7 @@ public partial class Query
 
         var employees = await ctx.Employees
             .ToListAsync();
-        
+
         var createdByName = employees.FirstOrDefault(e => e.Id == program.CreatedBy)?.FullName;
         var approvedByName = employees.FirstOrDefault(e => e.Id == program.ApprovedBy)?.FullName;
 
@@ -458,10 +272,8 @@ public partial class Query
             Aggregate = program.Aggregate,
             StatusId = program.StatusId,
             Status = program.Status.Description,
-            CreatedById = program.CreatedBy,
             CreatedByName = createdByName ?? "",
-            ApprovedById = program.ApprovedBy,
-            ApprovedByName = approvedByName ?? "",
+            ApprovedByName = approvedByName,
             ApprovedDate = program.ApprovedDate
         };
         foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
@@ -469,12 +281,9 @@ public partial class Query
             prg.Logs.Add(new AccountProgramStatusLogDto
             {
                 Id = hst.Id,
-                NewStatusId = hst.NewStatus,
                 NewStatus = hst.NewStatusNavigation.Description,
-                OldStatusId = hst.OldStatus,
                 OldStatus = hst.OldStatusNavigation?.Description,
                 StatusDate = hst.StatusDate,
-                StatusChangeBy = hst.StatusChangeBy,
                 StatusChangeByFullName = employees
                     .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
                     .FullName ?? "",
@@ -486,5 +295,27 @@ public partial class Query
         }
 
         return prg;
+    }
+    
+    [Authorize]
+    public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var loggedUser = await userShared.GetCurrentUser();
+        if(loggedUser == null)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        
+        var employee = await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser.Username) ?? await ctx.Employees
+            .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser.Username));
+
+        if(employee == null)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+        
+        return await ctx.UserLineOfAuthorities
+            .Where(f => f.UserId == employee.Id && f.DivisionCode == division)
+            .ToListAsync();
     }
 }

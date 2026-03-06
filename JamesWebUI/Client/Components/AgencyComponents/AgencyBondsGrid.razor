@@ -150,7 +150,7 @@
 
     private LoadItem AgencyBondsLoad => AddEventNotify(new()
     {
-        Key = $"AgencyBondGrid{Agency.Id}_{AccountNum}_{_skip}_{_take}",
+        Key = CacheKeys.AgencyBonds(Agency.Id, AccountNum, _skip, _take),
         AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(Agency.Id, AccountNum, _skip, _take),
         CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<AgencyBondDto>>
         {

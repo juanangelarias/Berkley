@@ -86,7 +86,7 @@
 
     private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<AgencyAgentDto>>
     {
-        Key = $"AgencyContacts{Agency.Id}",
+        Key = CacheKeys.AgencyContacts(Agency.Id),
         AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(Agency.Id),
         CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<AgencyAgentDto>>
         {

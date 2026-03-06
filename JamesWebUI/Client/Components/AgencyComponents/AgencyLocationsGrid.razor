@@ -113,8 +113,7 @@
             _parentLocation = parentLocation == null
                 ? ""
                 : $"Parent: {parentLocation.Agency.AgencyNumber} - {parentLocation.Agency.IdNavigation.FullName}";
-        },
-        //CacheDuration = TimeSpan.FromSeconds(1)
+        }
     }, "agency related parties");
 
     protected override async Task OnParametersSetAsync()

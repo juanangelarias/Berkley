@@ -28,7 +28,7 @@ public static class CacheKeys
     public static string AgencyAgentLicenses(string agencyId, string agentId) =>
         $"AgencyAgentLicenses-{agencyId}-{agentId}";
     public static string AgencyBonds(Guid agencyId, string accountNum, int skip, int take) =>
-        $"BondTransactions-{agencyId}-{accountNum}-{skip}-{take}";
+        $"AgencyBond-{agencyId}-{accountNum ?? "NoAccount"}-{skip}-{take}";
     public static string AgencyBondByBlock(Guid agencyId, Guid bondBlockId) => $"BondByBlock-{bondBlockId}-{agencyId}";
     public static string AgencyCommissionRates(Guid agencyId) => $"AgencyCommissionRates-{agencyId}";
     public static string AgencyLicenses(string id) => $"AgencyLicenses-{id}";

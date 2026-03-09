@@ -7,8 +7,7 @@
 
 <RadzenDataGrid TItem="AgencyBondDto" @ref="@Grid" Data="@_agencyBonds" Count="@_count" LoadData="@LoadAgencyBonds"
                 AllowVirtualization="true" @bind-Settings="@GridSettings" AllowColumnReorder="true"
-                Density="Density.Compact" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
-                AllowColumnPicking="true">
+                Density="Density.Compact" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true">
 
     @*AllowGrouping="true" AllowSorting="true" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading" 
                 Sort="@ShowLoading"

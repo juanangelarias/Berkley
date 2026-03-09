@@ -344,9 +344,10 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, string? accountNum, int skip, int take)
         {
-            throw new NotImplementedException();
-            /*return await ExecuteGet<List<AgencyBondDto>>(
-                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, accountNum, skip, take), "AgencyBonds");*/
+            var response = await ExecuteGet<List<AgencyBondDto>>(
+                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, accountNum, skip, take), "AgencyBonds");
+            
+            return response;
         }
         
         public async Task<IDataAccessResult<QueryCount>> GetAgencyBondsCount(Guid agencyId)

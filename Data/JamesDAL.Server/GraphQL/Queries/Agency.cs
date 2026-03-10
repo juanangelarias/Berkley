@@ -240,7 +240,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ToListAsync();
 
             if (bonds == null || bonds.Count == 0)
-                throw new GraphQLException($"There are no bonds for agencyId: {agencyId}.");
+                return [];
 
             var bondNumbers = bonds.Select(b => b.BondNumber).ToList();
             var transactions = ctx.BondTransactions

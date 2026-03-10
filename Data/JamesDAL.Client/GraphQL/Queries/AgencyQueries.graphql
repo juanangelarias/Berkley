@@ -99,7 +99,7 @@ query agencyAccountBonds($accountNum: String!) {
     }
 }
 
-query GetAgencyBonds($agencyId: UUID!, $accountNum: String!, $skip: Int!, $take: Int!) {
+query GetAgencyBonds($agencyId: UUID!, $accountNum: String, $skip: Int!, $take: Int!) {
   agencyBonds(agencyId: $agencyId, accountNum: $accountNum, skip: $skip, take: $take) {
       accountName
       accountNum

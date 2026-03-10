@@ -5,15 +5,15 @@
 
 <Theme/>
 
-<RadzenDataGrid TItem="AgencyBondDto" @ref="@Grid" Data="@_agencyBonds" Count="@_count" LoadData="@LoadAgencyBonds"
-                AllowVirtualization="true" @bind-Settings="@GridSettings" AllowColumnReorder="true"
-                Density="Density.Compact" Style="height: 400px; border-radius: 10px;" AllowColumnResize="true"
-                AllowColumnPicking="true">
-
-    @*AllowGrouping="true" AllowSorting="true" Page="@ShowLoading" Group="@ShowLoading" Filter="@ShowLoading" 
-                Sort="@ShowLoading"
+<RadzenDataGrid TItem="AgencyBondDto" @ref="@Grid" @key="@($"{Agency.Id}:{AccountNum}")" Data="@_agencyBonds"
+                Count="@_count"
+                AllowColumnReorder="true" Density="Density.Compact"
+                Style="height: 400px; border-radius: 10px;" AllowColumnResize="true" AllowColumnPicking="true"
+                IsLoading="@IsLoading" @bind-Settings="@GridSettings" Page="@ShowLoading" Group="@ShowLoading"
+                Filter="@ShowLoading" Sort="@ShowLoading" AllowVirtualization="true" LoadData="@LoadAgencyBonds">
+    @*AllowGrouping="true" AllowSorting="true"  
                 GridLines="DataGridGridLines.Vertical" AllowFiltering="true" FilterMode="FilterMode.Advanced"
-                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" IsLoading="@IsLoading"> *@
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" > *@
 
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
@@ -57,13 +57,15 @@
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Bond No." Property="BondNumber" Width="125px"
                               Resizable="true">
             <Template Context="bond">
-                <RadzenLink Text="@bond.BondNumber" Path=@($"bond/{bond.BondNumber}") Style="--rz-grid-cell-font-size: 0.9rem"/>
+                <RadzenLink Text="@bond.BondNumber" Path=@($"bond/{bond.BondNumber}")
+                            Style="--rz-grid-cell-font-size: 0.9rem"/>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Account No." Property="AccountNum" Width="130px"
                               Resizable="true">
             <Template Context="bond">
-                <RadzenLink Text="@bond.AccountNum" Path=@($"account/{bond.AccountNum}") Style="--rz-grid-cell-font-size: 0.9rem"/>
+                <RadzenLink Text="@bond.AccountNum" Path=@($"account/{bond.AccountNum}")
+                            Style="--rz-grid-cell-font-size: 0.9rem"/>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Account Name" Property="AccountName" Width="200px"
@@ -135,7 +137,7 @@
 
     private int _skip;
     private int _take;
-    private int _count = 1000;
+    private int _count;
     private string? _lastFilter;
 
     private RadzenDropDown<List<string>> StatusFilterDropDown { get; set; } = new();
@@ -150,7 +152,7 @@
 
     private LoadItem AgencyBondsLoad => AddEventNotify(new()
     {
-        Key = CacheKeys.AgencyBonds(Agency.Id, AccountNum, _skip, _take),
+        Key = CacheKeys.AgencyBonds(Agency.Id, AccountNum ?? string.Empty, _skip, _take),
         AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(Agency.Id, AccountNum, _skip, _take),
         CacheLoadTask = cache => _agencyBondsResult = new DataAccessResult<List<AgencyBondDto>>
         {
@@ -183,11 +185,22 @@
     private async Task LoadAgencyBonds(LoadDataArgs? args)
     {
         if (Agency.Id == Guid.Empty)
+        {
+            _agencyBonds = [];
+            _count = 0;
             return;
+        }
 
         var countResult = await DataAccess.GetAgencyBondsCount(Agency.Id);
-        if (countResult.Success)
-            _count = countResult.Data!.Count;
+        if (!countResult.Success)
+        {
+            await HandleError("No bonds found for this agency", []);
+            _count = 0;
+            _agencyBonds = [];
+            return;
+        }
+
+        _count = countResult.Data!.Count;
 
         if (!string.IsNullOrEmpty(args?.Filter) && _lastFilter != args.Filter)
         {
@@ -246,4 +259,5 @@
         };
         TooltipService.Open(element, message, options);
     }
+
 }

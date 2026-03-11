@@ -9,8 +9,6 @@
 	<CompressionEnabled>false</CompressionEnabled>
 	<NuGetAuditMode>all</NuGetAuditMode>
     <LangVersion>14</LangVersion>
-    <Version>1.0.0.$(BuildNum)</Version>
-    <Deterministic>false</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>

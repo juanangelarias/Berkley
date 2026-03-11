@@ -6,6 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
 	<CompressionEnabled>false</CompressionEnabled>
 	<LangVersion>14</LangVersion>
+    <Version>1.0.0.$(BuildNum)</Version>
+    <Deterministic>false</Deterministic>
   </PropertyGroup>
 
   <ItemGroup>

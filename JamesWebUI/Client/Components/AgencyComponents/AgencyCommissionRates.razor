@@ -70,7 +70,7 @@
     private List<AgencyCommissionRatePeriod> _contractCurrentRates = [];
     private List<AgencyCommissionRatePeriod> _contractScheduledRates = [];
 
-    private string KeyAgencyCommission => $"AgencyCommissionRates{Agency.Id}";
+    private string KeyAgencyCommission => CacheKeys.AgencyCommissionRates(Agency.Id);
 
     private IDataAccessResult<List<AgencyCommission>> _ratesResult = null!;
 

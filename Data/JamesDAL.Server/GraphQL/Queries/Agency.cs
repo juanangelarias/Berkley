@@ -411,6 +411,18 @@ namespace James.Data.Server.GraphQL.Queries
                     .ThenInclude(lic => lic.IdNavigation)
                     .ToListAsync();
 
+            if (!agents) 
+                return result;
+            
+            var agencyAgents = ctx.AgentsInAgencies
+                .Where(ag => ag.AgencyId == agencyId && ag.Active)
+                .Select(ag => ag.AgentId)
+                .ToList();
+                
+            result = result
+                .Where(r=> agencyAgents.Any(a=> a == r.AgentId))
+                .ToList();
+
             return result;
         }
 

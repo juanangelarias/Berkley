@@ -20,12 +20,6 @@ namespace James.Data.Client
         IBrowserStorageCache browserStorageCache
     ) : BaseDataAccess(browserStorageCache, logging), IDataAccess
     {
-        public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
-        {
-            //TODO: Fix
-            return await Task.FromResult(new DataAccessResult<List<Agent>>());
-        }
-
         public async Task<IDataAccessResult<List<BusinessTypeClassCodeDm>>> GetAllBusinessTypeClassCodes()
         {
             return await ExecuteGet<List<BusinessTypeClassCodeDm>>(async () =>
@@ -386,12 +380,76 @@ namespace James.Data.Client
             return await ExecuteGet<List<AgencyStatusDm>>(
                 async () => await jamesClient.GetAgencyStatuses.ExecuteAsync(), "AgencyStatuses");
         }
+        
+        #region Agent
+
+        public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
+        {
+            //TODO: Fix
+            return await Task.FromResult(new DataAccessResult<List<Agent>>());
+        }
 
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             return await ExecuteGet<Agent>(
                 async () => await jamesClient.AgentByAgentId.ExecuteAsync(agentId), "AgentByAgentId", "AgentByAgentId");
         }
+
+        public async Task<ISaveDataResult> SetAgent(Guid agentAgencyId, Guid agentId, string givenName,
+            string middleInitial, string familyName, string nationalProducerNumber, string countryCode,
+            string phoneNumber, string email, string? extension, Guid agencyId, bool aif)
+        {
+            var result = await jamesClient.SetAgent.ExecuteAsync(new SetAgentInput
+            {
+                AgentAgencyId = agentAgencyId,
+                AgentId = agentId,
+                AgencyId = agencyId,
+                GivenName = givenName,
+                MiddleInitial = middleInitial,
+                FamilyName = familyName,
+                NationalProducerNumber = nationalProducerNumber,
+                CountryCode = countryCode,
+                PhoneNumber = phoneNumber,
+                Email = email,
+                Extension = extension,
+                Aif = aif
+            });
+
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> TransferAgent(Guid agentId, Guid originAgencyId, Guid destinationAgencyId)
+        {
+            var result = await jamesClient.TransferAgent.ExecuteAsync(new TransferAgentInput
+            {
+                AgentId = agentId,
+                OriginAgencyId = originAgencyId,
+                DestinationAgencyId = destinationAgencyId
+            });
+            
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> DisassociateAgent(Guid agentId, Guid agencyId)
+        {
+            var result = await jamesClient.DisassociateAgent.ExecuteAsync(new DisassociateAgentInput
+            {
+                AgentId = agentId,
+                AgencyId = agencyId
+            });
+            
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<IDataAccessResult<AgencyAgentDto?>> VerifyNpn(string nationalProducerNumber, Guid agencyId)
+        {
+            return await ExecuteGet<AgencyAgentDto?>(async () =>
+                    await jamesClient.VerifyNpn.ExecuteAsync(nationalProducerNumber, agencyId),
+                "AgencyAgentDto");
+        }
+
+        #endregion
+        
         public async Task<IDataAccessResult<List<AgencyLocationsDto>>> GetAgencyRelatedParties(Guid agencyId)
         {
             return await ExecuteGet<List<AgencyLocationsDto>>(

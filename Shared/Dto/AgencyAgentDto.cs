@@ -13,6 +13,7 @@ public class AgencyAgentDto
     public string? FamilyName { get; set; } = string.Empty;
     public string NationalProducerNumber { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string CountryCode { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public string Extension { get; set; } = string.Empty;
     public bool AIF { get; set; }

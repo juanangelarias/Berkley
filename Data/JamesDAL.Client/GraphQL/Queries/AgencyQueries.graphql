@@ -135,6 +135,7 @@ query GetAgencyAgents($agencyId: UUID!){
         middleInitial
         familyName
         email
+        countryCode
         phoneNumber
         extension        
         nationalProducerNumber

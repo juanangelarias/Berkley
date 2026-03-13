@@ -341,6 +341,7 @@ namespace James.Data.Server.GraphQL.Queries
                     FamilyName = s.Agent.IdNavigation.FamilyName,
                     NationalProducerNumber = s.Agent.NationalProducerNumber ?? "",
                     Email = LegalEntityGetMains.GetMainEmail(s.Agent.IdNavigation) ?? "",
+                    CountryCode = LegalEntityGetMains.GetMainPhoneNumber(s.Agent.IdNavigation)?.CountryCode ?? "",
                     PhoneNumber = LegalEntityGetMains.GetMainPhoneNumber(s.Agent.IdNavigation)?.MainNumber ?? "",
                     Extension = LegalEntityGetMains.GetMainPhoneNumber(s.Agent.IdNavigation)?.Extension ?? "",
                     AIF = s.AttorneyInFact

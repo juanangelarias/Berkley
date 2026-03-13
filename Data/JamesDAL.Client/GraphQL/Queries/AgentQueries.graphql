@@ -74,3 +74,21 @@ query SearchAgents($input: String!) {
 	}
 	}
 } 
+
+query VerifyNpn($nationalProducerNumber: String!, $agencyId: UUID!) {
+    verifyNpn(agencyId: $agencyId, nationalProducerNumber: $nationalProducerNumber){
+        id
+        agencyId
+        agentId
+        givenName
+        middleInitial
+        familyName
+        fullName
+        nationalProducerNumber
+        email
+        countryCode
+        phoneNumber
+        extension
+        aif
+    }
+}

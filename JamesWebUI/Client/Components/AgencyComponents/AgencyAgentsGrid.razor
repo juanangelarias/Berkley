@@ -1,4 +1,5 @@
 ﻿@using System.Text.RegularExpressions
+@using Blazorise.DeepCloner
 @using SharedBusinessLogic
 @inherits JamesGridLayoutComponentBase<AgencyAgentDto>
 
@@ -159,6 +160,7 @@
     [Parameter, EditorRequired] public Agency Agency { get; set; }
 
     private List<AgencyAgentDto> Agents { get; set; } = [];
+    private AgencyAgentDto? _originalValues;
     private bool _isEditing;
 
     #region Loaders
@@ -271,6 +273,7 @@
             return;
 
         _isEditing = true;
+        _originalValues = Copy(agent);
         await Grid.EditRow(agent);
     }
 
@@ -304,8 +307,15 @@
 
     private void Cancel(AgencyAgentDto agent)
     {
+        var index = Agents.IndexOf(agent);
+        if (index == -1)
+            return;
+
+        Agents[index] = Copy(_originalValues);
+        
         Grid.CancelEditRow(agent);
         _isEditing = false;
+        _originalValues = null;
     }
 
     private async Task RowCreate(AgencyAgentDto agent)
@@ -324,6 +334,32 @@
 
         DataAccess.UpdateCache(CacheKeys.AgencyAgents(Agency.Id), Agents);
         _isEditing = false;
+        _originalValues = null;
     }
 
+    private AgencyAgentDto Copy(AgencyAgentDto source)
+    {
+        if (source == null)
+        {
+            Console.WriteLine("Source is null");
+            return null;
+        }
+        
+        return new()
+        {
+            Id = source.Id,
+            AgencyId = source.AgencyId,
+            AgentId = source.AgentId,
+            GivenName = source.GivenName,
+            MiddleInitial = source.MiddleInitial,
+            FamilyName = source.FamilyName,
+            FullName = source.FullName,
+            NationalProducerNumber = source.NationalProducerNumber,
+            Email = source.Email,
+            CountryCode = source.CountryCode,
+            PhoneNumber = source.PhoneNumber,
+            Extension = source.Extension,
+            AIF = source.AIF
+        };
+    }
 }

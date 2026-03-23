@@ -389,6 +389,12 @@ namespace James.Data.Client
             return await Task.FromResult(new DataAccessResult<List<Agent>>());
         }
 
+        public async Task<IDataAccessResult<List<JamesLookup>>> GetAgencyList()
+        {
+            return await ExecuteGet<List<JamesLookup>>(
+                async () => await jamesClient.GetAgencyList.ExecuteAsync(), "AgencyList");
+        }
+
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             return await ExecuteGet<Agent>(
@@ -397,7 +403,7 @@ namespace James.Data.Client
 
         public async Task<ISaveDataResult> SetAgent(Guid agentAgencyId, Guid agentId, string givenName,
             string middleInitial, string familyName, string nationalProducerNumber, string countryCode,
-            string phoneNumber, string email, string? extension, Guid agencyId, bool aif)
+            string phoneNumber, string email, string? extension, Guid agencyId, bool aif, bool isNew)
         {
             var result = await jamesClient.SetAgent.ExecuteAsync(new SetAgentInput
             {
@@ -412,17 +418,44 @@ namespace James.Data.Client
                 PhoneNumber = phoneNumber,
                 Email = email,
                 Extension = extension,
-                Aif = aif
+                Aif = aif,
+                IsNewAgent = isNew
             });
 
             return GraphQLSaveResult(result);
         }
 
-        public async Task<ISaveDataResult> TransferAgent(Guid agentId, Guid originAgencyId, Guid destinationAgencyId)
+        public async Task<ISaveDataResult> TransferAgent(Guid agentId, Guid originAgencyId, Guid destinationAgencyId,
+            bool transferLicenses)
         {
             var result = await jamesClient.TransferAgent.ExecuteAsync(new TransferAgentInput
             {
                 AgentId = agentId,
+                OriginAgencyId = originAgencyId,
+                DestinationAgencyId = destinationAgencyId,
+                TransferLicenses = transferLicenses
+            });
+            
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> UpdateAndTransferAgent(Guid agentAgencyId, Guid agentId, string givenName, string middleInitial, string familyName,
+            string nationalProducerNumber, string countryCode, string phoneNumber, string email, string? extension, bool aif,
+            Guid originAgencyId, Guid destinationAgencyId)
+        {
+            var result = await jamesClient.UpdateAndTransferAgent.ExecuteAsync(new UpdateAndTransferAgentInput
+            {
+                AgentAgencyId = agentAgencyId,
+                AgentId = agentId,
+                GivenName = givenName,
+                MiddleInitial = middleInitial,
+                FamilyName = familyName,
+                NationalProducerNumber = nationalProducerNumber,
+                CountryCode = countryCode,
+                PhoneNumber = phoneNumber,
+                Email = email,
+                Extension = extension,
+                Aif = aif,
                 OriginAgencyId = originAgencyId,
                 DestinationAgencyId = destinationAgencyId
             });
@@ -446,6 +479,17 @@ namespace James.Data.Client
             return await ExecuteGet<AgencyAgentDto?>(async () =>
                     await jamesClient.VerifyNpn.ExecuteAsync(nationalProducerNumber, agencyId),
                 "AgencyAgentDto");
+        }
+
+        public async Task<ISaveDataResult> AssignAgent(Guid agentId, Guid agencyId)
+        {
+            var result = await jamesClient.AssignAgent.ExecuteAsync(new AssignAgentInput
+            {
+                AgentId = agentId,
+                AgencyId = agencyId
+            });
+            
+            return GraphQLSaveResult(result);
         }
 
         #endregion

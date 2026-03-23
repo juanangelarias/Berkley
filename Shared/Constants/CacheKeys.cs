@@ -68,6 +68,7 @@ public static class CacheKeys
     // A
     public const string AddressTypes = "AddressTypes";
     public const string AgenciesDto = "AgenciesDto";
+    public const string AgenciesLookup = "AgenciesLookup";
 
     public const string AgencyStatuses = "AgencyStatuses";
 

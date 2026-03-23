@@ -489,8 +489,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId,
-            [Service] ITopicEventSender eventSender,
+        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId, [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

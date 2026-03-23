@@ -79,6 +79,8 @@ query VerifyNpn($nationalProducerNumber: String!, $agencyId: UUID!) {
     verifyNpn(agencyId: $agencyId, nationalProducerNumber: $nationalProducerNumber){
         id
         agencyId
+        agencyName
+        agencyNum
         agentId
         givenName
         middleInitial

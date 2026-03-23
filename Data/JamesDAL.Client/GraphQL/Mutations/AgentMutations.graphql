@@ -10,8 +10,20 @@ mutation TransferAgent($input: TransferAgentInput!){
     }
 }
 
+mutation UpdateAndTransferAgent($input: UpdateAndTransferAgentInput!){
+    updateAndTransferAgent(input: $input) {
+        boolean
+    }
+}
+
 mutation DisassociateAgent($input: DisassociateAgentInput!){
     disassociateAgent(input: $input){
+        boolean
+    }
+}
+
+mutation AssignAgent($input: AssignAgentInput!){
+    assignAgent(input: $input){
         boolean
     }
 }

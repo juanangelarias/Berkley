@@ -18,7 +18,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(a => a.Insurer.IdNavigation)
                 .Where(a => a.Id == agentId).FirstOrDefaultAsync();
 
-            return agent ?? throw new Exception("Agent Id not found");
+            return agent ?? throw new("Agent Id not found");
         }
 
         [Authorize]
@@ -31,7 +31,6 @@ namespace James.Data.Server.GraphQL.Queries
                 .Include(a => a.IdNavigation)
                 .Where(a => a.IdNavigation.FullName.Contains(searchString))
                 .ToListAsync();
-            ;
         }
 
         [Authorize]
@@ -59,12 +58,25 @@ namespace James.Data.Server.GraphQL.Queries
             
             if (agent == null)
                 return null;
-
+            
+            var agentAgency = ctx.AgentsInAgencies
+                .Include(i=>i.Agency)
+                .ThenInclude(a=>a.IdNavigation)
+                .Where(a => a.AgentId == agent.Id)
+                .OrderByDescending(o=>o.Created)
+                .FirstOrDefault();
+            
+            var agencyName = agentAgency != null
+                ? $"({agentAgency.Agency.AgencyNumber}) {agentAgency.Agency.IdNavigation.FullName}" 
+                : "";
+            
             return new()
             {
                 Id = Guid.NewGuid(),
                 AgentId = agent.Id,
-                AgencyId = agencyId,
+                AgencyId = agentAgency?.AgencyId,
+                AgencyName = agencyName,
+                AgencyNum = agentAgency?.Agency.AgencyNumber ?? "",
                 NationalProducerNumber = agent.NationalProducerNumber,
                 FullName = agent.IdNavigation.FullName,
                 GivenName = agent.IdNavigation.GivenName,
@@ -74,17 +86,15 @@ namespace James.Data.Server.GraphQL.Queries
                     .EmailAddress ?? "",
                 CountryCode = agent.IdNavigation.LegalEntityPhones
                     .FirstOrDefault(f => f.Type == "Main")?
-                    .PhoneNumber?
-                    .CountryCode ?? "",
+                    .PhoneNumber.CountryCode ?? "",
                 PhoneNumber = agent.IdNavigation.LegalEntityPhones
                     .FirstOrDefault(f => f.Type == "Main")?
-                    .PhoneNumber?
-                    .MainNumber ?? "",
+                    .PhoneNumber.MainNumber ?? "",
                 Extension = agent.IdNavigation.LegalEntityPhones
                     .FirstOrDefault(f => f.Type == "Main")?
-                    .PhoneNumber?
-                    .Extension ?? "",
-                AIF = false
+                    .PhoneNumber.Extension ?? "",
+                AIF = false,
+                Active = agentAgency?.Active ?? false
             };
         }
     }

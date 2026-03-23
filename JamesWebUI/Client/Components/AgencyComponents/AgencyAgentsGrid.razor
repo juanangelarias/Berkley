@@ -1,7 +1,4 @@
-﻿@using System.Text.RegularExpressions
-@using Blazorise.DeepCloner
-@using SharedBusinessLogic
-@inherits JamesGridLayoutComponentBase<AgencyAgentDto>
+﻿@inherits JamesGridLayoutComponentBase<AgencyAgentDto>
 
 @inject NavigationManager NavigationManager
 @inject TooltipService TooltipService
@@ -31,7 +28,7 @@
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
-        <AgencyAgentLicenseGrid Agency="Agency" Agent="agent"/>
+        <AgencyAgentLicenseGrid Agency="Agency" Agent="@agent"/>
     </Template>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Property="IdNavigation.GivenName" Width="175px">
@@ -153,6 +150,9 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
 </RadzenDataGrid>
 
 
@@ -169,7 +169,7 @@
 
     private IDataAccessResult<List<AgencyAgentDto>> _agentsResult = null!;
 
-    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<AgencyAgentDto>>
+    private LoadItem AgencyAgentsLoad => AddEventNotify(new LoadItem<List<AgencyAgentDto>>
     {
         Key = CacheKeys.AgencyAgents(Agency.Id),
         AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(Agency.Id),
@@ -204,12 +204,15 @@
         await LoadData();
     }
 
-    private async Task LoadData()
+    private async Task LoadData(bool reload = false)
     {
         if (Agency.Id == Guid.Empty)
             return;
+        
+        if(reload)
+            DataAccess.Clear(CacheKeys.AgencyAgents(Agency.Id));
 
-        await DataAccess.GetCacheOrLoadDataAsync(AgencyContactsLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyAgentsLoad);
     }
 
     private void ExportGrid(ExportFormat format)
@@ -277,15 +280,71 @@
         await Grid.EditRow(agent);
     }
 
-    private async Task TransferAgent(AgencyAgentDto agent)
+    private async Task<bool> TransferAgent(AgencyAgentDto agent, JamesLookup? targetAgencyPrm = null)
     {
-        // Call DataAccess to transfer agent to another agency
-        RemoveAgent(agent.AgentId);
+        var dialogOptions = GetDialogOptions();
+
+        var parameters = new Dictionary<string, object?>()
+        {
+            { "Agent", agent },
+            { "TargetAgency", targetAgencyPrm }
+        };
+
+        var dialogResponse = await DialogService
+            .OpenAsync<AgencyAgentTransferDialog>("Transfer Agent", parameters, dialogOptions);
+
+        if(dialogResponse == null)
+            return false;
+        
+        var (targetAgency, transferLicenses) = (Tuple<Guid, bool>)dialogResponse;
+
+        var response = await DataAccess.TransferAgent(agent.AgentId, agent.AgencyId!.Value, targetAgency, 
+            transferLicenses);
+        
+        if (!response.Success)
+        {
+            NotifySaveIssue(response.Errors, "agent");
+            return(false);
+        }
+        
+        var message = new NotificationMessage
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "Agent has been successfully transferred",
+            Detail = $"Agent {agent.FullName} has been successfully transferred."
+        };
+        NotificationService.Notify(message);
+        
+        if(targetAgencyPrm == null)
+            RemoveAgent(agent.AgentId);
+        
+        return true;
     }
 
     private async Task DisassociateAgent(AgencyAgentDto agent)
     {
-        // Call DataAccess to disassociate agent from agency
+        var confirm = await DialogService
+            .Confirm("Are you sure you want to disassociate this agent?",
+                "Disassociate Agent");
+        
+        if(confirm != true)
+            return;
+        
+        var response = await DataAccess.DisassociateAgent(agent.AgentId, Agency.Id);
+        if (!response.Success)
+        {
+            NotifySaveIssue(response.Errors, "agent");
+            return;
+        }
+
+        var message = new NotificationMessage
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "Agent Disassociated",
+            Detail = $"Agent {agent.FullName} has been successfully disassociated from the agency."
+        };
+        NotificationService.Notify(message);
+        
         RemoveAgent(agent.AgentId);
     }
 
@@ -298,6 +357,8 @@
         Agents.Remove(toDelete);
 
         DataAccess.UpdateCache(CacheKeys.AgencyAgents(Agency.Id), Agents);
+        
+        Grid.Reload();
     }
 
     private async Task Save(AgencyAgentDto agent)
@@ -308,33 +369,137 @@
     private void Cancel(AgencyAgentDto agent)
     {
         var index = Agents.IndexOf(agent);
-        if (index == -1)
-            return;
+        if (index != -1)
+            Agents[index] = Copy(_originalValues);
 
-        Agents[index] = Copy(_originalValues);
-        
         Grid.CancelEditRow(agent);
-        _isEditing = false;
+        _isEditing = false; 
         _originalValues = null;
     }
 
     private async Task RowCreate(AgencyAgentDto agent)
     {
-        SetAgent(agent);
+        await SetAgent(agent, true);
     }
 
     private async Task RowUpdate(AgencyAgentDto agent)
     {
-        SetAgent(agent);
+        await SetAgent(agent, false);
     }
 
-    private async Task SetAgent(AgencyAgentDto agent)
+    private async Task SetAgent(AgencyAgentDto agent, bool isNew = false)
     {
-        // Call DataAccess to set the agent
+        var agentId = isNew ? Guid.NewGuid() : agent.AgentId;
+        if (isNew && !string.IsNullOrWhiteSpace(agent.NationalProducerNumber))
+        {
+            agent.FullName = $"{agent.GivenName} {agent.MiddleInitial} {agent.FamilyName}";
+
+            var nppResponse = await DataAccess.VerifyNpn(agent.NationalProducerNumber, agentId);
+
+            if (!nppResponse.Success)
+            {
+                NotifySaveError(nppResponse.Errors, "verify national producer number");
+                return;
+            }
+
+            var existentAgent = nppResponse.Data;
+            if (existentAgent != null)
+            {
+                var dialogOptions = GetDialogOptions(650);
+
+                var parameters = new Dictionary<string, object>()
+                {
+                    { "ExistentAgent", existentAgent },
+                    { "ProposedAgent", agent },
+                };
+
+                var dialogResponse = await DialogService
+                    .OpenAsync<AgentNPPExistDialog>("Existing Agent", parameters, dialogOptions);
+
+                var action = ((string?)dialogResponse ?? "cancel").ToLower();
+
+                switch (action)
+                {
+                    case "associate":
+                        var associateResponse = await DataAccess.AssignAgent(agent.AgentId, existentAgent.AgencyId.Value);
+                        if (!associateResponse.Success)
+                        {
+                            NotifySaveError(associateResponse.Errors, "agent association");
+                            return;
+                        }
+
+                        var msg = new NotificationMessage
+                        {
+                            Severity = NotificationSeverity.Success,
+                            Summary = "Agent association successful",
+                            Detail = $"Agent {agent.GivenName} {agent.FamilyName} associated with this agency.",
+                            Duration = 5000
+                        };
+
+                        NotificationService.Notify(msg);
+                        
+                        LoadData(true);
+                        
+                        return;
+                    case "transfer":
+                        var targetAgency = new JamesLookup
+                        {
+                            Id = agent.AgencyId!.Value,
+                            Code = agent.AgencyNum,
+                            Name = agent.AgencyName,
+                        };
+                        var result = await TransferAgent(existentAgent, targetAgency);
+                        if (result)
+                        {
+                            await LoadData(true);
+                        }
+                        else
+                        {
+                            Grid.CancelEditRow(agent);
+                            _isEditing = false;
+                        }
+
+                        return;
+                    default:
+                        Grid.CancelEditRow(agent);
+                        _isEditing = false;
+                        return;
+                }
+            }
+        }
+
+        var response = await DataAccess.SetAgent(agent.Id, agentId, agent.GivenName,
+            agent.MiddleInitial, agent.FamilyName, agent.NationalProducerNumber, agent.CountryCode,
+            agent.PhoneNumber, agent.Email, agent.Extension, agent.AgencyId.Value, agent.AIF, isNew);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "agent");
+            return;
+        }
+
+        NotifySuccessfulSave("agent");
 
         DataAccess.UpdateCache(CacheKeys.AgencyAgents(Agency.Id), Agents);
         _isEditing = false;
         _originalValues = null;
+    }
+
+    private static DialogOptions GetDialogOptions(int? width = null)
+    {
+        var dialogOptions = new DialogOptions
+        {
+            Draggable = true,
+            Resizable = false,
+            CloseDialogOnEsc = false,
+            CloseDialogOnOverlayClick = false,
+            ShowClose = true,
+        };
+        
+        if(width != null)
+            dialogOptions.Width = width.ToString();
+        
+        return dialogOptions;
     }
 
     private AgencyAgentDto Copy(AgencyAgentDto source)

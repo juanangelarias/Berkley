@@ -564,6 +564,7 @@ type Query {
   agencyRelatedParties(agencyId: UUID!): [AgencyLocationsDto!]!
   agencyCommissionRates(agencyId: UUID!): [AgencyCommission!]!
   idAgencyNumbers: [Agency!]!
+  agencyList: [JamesLookup!]!
   agentByAgentId(agentId: UUID!): Agent!
   searchAgents(searchString: String!): [Agent!]!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
@@ -1264,6 +1265,13 @@ input CreateObligeeInput {
   email: String
 }
 
+type JamesLookup {
+  id: UUID!
+  code: String!
+  name: String!
+  label: String!
+}
+
 input CreatePhoneNumberInput {
   phoneId: UUID!
   countryCode: String
@@ -1387,6 +1395,8 @@ type Mutation {
   setAgencyProfitSharingInfo(input: SetAgencyProfitSharingInfoInput!): SetAgencyProfitSharingInfoPayload!
   setAgent(input: SetAgentInput!): SetAgentPayload!
   transferAgent(input: TransferAgentInput!): TransferAgentPayload!
+  updateAndTransferAgent(input: UpdateAndTransferAgentInput!): UpdateAndTransferAgentPayload!
+  assignAgent(input: AssignAgentInput!): AssignAgentPayload!
   disassociateAgent(input: DisassociateAgentInput!): DisassociateAgentPayload!
   setCreditReport(input: SetCreditReportInput!): SetCreditReportPayload!
   deleteCreditReport(input: DeleteCreditReportInput!): DeleteCreditReportPayload!
@@ -1934,6 +1944,22 @@ type AccountProgramEmailNotificationGroup {
   user: Employee!
 }
 
+input UpdateAndTransferAgentInput {
+  agentAgencyId: UUID!
+  agentId: UUID!
+  givenName: String!
+  middleInitial: String!
+  familyName: String!
+  nationalProducerNumber: String!
+  countryCode: String!
+  phoneNumber: String!
+  email: String!
+  extension: String
+  aif: Boolean!
+  originAgencyId: UUID!
+  destinationAgencyId: UUID!
+}
+
 type DisassociateAgentPayload {
   boolean: Boolean
 }
@@ -2053,6 +2079,7 @@ input TransferAgentInput {
   agentId: UUID!
   originAgencyId: UUID!
   destinationAgencyId: UUID!
+  transferLicenses: Boolean!
 }
 
 type AgencyStatusDm {
@@ -2450,6 +2477,10 @@ type OtherBid {
   bidNumberNavigation: BondRequest!
 }
 
+type UpdateAndTransferAgentPayload {
+  boolean: Boolean
+}
+
 type ImagingTab {
   id: UUID!
   created: DateTime!
@@ -2649,6 +2680,11 @@ type NotificationGroup {
 
 input DeleteAgencyPOAInput {
   poaId: UUID!
+}
+
+input AssignAgentInput {
+  agentId: UUID!
+  agencyId: UUID!
 }
 
 type CreateAgencyPayload {
@@ -3039,6 +3075,10 @@ type DivisionDm {
   imagingCategoryTabDivisions: [ImagingCategoryTabDivision!]!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
   profitCenters: [ProfitCenter!]!
+}
+
+type AssignAgentPayload {
+  boolean: Boolean
 }
 
 type SetAccountCommercialInfoPayload {
@@ -3630,18 +3670,21 @@ type AgencyLineOfAuthorityLog {
 
 type AgencyAgentDto {
   id: UUID!
-  agencyId: UUID!
+  agencyId: UUID
   agentId: UUID!
+  agencyName: String!
+  agencyNum: String!
   fullName: String!
   givenName: String
   middleInitial: String
   familyName: String
-  nationalProducerNumber: String!
+  nationalProducerNumber: String
   email: String!
   countryCode: String!
   phoneNumber: String!
   extension: String!
   aif: Boolean!
+  active: Boolean!
 }
 
 input DeleteAgencyInventoryInput {

@@ -384,7 +384,7 @@
 
     private async Task RowUpdate(AgencyAgentDto agent)
     {
-        await SetAgent(agent, false);
+        await SetAgent(agent);
     }
 
     private async Task SetAgent(AgencyAgentDto agent, bool isNew = false)
@@ -394,11 +394,11 @@
         {
             agent.FullName = $"{agent.GivenName} {agent.MiddleInitial} {agent.FamilyName}";
 
-            var nppResponse = await DataAccess.VerifyNpn(agent.NationalProducerNumber, agentId);
+            var nppResponse = await DataAccess.GetAgentByNationalProducerNumber(agent.NationalProducerNumber, agentId);
 
             if (!nppResponse.Success)
             {
-                NotifySaveError(nppResponse.Errors, "verify national producer number");
+                NotifyLoadError(nppResponse.Errors, "agent by NPP");
                 return;
             }
 

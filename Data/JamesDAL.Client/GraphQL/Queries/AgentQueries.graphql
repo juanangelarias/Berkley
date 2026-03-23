@@ -75,8 +75,8 @@ query SearchAgents($input: String!) {
 	}
 } 
 
-query VerifyNpn($nationalProducerNumber: String!, $agencyId: UUID!) {
-    verifyNpn(agencyId: $agencyId, nationalProducerNumber: $nationalProducerNumber){
+query GetAgentByNationalProducerNumber($nationalProducerNumber: String!, $agencyId: UUID!) {
+    agentByNationalProducerNumber(agencyId: $agencyId, nationalProducerNumber: $nationalProducerNumber){
         id
         agencyId
         agencyName

@@ -474,11 +474,11 @@ namespace James.Data.Client
             return GraphQLSaveResult(result);
         }
 
-        public async Task<IDataAccessResult<AgencyAgentDto?>> VerifyNpn(string nationalProducerNumber, Guid agencyId)
+        public async Task<IDataAccessResult<AgencyAgentDto?>> GetAgentByNationalProducerNumber(string nationalProducerNumber, Guid agencyId)
         {
             return await ExecuteGet<AgencyAgentDto?>(async () =>
-                    await jamesClient.VerifyNpn.ExecuteAsync(nationalProducerNumber, agencyId),
-                "AgencyAgentDto");
+                    await jamesClient.GetAgentByNationalProducerNumber.ExecuteAsync(nationalProducerNumber, agencyId),
+                "AgentByNationalProducerNumber");
         }
 
         public async Task<ISaveDataResult> AssignAgent(Guid agentId, Guid agencyId)

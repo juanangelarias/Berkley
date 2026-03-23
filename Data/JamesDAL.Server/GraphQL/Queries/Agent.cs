@@ -43,7 +43,7 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<AgencyAgentDto?> VerifyNpn(string nationalProducerNumber, Guid agencyId,
+        public async Task<AgencyAgentDto?> GetAgentByNationalProducerNumber(string nationalProducerNumber, Guid agencyId,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

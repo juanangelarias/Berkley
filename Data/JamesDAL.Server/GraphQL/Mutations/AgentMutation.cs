@@ -3,7 +3,7 @@
 namespace James.Data.Server.GraphQL.Mutations;
 
 [MutationType]
-public class AgentMutation
+public partial class GeneralMutation
 {
     [Authorize]
     public async Task<bool> SetAgent(Guid agentAgencyId, Guid agentId, string givenName, string middleInitial,
@@ -53,7 +53,9 @@ public class AgentMutation
                 ctx.LegalEntities.Add(legalEntity);
             }
 
-            legalEntity.FullName = $"{givenName} {middleInitial} {familyName}";
+            legalEntity.FullName = string.IsNullOrWhiteSpace(middleInitial)
+                ? $"{givenName} {familyName}"
+                : $"{givenName} {middleInitial} {familyName}";
             legalEntity.GivenName = givenName;
             legalEntity.MiddleInitial = middleInitial;
             legalEntity.FamilyName = familyName;

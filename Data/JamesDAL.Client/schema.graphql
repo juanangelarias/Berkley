@@ -150,6 +150,7 @@ type Subscription {
   onAddressCollectionModified(legalEntityId: ID!): SubscriptionResultOfGuid!
   onLicenseModified: AgencyLicense!
   onSearchResultReady(searchTerm: String!): SubscriptionResultOfListOfJamesSearchResult!
+  agentAdded: Agent!
 }
 
 type AccountProgramStatusHistory {
@@ -568,7 +569,7 @@ type Query {
   agentByAgentId(agentId: UUID!): Agent!
   searchAgents(searchString: String!): [Agent!]!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
-  verifyNpn(nationalProducerNumber: String! agencyId: UUID!): AgencyAgentDto
+  agentByNationalProducerNumber(nationalProducerNumber: String! agencyId: UUID!): AgencyAgentDto
   bondRequestNumberType(bondNumber: String!): BondRequestNumberType
   bondNumber(bondRequestNumber: String!): String
   searchBondsByBondNumber(bondNumberFragment: String! activeOnly: Boolean!): [Bond!]!

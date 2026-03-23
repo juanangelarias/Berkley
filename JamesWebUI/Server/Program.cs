@@ -142,7 +142,6 @@ try
     builder.Services.AddScoped<Query>();
     builder.Services.AddScoped<AccountMutation>();
     builder.Services.AddScoped<AgencyMutation>();
-    builder.Services.AddScoped<AgentMutation>();
     builder.Services.AddScoped<ObligeeMutation>();
     builder.Services.AddScoped<GeneralMutation>();
     builder.Services.AddRazorComponents()

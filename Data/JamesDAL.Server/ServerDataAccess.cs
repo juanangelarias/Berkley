@@ -16,7 +16,6 @@ namespace James.Data.Server
         Query query,
         AccountMutation accountMutation,
         AgencyMutation agencyMutation,
-        AgentMutation agentMutation,
         ObligeeMutation obligeeMutation,
         GeneralMutation generalMutation,
         ServerImagingAccess imagingAccess,
@@ -223,7 +222,7 @@ namespace James.Data.Server
             string nationalProducerNumber, string countryCode, string phoneNumber, string email, string? extension,
             Guid agencyId, bool aif, bool isNew)
         {
-            var response = await ExecuteSave(async () => await agentMutation.SetAgent(agentAgencyId, 
+            var response = await ExecuteSave(async () => await generalMutation.SetAgent(agentAgencyId, 
                 agentId, givenName, middleInitial, familyName, nationalProducerNumber, countryCode, phoneNumber, email, 
                 extension, agencyId, aif, isNew, contextFactory));
 
@@ -233,7 +232,7 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> TransferAgent(Guid agentId, Guid originAgencyId, Guid destinationAgencyId,
             bool transferLicenses)
         {
-            return await ExecuteSave(async () => await agentMutation.TransferAgent(agentId, originAgencyId, destinationAgencyId,
+            return await ExecuteSave(async () => await generalMutation.TransferAgent(agentId, originAgencyId, destinationAgencyId,
                 transferLicenses, contextFactory));
         }
 
@@ -241,25 +240,25 @@ namespace James.Data.Server
             string nationalProducerNumber, string countryCode, string phoneNumber, string email, string? extension, bool aif,
             Guid originAgencyId, Guid destinationAgencyId)
         {
-            return await ExecuteSave(async () => await agentMutation.UpdateAndTransferAgent(agentAgencyId, agentId,
+            return await ExecuteSave(async () => await generalMutation.UpdateAndTransferAgent(agentAgencyId, agentId,
                 givenName, middleInitial, familyName, nationalProducerNumber, countryCode, phoneNumber, email,
                 extension, aif, originAgencyId, destinationAgencyId, contextFactory));
         }
 
         public async Task<ISaveDataResult> DisassociateAgent(Guid agentId, Guid agencyId)
         {
-            return await  ExecuteSave(async () => await agentMutation.DisassociateAgent(agentId, agencyId, contextFactory));
+            return await  ExecuteSave(async () => await generalMutation.DisassociateAgent(agentId, agencyId, contextFactory));
         }
 
-        public async Task<IDataAccessResult<AgencyAgentDto?>> VerifyNpn(string nationalProducerNumber, Guid agencyId)
+        public async Task<IDataAccessResult<AgencyAgentDto?>> GetAgentByNationalProducerNumber(string nationalProducerNumber, Guid agencyId)
         {
             return await ExecuteGet(async () =>
-                await query.VerifyNpn(nationalProducerNumber, agencyId, contextFactory));
+                await query.GetAgentByNationalProducerNumber(nationalProducerNumber, agencyId, contextFactory));
         }
 
         public async Task<ISaveDataResult> AssignAgent(Guid agentId, Guid agencyId)
         {
-            return await  ExecuteSave(async () => await agentMutation.AssignAgent(agentId, agencyId, contextFactory));
+            return await  ExecuteSave(async () => await generalMutation.AssignAgent(agentId, agencyId, contextFactory));
         }
 
         #endregion

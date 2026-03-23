@@ -114,7 +114,7 @@ namespace James.Shared.Data
             string phoneNumber, string email, string? extension, bool aif, Guid originAgencyId,
             Guid destinationAgencyId);
         public Task<ISaveDataResult> DisassociateAgent(Guid agentId, Guid agencyId);
-        public Task<IDataAccessResult<AgencyAgentDto?>> VerifyNpn(string nationalProducerNumber, Guid agencyId);
+        public Task<IDataAccessResult<AgencyAgentDto?>> GetAgentByNationalProducerNumber(string nationalProducerNumber, Guid agencyId);
         public Task<ISaveDataResult> AssignAgent(Guid agentId, Guid agencyId);
 
         #endregion

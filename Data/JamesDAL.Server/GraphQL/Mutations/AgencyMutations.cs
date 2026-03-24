@@ -2,6 +2,7 @@
 using HotChocolate.Subscriptions;
 using James.Shared;
 using System.Diagnostics;
+using James.Shared.Dto;
 
 namespace James.Data.Server.GraphQL.Mutations
 {
@@ -9,7 +10,7 @@ namespace James.Data.Server.GraphQL.Mutations
     public class AgencyMutation
     {
         [Authorize]
-        public async Task<Agency> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9,
+        public async Task<AgencyAgentDto> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9,
             bool need1099, bool profitSharing, string address1, string address2, string address3, string city,
             string stateCode, string postalCode, string billingAddress1, string billingAddress2, string billingAddress3,
             string billingCity, string billingStateCode, string billingPostalCode,
@@ -65,7 +66,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 AddressId = newBillingAddress.Id
             };
             //TODO: Insert the new agency
-            return new Agency();
+            return new AgencyAgentDto();
         }
 
         public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
@@ -488,8 +489,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId,
-            [Service] ITopicEventSender eventSender,
+        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId, [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

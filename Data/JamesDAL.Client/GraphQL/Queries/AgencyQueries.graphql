@@ -129,12 +129,15 @@ query GetAgencyAgents($agencyId: UUID!){
 	agencyAgents(agencyId: $agencyId){
         id
         agencyId
+        agencyName
+        agencyNum
         agentId
         fullName
         givenName
         middleInitial
         familyName
         email
+        countryCode
         phoneNumber
         extension        
         nationalProducerNumber
@@ -343,5 +346,14 @@ query GetAllActiveAgencies {
         agencyNumber
         fullName
         status
+    }
+}
+
+query GetAgencyList {
+    agencyList {
+        id
+        code
+        name
+        label
     }
 }

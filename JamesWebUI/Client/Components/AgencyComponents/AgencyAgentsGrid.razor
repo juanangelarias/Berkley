@@ -282,9 +282,9 @@
 
     private async Task<bool> TransferAgent(AgencyAgentDto agent, JamesLookup? targetAgencyPrm = null)
     {
-        var dialogOptions = GetDialogOptions();
+        var dialogOptions = DialogTools.GetDialogOptions();
 
-        var parameters = new Dictionary<string, object?>()
+        var parameters = new Dictionary<string, object>()
         {
             { "Agent", agent },
             { "TargetAgency", targetAgencyPrm }
@@ -370,7 +370,7 @@
     {
         var index = Agents.IndexOf(agent);
         if (index != -1)
-            Agents[index] = Copy(_originalValues);
+            Agents[index] = Copy(_originalValues!);
 
         Grid.CancelEditRow(agent);
         _isEditing = false; 
@@ -405,7 +405,7 @@
             var existentAgent = nppResponse.Data;
             if (existentAgent != null)
             {
-                var dialogOptions = GetDialogOptions(650);
+                var dialogOptions = DialogTools.GetDialogOptions(650);
 
                 var parameters = new Dictionary<string, object>()
                 {
@@ -421,7 +421,7 @@
                 switch (action)
                 {
                     case "associate":
-                        var associateResponse = await DataAccess.AssignAgent(agent.AgentId, existentAgent.AgencyId.Value);
+                        var associateResponse = await DataAccess.AssignAgent(agent.AgentId, existentAgent.AgencyId!.Value);
                         if (!associateResponse.Success)
                         {
                             NotifySaveError(associateResponse.Errors, "agent association");
@@ -438,7 +438,7 @@
 
                         NotificationService.Notify(msg);
                         
-                        LoadData(true);
+                        await LoadData(true);
                         
                         return;
                     case "transfer":
@@ -468,9 +468,9 @@
             }
         }
 
-        var response = await DataAccess.SetAgent(agent.Id, agentId, agent.GivenName,
-            agent.MiddleInitial, agent.FamilyName, agent.NationalProducerNumber, agent.CountryCode,
-            agent.PhoneNumber, agent.Email, agent.Extension, agent.AgencyId.Value, agent.AIF, isNew);
+        var response = await DataAccess.SetAgent(agent.Id, agentId, agent.GivenName!,
+            agent.MiddleInitial, agent.FamilyName!, agent.NationalProducerNumber, agent.CountryCode,
+            agent.PhoneNumber, agent.Email, agent.Extension, agent.AgencyId!.Value, agent.AIF, isNew);
 
         if (!response.Success)
         {
@@ -485,24 +485,7 @@
         _originalValues = null;
     }
 
-    private static DialogOptions GetDialogOptions(int? width = null)
-    {
-        var dialogOptions = new DialogOptions
-        {
-            Draggable = true,
-            Resizable = false,
-            CloseDialogOnEsc = false,
-            CloseDialogOnOverlayClick = false,
-            ShowClose = true,
-        };
-        
-        if(width != null)
-            dialogOptions.Width = width.ToString();
-        
-        return dialogOptions;
-    }
-
-    private AgencyAgentDto Copy(AgencyAgentDto source)
+    private AgencyAgentDto? Copy(AgencyAgentDto? source)
     {
         if (source == null)
         {

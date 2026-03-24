@@ -134,8 +134,6 @@ mutation AgencyLicenseBulkDelete($input:AgencyLicenseBulkDeleteInput!){
     agencyLicenseBulkDelete(input: $input){boolean}
 }
 
-
-
 mutation DeleteAgencyCommissionRate($input: DeleteAgencyCommissionRateInput!) {
     deleteAgencyCommissionRate(input: $input){boolean}
 }

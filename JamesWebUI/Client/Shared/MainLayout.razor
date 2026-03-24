@@ -36,7 +36,8 @@
     }
 </style>
 
-<RadzenLayout Style="width: 100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
+<RadzenLayout
+    Style="width: 100%; grid-template-areas: 'rz-sidebar rz-header rz-header' 'rz-sidebar rz-body rz-right-sidebar'">
     <RadzenHeader class="rz-shadow-0">
         <ChildContent>
             <RadzenRow Gap="0.5rem" Style="@_headerStyle">
@@ -149,6 +150,10 @@
                 </RadzenPanelMenu>
             </RadzenRow>
         </AuthorizeView>
+        <RadzenRow>
+            <RadzenIcon Icon="info" MouseEnter="@(args => ShowTooltip(args, "Info"))"
+                        IconStyle="IconStyle.Info" Style="font-size: 1.25rem;" class="rz-ml-5"/>
+        </RadzenRow>
     </RadzenSidebar>
     <RadzenBody>
         <ErrorBoundary>
@@ -221,5 +226,34 @@
     private async Task SuperSearchClicked()
     {
         await DialogService.OpenAsync<SuperSearch>("Super Search", options: _superSearchDialogOptions);
+    }
+
+    private void ShowTooltip(ElementReference args, string type)
+    {
+        if (type != "Info") 
+            return;
+
+        var version = typeof(Program)
+            .Assembly
+            .GetName()
+            .Version;
+        
+        var rendering = OperatingSystem.IsBrowser()
+            ? "Client Side"
+            : "Server Side";
+
+        RenderFragment message = __builder =>
+        {
+            <div class="rz-mx-3">
+                <div class="row">
+                    Version: @version
+                </div>
+                <div class="row">
+                    Mode: @rendering
+                </div>
+            </div>
+        };
+
+        TooltipService.Open(args, ds=> message);
     }
 }

@@ -301,7 +301,7 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(ag => ag.AgencyLicenses)
                 .ThenInclude(ag => ag.Insurer)
                 .ThenInclude(ag => ag.IdNavigation)
-                .Where(ag => ag.AgencyId == agencyId)
+                .Where(ag => ag.AgencyId == agencyId && ag.Active)
                 .Select(aia => aia.Agent)
                 .ToListAsync();
 
@@ -325,7 +325,9 @@ namespace James.Data.Server.GraphQL.Queries
                 .ThenInclude(ag => ag.AgencyLicenses)
                 .ThenInclude(ag => ag.Insurer)
                 .ThenInclude(ag => ag.IdNavigation)
-                .Where(ag => ag.AgencyId == agencyId)
+                .Include(i => i.Agency)
+                .ThenInclude(i => i.IdNavigation)
+                .Where(ag => ag.AgencyId == agencyId && ag.Active)
                 //.Select(aia => aia.Agent)
                 .ToListAsync();
 
@@ -334,6 +336,8 @@ namespace James.Data.Server.GraphQL.Queries
                 {
                     Id = s.Id,
                     AgencyId = s.AgencyId,
+                    AgencyName = $"({s.Agency.AgencyNumber}) {s.Agency.IdNavigation.FullName}",
+                    AgencyNum = s.Agency.AgencyNumber ?? "",
                     AgentId = s.AgentId,
                     FullName = s.Agent.IdNavigation.FullName,
                     GivenName = s.Agent.IdNavigation.GivenName,
@@ -341,10 +345,11 @@ namespace James.Data.Server.GraphQL.Queries
                     FamilyName = s.Agent.IdNavigation.FamilyName,
                     NationalProducerNumber = s.Agent.NationalProducerNumber ?? "",
                     Email = LegalEntityGetMains.GetMainEmail(s.Agent.IdNavigation) ?? "",
+                    CountryCode = LegalEntityGetMains.GetMainPhoneNumber(s.Agent.IdNavigation)?.CountryCode ?? "",
                     PhoneNumber = LegalEntityGetMains.GetMainPhoneNumber(s.Agent.IdNavigation)?.MainNumber ?? "",
                     Extension = LegalEntityGetMains.GetMainPhoneNumber(s.Agent.IdNavigation)?.Extension ?? "",
-                    AIF = s.AttorneyInFact
-
+                    AIF = s.AttorneyInFact,
+                    Active = s.Active
                 })
                 .ToList();
 
@@ -357,7 +362,7 @@ namespace James.Data.Server.GraphQL.Queries
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.AgencyLicenses
-                .Where(lic => lic.AgencyId == agencyId && lic.AgentId == agentId)
+                .Where(lic => lic.IsActive && lic.AgencyId == agencyId && lic.AgentId == agentId)
                 .Include(lic => lic.Insurer)
                 .ThenInclude(lic => lic.IdNavigation)
                 .ToListAsync();
@@ -397,7 +402,7 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = agents
                 ? await ctx.AgencyLicenses
-                    .Where(lic => lic.AgencyId == agencyId && lic.AgentId != null)
+                    .Where(lic => lic.IsActive && lic.AgencyId == agencyId && lic.AgentId != null)
                     .Include(i => i.Agency)
                     .Include(lic => lic.Agent)
                     .ThenInclude(i => i!.IdNavigation)
@@ -405,11 +410,23 @@ namespace James.Data.Server.GraphQL.Queries
                     .ThenInclude(lic => lic.IdNavigation)
                     .ToListAsync()
                 : await ctx.AgencyLicenses
-                    .Where(lic => lic.AgencyId == agencyId && lic.AgentId == null)
+                    .Where(lic => lic.IsActive && lic.AgencyId == agencyId && lic.AgentId == null)
                     .Include(i => i.Agency)
                     .Include(lic => lic.Insurer)
                     .ThenInclude(lic => lic.IdNavigation)
                     .ToListAsync();
+
+            if (!agents) 
+                return result;
+            
+            var agencyAgents = ctx.AgentsInAgencies
+                .Where(ag => ag.AgencyId == agencyId && ag.Active)
+                .Select(ag => ag.AgentId)
+                .ToList();
+                
+            result = result
+                .Where(r=> agencyAgents.Any(a=> a == r.AgentId))
+                .ToList();
 
             return result;
         }
@@ -505,6 +522,27 @@ namespace James.Data.Server.GraphQL.Queries
             var ctx = await contextFactory.CreateDbContextAsync();
             var agencyList = await ctx.Agencies.ToListAsync();
             return agencyList;
+        }
+
+        [Authorize]
+        public async Task<List<JamesLookup>> GetAgencyList(
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+
+            var list = await ctx.Agencies
+                .Include(i => i.IdNavigation)
+                .Where(a => a.Status == "Active")
+                .Select(s => new JamesLookup
+                {
+                    Id = s.Id,
+                    Code = s.AgencyNumber,
+                    Name = s.IdNavigation.FullName
+                })
+                .OrderBy(o=>o.Name)
+                .ToListAsync();
+
+            return list;
         }
     }
 }

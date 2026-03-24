@@ -30,7 +30,7 @@ public static class CacheKeys
     public static string AgencyLicenses(string id) => $"AgencyLicenses-{id}";
     public static string AccountLOAs(string accountNumber) => $"AccountLOAs-{accountNumber}";
     public static string AgencyBondBlocks(Guid agencyId) => $"AgencyBondBlocks-{agencyId}";
-    public static string AgencyContacts(Guid agencyId) => $"AgencyContacts-{agencyId}";
+    public static string AgencyAgents(Guid agencyId) => $"AgencyContacts-{agencyId}";
     public static string AgencyLocations(Guid agencyId) => $"AgencyLocations-{agencyId}";
     public static string AgencyInventory(Guid agencyId) => $"AgencyInventory-{agencyId}";
 
@@ -65,6 +65,8 @@ public static class CacheKeys
     public const string AccountProgramStatuses = "AccountProgramStatuses";
     public const string AddressTypes = "AddressTypes";
     public const string AgenciesDto = "AgenciesDto";
+    public const string AgenciesLookup = "AgenciesLookup";
+
     public const string AgencyStatuses = "AgencyStatuses";
     // B
     public const string BondBlocks = "BondBlocks";

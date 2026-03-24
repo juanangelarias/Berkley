@@ -202,7 +202,7 @@
 
 @code {
     [Parameter, EditorRequired] public required Agency Agency { get; set; }
-    [Parameter, EditorRequired] public AgencyAgentDto Agent { get; set; }
+    [Parameter, EditorRequired] public required AgencyAgentDto Agent { get; set; }
 
     private List<AgencyLicense> Licenses { get; set; } = [];
     private List<AgencyLicense> _agencyLicensesBeforeBulkEdit = [];
@@ -429,7 +429,7 @@
         var result = await DataAccess.CreateLicense(
             license.Id,
             Agency.Id,
-            Agent.Id,
+            Agent.AgentId,
             license.AppointingState,
             license.Comments,
             license.Appointment,
@@ -446,6 +446,7 @@
             await HandleError("Error creating License", result.Errors);
         else
         {
+            NotifySuccessfulSave("agent license");
             license.InsurerId = license.Insurer.Id;
             Licenses.Add(license);
 

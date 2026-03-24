@@ -74,3 +74,23 @@ query SearchAgents($input: String!) {
 	}
 	}
 } 
+
+query GetAgentByNationalProducerNumber($nationalProducerNumber: String!, $agencyId: UUID!) {
+    agentByNationalProducerNumber(agencyId: $agencyId, nationalProducerNumber: $nationalProducerNumber){
+        id
+        agencyId
+        agencyName
+        agencyNum
+        agentId
+        givenName
+        middleInitial
+        familyName
+        fullName
+        nationalProducerNumber
+        email
+        countryCode
+        phoneNumber
+        extension
+        aif
+    }
+}

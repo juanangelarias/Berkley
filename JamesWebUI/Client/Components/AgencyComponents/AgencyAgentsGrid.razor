@@ -437,9 +437,9 @@
                         };
 
                         NotificationService.Notify(msg);
-                        
+
                         await LoadData(true);
-                        
+
                         return;
                     case "transfer":
                         var targetAgency = new JamesLookup
@@ -448,10 +448,26 @@
                             Code = agent.AgencyNum,
                             Name = agent.AgencyName,
                         };
+
                         var result = await TransferAgent(existentAgent, targetAgency);
                         if (result)
                         {
                             await LoadData(true);
+
+                            var transferredAgent = Agents.FirstOrDefault(a => a.AgentId == existentAgent.AgentId);
+                            if (transferredAgent == null) return;
+                            
+                            transferredAgent.CountryCode = agent.CountryCode;
+                            transferredAgent.PhoneNumber = agent.PhoneNumber;
+                            transferredAgent.Extension = agent.Extension;
+                            transferredAgent.Email = agent.Email;
+
+                            var transferredResponse = await DataAccess.SetAgent(transferredAgent.Id,
+                                transferredAgent.AgentId, transferredAgent.GivenName!,
+                                transferredAgent.MiddleInitial, transferredAgent.FamilyName,
+                                transferredAgent.NationalProducerNumber, transferredAgent.CountryCode,
+                                transferredAgent.PhoneNumber, transferredAgent.Email, transferredAgent.Extension,
+                                transferredAgent.AgencyId!.Value, transferredAgent.AIF, false);
                         }
                         else
                         {

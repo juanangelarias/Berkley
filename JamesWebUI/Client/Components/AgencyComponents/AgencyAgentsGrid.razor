@@ -31,7 +31,7 @@
         <AgencyAgentLicenseGrid Agency="Agency" Agent="@agent"/>
     </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Property="IdNavigation.GivenName" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Property="GivenName" Width="175px">
             <Template Context="agent">
                 <RadzenText Text="@agent.GivenName" TextStyle="TextStyle.Body2"/>
             </Template>
@@ -41,7 +41,7 @@
                 <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="givenName"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Property="IdNavigation.MiddleInitial" Width="75px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Property="MiddleInitial" Width="75px">
             <Template Context="agent">
                 <RadzenText Text="@agent.MiddleInitial"/>
             </Template>
@@ -50,7 +50,7 @@
                 <RadzenLengthValidator Max="1" Text="The maximum length is 1 character" Component="middleInitial"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Property="IdNavigation.FamilyName" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Property="FamilyName" Width="175px">
             <Template Context="agent">
                 <RadzenText Text="@agent.FamilyName"/>
             </Template>
@@ -69,7 +69,7 @@
                 <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="npn"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Email" Width="200px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Email" Width="200px" Property="Email">
             <Template Context="agent">
                 <RadzenText Text="@agent.Email"/>
             </Template>
@@ -79,14 +79,16 @@
                 <RadzenLengthValidator Max="255" Text="The maximum length is 255 characters" Component="email"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Phone Number" Width="@(_isEditing ? "200px" : "150px")">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Phone Number" Property="PhoneNumber" 
+                              Width="@(_isEditing ? "200px" : "150px")">
             <Template Context="agent">
                 <RadzenText Text="@agent.PhoneNumber"/>
             </Template>
             <EditTemplate Context="agent">
                 <RadzenStack Orientation="Orientation.Horizontal" Gap="0.7rem">
                     <RadzenStack Orientation="Orientation.Vertical" Gap="0">
-                        <RadzenText Text="Country Code" TextStyle="TextStyle.Caption" class="rz-mb-0 rz-pb-1" MaxLength="3"/>
+                        <RadzenText Text="Country Code" TextStyle="TextStyle.Caption" class="rz-mb-0 rz-pb-1" 
+                                    MaxLength="3"/>
                         <RadzenTextBox @bind-Value="@agent.CountryCode" Name="countryCode" class="rz-mt-0"
                                        Style="width: 60px;"/>
                     </RadzenStack>
@@ -102,7 +104,7 @@
                 <RadzenLengthValidator Max="12" Text="The maximum length is 12 characters" Component="phoneNumber"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Ext." Width="100px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Ext." Property="Extension" Width="100px">
             <Template Context="agent">
                 <RadzenText Text="@agent.Extension"/>
             </Template>
@@ -111,7 +113,8 @@
                 <RadzenLengthValidator Max="10" Text="The maximum length is 10 characters" Component="extension"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Width="100px" TextAlign="TextAlign.Center">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Property="AIF" Width="100px" 
+                              TextAlign="TextAlign.Center">
             <Template Context="agent">
                 <RadzenCheckBox TValue="bool" Value="@agent.AIF" ReadOnly="true" Style="align-self: center"/>
             </Template>
@@ -206,6 +209,9 @@
 
     private async Task LoadData(bool reload = false)
     {
+        if(_isEditing)
+            return;
+        
         if (Agency.Id == Guid.Empty)
             return;
         
@@ -399,6 +405,7 @@
             if (!nppResponse.Success)
             {
                 NotifyLoadError(nppResponse.Errors, "agent by National Producer Number");
+                _isEditing = false;
                 return;
             }
 
@@ -425,6 +432,7 @@
                         if (!associateResponse.Success)
                         {
                             NotifySaveError(associateResponse.Errors, "agent association");
+                            _isEditing = false;
                             return;
                         }
 
@@ -491,6 +499,7 @@
         if (!response.Success)
         {
             NotifySaveError(response.Errors, "agent");
+            _isEditing = false;
             return;
         }
 

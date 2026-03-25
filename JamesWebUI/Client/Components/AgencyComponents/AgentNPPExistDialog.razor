@@ -3,10 +3,10 @@
 @inject IJSRuntime JSRuntime
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
-    <RadzenText Text="An existent Agent with the same NPP already exists."/>
+    <RadzenText Text="An existing Agent with the same NPP already exists."/>
     <RadzenRow Visible="@ExistingAgent.Active" class="rz-mt-4 rz-mb-0 rz-pb-0" JustifyContent="JustifyContent.Center">
         <RadzenText TextStyle="TextStyle.Subtitle1">
-            @((MarkupString)"The existent Agent is active in the agency<br>")
+            @((MarkupString)"The existing Agent is active in the agency<br>")
         </RadzenText>
     </RadzenRow>
     <RadzenRow Visible="@ExistingAgent.Active" class="rz-mt-0 rz-pt-0 rz-mb-4" JustifyContent="JustifyContent.Center">

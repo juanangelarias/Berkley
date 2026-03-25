@@ -31,7 +31,7 @@
         <AgencyAgentLicenseGrid Agency="Agency" Agent="@agent"/>
     </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Property="IdNavigation.GivenName" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Width="175px">
             <Template Context="agent">
                 <RadzenText Text="@agent.GivenName" TextStyle="TextStyle.Body2"/>
             </Template>
@@ -41,7 +41,7 @@
                 <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="givenName"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Property="IdNavigation.MiddleInitial" Width="75px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Width="75px">
             <Template Context="agent">
                 <RadzenText Text="@agent.MiddleInitial"/>
             </Template>
@@ -50,7 +50,7 @@
                 <RadzenLengthValidator Max="1" Text="The maximum length is 1 character" Component="middleInitial"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Property="IdNavigation.FamilyName" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Width="175px">
             <Template Context="agent">
                 <RadzenText Text="@agent.FamilyName"/>
             </Template>
@@ -60,7 +60,7 @@
                 <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="familyName"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="NPN" Property="NationalProducerNumber" Width="125px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="NPN" Width="125px">
             <Template Context="agent">
                 <RadzenText Text="@agent.NationalProducerNumber"/>
             </Template>
@@ -111,7 +111,8 @@
                 <RadzenLengthValidator Max="10" Text="The maximum length is 10 characters" Component="extension"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Width="100px" TextAlign="TextAlign.Center">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Width="100px" 
+                              TextAlign="TextAlign.Center">
             <Template Context="agent">
                 <RadzenCheckBox TValue="bool" Value="@agent.AIF" ReadOnly="true" Style="align-self: center"/>
             </Template>
@@ -263,6 +264,8 @@
         var agent = new AgencyAgentDto
         {
             AgencyId = Agency.Id,
+            AgencyName = Agency.IdNavigation.FullName,
+            AgencyNum = Agency.AgencyNumber,
             AgentId = Guid.Empty,
         };
 
@@ -392,7 +395,9 @@
         var agentId = isNew ? Guid.NewGuid() : agent.AgentId;
         if (isNew && !string.IsNullOrWhiteSpace(agent.NationalProducerNumber))
         {
-            agent.FullName = $"{agent.GivenName} {agent.MiddleInitial} {agent.FamilyName}";
+            agent.FullName = string.IsNullOrWhiteSpace(agent.MiddleInitial) 
+                ? $"{agent.GivenName} {agent.FamilyName}" 
+                : $"{agent.GivenName} {agent.MiddleInitial} {agent.FamilyName}";
 
             var nppResponse = await DataAccess.GetAgentByNationalProducerNumber(agent.NationalProducerNumber, agentId);
 
@@ -421,7 +426,7 @@
                 switch (action)
                 {
                     case "associate":
-                        var associateResponse = await DataAccess.AssignAgent(agent.AgentId, existentAgent.AgencyId!.Value);
+                        var associateResponse = await DataAccess.AssignAgent(existentAgent.AgentId, agent.AgencyId!.Value);
                         if (!associateResponse.Success)
                         {
                             NotifySaveError(associateResponse.Errors, "agent association");

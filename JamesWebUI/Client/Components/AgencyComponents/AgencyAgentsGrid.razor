@@ -449,6 +449,7 @@
                         };
 
                         NotificationService.Notify(msg);
+                        _isEditing = false;
 
                         await LoadData(true);
 

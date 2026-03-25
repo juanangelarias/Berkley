@@ -4,14 +4,14 @@
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
     <RadzenText Text="An existent Agent with the same NPP already exists."/>
-    <RadzenRow Visible="@ExistentAgent.Active" class="rz-mt-4 rz-mb-0 rz-pb-0" JustifyContent="JustifyContent.Center">
+    <RadzenRow Visible="@ExistingAgent.Active" class="rz-mt-4 rz-mb-0 rz-pb-0" JustifyContent="JustifyContent.Center">
         <RadzenText TextStyle="TextStyle.Subtitle1">
             @((MarkupString)"The existent Agent is active in the agency<br>")
         </RadzenText>
     </RadzenRow>
-    <RadzenRow Visible="@ExistentAgent.Active" class="rz-mt-0 rz-pt-0 rz-mb-4" JustifyContent="JustifyContent.Center">
-        <RadzenLink Text="@ExistentAgent.AgencyName" Target="_blank" tabindex="-1"
-                    Path=@($"/agency/{ExistentAgent.AgencyNum}?tabsAgencyProfile=tabAgents")/>
+    <RadzenRow Visible="@ExistingAgent.Active" class="rz-mt-0 rz-pt-0 rz-mb-4" JustifyContent="JustifyContent.Center">
+        <RadzenLink Text="@ExistingAgent.AgencyName" Target="_blank" tabindex="-1"
+                    Path=@($"/agency/{ExistingAgent.AgencyNum}?tabsAgencyProfile=tabAgents")/>
     </RadzenRow>
     <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
         <RadzenPanel Text="Proposed Agent" class="rz-w-50">
@@ -70,7 +70,7 @@
                     <RadzenText Text="Name:"/>
                 </RadzenColumn>
                 <RadzenColumn Size="8">
-                    <RadzenText Text="@ExistentAgent.FullName"/>
+                    <RadzenText Text="@ExistingAgent.FullName"/>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -78,7 +78,7 @@
                     <RadzenText Text="NPN:"/>
                 </RadzenColumn>
                 <RadzenColumn Size="8">
-                    <RadzenText Text="@ExistentAgent.NationalProducerNumber"/>
+                    <RadzenText Text="@ExistingAgent.NationalProducerNumber"/>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -86,7 +86,7 @@
                     <RadzenText Text="Email"/>
                 </RadzenColumn>
                 <RadzenColumn Size="8">
-                    <RadzenText Text="@ExistentAgent.Email"/>
+                    <RadzenText Text="@ExistingAgent.Email"/>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -94,7 +94,7 @@
                     <RadzenText Text="Phone Number:"/>
                 </RadzenColumn>
                 <RadzenColumn Size="8">
-                    <RadzenText Text="@ExistentAgent.PhoneNumber"/>
+                    <RadzenText Text="@ExistingAgent.PhoneNumber"/>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -102,7 +102,7 @@
                     <RadzenText Text="Extension:"/>
                 </RadzenColumn>
                 <RadzenColumn Size="8">
-                    <RadzenText Text="@ExistentAgent.Extension"/>
+                    <RadzenText Text="@ExistingAgent.Extension"/>
                 </RadzenColumn>
             </RadzenRow>
             <RadzenRow>
@@ -110,23 +110,23 @@
                     <RadzenText Text="AIF:"/>
                 </RadzenColumn>
                 <RadzenColumn Size="8">
-                    <RadzenCheckBox TValue="bool" Value="@ExistentAgent.AIF" ReadOnly="true"/>
+                    <RadzenCheckBox TValue="bool" Value="@ExistingAgent.AIF" ReadOnly="true"/>
                 </RadzenColumn>
             </RadzenRow>
         </RadzenPanel>
     </RadzenStack>
-    <RadzenRow class="rz-mt-5" visible="@(!ExistentAgent.Active)">
+    <RadzenRow class="rz-mt-5" visible="@(!ExistingAgent.Active)">
         <RadzenText TextAlign="TextAlign.Center" class="rz-w-100">
             @GetMessage()
         </RadzenText>
     </RadzenRow>
-    <RadzenRow Gap="1rem" Visible="@(!ExistentAgent.Active)" class="rz-mt-3" JustifyContent="JustifyContent.Center">
+    <RadzenRow Gap="1rem" Visible="@(!ExistingAgent.Active)" class="rz-mt-3" JustifyContent="JustifyContent.Center">
         <RadzenButton Icon="" Text="Associate" ButtonStyle="ButtonStyle.Success" Click="@Associate"
                       Style="width: 150px"/>
         <RadzenButton Icon="cancel" Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="@Cancel"
                       Style="width: 150px"/>
     </RadzenRow>
-    <RadzenRow Gap="1rem" Visible="@ExistentAgent.Active" class="rz-mt-3" JustifyContent="JustifyContent.Center">
+    <RadzenRow Gap="1rem" Visible="@ExistingAgent.Active" class="rz-mt-3" JustifyContent="JustifyContent.Center">
         <RadzenButton Icon="double_arrow" Text="Transfer" ButtonStyle="ButtonStyle.Success" Click="@Transfer"
                       Style="width: 150px"/>
         <RadzenButton Icon="cancel" Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="@Cancel"
@@ -135,7 +135,7 @@
 </RadzenStack>
 
 @code {
-    [Parameter, EditorRequired] public required AgencyAgentDto ExistentAgent { get; set; }
+    [Parameter, EditorRequired] public required AgencyAgentDto ExistingAgent { get; set; }
     [Parameter, EditorRequired] public required AgencyAgentDto ProposedAgent { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

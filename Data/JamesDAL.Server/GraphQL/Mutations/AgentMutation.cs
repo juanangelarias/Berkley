@@ -244,12 +244,12 @@ public partial class GeneralMutation
 
         try
         {
-            var existent = ctx.AgentsInAgencies
+            var existing = ctx.AgentsInAgencies
                 .FirstOrDefault(f=>f.AgentId == agentId && f.AgencyId == agencyId);
 
-            if (existent != null)
+            if (existing != null)
             {
-                existent.Active = true;
+                existing.Active = true;
             }
             else
             {

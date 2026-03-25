@@ -400,8 +400,8 @@
         var agentId = isNew ? Guid.NewGuid() : agent.AgentId;
         if (isNew && !string.IsNullOrWhiteSpace(agent.NationalProducerNumber))
         {
-            agent.FullName = string.IsNullOrWhiteSpace(agent.MiddleInitial) 
-                ? $"{agent.GivenName} {agent.FamilyName}" 
+            agent.FullName = string.IsNullOrWhiteSpace(agent.MiddleInitial)
+                ? $"{agent.GivenName} {agent.FamilyName}"
                 : $"{agent.GivenName} {agent.MiddleInitial} {agent.FamilyName}";
 
             var nppResponse = await DataAccess.GetAgentByNationalProducerNumber(agent.NationalProducerNumber, agentId);
@@ -413,14 +413,14 @@
                 return;
             }
 
-            var existentAgent = nppResponse.Data;
-            if (existentAgent != null)
+            var existingAgent = nppResponse.Data;
+            if (existingAgent != null)
             {
                 var dialogOptions = DialogTools.GetDialogOptions(650);
 
                 var parameters = new Dictionary<string, object>()
                 {
-                    { "ExistentAgent", existentAgent },
+                    { "ExistentAgent", existingAgent },
                     { "ProposedAgent", agent },
                 };
 
@@ -432,7 +432,7 @@
                 switch (action)
                 {
                     case "associate":
-                        var associateResponse = await DataAccess.AssignAgent(existentAgent.AgentId, agent.AgencyId!.Value);
+                        var associateResponse = await DataAccess.AssignAgent(existingAgent.AgentId, agent.AgencyId!.Value);
                         if (!associateResponse.Success)
                         {
                             NotifySaveError(associateResponse.Errors, "agent association");
@@ -461,14 +461,14 @@
                             Name = agent.AgencyName,
                         };
 
-                        var result = await TransferAgent(existentAgent, targetAgency);
+                        var result = await TransferAgent(existingAgent, targetAgency);
                         if (result)
                         {
                             await LoadData(true);
 
-                            var transferredAgent = Agents.FirstOrDefault(a => a.AgentId == existentAgent.AgentId);
+                            var transferredAgent = Agents.FirstOrDefault(a => a.AgentId == existingAgent.AgentId);
                             if (transferredAgent == null) return;
-                            
+
                             transferredAgent.CountryCode = agent.CountryCode;
                             transferredAgent.PhoneNumber = agent.PhoneNumber;
                             transferredAgent.Extension = agent.Extension;

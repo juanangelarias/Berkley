@@ -145,8 +145,9 @@
 
     private MarkupString GetMessage()
     {
-        var message = $"<p style=\"color: var(--rz-info)\">The existent Agent is not associated to any agency.</p>" +
-                      $"Do you want to activate the Agent in the agency: {ProposedAgent.AgencyName}?";
+        var message = $"<p style=\"color: var(--rz-info)\">The selected agent is not currently linked to an agency.</p>" +
+                      $"Would you like to activate <strong>{ProposedAgent.FullName}</strong> under " +
+                      $"<strong>{ProposedAgent.AgencyName}</strong>?";
 
         return (MarkupString)message;
     }

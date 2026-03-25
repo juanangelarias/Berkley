@@ -244,17 +244,27 @@ public partial class GeneralMutation
 
         try
         {
-            var agentInAgency = new AgentsInAgency
+            var existing = ctx.AgentsInAgencies
+                .FirstOrDefault(f=>f.AgentId == agentId && f.AgencyId == agencyId);
+
+            if (existing != null)
             {
-                Id = Guid.NewGuid(),
-                AgencyId = agencyId,
-                AgentId = agentId,
-                Active = true,
-                AttorneyInFact = false,
-                PortalUser = false
-            };
-            
-            ctx.AgentsInAgencies.Add(agentInAgency);
+                existing.Active = true;
+            }
+            else
+            {
+                var agentInAgency = new AgentsInAgency
+                {
+                    Id = Guid.NewGuid(),
+                    AgencyId = agencyId,
+                    AgentId = agentId,
+                    Active = true,
+                    AttorneyInFact = false,
+                    PortalUser = false
+                };
+                
+                ctx.AgentsInAgencies.Add(agentInAgency);
+            }
             
             await ctx.SaveChangesAsync();
             await transaction.CommitAsync();

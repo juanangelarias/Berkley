@@ -507,10 +507,10 @@ public partial class GeneralMutation
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var existent = await ctx.BondBlocks
+        var existing = await ctx.BondBlocks
             .FirstOrDefaultAsync(b => b.Id == bondBlockId);
 
-        if (existent == null)
+        if (existing == null)
         {
             var newBlock = new BondBlock
             {
@@ -530,14 +530,14 @@ public partial class GeneralMutation
         }
         else
         {
-            existent.Prefix = prefix;
-            //existent.InsurerId = insurerId;
-            existent.FirstNumber = firstNumber;
-            existent.LastNumber = lastNumber;
-            existent.AgencyRestricted = agencyRestricted;
-            existent.IssuedBy = issuedBy;
-            existent.Comments = comments;
-            existent.AgencyId = agencyId;
+            existing.Prefix = prefix;
+            //existing.InsurerId = insurerId;
+            existing.FirstNumber = firstNumber;
+            existing.LastNumber = lastNumber;
+            existing.AgencyRestricted = agencyRestricted;
+            existing.IssuedBy = issuedBy;
+            existing.Comments = comments;
+            existing.AgencyId = agencyId;
         }
 
         await ctx.SaveChangesAsync();
@@ -550,13 +550,13 @@ public partial class GeneralMutation
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        var existent = await ctx.BondBlocks
+        var existing = await ctx.BondBlocks
             .FirstOrDefaultAsync(b => b.Id == bondBlockId);
 
-        if (existent == null)
+        if (existing == null)
             throw new NotFoundException($"Bond block with the Id: {bondBlockId} was not found.");
 
-        ctx.BondBlocks.Remove(existent);
+        ctx.BondBlocks.Remove(existing);
         await ctx.SaveChangesAsync();
 
         return true;

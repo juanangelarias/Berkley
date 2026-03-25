@@ -31,7 +31,7 @@
         <AgencyAgentLicenseGrid Agency="Agency" Agent="@agent"/>
     </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Property="GivenName" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Width="175px" Property="GivenName">
             <Template Context="agent">
                 <RadzenText Text="@agent.GivenName" TextStyle="TextStyle.Body2"/>
             </Template>
@@ -41,7 +41,7 @@
                 <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="givenName"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Property="MiddleInitial" Width="75px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Width="75px" Property="MiddleInitial">
             <Template Context="agent">
                 <RadzenText Text="@agent.MiddleInitial"/>
             </Template>
@@ -50,7 +50,7 @@
                 <RadzenLengthValidator Max="1" Text="The maximum length is 1 character" Component="middleInitial"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Property="FamilyName" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Width="175px" Property="FamilyName">
             <Template Context="agent">
                 <RadzenText Text="@agent.FamilyName"/>
             </Template>
@@ -60,7 +60,7 @@
                 <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="familyName"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="NPN" Property="NationalProducerNumber" Width="125px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="NPN"  Width="125px" Property="NationalProducerNumber">
             <Template Context="agent">
                 <RadzenText Text="@agent.NationalProducerNumber"/>
             </Template>
@@ -104,7 +104,7 @@
                 <RadzenLengthValidator Max="12" Text="The maximum length is 12 characters" Component="phoneNumber"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Ext." Property="Extension" Width="100px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Ext." Width="100px" Property="Extension">
             <Template Context="agent">
                 <RadzenText Text="@agent.Extension"/>
             </Template>
@@ -113,7 +113,7 @@
                 <RadzenLengthValidator Max="10" Text="The maximum length is 10 characters" Component="extension"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Property="AIF" Width="100px" 
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Width="100px" Property="AIF"
                               TextAlign="TextAlign.Center">
             <Template Context="agent">
                 <RadzenCheckBox TValue="bool" Value="@agent.AIF" ReadOnly="true" Style="align-self: center"/>
@@ -269,6 +269,8 @@
         var agent = new AgencyAgentDto
         {
             AgencyId = Agency.Id,
+            AgencyName = Agency.IdNavigation.FullName,
+            AgencyNum = Agency.AgencyNumber,
             AgentId = Guid.Empty,
         };
 
@@ -322,7 +324,7 @@
         NotificationService.Notify(message);
         
         if(targetAgencyPrm == null)
-            RemoveAgent(agent.AgentId);
+            RemoveAgentFromList(agent.AgentId);
         
         return true;
     }
@@ -351,10 +353,10 @@
         };
         NotificationService.Notify(message);
         
-        RemoveAgent(agent.AgentId);
+        RemoveAgentFromList(agent.AgentId);
     }
 
-    private void RemoveAgent(Guid agentId)
+    private void RemoveAgentFromList(Guid agentId)
     {
         var toDelete = Agents.FirstOrDefault(a => a.AgentId == agentId);
         if (toDelete == null)
@@ -398,7 +400,9 @@
         var agentId = isNew ? Guid.NewGuid() : agent.AgentId;
         if (isNew && !string.IsNullOrWhiteSpace(agent.NationalProducerNumber))
         {
-            agent.FullName = $"{agent.GivenName} {agent.MiddleInitial} {agent.FamilyName}";
+            agent.FullName = string.IsNullOrWhiteSpace(agent.MiddleInitial)
+                ? $"{agent.GivenName} {agent.FamilyName}"
+                : $"{agent.GivenName} {agent.MiddleInitial} {agent.FamilyName}";
 
             var nppResponse = await DataAccess.GetAgentByNationalProducerNumber(agent.NationalProducerNumber, agentId);
 
@@ -409,14 +413,14 @@
                 return;
             }
 
-            var existentAgent = nppResponse.Data;
-            if (existentAgent != null)
+            var existingAgent = nppResponse.Data;
+            if (existingAgent != null)
             {
                 var dialogOptions = DialogTools.GetDialogOptions(650);
 
                 var parameters = new Dictionary<string, object>()
                 {
-                    { "ExistentAgent", existentAgent },
+                    { "ExistingAgent", existingAgent },
                     { "ProposedAgent", agent },
                 };
 
@@ -428,7 +432,7 @@
                 switch (action)
                 {
                     case "associate":
-                        var associateResponse = await DataAccess.AssignAgent(agent.AgentId, existentAgent.AgencyId!.Value);
+                        var associateResponse = await DataAccess.AssignAgent(existingAgent.AgentId, agent.AgencyId!.Value);
                         if (!associateResponse.Success)
                         {
                             NotifySaveError(associateResponse.Errors, "agent association");
@@ -457,14 +461,14 @@
                             Name = agent.AgencyName,
                         };
 
-                        var result = await TransferAgent(existentAgent, targetAgency);
+                        var result = await TransferAgent(existingAgent, targetAgency);
                         if (result)
                         {
                             await LoadData(true);
 
-                            var transferredAgent = Agents.FirstOrDefault(a => a.AgentId == existentAgent.AgentId);
+                            var transferredAgent = Agents.FirstOrDefault(a => a.AgentId == existingAgent.AgentId);
                             if (transferredAgent == null) return;
-                            
+
                             transferredAgent.CountryCode = agent.CountryCode;
                             transferredAgent.PhoneNumber = agent.PhoneNumber;
                             transferredAgent.Extension = agent.Extension;

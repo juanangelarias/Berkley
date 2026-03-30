@@ -365,7 +365,6 @@ namespace James.Shared.Data
 
         public Task<IDataAccessResult<List<AccountProgramDto>>> GetAccountPrograms(string accountNum);
         public Task<IDataAccessResult<AccountProgramDto> >GetAccountProgramById(Guid id);
-        //public Task<ISaveDataResult> CreateAccountProgram(AccountProgramDto input);
         public Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, 
             string newStatusTxt);
         public Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId);

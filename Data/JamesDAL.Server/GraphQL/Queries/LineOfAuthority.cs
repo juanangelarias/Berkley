@@ -263,7 +263,7 @@ public partial class Query
         return prg;
     }
 
-    [HotChocolate.Authorization.Authorize]
+    [Authorize]
     public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
     {

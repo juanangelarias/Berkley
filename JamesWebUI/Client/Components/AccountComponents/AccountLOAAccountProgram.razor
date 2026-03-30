@@ -7,7 +7,7 @@
                 EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
                 AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true" IsLoading="@IsLoading"
                 Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading"
-                RowUpdate="UpdateGridRow" RowCreate="CreateGridRow">
+                RowUpdate="UpdateGridRow" RowCreate="CreateGridRow" Style="max-height: 450px">
     <HeaderTemplate>
         <AuthorizeView Policy="InRoleCanProposeAccountProgram">
             <RadzenButton Icon="add" Text="Add new Program" Variant="Variant.Text" Click="@InsertRow"/>
@@ -542,12 +542,12 @@
     {
         var message = name switch
         {
-            Action.Edit => "Edit this row",
-            Action.RequestApproval => "Request approval for this row",
-            Action.Remove => "Remove this row",
-            Action.Approve => "Approve this row",
-            Action.Decline => "Decline this row",
-            Action.Cancel => "Cancel this row",
+            Action.Edit => "Edit this program",
+            Action.RequestApproval => "Request approval for this program",
+            Action.Remove => "Remove this program",
+            Action.Approve => "Approve this program",
+            Action.Decline => "Decline this program",
+            Action.Cancel => "Cancel this program",
             _ => ""
         };
 
@@ -559,10 +559,10 @@
         var message = action switch
         {
             Action.RequestApproval => "Are you sure to submit for approval?",
-            Action.Remove => "Are you sure you want to remove this row?",
-            Action.Approve => "Are you sure you want to approve this row?",
-            Action.Decline => "Are you sure you want to decline this row?",
-            Action.Cancel => "Are you sure you want to cancel this row?",
+            Action.Remove => "Are you sure you want to remove this program?",
+            Action.Approve => "Are you sure you want to approve this program?",
+            Action.Decline => "Are you sure you want to decline this program?",
+            Action.Cancel => "Are you sure you want to cancel this program?",
             _ => ""
         };
 

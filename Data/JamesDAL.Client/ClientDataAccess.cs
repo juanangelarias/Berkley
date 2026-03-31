@@ -647,10 +647,11 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum)
         {
-            var result = await ExecuteGet<List<CreditReportHistory>>(async ()=>
+            throw new NotImplementedException();
+            /*var result = await ExecuteGet<CreditReportDto>(async ()=>
                 await jamesClient.GetCreditReport.ExecuteAsync(accountNum), "CreditReport");
 
-            return result;
+            return result;*/
         }
 
         public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()

@@ -253,7 +253,10 @@
             Data = (List<UserLineOfAuthority>)cache!
         },
         ResultVariable = () => _userLOAByDivisionResult,
-        AfterLoad = () => { }
+        AfterLoad = () =>
+        {
+            _userLOA = _userLOAByDivisionResult.Data!;
+        }
     }, "user LOA by division");
 
     #endregion

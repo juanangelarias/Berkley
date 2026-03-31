@@ -39,6 +39,19 @@ namespace JamesWebUI.Server.SharedServices
 
         private static readonly SiteUserInfo _unknownUserInfo = new SiteUserInfo()
             {FullName = "Unknown", FirstName = "Not", LastName = "Known", Username = "unknown"};
+
+        public async Task<string> GetUserName()
+        {
+            ClaimsPrincipal claimsPrincipal = null == _httpContextAccessor.HttpContext ?
+                (await _authenticationStateProvider.GetAuthenticationStateAsync()).User
+                :
+                _httpContextAccessor.HttpContext?.User!;
+
+            return claimsPrincipal.FindFirstValue("nickname")
+                   ?? claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier)
+                   ?? "unknown";
+        }
+        
         public async Task<SiteUserInfo> GetCurrentUser()
         {
             ClaimsPrincipal claimsPrincipal = null == _httpContextAccessor.HttpContext ?

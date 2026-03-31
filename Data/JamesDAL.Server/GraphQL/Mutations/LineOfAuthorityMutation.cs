@@ -12,15 +12,15 @@ public partial class GeneralMutation
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var user = await userShared.GetCurrentUser();
-        
+        var userName = await userShared.GetUserName();
+
         //ToDo: Review after we move to the new way to authenticate users that have this issue
         //ToDo: (active directory account different than the email)
-        
+
         var employee = await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
+                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == userName) ??
                        await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
+                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(userName));
 
         if (employee == null)
             throw new GraphQLException("User not found in employee table.");

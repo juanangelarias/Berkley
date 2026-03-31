@@ -123,7 +123,7 @@
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" MinWidth="10px"
-                              Width="170px" FormatString="{0:d}">
+                              Width="170px">
             <Template Context="license">
                 <RadzenText Text="@(license.Appointment == null ? "" :license.Appointment.Value.ToString("MM/dd/yyyy"))"/>
             </Template>
@@ -132,9 +132,9 @@
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" MinWidth="10px"
-                              Width="170px" FormatString="{0:d}">
+                              Width="170px">
             <Template Context="license">
-                <RadzenText Text="@license.Termination.ToString()"/>
+                <RadzenText Text="@(license.Termination == null ? "" : license.Termination.Value.ToString("MM/dd/yyyy"))"/>
             </Template>
             <EditTemplate Context="license">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Termination"/>

@@ -25,7 +25,11 @@
         <RadzenDataGridColumn Title="UW" TItem="UnderwriterRecommendation"
                               Property="UnderwriterRecommendation.PostedByNavigation.FullName"/>
         <RadzenDataGridColumn Title="Posted on" Property="@nameof(UnderwriterRecommendation.Created)"
-                              FormatString="{0:d}" Width="100px"/>
+                              MinWidth="125px">
+            <Template Context="recomendation">
+                <RadzenText Text="@($"{recomendation.Created:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Description" Property="@nameof(UnderwriterRecommendation.Description)"/>
         <RadzenDataGridColumn Width="85px" MinWidth="85px" TItem="UnderwriterRecommendation" Filterable="false"
                               Sortable="false" TextAlign="TextAlign.Right" Frozen="true"

@@ -1204,12 +1204,12 @@ namespace James.Data.Server
                 await generalMutation.AccountProgramChangeStatus(accountProgramId, newStatusTxt, contextFactory,
                     userShared));
         }
+        
         public async Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId)
         {
             return await ExecuteSave(async () => await generalMutation.DeleteAccountProgram(accountProgramId, 
                 contextFactory));
         }
-
 
         #endregion
         

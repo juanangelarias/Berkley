@@ -6,6 +6,11 @@ namespace James.Test.Shared;
 
 public class TestUserShared : IUserShared
 {
+    public async Task<string> GetUserName()
+    {
+        return await Task.FromResult(_fakeTestUser.Username);
+    }
+
     public async Task<SiteUserInfo> GetCurrentUser()
     {
         return await Task.FromResult(_fakeTestUser);

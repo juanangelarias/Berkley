@@ -368,7 +368,6 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, 
             string newStatusTxt);
         public Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId);
-        public Task<IDataAccessResult<List<AccountLOADto>>> GetLoaLogsByAccount(string accountNum);
 
         #endregion
         

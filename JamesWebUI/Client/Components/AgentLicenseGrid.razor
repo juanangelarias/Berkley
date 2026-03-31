@@ -88,17 +88,17 @@
                                 TextProperty="IdNavigation.FullName" @bind-Value="@license.Insurer" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="125px" FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" Width="125px">
             <Template Context="license">
-                <RadzenText Text="@license.Appointment.ToString()" />
+                <RadzenText Text="@(license.Appointment == null ? "" : license.Appointment.Value.ToString("MM/dd/yyyy"))"/>
             </Template>
             <EditTemplate Context="license">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Appointment" />
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="125px" FormatString="{0:d}">
+        <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" Width="125px">
             <Template Context="license">
-                <RadzenText Text="@license.Termination.ToString()" />
+                <RadzenText Text="@(license.Termination == null ? "" : license.Termination.Value.ToString("MM/dd/yyyy"))" />
             </Template>
             <EditTemplate Context="license">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@license.Termination" />

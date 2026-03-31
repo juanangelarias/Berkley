@@ -30,10 +30,10 @@
         </RadzenStack>
     </HeaderTemplate>
     <Columns>
-        <RadzenDataGridColumn TItem="AgencyInventory" Title="Date Sent" Property="Sent" FormatString="{0:d}"
+        <RadzenDataGridColumn TItem="AgencyInventory" Title="Date Sent" Property="Sent"
                               Filterable="false" SortOrder="SortOrder.Descending" Width="200px">
             <Template Context="inventory">
-                <RadzenText Text="@(inventory.Sent?.ToShortDateString())"/>
+                <RadzenText Text="@(inventory.Sent?.ToString("MM/dd/yyyy"))"/>
             </Template>
             <EditTemplate Context="inventory">
                 <RadzenDatePicker TValue="DateTime?" ShowTime="false" @bind-Value="@inventory.Sent"/>

@@ -96,15 +96,20 @@
                 <RadzenTextBox @bind-Value="poa.ReferenceNumber" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" Width="200px"
+        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" Width="200px"
                               MinWidth="200px" TextAlign="TextAlign.Center">
+            <Template Context="poa">
+                <RadzenText Text="@($"{poa.FirstIssued:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </Template>
             <EditTemplate Context="poa">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.FirstIssued" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}"
-                              SortOrder="SortOrder.Descending" Width="240px" MinWidth="240px"
-                              TextAlign="TextAlign.Center">
+        <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" SortOrder="SortOrder.Descending"
+                              Width="240px" MinWidth="240px" TextAlign="TextAlign.Center">
+            <EditTemplate Context="poa">
+                <RadzenText Text="@($"{poa.CurrentIssued:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </EditTemplate>
             <EditTemplate Context="poa">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.CurrentIssued" Style="width: 95%"/>
             </EditTemplate>

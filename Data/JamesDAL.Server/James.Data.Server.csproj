@@ -55,4 +55,8 @@
     <ProjectReference Include="..\JamesDAL.Imaging\James.Data.Imaging.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="GraphQL\Subscriptions\" />
+  </ItemGroup>
+
 </Project>

@@ -1,21 +1,21 @@
-﻿@using System.Text.RegularExpressions
-@using SharedBusinessLogic
-@inherits JamesGridLayoutComponentBase<AgencyAgentDto>
+﻿@inherits JamesGridLayoutComponentBase<AgencyAgentDto>
 
 @inject NavigationManager NavigationManager
 @inject TooltipService TooltipService
 @inject IDataAccess DataAccess
 
-<Theme/>
-
 <RadzenDataGrid TItem="AgencyAgentDto" Data="@Agents" @ref="@Grid" Density="Density.Compact"
-                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
-                @bind-Settings="@GridSettings" AllowColumnReorder="true"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display" RowCreate="@RowCreate"
+                RowUpdate="@RowUpdate" @bind-Settings="@GridSettings" AllowColumnReorder="true"
                 GridLines="DataGridGridLines.Vertical" SelectionMode="DataGridSelectionMode.Single"
-                AllowRowSelectOnRowClick="true" AllowPaging="true" PageSize="10" AllowSorting="true"
-                AllowColumnResize="true" AllowFiltering="true" FilterMode="FilterMode.Advanced">
+                AllowRowSelectOnRowClick="true" AllowSorting="true" AllowColumnResize="true" AllowFiltering="true"
+                FilterMode="FilterMode.Advanced">
     <HeaderTemplate>
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+            <AuthorizeView Policy="InRoleCanCreateAgentInAgency">
+                <RadzenButton Icon="add" Text="New Agent" Click="@NewAgent" Variant="Variant.Text"
+                              Disabled="@_isEditing"/>
+            </AuthorizeView>
             <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="DefaultExportFormat"/>
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
                 <RadzenButton Icon="settings" Click="SaveGridSettings"
@@ -28,50 +28,134 @@
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
-        <AgencyAgentLicenseGrid Agency="Agency" Agent="agent"/>
+        <AgencyAgentLicenseGrid Agency="Agency" Agent="@agent"/>
     </Template>
     <Columns>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Property="IdNavigation.GivenName" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Width="175px" Property="GivenName">
             <Template Context="agent">
-                <RadzenText Text="@agent.GivenName"/>
+                <RadzenText Text="@agent.GivenName" TextStyle="TextStyle.Body2"/>
             </Template>
+            <EditTemplate Context="agent">
+                <RadzenTextBox @bind-Value="@agent.GivenName" Name="givenName"/>
+                <RadzenRequiredValidator Text="The Given Name is required" Component="givenName"/>
+                <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="givenName"/>
+            </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Property="IdNavigation.MiddleInitial" Width="75px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="MI" Width="75px" Property="MiddleInitial">
             <Template Context="agent">
                 <RadzenText Text="@agent.MiddleInitial"/>
             </Template>
+            <EditTemplate Context="agent">
+                <RadzenTextBox @bind-Value="agent.MiddleInitial" Name="middleInitial"/>
+                <RadzenLengthValidator Max="1" Text="The maximum length is 1 character" Component="middleInitial"/>
+            </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Property="IdNavigation.FamilyName" Width="175px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Last Name" Width="175px" Property="FamilyName">
             <Template Context="agent">
                 <RadzenText Text="@agent.FamilyName"/>
             </Template>
+            <EditTemplate Context="agent">
+                <RadzenTextBox @bind-Value="@agent.FamilyName" Name="familyName"/>
+                <RadzenRequiredValidator Text="The Last Name is required" Component="familyName"/>
+                <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="familyName"/>
+            </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="NPN" Property="NationalProducerNumber" Width="125px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="NPN"  Width="125px" Property="NationalProducerNumber">
             <Template Context="agent">
                 <RadzenText Text="@agent.NationalProducerNumber"/>
             </Template>
+            <EditTemplate Context="agent">
+                <RadzenTextBox @bind-Value="@agent.NationalProducerNumber" Name="npn"/>
+                <RadzenLengthValidator Max="50" Text="The maximum length is 50 characters" Component="npn"/>
+            </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Email" Width="200px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Email" Width="200px" Property="Email">
             <Template Context="agent">
                 <RadzenText Text="@agent.Email"/>
             </Template>
+            <EditTemplate Context="agent">
+                <RadzenTextBox @bind-Value="@agent.Email" Name="email"/>
+                <RadzenRequiredValidator Text="The email is required" Component="email"/>
+                <RadzenLengthValidator Max="255" Text="The maximum length is 255 characters" Component="email"/>
+            </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Phone Number" Width="125px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Phone Number" Property="PhoneNumber" 
+                              Width="@(_isEditing ? "200px" : "150px")">
             <Template Context="agent">
                 <RadzenText Text="@agent.PhoneNumber"/>
             </Template>
+            <EditTemplate Context="agent">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.7rem">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                        <RadzenText Text="Country Code" TextStyle="TextStyle.Caption" class="rz-mb-0 rz-pb-1" 
+                                    MaxLength="3"/>
+                        <RadzenTextBox @bind-Value="@agent.CountryCode" Name="countryCode" class="rz-mt-0"
+                                       Style="width: 60px;"/>
+                    </RadzenStack>
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                        <RadzenText Text="Phone Number" TextStyle="TextStyle.Caption" class="rz-mb-0 rz-pb-1"/>
+                        <RadzenTextBox @bind-Value="@agent.PhoneNumber" Name="phoneNumber" class="rz-mt-0"
+                                       Style="width: 135px"/>
+                    </RadzenStack>
+                </RadzenStack>
+                <RadzenRequiredValidator Text="The Country Code is required" Component="countryCode"/>
+                <RadzenLengthValidator Max="3" Text="The maximum length is 3 characters" Component="countryCode"/>
+                <RadzenRequiredValidator Text="The phone number is required" Component="phoneNumber"/>
+                <RadzenLengthValidator Max="12" Text="The maximum length is 12 characters" Component="phoneNumber"/>
+            </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Ext." Width="100px">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="Ext." Width="100px" Property="Extension">
             <Template Context="agent">
                 <RadzenText Text="@agent.Extension"/>
             </Template>
+            <EditTemplate Context="agent">
+                <RadzenTextBox @bind-Value="@agent.Extension" Name="extension"/>
+                <RadzenLengthValidator Max="10" Text="The maximum length is 10 characters" Component="extension"/>
+            </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Width="100px" TextAlign="TextAlign.Center">
+        <RadzenDataGridColumn TItem="AgencyAgentDto" Title="AIF" Width="100px" Property="AIF"
+                              TextAlign="TextAlign.Center">
             <Template Context="agent">
                 <RadzenCheckBox TValue="bool" Value="@agent.AIF" ReadOnly="true" Style="align-self: center"/>
             </Template>
+            <EditTemplate Context="agent">
+                <RadzenCheckBox TValue="bool" @bind-Value="@agent.AIF" Name="aif" Style="align-self: center"/>
+                <RadzenLengthValidator Max="10" Text="AIF is required" Component="aif"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="100px" MinWidth="100px"
+                              Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Resizable="false"
+                              Groupable="false" Pickable="false" Reorderable="false">
+            <Template Context="agent">
+                <AuthorizeView Policy="InRoleCanUpdateAgentInAgency">
+                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" ButtonSize="ButtonSize.Small"
+                                  Variant="Variant.Text" Click="() => EditAgent(agent)" Disabled="@_isEditing"
+                                  MouseEnter="@(args => ShowTooltip(args, "edit"))"/>
+                </AuthorizeView>
+                <AuthorizeView Policy="InRoleCanTransferAgentInAgency">
+                    <RadzenButton Icon="double_arrow" ButtonStyle="ButtonStyle.Secondary" ButtonSize="ButtonSize.Small"
+                                  Variant="Variant.Text" Click="() => TransferAgent(agent)" Disabled="@_isEditing"
+                                  MouseEnter="@(args => ShowTooltip(args, "transfer"))"/>
+                </AuthorizeView>
+                <AuthorizeView Policy="InRoleCanDisassociateAgentInAgency">
+                    <RadzenButton Icon="link_off" ButtonStyle="ButtonStyle.Danger" ButtonSize="ButtonSize.Small"
+                                  Variant="Variant.Text" Click="() => DisassociateAgent(agent)" Disabled="@_isEditing"
+                                  MouseEnter="@(args => ShowTooltip(args, "disassociate"))"/>
+                </AuthorizeView>
+            </Template>
+            <EditTemplate Context="agent">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" ButtonSize="ButtonSize.Small"
+                              Variant="Variant.Text" Click="() => Save(agent)"
+                              MouseEnter="@(args => ShowTooltip(args, "save"))"/>
+                <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Secondary"
+                              ButtonSize="ButtonSize.Small" Variant="Variant.Text" Click="() => Cancel(agent)"
+                              MouseEnter="@(args => ShowTooltip(args, "cancel"))"/>
+            </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
 </RadzenDataGrid>
 
 
@@ -79,34 +163,37 @@
     [Parameter, EditorRequired] public Agency Agency { get; set; }
 
     private List<AgencyAgentDto> Agents { get; set; } = [];
+    private AgencyAgentDto? _originalValues;
+    private bool _isEditing;
 
     #region Loaders
 
+    #region Agents Load
+
     private IDataAccessResult<List<AgencyAgentDto>> _agentsResult = null!;
 
-    private LoadItem AgencyContactsLoad => AddEventNotify(new LoadItem<List<AgencyAgentDto>>
+    private LoadItem AgencyAgentsLoad => AddEventNotify(new LoadItem<List<AgencyAgentDto>>
     {
-        Key = $"AgencyContacts{Agency.Id}",
+        Key = CacheKeys.AgencyAgents(Agency.Id),
         AsyncLoadTask = async () => _agentsResult = await DataAccess.GetAgencyAgents(Agency.Id),
         CacheLoadTask = cache => _agentsResult = new DataAccessResult<List<AgencyAgentDto>>
         {
             Data = (List<AgencyAgentDto>)cache!
         },
         ResultVariable = () => _agentsResult,
-        AfterLoad = void () =>
-        {
-            Agents = _agentsResult.Data!;
-        }
+        AfterLoad = void () => { Agents = _agentsResult.Data!; }
     }, "agency contacts");
+
+    #endregion
 
     #endregion
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        
+
         GridSettingsKey = "AgencyAgentsGrid";
-        
+
         await GetGridSettings();
         IsLoading = false;
     }
@@ -120,12 +207,18 @@
         await LoadData();
     }
 
-    private async Task LoadData()
+    private async Task LoadData(bool reload = false)
     {
+        if(_isEditing)
+            return;
+        
         if (Agency.Id == Guid.Empty)
             return;
+        
+        if(reload)
+            DataAccess.Clear(CacheKeys.AgencyAgents(Agency.Id));
 
-        await DataAccess.GetCacheOrLoadDataAsync(AgencyContactsLoad);
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyAgentsLoad);
     }
 
     private void ExportGrid(ExportFormat format)
@@ -153,6 +246,11 @@
         {
             "saveSettings" => "Click to save the grid settings",
             "resetSettings" => "Click to reset the grid settings",
+            "edit" => "Click to edit this agent",
+            "transfer" => "Click to transfer this agent to another agency",
+            "disassociate" => "Click to disassociate this agent from the agency",
+            "save" => "Click to save this agent",
+            "cancel" => "Click to cancel editing this agent",
             _ => ""
         };
 
@@ -163,29 +261,283 @@
         TooltipService.Open(element, message, options);
     }
 
-    private string GetEmail(Agent agent)
+    private async Task NewAgent(MouseEventArgs arg)
     {
-        return LegalEntityGetMains.GetMainEmail(agent.IdNavigation) ?? "";
+        if (!Grid.IsValid)
+            return;
+
+        var agent = new AgencyAgentDto
+        {
+            AgencyId = Agency.Id,
+            AgencyName = Agency.IdNavigation.FullName,
+            AgencyNum = Agency.AgencyNumber,
+            AgentId = Guid.Empty,
+        };
+
+        _isEditing = true;
+        await Grid.InsertRow(agent);
     }
 
-    private string GetPhoneNumber(Agent agent, bool extension = false)
+    private async Task EditAgent(AgencyAgentDto agent)
     {
-        var phoneNumber = LegalEntityGetMains.GetMainPhoneNumber(agent.IdNavigation);
+        if (!Grid.IsValid)
+            return;
 
-        if (extension)
-            return phoneNumber?.Extension ?? "";
-
-        var number = phoneNumber?.MainNumber ?? "";
-
-        return string.IsNullOrEmpty(number)
-            ? ""
-            : Regex.Replace(number, @"(\d{3})(\d{3})(\d{4})", "($1) $2-$3");
+        _isEditing = true;
+        _originalValues = Copy(agent);
+        await Grid.EditRow(agent);
     }
 
-    private bool? GetAIF(Agent agent)
+    private async Task<bool> TransferAgent(AgencyAgentDto agent, JamesLookup? targetAgencyPrm = null)
     {
-        return agent.AgentsInAgencies
-            .FirstOrDefault(f => f.AgencyId == Agency.Id)?
-            .AttorneyInFact;
+        var dialogOptions = DialogTools.GetDialogOptions();
+
+        var parameters = new Dictionary<string, object>()
+        {
+            { "Agent", agent },
+            { "TargetAgency", targetAgencyPrm }
+        };
+
+        var dialogResponse = await DialogService
+            .OpenAsync<AgencyAgentTransferDialog>("Transfer Agent", parameters, dialogOptions);
+
+        if(dialogResponse == null)
+            return false;
+        
+        var (targetAgency, transferLicenses) = (Tuple<Guid, bool>)dialogResponse;
+
+        var response = await DataAccess.TransferAgent(agent.AgentId, agent.AgencyId!.Value, targetAgency, 
+            transferLicenses);
+        
+        if (!response.Success)
+        {
+            NotifySaveIssue(response.Errors, "agent");
+            return(false);
+        }
+        
+        var message = new NotificationMessage
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "Agent has been successfully transferred",
+            Detail = $"Agent {agent.FullName} has been successfully transferred."
+        };
+        NotificationService.Notify(message);
+        
+        if(targetAgencyPrm == null)
+            RemoveAgentFromList(agent.AgentId);
+        
+        return true;
+    }
+
+    private async Task DisassociateAgent(AgencyAgentDto agent)
+    {
+        var confirm = await DialogService
+            .Confirm("Are you sure you want to disassociate this agent?",
+                "Disassociate Agent");
+        
+        if(confirm != true)
+            return;
+        
+        var response = await DataAccess.DisassociateAgent(agent.AgentId, Agency.Id);
+        if (!response.Success)
+        {
+            NotifySaveIssue(response.Errors, "agent");
+            return;
+        }
+
+        var message = new NotificationMessage
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "Agent Disassociated",
+            Detail = $"Agent {agent.FullName} has been successfully disassociated from the agency."
+        };
+        NotificationService.Notify(message);
+        
+        RemoveAgentFromList(agent.AgentId);
+    }
+
+    private void RemoveAgentFromList(Guid agentId)
+    {
+        var toDelete = Agents.FirstOrDefault(a => a.AgentId == agentId);
+        if (toDelete == null)
+            return;
+
+        Agents.Remove(toDelete);
+
+        DataAccess.UpdateCache(CacheKeys.AgencyAgents(Agency.Id), Agents);
+        
+        Grid.Reload();
+    }
+
+    private async Task Save(AgencyAgentDto agent)
+    {
+        await Grid.UpdateRow(agent);
+    }
+
+    private void Cancel(AgencyAgentDto agent)
+    {
+        var index = Agents.IndexOf(agent);
+        if (index != -1)
+            Agents[index] = Copy(_originalValues!);
+
+        Grid.CancelEditRow(agent);
+        _isEditing = false; 
+        _originalValues = null;
+    }
+
+    private async Task RowCreate(AgencyAgentDto agent)
+    {
+        await SetAgent(agent, true);
+    }
+
+    private async Task RowUpdate(AgencyAgentDto agent)
+    {
+        await SetAgent(agent);
+    }
+
+    private async Task SetAgent(AgencyAgentDto agent, bool isNew = false)
+    {
+        var agentId = isNew ? Guid.NewGuid() : agent.AgentId;
+        if (isNew && !string.IsNullOrWhiteSpace(agent.NationalProducerNumber))
+        {
+            agent.FullName = string.IsNullOrWhiteSpace(agent.MiddleInitial)
+                ? $"{agent.GivenName} {agent.FamilyName}"
+                : $"{agent.GivenName} {agent.MiddleInitial} {agent.FamilyName}";
+
+            var nppResponse = await DataAccess.GetAgentByNationalProducerNumber(agent.NationalProducerNumber, agentId);
+
+            if (!nppResponse.Success)
+            {
+                NotifyLoadError(nppResponse.Errors, "agent by National Producer Number");
+                _isEditing = false;
+                return;
+            }
+
+            var existingAgent = nppResponse.Data;
+            if (existingAgent != null)
+            {
+                var dialogOptions = DialogTools.GetDialogOptions(650);
+
+                var parameters = new Dictionary<string, object>()
+                {
+                    { "ExistingAgent", existingAgent },
+                    { "ProposedAgent", agent },
+                };
+
+                var dialogResponse = await DialogService
+                    .OpenAsync<AgentNPPExistDialog>("Existing Agent", parameters, dialogOptions);
+
+                var action = ((string?)dialogResponse ?? "cancel").ToLower();
+
+                switch (action)
+                {
+                    case "associate":
+                        var associateResponse = await DataAccess.AssignAgent(existingAgent.AgentId, agent.AgencyId!.Value);
+                        if (!associateResponse.Success)
+                        {
+                            NotifySaveError(associateResponse.Errors, "agent association");
+                            _isEditing = false;
+                            return;
+                        }
+
+                        var msg = new NotificationMessage
+                        {
+                            Severity = NotificationSeverity.Success,
+                            Summary = "Agent association successful",
+                            Detail = $"Agent {agent.GivenName} {agent.FamilyName} associated with this agency.",
+                            Duration = 5000
+                        };
+
+                        NotificationService.Notify(msg);
+                        _isEditing = false;
+
+                        await LoadData(true);
+
+                        return;
+                    case "transfer":
+                        var targetAgency = new JamesLookup
+                        {
+                            Id = agent.AgencyId!.Value,
+                            Code = agent.AgencyNum,
+                            Name = agent.AgencyName,
+                        };
+
+                        var result = await TransferAgent(existingAgent, targetAgency);
+                        if (result)
+                        {
+                            await LoadData(true);
+
+                            var transferredAgent = Agents.FirstOrDefault(a => a.AgentId == existingAgent.AgentId);
+                            if (transferredAgent == null) return;
+
+                            transferredAgent.CountryCode = agent.CountryCode;
+                            transferredAgent.PhoneNumber = agent.PhoneNumber;
+                            transferredAgent.Extension = agent.Extension;
+                            transferredAgent.Email = agent.Email;
+
+                            var transferredResponse = await DataAccess.SetAgent(transferredAgent.Id,
+                                transferredAgent.AgentId, transferredAgent.GivenName!,
+                                transferredAgent.MiddleInitial, transferredAgent.FamilyName,
+                                transferredAgent.NationalProducerNumber, transferredAgent.CountryCode,
+                                transferredAgent.PhoneNumber, transferredAgent.Email, transferredAgent.Extension,
+                                transferredAgent.AgencyId!.Value, transferredAgent.AIF, false);
+                        }
+                        else
+                        {
+                            Grid.CancelEditRow(agent);
+                            _isEditing = false;
+                        }
+
+                        return;
+                    default:
+                        Grid.CancelEditRow(agent);
+                        _isEditing = false;
+                        return;
+                }
+            }
+        }
+
+        var response = await DataAccess.SetAgent(agent.Id, agentId, agent.GivenName!,
+            agent.MiddleInitial, agent.FamilyName!, agent.NationalProducerNumber, agent.CountryCode,
+            agent.PhoneNumber, agent.Email, agent.Extension, agent.AgencyId!.Value, agent.AIF, isNew);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "agent");
+            _isEditing = false;
+            return;
+        }
+
+        NotifySuccessfulSave("agent");
+
+        DataAccess.UpdateCache(CacheKeys.AgencyAgents(Agency.Id), Agents);
+        _isEditing = false;
+        _originalValues = null;
+    }
+
+    private AgencyAgentDto? Copy(AgencyAgentDto? source)
+    {
+        if (source == null)
+        {
+            Console.WriteLine("Source is null");
+            return null;
+        }
+        
+        return new()
+        {
+            Id = source.Id,
+            AgencyId = source.AgencyId,
+            AgentId = source.AgentId,
+            GivenName = source.GivenName,
+            MiddleInitial = source.MiddleInitial,
+            FamilyName = source.FamilyName,
+            FullName = source.FullName,
+            NationalProducerNumber = source.NationalProducerNumber,
+            Email = source.Email,
+            CountryCode = source.CountryCode,
+            PhoneNumber = source.PhoneNumber,
+            Extension = source.Extension,
+            AIF = source.AIF
+        };
     }
 }

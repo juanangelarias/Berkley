@@ -13,7 +13,7 @@
     "https": {
       "commandName": "Project",
       "launchBrowser": true,
-      //"launchUrl": "Agency/322",
+      //"launchUrl": "Agency/322?tabsAgencyProfile=tabAccountsBonds",
       "launchUrl": "account/67239?mn=1&ai=0",
       //"launchUrl": "Admin/SecurityRoles",
       "environmentVariables": {

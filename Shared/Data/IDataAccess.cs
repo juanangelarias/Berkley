@@ -98,8 +98,27 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);
         public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly);
+        public Task<IDataAccessResult<List<JamesLookup>>> GetAgencyList();
+
+        #region Agents
+
         public Task<IDataAccessResult<Agent>> GetAgent(Guid agentId);
         public Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString);
+        public Task<ISaveDataResult> SetAgent(Guid agentAgencyId, Guid agentId, string givenName, string middleInitial,
+            string familyName, string nationalProducerNumber, string countryCode, string phoneNumber, string email,
+            string? extension, Guid agencyId, bool aif, bool isNew);
+        public Task<ISaveDataResult> TransferAgent(Guid agentId, Guid originAgencyId, Guid destinationAgencyId, 
+            bool transferLicenses);
+        public Task<ISaveDataResult> UpdateAndTransferAgent(Guid agentAgencyId, Guid agentId, string givenName,
+            string middleInitial, string familyName, string nationalProducerNumber, string countryCode,
+            string phoneNumber, string email, string? extension, bool aif, Guid originAgencyId,
+            Guid destinationAgencyId);
+        public Task<ISaveDataResult> DisassociateAgent(Guid agentId, Guid agencyId);
+        public Task<IDataAccessResult<AgencyAgentDto?>> GetAgentByNationalProducerNumber(string nationalProducerNumber, Guid agencyId);
+        public Task<ISaveDataResult> AssignAgent(Guid agentId, Guid agencyId);
+
+        #endregion
+        
         public Task<IDataAccessResult<List<AgencyLocationsDto>>> GetAgencyRelatedParties(Guid agencyId);
         public Task<IDataAccessResult<List<AgencySearchDto>>> SearchAgencies(string? search, bool activeOnly);
         public Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses();
@@ -346,7 +365,6 @@ namespace James.Shared.Data
 
         public Task<IDataAccessResult<List<AccountProgramDto>>> GetAccountPrograms(string accountNum);
         public Task<IDataAccessResult<AccountProgramDto> >GetAccountProgramById(Guid id);
-        //public Task<ISaveDataResult> CreateAccountProgram(AccountProgramDto input);
         public Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, 
             string newStatusTxt);
         public Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId);

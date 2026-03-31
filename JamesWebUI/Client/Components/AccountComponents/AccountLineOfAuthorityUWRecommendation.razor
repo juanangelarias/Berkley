@@ -3,7 +3,7 @@
 @inject IDataAccess DataAccess
 @inject IUserSettingService UserSettingService
 
-<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid">
+<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid" Style="max-height: 450px">
     <HeaderTemplate>
         <AuthorizeView Policy="InRoleCanSetUnderwritingRecommendation">
             <RadzenButton Icon="add" Text="New Recommendation" Variant="Variant.Text" Click="@InsertRow"

@@ -30,5 +30,7 @@ public partial class BondBlock
 
     public Guid? InsuredId { get; set; }
 
+    public virtual ICollection<BondBlockAllowedAgency> BondBlockAllowedAgencies { get; set; } = new List<BondBlockAllowedAgency>();
+
     public virtual Employee? IssuedByNavigation { get; set; }
 }

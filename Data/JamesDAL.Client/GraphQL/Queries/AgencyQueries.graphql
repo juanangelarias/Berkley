@@ -99,7 +99,7 @@ query agencyAccountBonds($accountNum: String!) {
     }
 }
 
-query GetAgencyBonds($agencyId: UUID!, $accountNum: String!, $skip: Int!, $take: Int!) {
+query GetAgencyBonds($agencyId: UUID!, $accountNum: String, $skip: Int!, $take: Int!) {
   agencyBonds(agencyId: $agencyId, accountNum: $accountNum, skip: $skip, take: $take) {
       accountName
       accountNum
@@ -129,12 +129,15 @@ query GetAgencyAgents($agencyId: UUID!){
 	agencyAgents(agencyId: $agencyId){
         id
         agencyId
+        agencyName
+        agencyNum
         agentId
         fullName
         givenName
         middleInitial
         familyName
         email
+        countryCode
         phoneNumber
         extension        
         nationalProducerNumber
@@ -343,5 +346,14 @@ query GetAllActiveAgencies {
         agencyNumber
         fullName
         status
+    }
+}
+
+query GetAgencyList {
+    agencyList {
+        id
+        code
+        name
+        label
     }
 }

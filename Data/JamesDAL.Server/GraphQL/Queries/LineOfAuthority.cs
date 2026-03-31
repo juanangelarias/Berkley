@@ -1,5 +1,6 @@
-﻿using James.Shared.Dto;
+using James.Shared.Dto;
 using System.Web.Http;
+using James.Shared;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -118,7 +119,8 @@ public partial class Query
         return result;
     }
 
-    private async Task<int> GetAccountOpenBondsTotal(Guid accountId, IDbContextFactory<JamesDatabaseContext> contextFactory)
+    private async Task<int> GetAccountOpenBondsTotal(Guid accountId,
+        IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
@@ -145,5 +147,141 @@ public partial class Query
             .Sum(s => s.BondAmount);
 
         return total;
+    }
+
+    [Authorize]
+    public async Task<List<AccountProgramDto>> GetAccountPrograms(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var data = await ctx.AccountPrograms
+            .Include(i => i.Status)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.NewStatusNavigation)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.OldStatusNavigation)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.StatusChangeByNavigation)
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.ApprovedByNavigation)
+            .Where(r => r.AccountNum == accountNum)
+            .OrderBy(o => o.AccountNum)
+            .ThenByDescending(o => o.Effective)
+            .ToListAsync();
+
+        var result = new List<AccountProgramDto>();
+        foreach (var program in data)
+        {
+            var prg = new AccountProgramDto
+            {
+                Id = program.Id,
+                AccountNum = program.AccountNum,
+                RequireExpiration = true, // ToDo: To be changed
+                Effective = program.Effective,
+                Expiration = program.Expiration,
+                Single = program.Single,
+                Aggregate = program.Aggregate,
+                StatusId = program.StatusId,
+                Status = program.Status.Description,
+                CreatedByName = program.CreatedByNavigation.FullName,
+                ApprovedByName = program.ApprovedByNavigation?.FullName ?? "",
+                ApprovedDate = program.ApprovedDate
+            };
+            foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
+            {
+                prg.Logs.Add(new()
+                {
+                    Id = hst.Id,
+                    AccountNum = hst.AccountNum,
+                    NewStatus = hst.NewStatusNavigation.Description,
+                    OldStatus = hst.OldStatusNavigation?.Description,
+                    StatusDate = hst.StatusDate,
+                    StatusChangeByFullName = hst.StatusChangeByNavigation.FullName,
+                    OldSingle = hst.OldSingle,
+                    NewSingle = hst.NewSingle,
+                    OldAggregate = hst.OldAggregate,
+                    NewAggregate = hst.NewAggregate
+                });
+            }
+
+            result.Add(prg);
+        }
+
+        return result;
+    }
+
+    [Authorize]
+    public async Task<AccountProgramDto> GetAccountProgramById(Guid id,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var program = await ctx.AccountPrograms
+            .Include(i => i.Status)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.NewStatusNavigation)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.OldStatusNavigation)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.StatusChangeByNavigation)
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.ApprovedByNavigation)
+            .FirstOrDefaultAsync(r => r.Id == id);
+
+        if (program == null)
+            throw new GraphQLException("Account program not found");
+
+        var prg = new AccountProgramDto
+        {
+            Id = program.Id,
+            Effective = program.Effective,
+            Expiration = program.Expiration,
+            Single = program.Single,
+            Aggregate = program.Aggregate,
+            StatusId = program.StatusId,
+            Status = program.Status.Description,
+            CreatedByName = program.CreatedByNavigation.FullName,
+            ApprovedByName = program.ApprovedByNavigation?.FullName ?? "",
+            ApprovedDate = program.ApprovedDate
+        };
+        foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
+        {
+            prg.Logs.Add(new()
+            {
+                Id = hst.Id,
+                NewStatus = hst.NewStatusNavigation.Description,
+                OldStatus = hst.OldStatusNavigation?.Description,
+                StatusDate = hst.StatusDate,
+                StatusChangeByFullName = hst.StatusChangeByNavigation.FullName,
+                OldSingle = hst.OldSingle,
+                NewSingle = hst.NewSingle,
+                OldAggregate = hst.OldAggregate,
+                NewAggregate = hst.NewAggregate
+            });
+        }
+
+        return prg;
+    }
+
+    [Authorize]
+    public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var loggedUser = await userShared.GetCurrentUser();
+        if (loggedUser == null)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+
+        var employee = await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser.Username) ?? await ctx.Employees
+            .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser.Username));
+
+        if (employee == null)
+            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
+
+        return await ctx.UserLineOfAuthorities
+            .Where(f => f.UserId == employee.Id && f.DivisionCode == division)
+            .ToListAsync();
     }
 }

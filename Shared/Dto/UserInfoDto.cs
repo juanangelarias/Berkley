@@ -8,4 +8,5 @@ public class UserInfoDto
     public string Title { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public bool IsUnderwriter { get; set; }
+    public bool HomeOfficeApprover { get; set; }
 }

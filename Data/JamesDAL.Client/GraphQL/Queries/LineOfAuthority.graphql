@@ -1,0 +1,58 @@
+﻿query GetAccountPrograms($accountNum: String!){
+    accountPrograms(accountNum: $accountNum){
+        accountNum
+        aggregate
+        approvedById
+        approvedByName
+        approvedDate
+        createdById
+        createdByName
+        effective
+        expiration
+        id
+        requireExpiration
+        single
+        status
+        statusId
+        logs {
+            accountNum
+            newAggregate
+            newSingle
+            newStatus
+            oldAggregate
+            oldSingle
+            oldStatus
+            statusChangeBy
+            statusChangeByFullName
+            statusDate
+        }
+    }
+}
+
+query GetAccountProgramById($id: UUID!) {
+    accountProgramById(id: $id) {
+        id
+        createdById
+        createdByName
+        accountNum
+        single
+        aggregate
+        effective
+        expiration
+        status
+        approvedById
+        approvedByName
+        approvedDate
+        logs {
+            id
+            statusDate
+            statusChangeByFullName
+            oldSingle
+            newSingle
+            oldAggregate
+            newAggregate
+            oldStatus
+            newStatus
+        }
+    }
+}

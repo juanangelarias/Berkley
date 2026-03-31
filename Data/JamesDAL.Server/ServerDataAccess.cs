@@ -374,7 +374,8 @@ namespace James.Data.Server
                 contextFactory));
         }
 
-        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum,            string type)
+        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum,            
+            string type)
         {
             return await ExecuteGet(async () => await query.GetAccountAnnualPremiums(accountNum, type, contextFactory));
         }
@@ -429,12 +430,11 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await generalMutation.DeleteLegalEntityEmail(id, contextFactory));
         }
 
-        public async Task<IDataAccessResult<AccountProgram>> SetAccountProgram(Guid programId, DateTime effective,
-            DateTime expiration, int single, int aggregate,
-            string? comments, Guid statusId)
+        public async Task<ISaveDataResult> SetAccountProgram(Guid programId, string accountNum, DateTime effective,
+            DateTime expiration, int single, int aggregate, string? comments, Guid statusId)
         {
-            return await ExecuteGet(async () => await accountMutation.SetAccountProgram(programId, effective,
-                expiration, single, aggregate, comments, statusId, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.SetAccountProgram(programId, accountNum, effective,
+                expiration, single, aggregate, comments, statusId, contextFactory, userShared));
         }
 
         public async Task<IDataAccessResult<PowerOfAttorney>> SetPowerOfAttorney(Guid poaId, Guid insurerId, int? limit,
@@ -1056,16 +1056,15 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> ResetUserSettings()
         {
-            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
+            //HACK: This was written for developer testing and has not been fully tested to be used in the actual application.
             return await ExecuteSave(async () =>
                 await generalMutation.ResetUserSettings(contextFactory, contextAccessor));
         }
 
         public async Task<ISaveDataResult> ResetUserSetting(string key)
         {
-            //HACK:  This was written for developer testing and has not been fully tested to be used in the actual application.
-            return await ExecuteSave(async () =>
-                await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
+            //HACK: This was written for developer testing and has not been fully tested to be used in the actual application.
+            return await ExecuteSave(async () => await generalMutation.ResetUserSetting(key, contextFactory, contextAccessor));
         }
 
         public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
@@ -1089,6 +1088,12 @@ namespace James.Data.Server
         public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
         {
             return await ExecuteGet(async () => await query.GetUserEmployeeInfo(userName, contextFactory));
+        }
+        
+        public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)
+        {
+            return await ExecuteGet(async () =>
+                await query.GetUserLOAByDivision(division, contextFactory, userShared));
         }
 
         #endregion
@@ -1177,8 +1182,41 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await generalMutation
                 .DeleteUnderwriterRecommendation(id, contextFactory));
         }
+        
+        #endregion
+        
+        #region Line Of Authority
+
+        public async Task<IDataAccessResult<List<AccountProgramDto>>> GetAccountPrograms(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetAccountPrograms(accountNum, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<AccountProgramDto>> GetAccountProgramById(Guid id)
+        {
+            return await ExecuteGet(async () => await query.GetAccountProgramById(id, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> AccountProgramChangeStatus(Guid accountProgramId, 
+            string newStatusTxt)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.AccountProgramChangeStatus(accountProgramId, newStatusTxt, contextFactory,
+                    userShared));
+        }
+        public async Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteAccountProgram(accountProgramId, 
+                contextFactory));
+        }
+
 
         #endregion
+        
+        public async Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses()
+        {
+            return await ExecuteGet(async () => await query.GetAllAccountProgramStatuses(contextFactory));
+        }
 
         private async Task<ImagingSearchCriteria> ImagingSearchCriteria(string id, ImagingDocumentCategory docCategory,
             bool useDocCategoryAsCriteria = true)

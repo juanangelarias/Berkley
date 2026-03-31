@@ -1,0 +1,17 @@
+﻿mutation AccountProgramChangeStatus($input: AccountProgramChangeStatusInput!) {
+    accountProgramChangeStatus(input: $input) {
+        boolean
+    }
+}
+
+mutation SetAccountProgram($input: SetAccountProgramInput!) {
+    setAccountProgram(input: $input) {
+        boolean
+    }
+}
+
+mutation DeleteAccountProgram($id: UUID!) {
+    deleteAccountProgram(input: {accountProgramId: $id}) {
+        boolean
+    }
+}

@@ -2,10 +2,8 @@
     accountPrograms(accountNum: $accountNum){
         accountNum
         aggregate
-        approvedById
         approvedByName
         approvedDate
-        createdById
         createdByName
         effective
         expiration
@@ -22,7 +20,6 @@
             oldAggregate
             oldSingle
             oldStatus
-            statusChangeBy
             statusChangeByFullName
             statusDate
         }
@@ -32,7 +29,6 @@
 query GetAccountProgramById($id: UUID!) {
     accountProgramById(id: $id) {
         id
-        createdById
         createdByName
         accountNum
         single
@@ -40,7 +36,6 @@ query GetAccountProgramById($id: UUID!) {
         effective
         expiration
         status
-        approvedById
         approvedByName
         approvedDate
         logs {

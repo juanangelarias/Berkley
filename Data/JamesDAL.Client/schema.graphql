@@ -651,7 +651,6 @@ type Query {
   userSetting(key: String!): UserSetting
   allUserSettings: [KeyValuePairOfStringAndString!]!
   userEmployeeInfo(username: String!): UserInfoDto
-  userLOAByDivision(division: String!): [UserLineOfAuthority!]!
 }
 
 type AgencyCommission {

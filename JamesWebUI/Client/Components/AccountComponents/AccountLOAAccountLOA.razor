@@ -1,6 +1,7 @@
 ﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
+@inject TooltipService TooltipService
 
 <RadzenDataGrid TItem="AccountLOADto" Data="@_accountLoaList" @ref="@_grid" EditMode="DataGridEditMode.Single"
                 EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
@@ -232,38 +233,47 @@
 
     private async Task InsertRow()
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task EditRow(AccountLOADto loa)
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task RemoveRow(AccountLOADto loa)
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task RequestApproval(AccountLOADto loa)
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task Approve(AccountLOADto loa)
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task Decline(AccountLOADto loa)
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task Cancel(AccountLOADto loa)
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task Save(AccountLOADto loa)
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task CancelEdit(AccountLOADto loa)
     {
+        await ToBeDevelopedDialog();
     }
 
     private async Task UpdateGridRow(AccountLOADto loa)
@@ -289,6 +299,18 @@
 
     private void ShowTooltip(ElementReference element, Action name, TooltipOptions? options = null)
     {
+        var message = name switch
+        {
+            Action.Edit => "Edit this program",
+            Action.RequestApproval => "Request approval for this program",
+            Action.Remove => "Remove this program",
+            Action.Approve => "Approve this program",
+            Action.Decline => "Decline this program",
+            Action.Cancel => "Cancel this program",
+            _ => ""
+        };
+
+        TooltipService.Open(element, message, options);
     }
     
     private async Task<bool> ConfirmAction(Action action)
@@ -308,13 +330,20 @@
 
     private async Task PrintLoa(AccountLOADto loa)
     {
-        await DialogService.Confirm("Function to be developed", "Print LOA", new ConfirmOptions
+        await ToBeDevelopedDialog();
+    }
+
+    private async Task ToBeDevelopedDialog()
+    {
+        await DialogService.Confirm(
+            "Workflow has not been defined yet.", 
+            "To be developed", new ConfirmOptions
         {
             CloseDialogOnOverlayClick = true,
             CloseDialogOnEsc = true
         });
     }
-    
+
     private enum Action
     {
         Edit,

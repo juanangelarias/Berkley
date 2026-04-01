@@ -1210,6 +1210,11 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await generalMutation.DeleteAccountProgram(accountProgramId, 
                 contextFactory));
         }
+        
+        public async Task<IDataAccessResult<List<AccountLOADto>>> GetLoaLogsByAccount(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetLoaLogsByAccount(accountNum, contextFactory));
+        }
 
         #endregion
         

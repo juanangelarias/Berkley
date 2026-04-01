@@ -1740,6 +1740,14 @@ namespace James.Data.Client
             return await ExecuteSave(async () =>
                 await jamesClient.DeleteAccountProgram.ExecuteAsync(accountProgramId), "DeleteAccountProgram"); 
         }
+        
+        public async Task<IDataAccessResult<List<AccountLOADto>>> GetLoaLogsByAccount(string accountNum)
+        {
+            var result = await ExecuteGet<List<AccountLOADto>>(async () =>
+                await jamesClient.GetLoaLogsByAccount.ExecuteAsync(accountNum), "LoaLogsByAccount");
+            
+            return result;
+        }
 
         #endregion
         

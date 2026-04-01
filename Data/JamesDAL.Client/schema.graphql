@@ -2413,9 +2413,7 @@ type DeleteUnderwriterRecommendationPayload {
 type AccountLOADto {
   id: UUID!
   created: DateTime!
-  createdById: UUID
   createdByName: String
-  approvedById: UUID
   approvedByName: String
   accountNum: String!
   sequenceNumber: Int!

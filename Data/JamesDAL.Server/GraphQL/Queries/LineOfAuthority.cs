@@ -20,11 +20,9 @@ public partial class Query
             {
                 Id = s.Id,
                 Created = s.Created,
-                CreatedById = s.CreatedBy,
                 CreatedByName = s.CreatedBy != null 
                     ? s.CreatedByNavigation!.FullName 
                     : null,
-                ApprovedById = s.ApprovedBy,
                 ApprovedByName = s.ApprovedBy != null 
                     ? s.ApprovedByNavigation!.FullName 
                     : null,

@@ -26,9 +26,9 @@ public partial class AccountProgram
 
     public Guid StatusId { get; set; }
 
-    public string CreatedBy { get; set; } = null!;
+    public Guid CreatedBy { get; set; }
 
-    public string? ApprovedBy { get; set; }
+    public Guid? ApprovedBy { get; set; }
 
     public DateTime? ApprovedDate { get; set; }
 
@@ -37,6 +37,10 @@ public partial class AccountProgram
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
     public virtual ICollection<AccountProgramStatusHistory> AccountProgramStatusHistories { get; set; } = new List<AccountProgramStatusHistory>();
+
+    public virtual Employee? ApprovedByNavigation { get; set; }
+
+    public virtual Employee CreatedByNavigation { get; set; } = null!;
 
     public virtual AccountProgramStatusDm Status { get; set; } = null!;
 }

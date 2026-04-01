@@ -114,7 +114,7 @@ public partial class BondHold
 
     public virtual BondTypeDm? BondType { get; set; }
 
-    public virtual UserProfile? HomeOfficeApprovedByNavigation { get; set; }
+    public virtual Employee? HomeOfficeApprovedByNavigation { get; set; }
 
     public virtual Insurer? Insurer { get; set; }
 

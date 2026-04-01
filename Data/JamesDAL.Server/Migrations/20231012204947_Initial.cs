@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -137,7 +136,7 @@ namespace James.Data.Server.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "(newid())"),
                     Created = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
                     Modified = table.Column<DateTime>(type: "datetime", nullable: false, defaultValueSql: "(getdate())"),
-                    Active = table.Column<bool?>(type:"bit", nullable:false, defaultValueSql:"((1))")
+                    Active = table.Column<bool?>(type: "bit", nullable: false, defaultValueSql: "((1))")
                 },
                 constraints: table =>
                 {

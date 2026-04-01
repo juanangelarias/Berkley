@@ -25,20 +25,30 @@ namespace JamesWebUI.Client.Security
                 await GetEmployeeList();
                 if (_employees.Count == 0)
                     loggingService.LogWarning("No employees were returned in the employee list");
+                
                 var username = GetUsername(context);
                 if (string.IsNullOrWhiteSpace(username))
                     //User is not authenticated, so role cannot be verified.
                     return;
+                
                 var employee = _employees.FirstOrDefault(e =>
                     string.Equals(e.ActiveDirectoryAccount, username, StringComparison.OrdinalIgnoreCase));
                 if (employee == null)
                 {
-                    //TODO:Update this to allow non-AD users
-                    FailSecurityAttempt(context, requirement, "User is not an employee.",
-                        $"RoleRequirementHandler is returning Fail because user is not one of {_employees.Count} employee.");
-                    return;
-                }
+                    // ToDo: To resolve cases like juarias and jarias
+                    employee = _employees.FirstOrDefault(e =>
+                        e.Email != null &&
+                        e.Email.StartsWith(username, StringComparison.OrdinalIgnoreCase));
 
+                    if (employee == null)
+                    {
+                        //TODO:Update this to allow non-AD users
+                        FailSecurityAttempt(context, requirement, "User is not an employee.",
+                            $"RoleRequirementHandler is returning Fail because user is not one of {_employees.Count} employee.");
+                        return;
+                    }
+                }
+                
                 await DataAccess.GetCacheOrLoadDataAsync(UserRoleLoadItem(employee.Id));
                 if (_userRoles.Any(sr =>
                         string.Equals(sr.Role, requirement.Role, StringComparison.InvariantCultureIgnoreCase)))

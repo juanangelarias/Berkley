@@ -15,21 +15,21 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var startDate = GetStartDate(DateTime.Today, (AlertPeriod)period);
-        
+
         var accountId = (await ctx.Accounts.FirstOrDefaultAsync(a => a.AccountNum == accountNum))?.Id;
         if (accountId == null)
             throw new NotFoundException("Account not found");
-        
-        var topParentId = (await ctx.VEntityTopParents.FirstOrDefaultAsync(f=>f.ChildId == accountId))?
+
+        var topParentId = (await ctx.VEntityTopParents.FirstOrDefaultAsync(f => f.ChildId == accountId))?
             .ParentId;
-        
+
         var parentAccountNum = (await ctx.Accounts.FirstOrDefaultAsync(a => a.Id == topParentId))?.AccountNum;
-        if(parentAccountNum == null)
+        if (parentAccountNum == null)
             throw new NotFoundException("Parent Account not found");
-        
+
         var relatedAccountNumbers = await ctx.AccountParentAncestorSaves
-            .Where(r=>r.AncestorAccountNum == parentAccountNum)
-            .Select(s=>s.AccountNum)
+            .Where(r => r.AncestorAccountNum == parentAccountNum)
+            .Select(s => s.AccountNum)
             .ToListAsync();
 
         var statusChangedAccounts = await ctx.AccountStatusLogs
@@ -41,15 +41,15 @@ public partial class Query
         var lostAccounts = statusChangedAccounts
             .Where(r => lostStatuses.Contains(r.AccountStatus))
             .ToList();
-        
+
         var newAccounts = statusChangedAccounts
             .Where(r => r.AccountStatus == "Active");
-        
+
         // ToDo - Add new claims
         // ToDo - Add Messages Flag
         // ToDo - Add Expiration
         // ToDo - Add Submission
-        
+
         // ToDo - Add Claims
         var rnd = new Random(DateTime.Now.Millisecond);
         var claims = new List<AccountAlertClaimDto>();
@@ -63,25 +63,25 @@ public partial class Query
             });
         }
         var alerts = new List<AccountAlertDto>();
-        alerts.AddRange(lostAccounts.Select(s=> new AccountAlertDto
+        alerts.AddRange(lostAccounts.Select(s => new AccountAlertDto
         {
             Type = AccountAlertType.LostAccount,
             Date = s.Effective,
             Alert = $"Account: {s.AccountNumNavigation.AccountNum}",
             Link = $"{Links.Account}{s.AccountNumNavigation.AccountNum}"
         }));
-        
-        alerts.AddRange(newAccounts.Select(s=>new AccountAlertDto
+
+        alerts.AddRange(newAccounts.Select(s => new AccountAlertDto
         {
             Type = AccountAlertType.NewAccount,
             Date = s.Effective,
             Alert = $"Account: {s.AccountNumNavigation.AccountNum}",
             Link = $"{Links.Account}{s.AccountNumNavigation.AccountNum}"
         }));
-        
+
         var notifications = new AccountAlertPackageDto
         {
-            Alerts = alerts.OrderBy(o=>o.Type).ThenBy(t=>t.Date).ToList(),
+            Alerts = alerts.OrderBy(o => o.Type).ThenBy(t => t.Date).ToList(),
             Claims = claims
         };
 

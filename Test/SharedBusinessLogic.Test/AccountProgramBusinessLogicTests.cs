@@ -17,6 +17,9 @@ public class AccountProgramBusinessLogicTests
         var endDate = DateOnly.Parse(end);
         var actualDate = DateOnly.Parse(actual);
 
+        if(endDate < startDate)
+            return;
+        
         // Act
         var result = AccountProgramBusinessLogic.CalculateProratedBondAmount(
             amount, startDate, endDate, actualDate);

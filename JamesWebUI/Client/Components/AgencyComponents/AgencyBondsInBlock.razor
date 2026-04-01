@@ -44,6 +44,7 @@
 </RadzenDataGrid>
 
 @code {
+    [Parameter, EditorRequired] public required Guid AgencyId { get; set; }
     [Parameter, EditorRequired] public required Guid BondBlockId { get; set; }
 
     private List<Bond> _bonds = [];
@@ -56,7 +57,7 @@
 
     private LoadItem BondsByBlockLoad => AddEventNotify(new LoadItem<List<Bond>>
     {
-        Key = CacheKeys.BondByBlock(BondBlockId),
+        Key = CacheKeys.AgencyBondByBlock(AgencyId, BondBlockId),
         AsyncLoadTask = async () => _bondsByBlockResult = await DataAccess.GetBondsByBlock(BondBlockId),
         CacheLoadTask = cache => _bondsByBlockResult = new DataAccessResult<List<Bond>>
         {

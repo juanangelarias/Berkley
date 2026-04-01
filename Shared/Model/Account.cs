@@ -150,6 +150,10 @@ public partial class Account
 
     public string? SharedSurety { get; set; }
 
+    public bool? IsPrivatelyOwned { get; set; }
+
+    public int? EstimatedAnnualPremium { get; set; }
+
     public virtual ICollection<AccountProgram> AccountPrograms { get; set; } = new List<AccountProgram>();
 
     public virtual ICollection<AccountStatusLog> AccountStatusLogs { get; set; } = new List<AccountStatusLog>();
@@ -182,7 +186,7 @@ public partial class Account
 
     public virtual Branch BranchNavigation { get; set; } = null!;
 
-    public virtual UserProfile? BranchReviewByNavigation { get; set; }
+    public virtual Employee? BranchReviewByNavigation { get; set; }
 
     public virtual BusinessTypeClassCodeDm? BusinessTypeClassNavigation { get; set; }
 
@@ -204,7 +208,7 @@ public partial class Account
 
     public virtual ICollection<EmailHistory> EmailHistories { get; set; } = new List<EmailHistory>();
 
-    public virtual UserProfile? HomeOfficeReviewByNavigation { get; set; }
+    public virtual Employee? HomeOfficeReviewByNavigation { get; set; }
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 
@@ -215,6 +219,8 @@ public partial class Account
     public virtual ICollection<KeyPersonnel> KeyPersonnel { get; set; } = new List<KeyPersonnel>();
 
     public virtual LawEntity? LawFirm { get; set; }
+
+    public virtual ICollection<LineOfAuthorityReason> LineOfAuthorityReasons { get; set; } = new List<LineOfAuthorityReason>();
 
     public virtual ICollection<PersonalFinancialStatement> PersonalFinancialStatements { get; set; } = new List<PersonalFinancialStatement>();
 

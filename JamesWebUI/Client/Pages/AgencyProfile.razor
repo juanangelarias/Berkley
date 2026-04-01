@@ -305,6 +305,8 @@
             loadItems.Add(AgencyByAgencyNumberLoadItem(Id));
 
         await DataAccess.ParallelGetCacheOrDataAsync(loadItems.ToArray());
+        
+        StateHasChanged();
     }
 
     private async Task LoadBranches()

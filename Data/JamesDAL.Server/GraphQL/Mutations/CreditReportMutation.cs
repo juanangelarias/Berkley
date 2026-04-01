@@ -36,12 +36,12 @@ public partial class GeneralMutation
                 Definition = definition,
                 Remarks = remarks
             };
-            
+
             ctx.CreditReportHistories.Add(creditReport);
         }
 
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 
@@ -50,16 +50,16 @@ public partial class GeneralMutation
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
+
         var record = await ctx.CreditReportHistories
             .FirstOrDefaultAsync(r => r.Id == id);
-        
+
         if (record == null)
             throw new NotFoundException("Credit report not found");
-        
+
         ctx.CreditReportHistories.Remove(record);
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 }

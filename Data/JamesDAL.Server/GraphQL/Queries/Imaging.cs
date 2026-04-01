@@ -10,12 +10,12 @@ namespace James.Data.Server.GraphQL.Queries
 {
     public partial class Query
     {
-    #if ChaosMonkey
+#if ChaosMonkey
         /// <summary>
         /// Percentage of tries that should throw exceptions (0-100)
         /// </summary>
         private const int ChaosFrequencyPercentage = 20;
-        private static readonly Random _rnd = new ();
+        private static readonly Random _rnd = new();
 
         /// <summary>
         /// Randomly throws a chaos monkey exception based on ChaosFrequencyPercentage
@@ -26,7 +26,7 @@ namespace James.Data.Server.GraphQL.Queries
             if (_rnd.Next(0, 100) <= ChaosFrequencyPercentage)
                 throw new Exception("Chaos Monkey strikes again!!");
         }
-    #endif
+#endif
 
         /// <summary>
         /// Returns document metadata from the imaging system for a given document category, document type and imaging id
@@ -157,7 +157,7 @@ namespace James.Data.Server.GraphQL.Queries
             ThrowIfChaos();
 #endif
             var ctx = await contextFactory.CreateDbContextAsync();
-            return ctx.VImagingCategoryTabDivisionTypes.OrderBy(ctdt=>ctdt.TabName).ThenBy(ctdt=>ctdt.Type).ToList();
+            return ctx.VImagingCategoryTabDivisionTypes.OrderBy(ctdt => ctdt.TabName).ThenBy(ctdt => ctdt.Type).ToList();
         }
     }
 }

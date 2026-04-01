@@ -22,5 +22,5 @@ public partial class UnderwriterRecommendation
 
     public virtual Account AccountNumNavigation { get; set; } = null!;
 
-    public virtual UserProfile PostedByNavigation { get; set; } = null!;
+    public virtual Employee PostedByNavigation { get; set; } = null!;
 }

@@ -1,0 +1,13 @@
+﻿query GetUnderwriterRecommendationByAccount($accountNum: String!)
+{
+    underwriterRecommendationByAccount(accountNumber: $accountNum){
+        id
+        created
+        comments
+        description
+        postedBy
+        postedByNavigation {
+            fullName
+        }
+    }
+}

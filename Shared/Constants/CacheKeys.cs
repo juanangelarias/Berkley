@@ -9,20 +9,32 @@ public static class CacheKeys
     // Calculated
     // A
     public static string Account(string accountNumber) => $"Account-{accountNumber}";
-    public static string AccountAlerts(string alertPeriod, string accountNumber) => $"AccountAlerts-{alertPeriod}-{accountNumber}";
-    public static string AccountAnnualPremiums(string accountNumber, string type) => $"AccountAnnualPremiums-{accountNumber}-{type}";
+    public static string AccountAlerts(string alertPeriod, string accountNumber) =>
+        $"AccountAlerts-{alertPeriod}-{accountNumber}";
+    public static string AccountAnnualPremiums(string accountNumber, string type) =>
+        $"AccountAnnualPremiums-{accountNumber}-{type}";
     public static string AccountCollaterals(string accountNumber) => $"AccountCollaterals-{accountNumber}";
-    public static string AccountOutstandingLiability(string accountNumber) => $"AccountOutstandingLiability-{accountNumber}";
+    public static string AccountLOA(string accountNum) => $"AccountLOA-{accountNum}";
+    public static string AccountOutstandingLiability(string accountNumber) =>
+        $"AccountOutstandingLiability-{accountNumber}";
+    public static string AccountPrograms(string accountNumber) => $"AccountPrograms-{accountNumber}";
     public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
     public static string Agency(string agencyNumber) => $"Agency-{agencyNumber}";
+    public static string AgencyAccounts(string agencyNumber) => $"AgencyAccounts-{agencyNumber}";
     public static string AgencyAgents(string id) => $"AgencyAgents-{id}";
-    public static string AgencyAgentLicenses(string agencyId, string agentId) => $"AgencyAgentLicenses-{agencyId}-{agentId}";
+    public static string AgencyAgentLicenses(string agencyId, string agentId) =>
+        $"AgencyAgentLicenses-{agencyId}-{agentId}";
+    public static string AgencyBonds(Guid agencyId, string accountNum, int skip, int take) =>
+        $"AgencyBond-{agencyId}-{accountNum ?? "NoAccount"}-{skip}-{take}";
+    public static string AgencyBondByBlock(Guid agencyId, Guid bondBlockId) => $"BondByBlock-{bondBlockId}-{agencyId}";
+    public static string AgencyCommissionRates(Guid agencyId) => $"AgencyCommissionRates-{agencyId}";
     public static string AgencyLicenses(string id) => $"AgencyLicenses-{id}";
     public static string AccountLOAs(string accountNumber) => $"AccountLOAs-{accountNumber}";
-    
-    // B
-    public static string BondByBlock(Guid bondBlockId) => $"BondByBlock-{bondBlockId}";
-    
+    public static string AgencyBondBlocks(Guid agencyId) => $"AgencyBondBlocks-{agencyId}";
+    public static string AgencyAgents(Guid agencyId) => $"AgencyContacts-{agencyId}";
+    public static string AgencyLocations(Guid agencyId) => $"AgencyLocations-{agencyId}";
+    public static string AgencyInventory(Guid agencyId) => $"AgencyInventory-{agencyId}";
+
     // C
     public static string CreditReport(string accountNumber) => $"BondTransactions-{accountNumber}";
 
@@ -32,25 +44,30 @@ public static class CacheKeys
     public static string LegalEntityPhoneNumbers(Guid id) => $"LegalEntityPhoneNumbers-{id}";
     public static string LastIndemnitor(string accountNumber) => $"LastIndemnitor-{accountNumber}";
     public static string LastPrivateEquity(string accountNumber) => $"LastPrivateEquity-{accountNumber}";
-    
+
     // U
+    public static string UnderwriterRecommendation(string accountNum) => $"UnderwriterRecommendation-{accountNum}";
+    public static string UserLOA(string division) => $"UserLOA-{division}";
     public static string UserSettings(string userId, string? subKey)
     {
         var key = $"UserSettings-{userId.ToLower()}";
-        
-        if (subKey != null) 
+
+        if (subKey != null)
             key += $"-{subKey}";
-        
+
         return key;
     }
-    
+
     // R
     public static string RelatedAccounts(string accountNumber) => $"RelatedAccounts-{accountNumber}";
 
     // Fixed
     // A
+    public const string AccountProgramStatuses = "AccountProgramStatuses";
     public const string AddressTypes = "AddressTypes";
     public const string AgenciesDto = "AgenciesDto";
+    public const string AgenciesLookup = "AgenciesLookup";
+
     public const string AgencyStatuses = "AgencyStatuses";
     // B
     public const string BondBlocks = "BondBlocks";
@@ -65,6 +82,9 @@ public static class CacheKeys
     public const string CreditReportAgencies = "CreditReportAgencies";
     // D
     public const string Divisions = "Divisions";
+
+    public const string DocumentTypes = "DocumentTypes";
+
     // E
     public const string EmailTypes = "EmailTypes";
     // I

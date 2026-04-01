@@ -32,7 +32,7 @@ public partial class AgencyInventory
 
     public virtual Agency Agency { get; set; } = null!;
 
-    public virtual UserProfile ApproverNavigation { get; set; } = null!;
+    public virtual Employee ApproverNavigation { get; set; } = null!;
 
     public virtual InventoryDocumentDm DocumentTypeNavigation { get; set; } = null!;
 }

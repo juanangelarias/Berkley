@@ -46,7 +46,7 @@
             <Columns>
                 <RadzenDataGridColumn Title="Minimum" Width="125px" MaxWidth="125px" TextAlign="TextAlign.Right">
                     <Template Context="rate">
-                        <RadzenText Text="@($"{rate.MinumumAmount:C0}")" TextAlign="TextAlign.Right"/>
+                        <RadzenText Text="@($"{rate.MinimumAmount:C0}")" TextAlign="TextAlign.Right"/>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Maximum" Property="MaximumAmount" Width="125px"
@@ -337,7 +337,7 @@
                 .OrderBy(o => o.RateGroup)
                 .ThenBy(t1 => t1.CommercialBondType)
                 .ThenBy(t2 => t2.RiskType)
-                .ThenBy(t3 => t3.MinumumAmount)
+                .ThenBy(t3 => t3.MinimumAmount)
                 .ToList();
 
         _commercialGrid.Reload();

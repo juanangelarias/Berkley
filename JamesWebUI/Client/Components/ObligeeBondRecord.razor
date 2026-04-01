@@ -48,8 +48,16 @@
                                 Data="@ObligeeBonds.Select(b=>b.BondType?.BondType).Distinct().ToList()" />
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Begin Date" Property="Effective" FormatString="{0:d}" />
-        <RadzenDataGridColumn Title="End Date" Property="Expiration" FormatString="{0:d}" />
+        <RadzenDataGridColumn Title="Begin Date" Property="Effective">
+            <Template Context="record">
+                <RadzenText Text="@($"{record.Effective:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="End Date" Property="Expiration">
+            <Template Context="record">
+                <RadzenText Text="@($"{record.Expiration:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
     </Columns>
     <LoadingTemplate>
         <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate" />

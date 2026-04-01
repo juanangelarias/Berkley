@@ -1,9 +1,8 @@
 ﻿using HotChocolate.Authorization;
 using HotChocolate.Subscriptions;
-using System.Collections.Immutable;
-using System.Diagnostics;
-using James.Data.Server.GraphQL.Types;
 using James.Shared;
+using System.Diagnostics;
+using James.Shared.Dto;
 
 namespace James.Data.Server.GraphQL.Mutations
 {
@@ -11,7 +10,7 @@ namespace James.Data.Server.GraphQL.Mutations
     public class AgencyMutation
     {
         [Authorize]
-        public async Task<Agency> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9,
+        public async Task<AgencyAgentDto> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9,
             bool need1099, bool profitSharing, string address1, string address2, string address3, string city,
             string stateCode, string postalCode, string billingAddress1, string billingAddress2, string billingAddress3,
             string billingCity, string billingStateCode, string billingPostalCode,
@@ -67,7 +66,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 AddressId = newBillingAddress.Id
             };
             //TODO: Insert the new agency
-            return new Agency();
+            return new AgencyAgentDto();
         }
 
         public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
@@ -364,7 +363,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> DeleteAgencyInventory(Guid inventoryId, [Service] ITopicEventSender eventSender, 
+        public async Task<bool> DeleteAgencyInventory(Guid inventoryId, [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] ILoggingService loggingService)
         {
             bool success = false;
@@ -377,13 +376,13 @@ namespace James.Data.Server.GraphQL.Mutations
                 if (null != inventoryToRemove)
                 {
                     ctx.AgencyInventories.Remove(inventoryToRemove);
-                    
+
                     var addressToRemove = ctx.Addresses.FirstOrDefault(f => f.Id == inventoryToRemove!.AddressId);
                     if (addressToRemove != null)
                     {
                         ctx.Addresses.Remove(addressToRemove);
                     }
-                    
+
                     await ctx.SaveChangesAsync(true);
                     success = true;
                 }
@@ -467,7 +466,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
 
             rate.ExpireIncluded = rate.Expiration == null ? 0 : 1;
-            
+
             //Get existing rate id
             var existingRate = await ctx.AgencyCommissions
                 .FirstOrDefaultAsync(ac => ac.Id == rate.Id);
@@ -490,8 +489,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId,
-            [Service] ITopicEventSender eventSender,
+        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId, [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
@@ -507,7 +505,7 @@ namespace James.Data.Server.GraphQL.Mutations
             return true;
 
         }
-        
+
         [Authorize]
         public async Task<bool> SetAgencyGeneralInfo(Guid agencyId, string agencyName, Guid parentId, string? taxId,
             string? npn, bool w9, bool need1099, bool nasbp, string branchKey,
@@ -579,7 +577,7 @@ namespace James.Data.Server.GraphQL.Mutations
                     license.IsActive = input.IsActive;
                     license.Modified = DateTime.Now;
                 }
-                
+
                 await ctx.SaveChangesAsync();
                 return true;
             }
@@ -650,7 +648,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing, 
+        public async Task<bool> SetAgencyProfitSharingInfo(Guid agencyId, bool profitSharing,
             int? profitSharingMinimumPremium, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             try
@@ -663,7 +661,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 agency.ProfitSharing = profitSharing;
                 agency.ProfitSharingMinimumPremium = profitSharingMinimumPremium;
                 await ctx.SaveChangesAsync();
-                
+
                 return true;
             }
             catch

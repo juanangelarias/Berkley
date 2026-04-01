@@ -26,5 +26,5 @@ public partial class AccountStatusLog
 
     public virtual AccountStatusDm AccountStatusNavigation { get; set; } = null!;
 
-    public virtual UserProfile ModifiedByNavigation { get; set; } = null!;
+    public virtual Employee ModifiedByNavigation { get; set; } = null!;
 }

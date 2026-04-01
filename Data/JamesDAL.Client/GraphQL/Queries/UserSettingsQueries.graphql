@@ -4,3 +4,26 @@
         value
     }
 }
+
+query GetUserEmployeeInfo($userName: String!) {
+    userEmployeeInfo(username: $userName){
+        email
+        employeeId
+        fullName
+        isUnderwriter
+        title
+        username
+        homeOfficeApprover
+    }
+}
+
+query GetUserLOAByDivision($division: String!) {
+    userLOAByDivision(division: $division) {
+        id
+        divisionCode
+        bondType
+        expiration
+        single
+        aggregate
+    }
+}

@@ -56,6 +56,8 @@ public partial class Agency
 
     public virtual LegalEntity? BillingContact { get; set; }
 
+    public virtual ICollection<BondBlockAllowedAgency> BondBlockAllowedAgencies { get; set; } = new List<BondBlockAllowedAgency>();
+
     public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;

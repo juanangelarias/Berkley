@@ -628,6 +628,7 @@ type Query {
   allImagingTypes: [ImagingType!]!
   allImagingCategoryTabDivisionType: [VImagingCategoryTabDivisionType!]!
   allInsurers: [Insurer!]!
+  loaLogsByAccount(accountNumber: String!): [AccountLOADto!]!
   accountLOAs(accountNum: String!): AccountLOAsDto!
   accountPrograms(accountNum: String!): [AccountProgramDto!]!
   accountProgramById(id: UUID!): AccountProgramDto!
@@ -2407,6 +2408,25 @@ input SetAgencyProfitSharingInfoInput {
 
 type DeleteUnderwriterRecommendationPayload {
   boolean: Boolean
+}
+
+type AccountLOADto {
+  id: UUID!
+  created: DateTime!
+  createdByName: String
+  approvedByName: String
+  accountNum: String!
+  sequenceNumber: Int!
+  effective: DateTime!
+  expiration: DateTime!
+  loaSingle: Int!
+  loaAggregate: Int!
+  division: String
+  bondType: String
+  homeOfficeApproved: Boolean!
+  comments: String
+  conditions: String
+  status: String
 }
 
 enum ImagingDocumentCategory {

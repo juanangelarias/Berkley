@@ -94,16 +94,16 @@
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" MinWidth="10px"
-                                      Width="120px" FormatString="{0:d}">
+                                      Width="120px">
                     <Template Context="license">
                         <RadzenText TextStyle="TextStyle.Body2"
                                     Text="@(license.Appointment == null ? "" : license.Appointment.Value.ToString("MM/dd/yyyy"))"/>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" MinWidth="10px"
-                                      Width="120px" FormatString="{0:d}">
+                                      Width="120px">
                     <Template Context="license">
-                        <RadzenText Text="@license.Termination.ToString()" TextStyle="TextStyle.Body2"/>
+                        <RadzenText Text="@(license.Termination == null ? "" : license.Termination.Value.ToString("MM/dd/yyyy"))" TextStyle="TextStyle.Body2"/>
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>

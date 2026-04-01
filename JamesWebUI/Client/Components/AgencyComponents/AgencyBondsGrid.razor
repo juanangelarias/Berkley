@@ -80,10 +80,18 @@
                                 Data="@_agencyBonds.Select(b => b.BondType).Distinct().ToList()"/>
             </FilterTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Begin Date" Property="BeginDate" FormatString="{0:d}"
-                              Width="150px" Resizable="true"/>
-        <RadzenDataGridColumn TItem="AgencyBondDto" Title="End Date" Property="EndDate" FormatString="{0:d}"
-                              Width="150px" SortOrder="SortOrder.Descending" Resizable="true"/>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="Begin Date" Property="BeginDate" Width="150px" 
+                              Resizable="true">
+            <Template Context="agencyBond">
+                <RadzenText Text="@($"{agencyBond.BeginDate:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn TItem="AgencyBondDto" Title="End Date" Property="EndDate" Width="150px" 
+                              SortOrder="SortOrder.Descending" Resizable="true">
+            <Template Context="agencyBond">
+                <RadzenText Text="@($"{agencyBond.EndDate:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Amount" Property="Amount" FormatString="{0:C0}"
                               Width="125px" SortOrder="SortOrder.Descending" Resizable="true"
                               TextAlign="TextAlign.Center">
@@ -103,7 +111,7 @@
         <RadzenDataGridColumn TItem="AgencyBondDto" Title="Class" Property="BondClass" Resizable="true"
                               Filterable="true" FilterValue="@_classFilter" FilterProperty="BondClass"
                               FilterOperator="FilterOperator.Contains" Type="typeof(List<string>)"
-                              FormatString="{0:d}" Width="180px">
+                              Width="180px">
             <FilterTemplate>
                 <RadzenDropDown @bind-Value="@_classFilter" @ref="ClassFilterDropDown" Change="ClassFilterChange"
                                 TValue="List<string>" Multiple="true" AllowClear="true"

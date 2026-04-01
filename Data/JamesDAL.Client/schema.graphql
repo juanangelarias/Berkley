@@ -14,9 +14,7 @@ type AccountProgramDto {
   aggregate: Int!
   statusId: UUID!
   status: String!
-  createdById: UUID!
   createdByName: String!
-  approvedById: UUID
   approvedByName: String
   approvedDate: DateTime
   logs: [AccountProgramStatusLogDto!]!
@@ -168,7 +166,6 @@ type Subscription {
   onAddressCollectionModified(legalEntityId: ID!): SubscriptionResultOfGuid!
   onLicenseModified: AgencyLicense!
   onSearchResultReady(searchTerm: String!): SubscriptionResultOfListOfJamesSearchResult!
-  agentAdded: Agent!
 }
 
 type AccountProgramStatusHistory {
@@ -385,6 +382,7 @@ type Agency {
   agencyLicenses: [AgencyLicense!]!
   agencyStatusLogs: [AgencyStatusLog!]!
   agentsInAgencies: [AgentsInAgency!]!
+  bondBlockAllowedAgencies: [BondBlockAllowedAgency!]!
   bondTransactions: [BondTransaction!]!
   idNavigation: LegalEntity!
   powerOfAttorneys: [PowerOfAttorney!]!
@@ -500,6 +498,8 @@ type Employee {
   activeDirectoryTitle: String
   accountBranchReviewByNavigations: [Account!]!
   accountHomeOfficeReviewByNavigations: [Account!]!
+  accountProgramApprovedByNavigations: [AccountProgram!]!
+  accountProgramCreatedByNavigations: [AccountProgram!]!
   accountProgramEmailNotificationGroups: [AccountProgramEmailNotificationGroup!]!
   accountProgramStatusHistories: [AccountProgramStatusHistory!]!
   accountStatusLogs: [AccountStatusLog!]!
@@ -632,6 +632,7 @@ type Query {
   accountLOAs(accountNum: String!): AccountLOAsDto!
   accountPrograms(accountNum: String!): [AccountProgramDto!]!
   accountProgramById(id: UUID!): AccountProgramDto!
+  userLOAByDivision(division: String!): [UserLineOfAuthority!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -2165,22 +2166,21 @@ type AccountProgram {
   homeOfficeApproved: Boolean!
   accountNumNavigation: Account!
   accountProgramStatusHistories: [AccountProgramStatusHistory!]!
+  approvedByNavigation: Employee
+  createdByNavigation: Employee!
   status: AccountProgramStatusDm!
 }
 
 type AccountProgramStatusLogDto {
   id: UUID!
   accountNum: String!
-  newStatusId: UUID!
   newStatus: String!
-  oldStatusId: UUID
   oldStatus: String
   oldSingle: Int
   newSingle: Int!
   oldAggregate: Int
   newAggregate: Int!
   statusDate: DateTime!
-  statusChangeBy: UUID!
   statusChangeByFullName: String
 }
 
@@ -2634,6 +2634,7 @@ type BondBlock {
   comments: String
   agencyId: UUID
   insuredId: UUID
+  bondBlockAllowedAgencies: [BondBlockAllowedAgency!]!
   issuedByNavigation: Employee
 }
 
@@ -2748,6 +2749,16 @@ type NotificationGroup {
   description: String
   notificationGroupMembers: [NotificationGroupMember!]!
   underwriters: [Underwriter!]!
+}
+
+type BondBlockAllowedAgency {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  bondBlockId: UUID!
+  agencyNumber: String!
+  agencyNumberNavigation: Agency!
+  bondBlock: BondBlock!
 }
 
 input DeleteAgencyPOAInput {

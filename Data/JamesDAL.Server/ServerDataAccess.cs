@@ -1216,7 +1216,6 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetLoaLogsByAccount(accountNum, contextFactory));
         }
 
-
         #endregion
         
         public async Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses()

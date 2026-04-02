@@ -294,13 +294,13 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var loggedUser = await userShared.GetCurrentUser();
-        if (loggedUser == null)
+        var loggedUser = await userShared.GetUserName();
+        if (string.IsNullOrEmpty(loggedUser))
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
 
         var employee = await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser.Username) ?? await ctx.Employees
-            .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser.Username));
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser) ?? await ctx.Employees
+            .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser));
 
         if (employee == null)
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");

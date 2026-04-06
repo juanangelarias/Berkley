@@ -1,14 +1,16 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@using Newtonsoft.Json
+@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
 @inject IUserSettingService UserSettingService
 
-<RadzenStack Orientation="Orientation.Vertical" Gap="1rem" class="rz-my-3" Style="max-height: 490px;">
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem" class="rz-mb-3" Style="max-height: 490px;">
     <RadzenRow>
         <RadzenText Text="Underwriting Recommendation" TextStyle="TextStyle.DisplayH6"/>
     </RadzenRow>
-    <RadzenRow >
-        <RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid" Style="max-height: 450px">
+    <RadzenRow>
+        <RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid"
+                        Style="max-height: 450px;">
             <HeaderTemplate>
                 <AuthorizeView Policy="InRoleCanSetUnderwritingRecommendation">
                     <RadzenButton Icon="add" Text="New Recommendation" Variant="Variant.Text" Click="@InsertRow"
@@ -64,7 +66,9 @@
                     </Template>
                 </RadzenDataGridColumn>
             </Columns>
-        </RadzenDataGrid></RadzenRow></RadzenStack>
+        </RadzenDataGrid>
+    </RadzenRow>
+</RadzenStack>
 
 @code {
     [Parameter, EditorRequired] public string AccountNum { get; set; }
@@ -99,6 +103,8 @@
                     Name = s.IdNavigation.FullName
                 })
                 .ToList();
+            
+            LoggingService.LogInformation($"Underwriters loaded: {_underwritersLookup.Count}");
         }
     }, "underwriters");
 
@@ -117,7 +123,11 @@
             Data = (List<UnderwriterRecommendation>)cache!
         },
         ResultVariable = () => _recommendationsResult,
-        AfterLoad = () => { Recommendations = _recommendationsResult.Data!; }
+        AfterLoad = () =>
+        {
+            Recommendations = _recommendationsResult.Data!;
+            LoggingService.LogInformation($"Recommendations loaded: {Recommendations.Count}");
+        }
     }, "underwriters recommendations");
 
     #endregion
@@ -128,15 +138,20 @@
     {
         await base.OnInitializedAsync();
 
+        LoggingService.LogInformation("OnInitializedAsync");
         _userInfo = await UserSettingService.GetUserEmployeeInfoAsync();
+        LoggingService.LogInformation("User info: " + JsonConvert.SerializeObject(_userInfo, Formatting.Indented));
         await LoadUnderwriters();
+        LoggingService.LogInformation("Underwriters loaded");
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
 
+        LoggingService.LogInformation($"OnParametersSetAsync - AccountNum: {AccountNum}");
         await LoadRecommendations();
+        LoggingService.LogInformation("Recommendations loaded");
     }
 
     private async Task LoadRecommendations()

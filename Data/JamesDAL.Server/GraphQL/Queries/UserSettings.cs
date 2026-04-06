@@ -58,12 +58,13 @@ public partial class Query
     }
 
     [Authorize]
-    public async Task<UserInfoDto?> GetUserEmployeeInfo(string username,
+    public async Task<UserInfoDto?> GetUserEmployeeInfo(
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared,
         [Service] ILoggingService loggingService)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         
+        var username = await userShared.GetUserName();
         loggingService.LogInformation($"User(username) {username} parameter.");
         
         var response = await GetEmployeeUserName(username, ctx);

@@ -650,7 +650,7 @@ type Query {
   underwriterRecommendationByAccount(accountNumber: String!): [UnderwriterRecommendation!]!
   userSetting(key: String!): UserSetting
   allUserSettings: [KeyValuePairOfStringAndString!]!
-  userEmployeeInfo(username: String!): UserInfoDto
+  userEmployeeInfo: UserInfoDto
 }
 
 type AgencyCommission {

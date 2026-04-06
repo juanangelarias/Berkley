@@ -5,8 +5,8 @@
     }
 }
 
-query GetUserEmployeeInfo($userName: String!) {
-    userEmployeeInfo(username: $userName){
+query GetUserEmployeeInfo {
+    userEmployeeInfo {
         email
         employeeId
         fullName

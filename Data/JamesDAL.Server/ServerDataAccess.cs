@@ -1087,7 +1087,8 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
         {
-            return await ExecuteGet(async () => await query.GetUserEmployeeInfo(userName, contextFactory));
+            return await ExecuteGet(async () => await query.GetUserEmployeeInfo(userName, contextFactory, userShared, 
+                loggingService));
         }
         
         public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)

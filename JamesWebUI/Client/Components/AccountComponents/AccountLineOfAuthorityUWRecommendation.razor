@@ -103,8 +103,6 @@
                     Name = s.IdNavigation.FullName
                 })
                 .ToList();
-            
-            LoggingService.LogInformation($"Underwriters loaded: {_underwritersLookup.Count}");
         }
     }, "underwriters");
 
@@ -126,7 +124,6 @@
         AfterLoad = () =>
         {
             Recommendations = _recommendationsResult.Data!;
-            LoggingService.LogInformation($"Recommendations loaded: {Recommendations.Count}");
         }
     }, "underwriters recommendations");
 
@@ -138,20 +135,14 @@
     {
         await base.OnInitializedAsync();
 
-        LoggingService.LogInformation("OnInitializedAsync");
         _userInfo = await UserSettingService.GetUserEmployeeInfoAsync();
-        LoggingService.LogInformation("User info: " + JsonConvert.SerializeObject(_userInfo, Formatting.Indented));
         await LoadUnderwriters();
-        LoggingService.LogInformation("Underwriters loaded");
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
-        LoggingService.LogInformation($"OnParametersSetAsync - AccountNum: {AccountNum}");
         await LoadRecommendations();
-        LoggingService.LogInformation("Recommendations loaded");
     }
 
     private async Task LoadRecommendations()

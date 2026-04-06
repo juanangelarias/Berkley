@@ -65,7 +65,6 @@ public partial class Query
         var ctx = await contextFactory.CreateDbContextAsync();
         
         var username = await userShared.GetUserName();
-        loggingService.LogInformation($"User(username) {username} parameter.");
         
         var response = await GetEmployeeUserName(username, ctx);
         if(response.Item1 == null)

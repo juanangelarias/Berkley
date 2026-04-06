@@ -1582,9 +1582,8 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo()
         {
-            throw new NotImplementedException();
-            /*return await ExecuteGet<UserInfoDto?>(async () =>
-                await jamesClient.GetUserEmployeeInfo.ExecuteAsync(userName), "UserEmployeeInfo");*/
+            return await ExecuteGet<UserInfoDto?>(async () =>
+                await jamesClient.GetUserEmployeeInfo.ExecuteAsync(), "UserEmployeeInfo");
         }
         
         public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)

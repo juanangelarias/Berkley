@@ -4,9 +4,7 @@ public class AccountLOADto
 {
     public Guid Id { get; set; }
     public DateTime Created { get; set; }
-    public Guid? CreatedById { get; set; }
     public string? CreatedByName { get; set; }
-    public Guid? ApprovedById { get; set; }
     public string? ApprovedByName { get; set; }
     public string AccountNum { get; set; } = string.Empty;
     public int SequenceNumber { get; set; }

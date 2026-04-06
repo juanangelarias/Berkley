@@ -98,7 +98,7 @@
 
     private LoadItem RelatedPartiesLoad => AddEventNotify(new LoadItem<List<Agency>>
     {
-        Key = $"AgencyLocations{AgencyId}",
+        Key = CacheKeys.AgencyLocations(AgencyId),
         AsyncLoadTask = async () => _relatedPartiesResult = await DataAccess.GetAgencyRelatedParties(AgencyId),
         CacheLoadTask = cache => _relatedPartiesResult = new DataAccessResult<List<AgencyLocationsDto>>
         {

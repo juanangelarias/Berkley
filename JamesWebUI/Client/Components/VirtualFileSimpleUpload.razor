@@ -127,10 +127,14 @@
                     <RadzenDataGridColumn Property="@nameof(ImagingDocument.Description)"
                                           Title="Documents Uploaded" />
                     <RadzenDataGridColumn Property="@nameof(ImagingDocument.EntryDate)"
-                                          Title="Uploaded" FormatString="{0:d}" />
+                                          Title="Uploaded">
+                        <Template Context="imgDoc">
+                            <RadzenText Text="@(imgDoc.EntryDate.ToString("MM/dd/yyyy"))" 
+                                        TextStyle="TextStyle.Body2"/>
+                        </Template>
+                    </RadzenDataGridColumn>
                     <RadzenDataGridColumn>
                         <Template Context="doc">
-                            @* Text="Link document" Icon="link" *@
                             <RadzenButton Variant="Variant.Text"
                                           Click=@(() => LinkExistingAndClose(doc.Guid))>
                                 <RadzenText Text="Link document" />

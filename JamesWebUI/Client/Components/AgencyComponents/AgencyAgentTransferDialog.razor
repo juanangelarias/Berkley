@@ -1,0 +1,232 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess;
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="2rem" Visible="@(_targetAgency == null)">
+    <RadzenRow JustifyContent="JustifyContent.Center">
+        <RadzenText Text="Select the target agency" TextStyle="TextStyle.DisplayH4"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenDataGrid TItem="JamesLookup" Data="_agencyList" AllowFiltering="true" FilterMode="FilterMode.Simple"
+                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowGrouping="false"
+                        AllowSorting="true" AllowPaging="false" AllowColumnPicking="false" AllowColumnReorder="false"
+                        Style="height: 455px" IsLoading="@IsLoading" Density="Density.Compact">
+            <Columns>
+                <RadzenDataGridColumn TItem="JamesLookup" Property="Code" Title="Code" Width="100px"/>
+                <RadzenDataGridColumn TItem="JamesLookup" Property="Name" Title="Agency Name" Width="250px"/>
+                <RadzenDataGridColumn Width="125px">
+                    <Template Context="agency">
+                        <RadzenButton Text="Select" Click="@(async () => await OnAgencySelected(agency))"
+                                      ButtonStyle="ButtonStyle.Success"/>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+            <LoadingTemplate>
+                <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+            </LoadingTemplate>
+        </RadzenDataGrid>
+    </RadzenRow>
+</RadzenStack>
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="2rem" Visible="@(_targetAgency != null)">
+    <RadzenRow JustifyContent="JustifyContent.Center" class="rz-w-100">
+        <RadzenText Text=@($"Transfer agent {Agent.FullName} to agency {_targetAgency?.Label ?? "None"}")
+                    TextStyle="TextStyle.DisplayH4" TextAlign="TextAlign.Center"/>
+    </RadzenRow>
+    <RadzenRow JustifyContent="JustifyContent.Center" class="rz-w-100">
+        <RadzenText Text="Transfer licenses"/>
+        <RadzenCheckBox @bind-Value="@_transferLicenses" Name="transferLicenses"/>
+        <RadzenRequiredValidator Text="Please select if you want to transfer licenses or not"
+                                 Component="transferLicenses"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenDataGrid TItem="AgencyLicense" Data="_licenses" AllowFiltering="false" AllowGrouping="false"
+                        AllowSorting="true" AllowPaging="false" AllowColumnPicking="false" AllowColumnReorder="false"
+                        Style="max-height: 455px" IsLoading="@IsLoading" Density="Density.Compact">
+            <Columns>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Status" Filterable="true" Property="IsActive"
+                                      MinWidth="10px" TextAlign="TextAlign.Center" Width="100px">
+                    <Template Context="license">
+                        @{
+                            if (license.IsActive)
+                            {
+                                <JamesStatusIcon IconStyle="IconStyle.Success"/>
+                            }
+                            else
+                            {
+                                <JamesStatusIcon IconStyle="IconStyle.Danger"/>
+                            }
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="State" Type="typeof(IEnumerable<string>)"
+                                      Filterable="true" FilterProperty="State" Property="State" Width="100px"
+                                      FilterOperator="FilterOperator.Contains" MinWidth="10px"
+                                      TextAlign="TextAlign.Center">
+                    <Template Context="license">
+                        <RadzenText Text="@license.State" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="No Aptmt" MinWidth="10px" Property="AppointingState"
+                                      TextAlign="TextAlign.Center" Width="110px">
+                    <Template Context="license">
+                        <RadzenCheckBox Value="license.AppointingState" ReadOnly="true"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="License No." Property="LicenseNumber" MinWidth="10px"
+                                      Width="140px">
+                    <Template Context="license">
+                        <RadzenText Text="@license.LicenseNumber" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Resident" MinWidth="10px" Property="IsResident"
+                                      TextAlign="TextAlign.Center" Width="100px">
+                    <Template Context="license">
+                        <RadzenRow JustifyContent="JustifyContent.Center">
+                            <RadzenCheckBox TValue="bool" Value="license.IsResident" ReadOnly="true"/>
+                        </RadzenRow>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Insurer" Filterable="true" Property="Insurer"
+                                      MinWidth="10px" Width="300px">
+                    <Template Context="license">
+                        <RadzenText Text="@license.Insurer.IdNavigation.FullName" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Appointment" Property="Appointment" MinWidth="10px"
+                                      Width="120px">
+                    <Template Context="license">
+                        <RadzenText TextStyle="TextStyle.Body2"
+                                    Text="@(license.Appointment == null ? "" : license.Appointment.Value.ToString("MM/dd/yyyy"))"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="AgencyLicense" Title="Termination" Property="Termination" MinWidth="10px"
+                                      Width="120px">
+                    <Template Context="license">
+                        <RadzenText Text="@(license.Termination == null ? "" : license.Termination.Value.ToString("MM/dd/yyyy"))" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenRow>
+    <RadzenRow class="rz-mt-5">
+        <RadzenText TextStyle="TextStyle.Subtitle2" TextAlign="TextAlign.Center" class="rz-info">
+            @Message()
+        </RadzenText>
+    </RadzenRow>
+    <RadzenRow JustifyContent="JustifyContent.Center">
+        <RadzenButton Icon="double_arrow" Text="Transfer" Click="@OnTransfer" ButtonStyle="ButtonStyle.Success"
+                      Style="width: 175px"/>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired] public required AgencyAgentDto Agent { get; set; }
+    [Parameter] public JamesLookup? TargetAgency { get; set; }
+
+    private List<JamesLookup> _agencyList = [];
+    private JamesLookup? _targetAgency;
+    private List<AgencyLicense> _licenses = [];
+    private bool _transferLicenses = true;
+    
+    #region Loaders
+
+    #region AgencyList Load
+
+    private IDataAccessResult<List<JamesLookup>> _agencyListResult = null!;
+
+    private LoadItem AgencyListLoad => AddEventNotify(new LoadItem<List<JamesLookup>>
+    {
+        Key = CacheKeys.AgenciesLookup,
+        AsyncLoadTask = async () => _agencyListResult = await DataAccess.GetAgencyList(),
+        CacheLoadTask = cache => _agencyListResult = new DataAccessResult<List<JamesLookup>>
+        {
+            Data = (List<JamesLookup>)cache!
+        },
+        ResultVariable = () => _agencyListResult,
+        AfterLoad = () =>
+        {
+            _agencyList = _agencyListResult.Data!
+                .Where(r => r.Id != Agent.AgencyId)
+                .ToList();
+        }
+    }, "agencies list");
+
+    #endregion
+
+    #region LicensesLoad
+
+    private IDataAccessResult<List<AgencyLicense>> _licensesResult = null!;
+
+    private LoadItem AgencyLicensesLoad => AddEventNotify(new LoadItem<List<AgencyLicense>>
+    {
+        Key = CacheKeys.AgencyAgentLicenses(Agent.AgencyId.ToString(), Agent.AgentId.ToString()),
+        AsyncLoadTask = async () => _licensesResult = await DataAccess.GetAgencyAgentLicenses(Agent.AgencyId.Value, Agent.AgentId),
+        CacheLoadTask = cache => _licensesResult = new DataAccessResult<List<AgencyLicense>>
+        {
+            Data = (List<AgencyLicense>)cache!
+        },
+        ResultVariable = () => _licensesResult,
+        AfterLoad = () => { _licenses = _licensesResult.Data!; }
+    }, "agency licenses");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await ShowLoading();
+
+        if(TargetAgency == null)
+            await DataAccess.GetCacheOrLoadDataAsync(AgencyListLoad);
+        else
+        {
+            var targetAgency = TargetAgency;
+            await OnAgencySelected(targetAgency);
+        }
+    }
+
+    private async Task OnAgencySelected(JamesLookup agency)
+    {
+        await ShowLoading();
+        
+        _targetAgency = agency;
+        
+        DataAccess.Clear(CacheKeys.AgencyAgentLicenses(Agent.AgencyId.ToString()!, Agent.AgentId.ToString()));
+        await DataAccess.GetCacheOrLoadDataAsync(AgencyLicensesLoad);
+    }
+
+    private async Task OnTransfer()
+    {
+        if (_targetAgency == null)
+            return;
+
+        var confirm = await DialogService
+            .Confirm($"Are you sure you want to transfer this agent to {_targetAgency.Label}?",
+                "Transfer Agent");
+
+        if (confirm == true)
+        {
+            var response = new Tuple<Guid, bool>(_targetAgency.Id, _transferLicenses);
+            DialogService.Close(response);
+        }
+    }
+    
+    private MarkupString Message()
+    {
+        var subMessage = _transferLicenses switch
+        {
+            true => "<strong style=\"color: var(--rz-danger)\">and all</strong> associated licenses",
+            false => "<strong style=\"color: var(--rz-danger)\">without</strong> associated licenses"
+        };
+        
+        var message = $"<p style=\"color: var(--rz-info)\">By clicking the transfer button, you agree to transfer the agent to the selected agency " +
+                      $"{subMessage}. This action cannot be undone.";
+        
+        return (MarkupString)message;
+    }
+
+}

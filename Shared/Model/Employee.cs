@@ -36,6 +36,10 @@ public partial class Employee
 
     public virtual ICollection<Account> AccountHomeOfficeReviewByNavigations { get; set; } = new List<Account>();
 
+    public virtual ICollection<AccountProgram> AccountProgramApprovedByNavigations { get; set; } = new List<AccountProgram>();
+
+    public virtual ICollection<AccountProgram> AccountProgramCreatedByNavigations { get; set; } = new List<AccountProgram>();
+
     public virtual ICollection<AccountProgramEmailNotificationGroup> AccountProgramEmailNotificationGroups { get; set; } = new List<AccountProgramEmailNotificationGroup>();
 
     public virtual ICollection<AccountProgramStatusHistory> AccountProgramStatusHistories { get; set; } = new List<AccountProgramStatusHistory>();

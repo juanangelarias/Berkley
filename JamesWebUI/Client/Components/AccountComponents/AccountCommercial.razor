@@ -80,9 +80,9 @@
                 <Tabs>
                     <RadzenTabsItem Text="Account Info">
                         <Animate Animation="new FadeAnimation()" Duration="TimeSpan.FromSeconds(0.5)">
-                            <RadzenTabs @ref="@AccountInfoTabs" TabControlName="AccountInfoTabs"
+                            <RadzenTabs @ref="@_accountInfoTabs" TabControlName="AccountInfoTabs"
                                         @bind-SelectedIndex="@_accountInfoTabItem" 
-                                        Change="@(args => AccountInfoTabsChanged(args))">
+                                        Change="@(AccountInfoTabsChanged)">
                                 <Tabs>
                                     <RadzenTabsItem Text="General Information" >
                                         <AccountGeneralInformation Account="@Account"/>
@@ -156,9 +156,9 @@
     private ButtonStyle _notificationStyle = ButtonStyle.Info;
     private bool _alertOrClaimExist;
     private RadzenTabs MainTabs { get; set; } = new();
-    private int _mainTabItem = 0;
-    private RadzenTabs AccountInfoTabs { get; set; } = new();
-    private int _accountInfoTabItem = 0;
+    private int _mainTabItem;
+    private RadzenTabs _accountInfoTabs = new();
+    private int _accountInfoTabItem;
     private bool _isNewRender = true;
 
     protected override void OnInitialized()
@@ -304,7 +304,7 @@
 
         var queryParams = new Dictionary<string, object?>
         {
-            { "mn", MainTabs.SelectedTab.Index },
+            { "mn", MainTabs.SelectedTab?.Index ?? 0 },
             { "ai", index }
         }; 
             

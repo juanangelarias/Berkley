@@ -20,13 +20,11 @@ public partial class Query
             {
                 Id = s.Id,
                 Created = s.Created,
-                CreatedById = s.CreatedBy,
-                CreatedByName = s.CreatedBy != null
-                    ? s.CreatedByNavigation!.FullName
+                CreatedByName = s.CreatedBy != null 
+                    ? s.CreatedByNavigation!.FullName 
                     : null,
-                ApprovedById = s.ApprovedBy,
-                ApprovedByName = s.ApprovedBy != null
-                    ? s.ApprovedByNavigation!.FullName
+                ApprovedByName = s.ApprovedBy != null 
+                    ? s.ApprovedByNavigation!.FullName 
                     : null,
                 AccountNum = s.AccountNum,
                 SequenceNumber = s.SequenceNumber,
@@ -188,15 +186,14 @@ public partial class Query
             .ThenInclude(i => i.NewStatusNavigation)
             .Include(i => i.AccountProgramStatusHistories)
             .ThenInclude(i => i.OldStatusNavigation)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.StatusChangeByNavigation)
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.ApprovedByNavigation)
             .Where(r => r.AccountNum == accountNum)
             .OrderBy(o => o.AccountNum)
             .ThenByDescending(o => o.Effective)
             .ToListAsync();
-
-        var employees = await ctx.Employees
-            .ToListAsync();
-        var createdByName = employees.FirstOrDefault(e => e.Id == data.FirstOrDefault()?.CreatedBy)?.FullName;
-        var approvedByName = employees.FirstOrDefault(e => e.Id == data.FirstOrDefault()?.ApprovedBy)?.FullName;
 
         var result = new List<AccountProgramDto>();
         foreach (var program in data)
@@ -212,26 +209,24 @@ public partial class Query
                 Aggregate = program.Aggregate,
                 StatusId = program.StatusId,
                 Status = program.Status.Description,
-                CreatedByName = createdByName ?? "",
-                ApprovedByName = approvedByName,
+                CreatedByName = program.CreatedByNavigation.FullName,
+                ApprovedByName = program.ApprovedByNavigation?.FullName ?? "",
                 ApprovedDate = program.ApprovedDate
             };
             foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
             {
-                prg.Logs.Add(new AccountProgramStatusLogDto
+                prg.Logs.Add(new()
                 {
                     Id = hst.Id,
                     AccountNum = hst.AccountNum,
                     NewStatus = hst.NewStatusNavigation.Description,
                     OldStatus = hst.OldStatusNavigation?.Description,
                     StatusDate = hst.StatusDate,
-                    StatusChangeByFullName = employees
-                        .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
-                        .FullName ?? "",
+                    StatusChangeByFullName = hst.StatusChangeByNavigation.FullName,
                     OldSingle = hst.OldSingle,
                     NewSingle = hst.NewSingle,
                     OldAggregate = hst.OldAggregate,
-                    NewAggregate = hst.NewAggregate,
+                    NewAggregate = hst.NewAggregate
                 });
             }
 
@@ -252,16 +247,14 @@ public partial class Query
             .ThenInclude(i => i.NewStatusNavigation)
             .Include(i => i.AccountProgramStatusHistories)
             .ThenInclude(i => i.OldStatusNavigation)
+            .Include(i => i.AccountProgramStatusHistories)
+            .ThenInclude(i => i.StatusChangeByNavigation)
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.ApprovedByNavigation)
             .FirstOrDefaultAsync(r => r.Id == id);
 
         if (program == null)
             throw new GraphQLException("Account program not found");
-
-        var employees = await ctx.Employees
-            .ToListAsync();
-
-        var createdByName = employees.FirstOrDefault(e => e.Id == program.CreatedBy)?.FullName;
-        var approvedByName = employees.FirstOrDefault(e => e.Id == program.ApprovedBy)?.FullName;
 
         var prg = new AccountProgramDto
         {
@@ -272,31 +265,29 @@ public partial class Query
             Aggregate = program.Aggregate,
             StatusId = program.StatusId,
             Status = program.Status.Description,
-            CreatedByName = createdByName ?? "",
-            ApprovedByName = approvedByName,
+            CreatedByName = program.CreatedByNavigation.FullName,
+            ApprovedByName = program.ApprovedByNavigation?.FullName ?? "",
             ApprovedDate = program.ApprovedDate
         };
         foreach (var hst in program.AccountProgramStatusHistories.OrderByDescending(o => o.Created))
         {
-            prg.Logs.Add(new AccountProgramStatusLogDto
+            prg.Logs.Add(new()
             {
                 Id = hst.Id,
                 NewStatus = hst.NewStatusNavigation.Description,
                 OldStatus = hst.OldStatusNavigation?.Description,
                 StatusDate = hst.StatusDate,
-                StatusChangeByFullName = employees
-                    .FirstOrDefault(e => e.Id == hst.StatusChangeBy)?
-                    .FullName ?? "",
+                StatusChangeByFullName = hst.StatusChangeByNavigation.FullName,
                 OldSingle = hst.OldSingle,
                 NewSingle = hst.NewSingle,
                 OldAggregate = hst.OldAggregate,
-                NewAggregate = hst.NewAggregate,
+                NewAggregate = hst.NewAggregate
             });
         }
 
         return prg;
     }
-    
+
     [Authorize]
     public async Task<List<AccountAgencyLOADto>> GetAccountAgencyLOA(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -358,17 +349,17 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var loggedUser = await userShared.GetCurrentUser();
-        if(loggedUser == null)
+        var loggedUser = await userShared.GetUserName();
+        if (string.IsNullOrEmpty(loggedUser))
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-        
-        var employee = await ctx.Employees
-            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser.Username) ?? await ctx.Employees
-            .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser.Username));
 
-        if(employee == null)
+        var employee = await ctx.Employees
+            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == loggedUser) ?? await ctx.Employees
+            .FirstOrDefaultAsync(f => f.Email!.StartsWith(loggedUser));
+
+        if (employee == null)
             throw new UnauthorizedAccessException("Must be logged in to get user settings.");
-        
+
         return await ctx.UserLineOfAuthorities
             .Where(f => f.UserId == employee.Id && f.DivisionCode == division)
             .ToListAsync();

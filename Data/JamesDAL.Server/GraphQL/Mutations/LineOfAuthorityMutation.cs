@@ -6,18 +6,22 @@ namespace James.Data.Server.GraphQL.Mutations;
 
 public partial class GeneralMutation
 {
-    [Authorize]
+    [Authorize(Policy = "InRoleCanSetAccountProgram")]
     public async Task<bool> SetAccountProgram(Guid programId, string accountNum, DateTime effective,
         DateTime? expiration, int single, int aggregate, string? comments, Guid statusId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var user = await userShared.GetCurrentUser();
+        var userName = await userShared.GetUserName();
+
+        //ToDo: Review after we move to the new way to authenticate users that have this issue
+        //ToDo: (active directory account different than the email)
+
         var employee = await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
+                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == userName) ??
                        await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
+                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(userName));
 
         if (employee == null)
             throw new GraphQLException("User not found in employee table.");
@@ -37,17 +41,17 @@ public partial class GeneralMutation
             StatusChangeBy = employee.Id
         };
 
-        var existent = await ctx.AccountPrograms
+        var existing = await ctx.AccountPrograms
             .FirstOrDefaultAsync(f => f.Id == programId);
-        if (existent != null)
+        if (existing != null)
         {
-            existent.Effective = effective;
-            existent.Expiration = expiration ?? new DateTime(9999, 12, 31);
-            existent.Single = single;
-            existent.Aggregate = aggregate;
-            existent.Modified = DateTime.Now;
-            existent.CreatedBy = employee.Id;
-            existent.Comments = comments;
+            existing.Effective = effective;
+            existing.Expiration = expiration ?? new DateTime(9999, 12, 31);
+            existing.Single = single;
+            existing.Aggregate = aggregate;
+            existing.Modified = DateTime.Now;
+            existing.CreatedBy = employee.Id;
+            existing.Comments = comments;
 
             var lastLog = await ctx.AccountProgramStatusHistories
                 .OrderBy(o => o.AccountProgramId)
@@ -56,7 +60,7 @@ public partial class GeneralMutation
 
             var newLog = CreateStatusLog(lastLog);
             ctx.AccountProgramStatusHistories.Add(newLog);
-            ctx.Update(existent);
+            ctx.Update(existing);
         }
         else
         {
@@ -84,7 +88,7 @@ public partial class GeneralMutation
         return true;
     }
 
-    [Authorize]
+    [Authorize(Policy = "InRoleCanDeleteAccountProgram")]
     public async Task<bool> DeleteAccountProgram(Guid accountProgramId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
@@ -108,13 +112,16 @@ public partial class GeneralMutation
         return true;
     }
 
-    [Authorize]
+    [Authorize(Policy = "InRoleCanSetAccountProgram")]
     public async Task<bool> AccountProgramChangeStatus(Guid accountProgramId, string newStatusTxt,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
         [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
+        //ToDo: Review after we move to the new way to authenticate users that have this issue
+        //ToDo: (active directory account different than the email)
+        
         var user = await userShared.GetCurrentUser();
         var employee = await ctx.Employees
                            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??

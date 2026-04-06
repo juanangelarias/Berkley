@@ -38,5 +38,9 @@ public partial class AccountProgram
 
     public virtual ICollection<AccountProgramStatusHistory> AccountProgramStatusHistories { get; set; } = new List<AccountProgramStatusHistory>();
 
+    public virtual Employee? ApprovedByNavigation { get; set; }
+
+    public virtual Employee CreatedByNavigation { get; set; } = null!;
+
     public virtual AccountProgramStatusDm Status { get; set; } = null!;
 }

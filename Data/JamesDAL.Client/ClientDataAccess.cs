@@ -20,12 +20,6 @@ namespace James.Data.Client
         IBrowserStorageCache browserStorageCache
     ) : BaseDataAccess(browserStorageCache, logging), IDataAccess
     {
-        public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
-        {
-            //TODO: Fix
-            return await Task.FromResult( new DataAccessResult<List<Agent>>());
-        }
-
         public async Task<IDataAccessResult<List<BusinessTypeClassCodeDm>>> GetAllBusinessTypeClassCodes()
         {
             return await ExecuteGet<List<BusinessTypeClassCodeDm>>(async () =>
@@ -35,7 +29,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<BusinessTypeDm>>> GetAllBusinessTypes()
         {
             return await ExecuteGet<List<BusinessTypeDm>>(async () =>
-                await jamesClient.GetAllBusinessTypes.ExecuteAsync(), "AllBusinessTypes"); 
+                await jamesClient.GetAllBusinessTypes.ExecuteAsync(), "AllBusinessTypes");
         }
 
         public async Task<IDataAccessResult<List<Sic>>> GetAllSicCodes()
@@ -342,16 +336,20 @@ namespace James.Data.Client
             return response;
         }
 
-        public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, string? accountNum, int skip, int take)
+        public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, string? accountNum,
+            int skip, int take)
         {
-            throw new NotImplementedException();
-            /*return await ExecuteGet<List<AgencyBondDto>>(
-                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, accountNum, skip, take), "AgencyBonds");*/
+            var response = await ExecuteGet<List<AgencyBondDto>>(
+                async () => await jamesClient.GetAgencyBonds.ExecuteAsync(agencyId, accountNum, skip, take),
+                "AgencyBonds");
+
+            return response;
         }
-        
+
         public async Task<IDataAccessResult<QueryCount>> GetAgencyBondsCount(Guid agencyId)
         {
-            return await ExecuteGet<QueryCount>(async () => await jamesClient.GetAgencyBondsCount.ExecuteAsync(agencyId));
+            return await ExecuteGet<QueryCount>(
+                async () => await jamesClient.GetAgencyBondsCount.ExecuteAsync(agencyId), "AgencyBondsCount");
         }
 
 
@@ -367,7 +365,7 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId)
         {
-            return await ExecuteGet<List<AgencyLicense>>(async () => 
+            return await ExecuteGet<List<AgencyLicense>>(async () =>
                 await jamesClient.GetAgencyAgentLicenses.ExecuteAsync(agencyId, agentId), "AgencyAgentLicenses");
         }
 
@@ -382,12 +380,120 @@ namespace James.Data.Client
             return await ExecuteGet<List<AgencyStatusDm>>(
                 async () => await jamesClient.GetAgencyStatuses.ExecuteAsync(), "AgencyStatuses");
         }
+        
+        #region Agent
+
+        public async Task<IDataAccessResult<List<Agent>>> SearchAgents(string searchString)
+        {
+            //TODO: Fix
+            return await Task.FromResult(new DataAccessResult<List<Agent>>());
+        }
+
+        public async Task<IDataAccessResult<List<JamesLookup>>> GetAgencyList()
+        {
+            return await ExecuteGet<List<JamesLookup>>(
+                async () => await jamesClient.GetAgencyList.ExecuteAsync(), "AgencyList");
+        }
 
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             return await ExecuteGet<Agent>(
                 async () => await jamesClient.AgentByAgentId.ExecuteAsync(agentId), "AgentByAgentId", "AgentByAgentId");
         }
+
+        public async Task<ISaveDataResult> SetAgent(Guid agentAgencyId, Guid agentId, string givenName,
+            string middleInitial, string familyName, string nationalProducerNumber, string countryCode,
+            string phoneNumber, string email, string? extension, Guid agencyId, bool aif, bool isNew)
+        {
+            var result = await jamesClient.SetAgent.ExecuteAsync(new SetAgentInput
+            {
+                AgentAgencyId = agentAgencyId,
+                AgentId = agentId,
+                AgencyId = agencyId,
+                GivenName = givenName,
+                MiddleInitial = middleInitial,
+                FamilyName = familyName,
+                NationalProducerNumber = nationalProducerNumber,
+                CountryCode = countryCode,
+                PhoneNumber = phoneNumber,
+                Email = email,
+                Extension = extension,
+                Aif = aif,
+                IsNewAgent = isNew
+            });
+
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> TransferAgent(Guid agentId, Guid originAgencyId, Guid destinationAgencyId,
+            bool transferLicenses)
+        {
+            var result = await jamesClient.TransferAgent.ExecuteAsync(new TransferAgentInput
+            {
+                AgentId = agentId,
+                OriginAgencyId = originAgencyId,
+                DestinationAgencyId = destinationAgencyId,
+                TransferLicenses = transferLicenses
+            });
+            
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> UpdateAndTransferAgent(Guid agentAgencyId, Guid agentId, string givenName, string middleInitial, string familyName,
+            string nationalProducerNumber, string countryCode, string phoneNumber, string email, string? extension, bool aif,
+            Guid originAgencyId, Guid destinationAgencyId)
+        {
+            var result = await jamesClient.UpdateAndTransferAgent.ExecuteAsync(new UpdateAndTransferAgentInput
+            {
+                AgentAgencyId = agentAgencyId,
+                AgentId = agentId,
+                GivenName = givenName,
+                MiddleInitial = middleInitial,
+                FamilyName = familyName,
+                NationalProducerNumber = nationalProducerNumber,
+                CountryCode = countryCode,
+                PhoneNumber = phoneNumber,
+                Email = email,
+                Extension = extension,
+                Aif = aif,
+                OriginAgencyId = originAgencyId,
+                DestinationAgencyId = destinationAgencyId
+            });
+            
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<ISaveDataResult> DisassociateAgent(Guid agentId, Guid agencyId)
+        {
+            var result = await jamesClient.DisassociateAgent.ExecuteAsync(new DisassociateAgentInput
+            {
+                AgentId = agentId,
+                AgencyId = agencyId
+            });
+            
+            return GraphQLSaveResult(result);
+        }
+
+        public async Task<IDataAccessResult<AgencyAgentDto?>> GetAgentByNationalProducerNumber(string nationalProducerNumber, Guid agencyId)
+        {
+            return await ExecuteGet<AgencyAgentDto?>(async () =>
+                    await jamesClient.GetAgentByNationalProducerNumber.ExecuteAsync(nationalProducerNumber, agencyId),
+                "AgentByNationalProducerNumber");
+        }
+
+        public async Task<ISaveDataResult> AssignAgent(Guid agentId, Guid agencyId)
+        {
+            var result = await jamesClient.AssignAgent.ExecuteAsync(new AssignAgentInput
+            {
+                AgentId = agentId,
+                AgencyId = agencyId
+            });
+            
+            return GraphQLSaveResult(result);
+        }
+
+        #endregion
+        
         public async Task<IDataAccessResult<List<AgencyLocationsDto>>> GetAgencyRelatedParties(Guid agencyId)
         {
             return await ExecuteGet<List<AgencyLocationsDto>>(
@@ -402,7 +508,7 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly)
         {
-            var result =  await ExecuteGet<List<PowerOfAttorney>>(
+            var result = await ExecuteGet<List<PowerOfAttorney>>(
                 async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId, activeOnly), "AgencyPOAs");
 
             return result;
@@ -430,7 +536,8 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<Employee>> GetEmployeeByUserName(string userName)
         {
-            return await ExecuteGet<Employee>(async () => await jamesClient.GetEmployeeByUserName.ExecuteAsync(userName),
+            return await ExecuteGet<Employee>(
+                async () => await jamesClient.GetEmployeeByUserName.ExecuteAsync(userName),
                 "EmployeeByUserName");
         }
 
@@ -451,7 +558,7 @@ namespace James.Data.Client
             return GraphQLSaveResult(result);
         }
 
-        public async Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd, 
+        public async Task<ISaveDataResult> SetAccountGeneralInfoPanel(Guid accountId, string? fiscalYearEnd,
             string? businessType, string? industryCode, string? priorSuretyCompany)
         {
             var result = await jamesClient.SetAccountGeneralInfoPanel.ExecuteAsync(new SetAccountGeneralInfoPanelInput
@@ -462,7 +569,7 @@ namespace James.Data.Client
                 IndustryCode = industryCode,
                 PriorSuretyCompany = priorSuretyCompany
             });
-            
+
             return GraphQLSaveResult(result);
         }
         public async Task<IDataAccessResult<AccountLOAsDto>> GetAccountLOAs(string accountNumber)
@@ -470,7 +577,7 @@ namespace James.Data.Client
             return await ExecuteGet<AccountLOAsDto>(async () => await
                 jamesClient.GetAccountLOAs.ExecuteAsync(accountNumber), "AccountLOAs");
         }
-        
+
         public async Task<ISaveDataResult> SetAccountSystems(Guid accountId, string? estimatingSystem,
             string? estimatingSignoff, string? internalAccountingSystem, bool? interimWips, bool? interimPOCs)
         {
@@ -509,48 +616,50 @@ namespace James.Data.Client
                 });
             return GraphQLSaveResult(result);
         }
-        
-        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum, string type)
+
+        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum,
+            string type)
         {
-            var result = await ExecuteGet<AccountAnnualPremiumDto>(async () => 
-                await jamesClient.GetAccountAnnualPremiums.ExecuteAsync(accountNum, type), 
+            var result = await ExecuteGet<AccountAnnualPremiumDto>(async () =>
+                    await jamesClient.GetAccountAnnualPremiums.ExecuteAsync(accountNum, type),
                 "AccountAnnualPremiums");
-            
+
             return result;
         }
-        
+
         public async Task<IDataAccessResult<List<AccountCollateralDto>>> GetAccountBondCollaterals(string accountNum)
         {
             var result = await ExecuteGet<List<AccountCollateralDto>>(async () =>
-                await jamesClient.GetAccountBondCollaterals.ExecuteAsync(accountNum),
+                    await jamesClient.GetAccountBondCollaterals.ExecuteAsync(accountNum),
                 "AccountBondCollaterals");
-            
+
             return result;
         }
-        public async Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum)
+        public async Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(
+            string accountNum)
         {
             var result = await ExecuteGet<AccountOutstandingLiabilityDto>(async () =>
-                await jamesClient.GetAccountOutstandingLiability.ExecuteAsync(accountNum),
+                    await jamesClient.GetAccountOutstandingLiability.ExecuteAsync(accountNum),
                 "AccountOutstandingLiability");
-            
+
             return result;
         }
-        
+
         public async Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum)
         {
-            throw new NotImplementedException();
-            /*var result = await ExecuteGet<CreditReportDto>(async ()=>
+            var result = await ExecuteGet<List<CreditReportHistory>>(async ()=>
                 await jamesClient.GetCreditReport.ExecuteAsync(accountNum), "CreditReport");
 
-            return result;*/
+            return result;
         }
-        
+
         public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
         {
             throw new NotImplementedException();
         }
 
-        public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum, DateTime pulledDate, string rating,
+        public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
+            DateTime pulledDate, string rating,
             string definition, string remarks)
         {
             return await ExecuteSave(async () =>
@@ -565,18 +674,18 @@ namespace James.Data.Client
                     Remarks = remarks
                 }));
         }
-        
+
         public async Task<ISaveDataResult> DeleteCreditReport(Guid id)
         {
             return await ExecuteSave(async () =>
                 await jamesClient.DeleteCreditReport.ExecuteAsync(new DeleteCreditReportInput { Id = id }));
         }
-        
+
         public async Task<IDataAccessResult<AccountBondedPrincipleDto>> GetRelatedAccounts(string accountNum)
         {
             var result = await ExecuteGet<AccountBondedPrincipleDto>(async () =>
                 await jamesClient.GetRelatedAccounts.ExecuteAsync(accountNum), "RelatedAccounts");
-            
+
             return result;
         }
 
@@ -722,12 +831,12 @@ namespace James.Data.Client
             //return await ExecuteGetString(async () =>
             //    await jamesClient.GetBondNumber.ExecuteAsync(bondRequestNumber));
         }
-        
-        public async Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start, 
+
+        public async Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start,
             DateTime end, string filter)
         {
-            return await ExecuteGet<List<BondBlock>>(async () => 
-                await jamesClient.GetBondBlocksByAgency.ExecuteAsync(agencyId, start, end, filter),         
+            return await ExecuteGet<List<BondBlock>>(async () =>
+                    await jamesClient.GetBondBlocksByAgency.ExecuteAsync(agencyId, start, end, filter),
                 "BondBlocksByAgency");
         }
 
@@ -954,7 +1063,7 @@ namespace James.Data.Client
         {
             return await ExecuteGet<int>(async () => await jamesClient.NextBondBlockInitialNumber.ExecuteAsync(prefix));
         }
-        
+
         public async Task<IDataAccessResult<AccountWatch>> CreateAccountWatch(Guid id, string accountNum,
             DateTime watchDate,
             string watchStatus, string reason, string actionPlan)
@@ -1045,8 +1154,8 @@ namespace James.Data.Client
         }
         public async Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum)
         {
-            var response = await ExecuteGet<PrivateEquity?>(async () => 
-                await jamesClient.GetLastPrivateEquityByAccount.ExecuteAsync(accountNum), 
+            var response = await ExecuteGet<PrivateEquity?>(async () =>
+                    await jamesClient.GetLastPrivateEquityByAccount.ExecuteAsync(accountNum),
                 "LastPrivateEquityByAccount");
 
             return response;
@@ -1421,7 +1530,7 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<IndustryCodeDm>>> GetAllIndustryCodes()
         {
-            return await ExecuteGet<List<IndustryCodeDm>>( async () => 
+            return await ExecuteGet<List<IndustryCodeDm>>(async () =>
                 await jamesClient.GetAllIndustryCodes.ExecuteAsync(), "AllIndustryCodes");
         }
 
@@ -1429,7 +1538,6 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
         {
-            
             var settingList =
                 await ExecuteGet<Dictionary<string, string>>(
                     async () => await jamesClient.GetAllUserSettings.ExecuteAsync(), "AllUserSettings");
@@ -1471,11 +1579,11 @@ namespace James.Data.Client
                     Value = value ?? ""
                 }), "SetDefaultUserSetting");
         }
-        
-        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
+
+        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo()
         {
             return await ExecuteGet<UserInfoDto?>(async () =>
-                await jamesClient.GetUserEmployeeInfo.ExecuteAsync(userName), "UserEmployeeInfo");
+                await jamesClient.GetUserEmployeeInfo.ExecuteAsync(), "UserEmployeeInfo");
         }
         
         public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)
@@ -1485,7 +1593,7 @@ namespace James.Data.Client
         }
 
         #endregion
-        
+
         #region BondBlock
 
         public async Task<ISaveDataResult> SetBondBlock(BondBlock block)
@@ -1505,7 +1613,7 @@ namespace James.Data.Client
                     Enabled = block.Enabled
                 }), "SetBondBlock");
         }
-        
+
         public async Task<ISaveDataResult> DeleteBondBlock(Guid id)
         {
             return await ExecuteSave(async () =>
@@ -1516,20 +1624,20 @@ namespace James.Data.Client
         }
 
         #endregion
-        
+
         #region General
 
         public async Task<IDataAccessResult<List<ContractRate>>> GetAllContractRates()
         {
-            var result = await ExecuteGet<List<ContractRate>>(async () => 
-                    await jamesClient.GetAllContractRates.ExecuteAsync(), "AllContractRates");
+            var result = await ExecuteGet<List<ContractRate>>(async () =>
+                await jamesClient.GetAllContractRates.ExecuteAsync(), "AllContractRates");
 
             return result;
         }
 
         public async Task<IDataAccessResult<List<CommercialRate>>> GetAllCommercialRates()
         {
-            var result = await ExecuteGet<List<CommercialRate>>(async () => 
+            var result = await ExecuteGet<List<CommercialRate>>(async () =>
                 await jamesClient.GetAllCommercialRates.ExecuteAsync(), "AllCommercialRates");
 
             return result;
@@ -1537,7 +1645,7 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<RateGroupDm>>> GetAllRateGroups()
         {
-            var result = await ExecuteGet<List<RateGroupDm>>(async () => 
+            var result = await ExecuteGet<List<RateGroupDm>>(async () =>
                 await jamesClient.GetAllRateGroups.ExecuteAsync(), "AllRateGroups");
 
             return result;
@@ -1545,7 +1653,7 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<RiskTypeDm>>> GetAllRiskTypes()
         {
-            var result = await ExecuteGet<List<RiskTypeDm>>(async () => 
+            var result = await ExecuteGet<List<RiskTypeDm>>(async () =>
                 await jamesClient.GetAllRiskTypes.ExecuteAsync(), "AllRiskTypes");
 
             return result;
@@ -1560,7 +1668,7 @@ namespace James.Data.Client
         }
 
         #endregion
-        
+
         #region Underwriter
 
         public async Task<IDataAccessResult<List<UnderwriterRecommendation>>> GetUnderwriterRecommendationByAccount(
@@ -1569,7 +1677,7 @@ namespace James.Data.Client
             var result = await ExecuteGet<List<UnderwriterRecommendation>>(async () =>
                     await jamesClient.GetUnderwriterRecommendationByAccount.ExecuteAsync(accountNum),
                 "UnderwriterRecommendationByAccount");
-            
+
             return result;
         }
 
@@ -1578,7 +1686,7 @@ namespace James.Data.Client
             string description)
         {
             return await ExecuteSave(async () => await jamesClient.SetUnderwriterRecommendation
-                .ExecuteAsync( new SetUnderwriterRecommendationInput
+                .ExecuteAsync(new SetUnderwriterRecommendationInput
                 {
                     Id = id,
                     AccountNum = accountNum,
@@ -1594,7 +1702,7 @@ namespace James.Data.Client
                 await jamesClient.DeleteUnderwriterRecommendation
                     .ExecuteAsync(new DeleteUnderwriterRecommendationInput { Id = id }));
         }
-        
+
         #endregion
         
         #region Line Of Authority

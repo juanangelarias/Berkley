@@ -169,11 +169,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
     
     public async Task<UserInfoDto?> GetUserEmployeeInfoAsync()
     {
-        var userName = await GetUserName();
-        if(userName == null) 
-            return null;
-
-        var response = await dataAccess.GetUserEmployeeInfo(userName);
+        var response = await dataAccess.GetUserEmployeeInfo();
         
         return response.Success
             ? response.Data!

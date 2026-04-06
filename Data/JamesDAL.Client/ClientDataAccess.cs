@@ -1580,10 +1580,11 @@ namespace James.Data.Client
                 }), "SetDefaultUserSetting");
         }
 
-        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
+        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo()
         {
-            return await ExecuteGet<UserInfoDto?>(async () =>
-                await jamesClient.GetUserEmployeeInfo.ExecuteAsync(userName), "UserEmployeeInfo");
+            throw new NotImplementedException();
+            /*return await ExecuteGet<UserInfoDto?>(async () =>
+                await jamesClient.GetUserEmployeeInfo.ExecuteAsync(userName), "UserEmployeeInfo");*/
         }
         
         public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)

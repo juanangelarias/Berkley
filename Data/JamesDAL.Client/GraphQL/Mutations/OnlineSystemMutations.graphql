@@ -1,0 +1,11 @@
+mutation SetOnlineSystem($input: SetOnlineSystemInput!){
+    setOnlineSystem(input: $input) {
+        boolean
+    }
+} 
+
+mutation SetOnlineBondSystem($input: SetOnlineBondSystemInput!) {
+    setOnlineBondSystem(input: $input) {
+        boolean
+    }
+}

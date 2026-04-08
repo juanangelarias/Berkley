@@ -38,6 +38,11 @@ type SetLegalEntityEmailPayload {
   legalEntityEmail: LegalEntityEmail
 }
 
+input SetOnlineSystemInput {
+  id: UUID!
+  systemName: String!
+}
+
 type WorkInProgressJob {
   id: UUID!
   created: DateTime!
@@ -639,6 +644,8 @@ type Query {
   searchObligees(searchString: String!): [Obligee!]!
   obligeePrimaryBonds(obligeeId: UUID!): [Bond!]!
   obligeeSecondaryBonds(obligeeId: UUID!): [Bond!]!
+  onlineSystems: [AgentSystemDm!]!
+  onlineBondSystemsByLegalEntity(legalEntityId: UUID!): [OnlineBondSystem!]!
   search(searchTerm: String! options: SearchOptionsInput!): String!
   allSecurityRoles: [SecurityRole!]!
   securityRolesByUser(principalId: UUID!): [SecurityRole!]!
@@ -785,6 +792,10 @@ type BondHold {
   siccodeNavigation: Sic
   stateNavigation: State
   underWriter: Underwriter
+}
+
+type SetOnlineSystemPayload {
+  boolean: Boolean
 }
 
 enum SearchResultType {
@@ -1346,6 +1357,13 @@ type CommercialRate {
   riskTypeNavigation: RiskTypeDm!
 }
 
+input SetOnlineBondSystemInput {
+  id: UUID!
+  legalEntityId: UUID!
+  systemName: String!
+  insurerId: UUID!
+}
+
 type AccountProgramChangeStatusPayload {
   boolean: Boolean
 }
@@ -1448,6 +1466,8 @@ type Mutation {
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   deleteAccountProgram(input: DeleteAccountProgramInput!): DeleteAccountProgramPayload!
   accountProgramChangeStatus(input: AccountProgramChangeStatusInput!): AccountProgramChangeStatusPayload!
+  setOnlineSystem(input: SetOnlineSystemInput!): SetOnlineSystemPayload!
+  setOnlineBondSystem(input: SetOnlineBondSystemInput!): SetOnlineBondSystemPayload!
   setUnderwriterRecommendation(input: SetUnderwriterRecommendationInput!): SetUnderwriterRecommendationPayload!
   deleteUnderwriterRecommendation(input: DeleteUnderwriterRecommendationInput!): DeleteUnderwriterRecommendationPayload!
   logInformation(input: LogInformationInput!): LogInformationPayload!
@@ -2746,6 +2766,10 @@ type NotificationGroup {
   description: String
   notificationGroupMembers: [NotificationGroupMember!]!
   underwriters: [Underwriter!]!
+}
+
+type SetOnlineBondSystemPayload {
+  boolean: Boolean
 }
 
 type BondBlockAllowedAgency {

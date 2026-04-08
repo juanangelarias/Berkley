@@ -1,0 +1,62 @@
+﻿using HotChocolate.Authorization;
+
+namespace James.Data.Server.GraphQL.Mutations;
+
+[MutationType]
+public partial class GeneralMutation
+{
+    [Authorize]
+    public async Task<bool> SetOnlineSystem(Guid id, string systemName,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var existing = await ctx.SystemNameDms
+            .FindAsync(id);
+
+        if (existing is null)
+        {
+            ctx.AgentSystemDms
+                .Add(new() { Id = id, SystemName = systemName });
+        }
+        else
+        {
+            existing.SystemName = systemName;
+        }
+        
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, Guid insurerId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var existing = await ctx.OnlineBondSystems
+            .FindAsync(id);
+
+        if (existing is null)
+        {
+            ctx.OnlineBondSystems
+                .Add(new OnlineBondSystem
+                {
+                    Id = id,
+                    LegalEntityId = legalEntityId,
+                    SystemName = systemName,
+                    InsurerId = insurerId
+                });
+        }
+        else
+        {
+            existing.LegalEntityId = legalEntityId;
+            existing.SystemName = systemName;
+            existing.InsurerId = insurerId;
+        }
+        
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+}

@@ -372,6 +372,19 @@ namespace James.Shared.Data
 
         #endregion
         
+        #region
+
+        public Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems();
+        public Task<IDataAccessResult<List<OnlineBondSystem>>> GetOnlineBondSystemsByLegalEntity(Guid entityId);
+
+        public Task<ISaveDataResult> SetOnlineSystem(Guid id, string systemName);
+        public Task<ISaveDataResult> DeleteOnlineSystem(Guid id);
+        public Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName,
+            Guid insurerId);
+        public Task<ISaveDataResult> DeleteOnlineBondSystem(Guid id);
+        
+        #endregion
+        
         public Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses();
     }
 

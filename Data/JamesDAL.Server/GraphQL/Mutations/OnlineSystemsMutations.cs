@@ -29,6 +29,23 @@ public partial class GeneralMutation
     }
 
     [Authorize]
+    public async Task<bool> DeleteOnlineSystem(Guid id,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var existing = await ctx.AgentSystemDms
+            .FindAsync(id);
+        
+        if (existing is null)
+            return false;
+        
+        ctx.AgentSystemDms.Remove(existing);
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+
+    [Authorize]
     public async Task<bool> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, Guid insurerId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
@@ -55,6 +72,23 @@ public partial class GeneralMutation
             existing.InsurerId = insurerId;
         }
         
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+
+    public async Task<bool> DeleteOnlineBondSystem(Guid id,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var existing = await ctx.OnlineBondSystems
+            .FindAsync(id);
+
+        if (existing is null)
+            return false;
+        
+        ctx.OnlineBondSystems.Remove(existing);
         await ctx.SaveChangesAsync();
         
         return true;

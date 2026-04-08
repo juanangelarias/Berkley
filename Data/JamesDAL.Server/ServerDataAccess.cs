@@ -1219,6 +1219,42 @@ namespace James.Data.Server
 
         #endregion
         
+        #region OnlineSystem
+        
+        public async Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems()
+        {
+            return await ExecuteGet(async () => await query.GetOnlineSystems(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<OnlineBondSystem>>> GetOnlineBondSystemsByLegalEntity(Guid entityId)
+        {
+            return await ExecuteGet(async () =>
+                await query.GetOnlineBondSystemsByLegalEntity(entityId, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetOnlineSystem(Guid id, string systemName)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetOnlineSystem(id, systemName, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteOnlineSystem(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteOnlineSystem(id, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, Guid insurerId)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.SetOnlineBondSystem(id, legalEntityId, systemName, insurerId, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteOnlineBondSystem(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteOnlineBondSystem(id, contextFactory));
+        }
+
+        #endregion
+        
         public async Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses()
         {
             return await ExecuteGet(async () => await query.GetAllAccountProgramStatuses(contextFactory));

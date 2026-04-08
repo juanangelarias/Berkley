@@ -10,8 +10,8 @@ public partial class GeneralMutation
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        var existing = await ctx.SystemNameDms
-            .FindAsync(id);
+        var existing = await ctx.AgentSystemDms
+            .FirstOrDefaultAsync(f => f.Id == id);
 
         if (existing is null)
         {
@@ -22,9 +22,9 @@ public partial class GeneralMutation
         {
             existing.SystemName = systemName;
         }
-        
+
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 
@@ -34,7 +34,7 @@ public partial class GeneralMutation
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var existing = await ctx.AgentSystemDms
-            .FindAsync(id);
+            .FirstOrDefaultAsync(f=>f.Id == id);
         
         if (existing is null)
             return false;

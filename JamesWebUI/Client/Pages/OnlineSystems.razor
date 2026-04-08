@@ -1,0 +1,225 @@
+﻿@page "/OnlineSystems"
+
+@inherits JamesGridLayoutComponentBase<AgentSystemDm>
+@inject IDataAccess DataAccess
+@inject TooltipService TooltipService
+
+@attribute [Authorize]
+
+<RadzenRow JustifyContent="JustifyContent.Center">
+    <RadzenText Text="Online Systems" TextAlign="TextAlign.Center" TextStyle="TextStyle.DisplayH3" />
+</RadzenRow>
+<RadzenRow JustifyContent="JustifyContent.Center">
+    <RadzenDataGrid TItem="AgentSystemDm" @ref="@Grid" Data="@_systems" ColumnWidth="125px" class="rz-w-50 rz-h-100"
+                    Style="border-radius: 10px;" EmptyText="No records to display" @bind-Settings="@GridSettings" 
+                    AllowColumnReorder="true" GridLines="DataGridGridLines.Vertical" AllowSorting="true" 
+                    Density="Density.Compact" SelectionMode="DataGridSelectionMode.Multiple" AllowFiltering="true" 
+                    FilterMode="FilterMode.Advanced" AllowColumnPicking="true" AllowGrouping="false" 
+                    AllowColumnResize="true" RowUpdate="OnUpdate" EditMode="DataGridEditMode.Single" RowCreate="@OnCreate"
+                    IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading" Group="@ShowLoading"
+                    Filter="@ShowLoading">
+        <HeaderTemplate>
+            <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+                <AuthorizeView Policy="InRoleCanAddOnlineSystem">
+                    <RadzenButton Icon="add" Text="New License" Variant="Variant.Text" Click="@Insert"
+                                  Disabled="@(_editMode)"/>
+                </AuthorizeView>
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-ml-3">
+                    <RadzenButton Icon="settings" Click="SaveGridSettings"
+                                  MouseEnter="@(args => ShowTooltip(args, "saveSettings"))"
+                                  Visible="@UserSettingsChanged"/>
+                    <RadzenButton Icon="reset_settings" Click="ClearGridSettings"
+                                  MouseEnter="@(args => ShowTooltip(args, "resetSettings"))"
+                                  Visible="@UserSettingsLoaded"/>
+                </RadzenStack>
+            </RadzenStack>
+        </HeaderTemplate>
+        <Columns>
+            <RadzenDataGridColumn TItem="AgentSystemDm" Property="SystemName" Title="Name" Width="100%">
+                <Template Context="system">
+                    <RadzenText Text="@system.SystemName" TextStyle="TextStyle.Body2"/>
+                </Template>
+                <EditTemplate Context="system">
+                    <RadzenTextBox @bind-Value="system.SystemName" Name="SystemName"/>
+                    <RadzenRequiredValidator Text="System Name is required" Component="SystemName"/>
+                    <RadzenLengthValidator Min="1" Max="30" Text="The name must be between 1 and 30 characters"
+                                           Component="SystemName"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn Width="75px" MinWidth="75px" MaxWidth="75px" Filterable="false" Sortable="false"
+                                  Resizable="false" TextAlign="TextAlign.Right" Frozen="true"
+                                  FrozenPosition="FrozenColumnPosition.Right">
+                <Template Context="system">
+                    <AuthorizeView Policy="InRoleCanDeleteOnlineSystem">
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                      Icon="delete" Disabled="@(_editMode)"
+                                      Variant="Variant.Flat"
+                                      Shade="Shade.Lighter"
+                                      Size="ButtonSize.Small"
+                                      class="my-1 ms-1"
+                                      Click="@(_ => Delete(system))"
+                                      @onclick:stopPropagation="true">
+                        </RadzenButton>
+                    </AuthorizeView>
+                </Template>
+                <EditTemplate Context="system">
+                    <RadzenButton Icon="check"
+                                  ButtonStyle="ButtonStyle.Success"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  Click="@(_ => Save(system))"/>
+                    <RadzenButton Icon="close"
+                                  ButtonStyle="ButtonStyle.Light"
+                                  Variant="Variant.Flat"
+                                  Size="ButtonSize.Small"
+                                  class="my-1 ms-1"
+                                  Click="@(_ => Cancel(system))"/>
+                </EditTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid></RadzenRow>
+
+@code {
+    private List<AgentSystemDm> _systems = [];
+    private bool _editMode;
+
+    #region Loaders
+
+    #region AgentSystems Load
+
+    private IDataAccessResult<List<AgentSystemDm>> _agentSystemsResult = null!;
+
+    private LoadItem AgentSystemsLoad => AddEventNotify(new LoadItem<List<AgentSystemDm>>
+    {
+        Key = CacheKeys.AgentSystems,
+        AsyncLoadTask = async () => _agentSystemsResult = await DataAccess.GetOnlineSystems(),
+        CacheLoadTask = cache => _agentSystemsResult = new DataAccessResult<List<AgentSystemDm>>
+        {
+            Data = (List<AgentSystemDm>)cache!
+        },
+        ResultVariable = () => _agentSystemsResult,
+        AfterLoad = () => { _systems = _agentSystemsResult.Data!; }
+    }, "agent systems");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await LoadSystems();
+    }
+
+    private async Task LoadSystems()
+    {
+        await ShowLoading();
+        await DataAccess.GetCacheOrLoadDataAsync(AgentSystemsLoad);
+    }
+
+    private async Task Insert()
+    {
+        await ShowLoading();
+        _editMode = true;
+
+        await Grid.InsertRow(new()
+        {
+            Id = Guid.NewGuid(),
+            SystemName = ""
+        });
+    }
+
+    private async Task Delete(AgentSystemDm system)
+    {
+        var answer = await DialogService.Confirm("Are you sure you want to delete this record?");
+        
+        if(answer != true)
+            return;
+        
+        await ShowLoading();
+        var response = await DataAccess.DeleteOnlineSystem(system.Id);
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "online system");
+            return;
+        }
+
+        var toDelete = _systems
+            .FirstOrDefault(s => s.Id == system.Id);
+        _systems.Remove(toDelete!);
+        
+        DataAccess.UpdateCache(CacheKeys.AgentSystems, _systems);
+
+        NotifyDeleteSuccessful("Record deleted successfully");
+        _editMode = false;
+    }
+
+    private async Task Save(AgentSystemDm system)
+    {
+        if (string.IsNullOrEmpty(system.SystemName))
+            return;
+
+        await ShowLoading();
+        await Grid.UpdateRow(system);
+
+        _editMode = false;
+    }
+
+    private async Task Cancel(AgentSystemDm system)
+    {
+        await ShowLoading();
+        _editMode = false;
+        Grid.CancelEditRow(system);
+    }
+
+    private async Task OnCreate(AgentSystemDm system)
+    {
+        var result = await DataAccess.SetOnlineSystem(system.Id, system.SystemName);
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "online system");
+            return;
+        }
+
+        NotifySuccessfulSave("online system");
+
+        _systems.Add(system);
+        DataAccess.UpdateCache(CacheKeys.AgentSystems, _systems);
+
+        _editMode = false;
+    }
+
+    private async Task OnUpdate(AgentSystemDm system)
+    {
+        var result = await DataAccess.SetOnlineSystem(system.Id, system.SystemName);
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "online system");
+            return;
+        }
+
+        NotifySuccessfulSave("online system");
+
+        DataAccess.UpdateCache(CacheKeys.AgentSystems, _systems);
+
+        _editMode = false;
+    }
+
+    private void ShowTooltip(ElementReference element, string type)
+    {
+        var message = type switch
+        {
+            "saveSettings" => "Click to save the grid settings",
+            "resetSettings" => "Click to reset the grid settings",
+            _ => ""
+        };
+
+        var options = new TooltipOptions
+        {
+            Duration = 2000
+        };
+        TooltipService.Open(element, message, options);
+    }
+
+}

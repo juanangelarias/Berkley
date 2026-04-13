@@ -3,7 +3,7 @@ This application includes the following third-party libraries:
 - Blazored.LocalStorage - MIT License
 - DocumentFormat.OpenXml - MIT License
 - HotChocolate and StrawberryShake (ChilliCream) - MIT License
-- JJ.AutoIncrementVersion – MIT License
+- JJ.AutoIncrementVersion - MIT License
 - Moq - BSD 3-Clause License
 - Newtonsoft.Json - MIT License
 - Radzen.Blazor - MIT License

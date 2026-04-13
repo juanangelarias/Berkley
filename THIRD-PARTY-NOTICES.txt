@@ -3,6 +3,7 @@ This application includes the following third-party libraries:
 - Blazored.LocalStorage - MIT License
 - DocumentFormat.OpenXml - MIT License
 - HotChocolate and StrawberryShake (ChilliCream) - MIT License
+- JJ.AutoIncrementVersion – MIT License
 - Moq - BSD 3-Clause License
 - Newtonsoft.Json - MIT License
 - Radzen.Blazor - MIT License
@@ -11,7 +12,7 @@ This application includes the following third-party libraries:
 - Serilog.Exceptions - MIT License
 - Serilog.Sinks.XUnit - MIT License
 - WcfCoreMtomEncoderV2 - MIT License
-- Winsta.MimeDetect - MIT License
+- Winista.MimeDetect - MIT License
 - XUnit - Apache 2.0 License
 
 THIRD-PARTY SOFTWARE LICENSE NOTICES

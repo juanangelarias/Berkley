@@ -76,8 +76,10 @@ namespace James.Shared.Data
                        logger.LogException(ex, "Exception trying to load from LocalStorage",
                             category: StandardLoggingCategories.BrowserFeatures,
                             data: new Dictionary<string, string> { { "Key", loadItem.Key } });
-                        BrowserStorageCache.ClearAsync(); //Make sure that the local cache doesn't have a poison pill
-                        throw;
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                       BrowserStorageCache.ClearAsync(); //Make sure that the local cache doesn't have a poison pill
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+                       throw;
                     }
                 if (_cachedResults.TryGetValue(loadItem.Key, out var cachedValue))
                 {
@@ -199,6 +201,9 @@ namespace James.Shared.Data
         public void Clear()
         {
             _cachedResults.Clear();
+
+            if (BrowserStorageCache.UseBrowserStorageCache)
+                BrowserStorageCache.ClearAsync().GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -211,6 +216,9 @@ namespace James.Shared.Data
                 disposeIt.Dispose();
 
             _cachedResults.Remove(key, out _);
+
+            if (BrowserStorageCache.UseBrowserStorageCache)
+                BrowserStorageCache.RemoveItemAsync(key).GetAwaiter().GetResult();
         }
 
         /// <summary>

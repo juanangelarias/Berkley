@@ -379,13 +379,11 @@
         var response = await DialogService
             .OpenAsync<AgencyAgentLicenseBulk>("Bulk License Management", diagParams!, diagOptions);
 
-        if (response == null)
+        if (response != true)
             return;
 
-        var updatedData = (List<AgencyLicense>)response;
-        DataAccess.UpdateCache(LicensesKey, updatedData);
-        Licenses = updatedData;
-        
+        DataAccess.Clear(LicensesKey);
+        await LoadLicenses();
         await Grid.Reload();
     }
 

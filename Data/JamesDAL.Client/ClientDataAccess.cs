@@ -745,6 +745,33 @@ namespace James.Data.Client
                 }), graphQlFunctionName: "SetPowerOfAttorney");
         }
 
+        public async Task<ISaveDataResult> UpdateAgencyLicenseBulk(List<AgencyLicense> licenses)
+        {
+            var list = new List<AgencyLicenseInput>(licenses.Select(license => new AgencyLicenseInput
+            {
+                Id = license.Id,
+                AgencyId = license.AgencyId,
+                AgentId = license.AgentId,
+                State = license.State,
+                LicenseNumber = license.LicenseNumber,
+                IsResident = license.IsResident,
+                InsurerId = license.InsurerId,
+                Expiration = license.Expiration,
+                Comments = license.Comments,
+                Appointment = license.Appointment,
+                Termination = license.Termination,
+                AppointingState = license.AppointingState,
+                IsActive = license.IsActive,
+                ImagingId = license.ImagingId,
+                
+            }));
+            return await ExecuteSave(async () => await jamesClient.UpdateAgencyLicenseBulk.ExecuteAsync(
+                new UpdateAgencyLicenseBulkInput
+                {
+                    Licenses = list
+                }), graphQlFunctionName: "UpdateAgencyLicenseBulk");
+        }
+
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
             string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode,

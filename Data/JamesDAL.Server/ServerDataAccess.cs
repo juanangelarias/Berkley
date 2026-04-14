@@ -543,6 +543,20 @@ namespace James.Data.Server
             }
         }
 
+        public async Task<ISaveDataResult> UpdateAgencyLicenseBulk(List<AgencyLicense> licenses)
+        {
+            try
+            {
+                await agencyMutation.UpdateAgencyLicenseBulk(licenses, contextFactory);
+                
+                return new SaveDataResult();
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResult { Errors = [ex.Message] };
+            }
+        }
+
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
             string documentType, string? addressee, Guid addressId, string address1, string? address2, string? address3,
             string city, string? stateCode, string? postalCode)

@@ -3,190 +3,198 @@
 @inject IDataAccess DataAccess
 @inject TooltipService TooltipService
 
-<RadzenDataGrid TItem="AccountProgramDto" Data="@Data" @ref="@Grid" EditMode="DataGridEditMode.Single"
-                EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
-                AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true" IsLoading="@IsLoading"
-                Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading"
-                RowUpdate="UpdateGridRow" RowCreate="CreateGridRow" Style="max-height: 450px">
-    <HeaderTemplate>
-        <AuthorizeView Policy="InRoleCanProposeAccountProgram">
-            <RadzenButton Icon="add" Text="Add new Program" Variant="Variant.Text" Click="@InsertRow"/>
-        </AuthorizeView>
-    </HeaderTemplate>
-    <Template Context="program">
-        <RadzenDataGrid TItem="AccountProgramStatusLogDto" Data="@program.Logs">
+
+<RadzenStack Orientation="Orientation.Vertical"  Gap="1rem" class="rz-mb-3" Style="max-height: 490px;">
+    <RadzenRow>
+        <RadzenText Text="Account Program" TextStyle="TextStyle.DisplayH6"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenDataGrid TItem="AccountProgramDto" Data="@Data" @ref="@Grid" EditMode="DataGridEditMode.Single"
+                        EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
+                        AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true" IsLoading="@IsLoading"
+                        Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading"
+                        RowUpdate="UpdateGridRow" RowCreate="CreateGridRow" Style="max-height: 450px">
+            <HeaderTemplate>
+                <AuthorizeView Policy="InRoleCanProposeAccountProgram">
+                    <RadzenButton Icon="add" Text="Add new Program" Variant="Variant.Text" Click="@InsertRow"/>
+                </AuthorizeView>
+            </HeaderTemplate>
+            <Template Context="program">
+                <RadzenDataGrid TItem="AccountProgramStatusLogDto" Data="@program.Logs">
+                    <Columns>
+                        <RadzenDataGridColumn Title="Status Date" Property="@nameof(AccountProgramStatusLogDto.StatusDate)"
+                                              MinWidth="125px" Width="125px" MaxWidth="125px">
+                            <Template Context="row">
+                                <RadzenText Text="@($"{row.StatusDate:MM/dd/yyyy hh:mm}")" TextStyle="TextStyle.Body2"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Previous Status" MinWidth="125px" Width="125px"
+                                              Property="@nameof(AccountProgramStatusLogDto.OldStatus)">
+                            <Template Context="row">
+                                <RadzenText Text="@row.OldStatus" TextStyle="TextStyle.Body2"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="New Status" MinWidth="125px" Width="135px"
+                                              Property="@nameof(AccountProgramStatusLogDto.NewStatus)">
+                            <Template Context="row">
+                                <RadzenText Text="@row.NewStatus" TextStyle="TextStyle.Body2"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Single" Property="@nameof(AccountProgramStatusLogDto.NewSingle)"
+                                              Width="125px" MinWidth="125px" FormatString="{0:C0}" TextAlign="TextAlign.Right">
+                            <HeaderTemplate>
+                                <RadzenText Text="Single" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
+                                            TextStyle="TextStyle.Subtitle2"/>
+                            </HeaderTemplate>
+                            <Template Context="row">
+                                <RadzenText Text="@($"{row.NewSingle:c0}")" TextStyle="TextStyle.Body2"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Aggregate" Property="@nameof(AccountProgramStatusLogDto.NewAggregate)"
+                                              Width="125px" MinWidth="125px" FormatString="{0:C0}" TextAlign="TextAlign.Right">
+                            <HeaderTemplate>
+                                <RadzenText Text="Aggregate" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
+                                            TextStyle="TextStyle.Subtitle2"/>
+                            </HeaderTemplate>
+                            <Template Context="row">
+                                <RadzenText Text="@($"{row.NewAggregate:c0}")" TextStyle="TextStyle.Body2"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Status changed by"
+                                              Property="@nameof(AccountProgramStatusLogDto.StatusChangeByFullName)"
+                                              Width="200px" MinWidth="200px" FormatString="{0:C0}">
+                            <Template Context="row">
+                                <RadzenText Text="@row.StatusChangeByFullName" TextStyle="TextStyle.Body2"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </Template>
             <Columns>
-                <RadzenDataGridColumn Title="Status Date" Property="@nameof(AccountProgramStatusLogDto.StatusDate)"
-                                      MinWidth="125px" Width="125px" MaxWidth="125px">
-                    <Template Context="row">
-                        <RadzenText Text="@($"{row.StatusDate:MM/dd/yyyy hh:mm}")" TextStyle="TextStyle.Body2"/>
+                <RadzenDataGridColumn Title="Status" Property="@nameof(AccountProgramDto.Status)" MinWidth="125px"/>
+                <RadzenDataGridColumn Title="Req. Expiration" Property="@nameof(AccountProgramDto.RequireExpiration)"
+                                      MinWidth="125px" TextAlign="TextAlign.Center">
+                    <Template Context="program">
+                        <RadzenCheckBox TValue="bool" @bind-Value="@program.RequireExpiration" ReadOnly="true"
+                                        TextAlign="TextAlign.Center" TextStyle="TextStyle.Body2"/>
                     </Template>
+                    <EditTemplate Context="program">
+                        <RadzenCheckBox TValue="bool" @bind-Value="@program.RequireExpiration" TextAlign="TextAlign.Center"
+                                        TextStyle="TextStyle.Body2" ReadOnly="true"/>
+                    </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Title="Previous Status" MinWidth="125px" Width="125px"
-                                      Property="@nameof(AccountProgramStatusLogDto.OldStatus)">
-                    <Template Context="row">
-                        <RadzenText Text="@row.OldStatus" TextStyle="TextStyle.Body2"/>
+                <RadzenDataGridColumn Title="Effective Date" Property="@nameof(AccountProgramDto.Effective)" MinWidth="125px">
+                    <Template Context="program">
+                        <RadzenText Text="@($"{program.Effective:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
                     </Template>
+                    <EditTemplate Context="program">
+                        <RadzenDatePicker @bind-Value="@program.Effective" ShowTime="false" DateFormat="MM/dd/yyyy"
+                                          Name="Effective" TextStyle="TextStyle.Body2" Style="display: block"/>
+                        <RadzenRequiredValidator Text="Effective Date is required" Component="Effective" Popup="true"/>
+                    </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Title="New Status" MinWidth="125px" Width="135px"
-                                      Property="@nameof(AccountProgramStatusLogDto.NewStatus)">
-                    <Template Context="row">
-                        <RadzenText Text="@row.NewStatus" TextStyle="TextStyle.Body2"/>
+                <RadzenDataGridColumn Title="Expiration Date" Property="@nameof(AccountProgramDto.Expiration)" MinWidth="125px">
+                    <Template Context="program">
+                        <RadzenText Text="@($"{program.Expiration:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
                     </Template>
+                    <EditTemplate Context="program">
+                        <RadzenDatePicker @bind-Value="@program.Expiration" ShowTime="false" DateFormat="MM/dd/yyyy"
+                                          Name="Expiration" TextStyle="TextStyle.Body2" Style="display: block"/>
+                        <RadzenRequiredValidator Text="Expiration Date is required" Component="Expiration" Popup="true"/>
+                        <RadzenCompareValidator Value="@program.Effective" Component="Expiration" Popup="true"
+                                                Text="Expiration date should be greater or equal to Effective date."
+                                                Operator="CompareOperator.GreaterThanEqual"/>
+                    </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Title="Single" Property="@nameof(AccountProgramStatusLogDto.NewSingle)"
-                                      Width="125px" MinWidth="125px" FormatString="{0:C0}" TextAlign="TextAlign.Right">
+                <RadzenDataGridColumn Title="Single" Property="@nameof(AccountProgramDto.Single)" TextAlign="TextAlign.Right"
+                                      MinWidth="125px">
                     <HeaderTemplate>
                         <RadzenText Text="Single" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
                                     TextStyle="TextStyle.Subtitle2"/>
                     </HeaderTemplate>
-                    <Template Context="row">
-                        <RadzenText Text="@($"{row.NewSingle:c0}")" TextStyle="TextStyle.Body2"/>
+                    <Template Context="program">
+                        <RadzenText Text="@($"{program.Single:C0}")" TextAlign="TextAlign.Right" TextStyle="TextStyle.Body2"/>
                     </Template>
+                    <EditTemplate Context="program">
+                        <RadzenNumeric @bind-Value="@program.Single" Format="c0" ShowUpDown="false" Name="Single"
+                                       TextStyle="TextStyle.Body2" Style="display: block"/>
+                        <RadzenCompareValidator Component="Single" Operator="CompareOperator.GreaterThanEqual" Value="0"
+                                                Text="Single value should be greater or equal to zero." Popup="true"/>
+                    </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Title="Aggregate" Property="@nameof(AccountProgramStatusLogDto.NewAggregate)"
-                                      Width="125px" MinWidth="125px" FormatString="{0:C0}" TextAlign="TextAlign.Right">
+                <RadzenDataGridColumn Title="Aggregate" Property="@nameof(AccountProgramDto.Aggregate)" MinWidth="125px"
+                                      TextAlign="TextAlign.Right">
                     <HeaderTemplate>
                         <RadzenText Text="Aggregate" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
                                     TextStyle="TextStyle.Subtitle2"/>
                     </HeaderTemplate>
-                    <Template Context="row">
-                        <RadzenText Text="@($"{row.NewAggregate:c0}")" TextStyle="TextStyle.Body2"/>
+                    <Template Context="program">
+                        <RadzenText Text="@($"{program.Aggregate:C0}")" TextAlign="TextAlign.Right"
+                                    TextStyle="TextStyle.Body2"/>
                     </Template>
+                    <EditTemplate Context="program">
+                        <RadzenNumeric @bind-Value="@program.Aggregate" Format="c0" ShowUpDown="false" Name="Aggregate"
+                                       TextStyle="TextStyle.Body2" Style="display: block"/>
+                        <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual" Value="0"
+                                                Text="Aggregate value should be greater or equal to zero." Popup="true"/>
+                        <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual"
+                                                Value="@program.Single" Popup="true"
+                                                Text="Aggregate must be less than or equal to Single"/>
+                    </EditTemplate>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Title="Status changed by"
-                                      Property="@nameof(AccountProgramStatusLogDto.StatusChangeByFullName)"
-                                      Width="200px" MinWidth="200px" FormatString="{0:C0}">
-                    <Template Context="row">
-                        <RadzenText Text="@row.StatusChangeByFullName" TextStyle="TextStyle.Body2"/>
+                <RadzenDataGridColumn Width="125px" Filterable="false" Frozen="true" Resizable="false"
+                                      reorderable="false" FrozenPosition="FrozenColumnPosition.Right">
+                    <Template Context="program">
+                        <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem">
+                            <AuthorizeView Policy="InRoleCanProposeAccountProgram">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                              Size="ButtonSize.Small" Visible="@ShowEdit(program)"
+                                              MouseEnter="@(arg => ShowTooltip(arg, Action.Edit))"
+                                              Click="@(_ => EditRow(program))" @onclick:stopPropagation="true"/>
+                            </AuthorizeView>
+                            <AuthorizeView Policy="InRoleCanProposeAccountProgram">
+                                <RadzenButton Icon="send" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat"
+                                              Size="ButtonSize.Small" Visible="@ShowRequestApproval(program)"
+                                              MouseEnter="@(arg => ShowTooltip(arg, Action.RequestApproval))"
+                                              Click="@(_ => RequestApproval(program))" @onclick:stopPropagation="true"/>
+                            </AuthorizeView>
+                            <AuthorizeView Policy="InRoleCanProposeAccountProgram">
+                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                              Size="ButtonSize.Small" Visible="@ShowRequestApproval(program)"
+                                              MouseEnter="@(arg => ShowTooltip(arg, Action.Remove))"
+                                              Click="@(_ => RemoveRow(program))" @onclick:stopPropagation="true"/>
+                            </AuthorizeView>
+                            <AuthorizeView Policy="InRoleCanApproveAccountProgram">
+                                <RadzenButton Icon="order_approve" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                              Size="ButtonSize.Small" Visible="@ShowApprove(program)"
+                                              MouseEnter="@(arg => ShowTooltip(arg, Action.Approve))"
+                                              Click="@(_ => Approve(program))" @onclick:stopPropagation="true"/>
+                            </AuthorizeView>
+                            <AuthorizeView Policy="InRoleCanApproveAccountProgram">
+                                <RadzenButton Icon="scan_delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                              Size="ButtonSize.Small" Visible="@ShowDecline(program)"
+                                              MouseEnter="@(arg => ShowTooltip(arg, Action.Decline))"
+                                              Click="@(_ => Decline(program))" @onclick:stopPropagation="true"/>
+                            </AuthorizeView>
+                            <AuthorizeView Policy="InRoleCanCancelAccountProgram">
+                                <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                              Size="ButtonSize.Small" Visible="@ShowCancel(program)"
+                                              MouseEnter="@(arg => ShowTooltip(arg, Action.Cancel))"
+                                              Click="@(_ => Cancel(program))" @onclick:stopPropagation="true"/>
+                            </AuthorizeView>
+                        </RadzenStack>
                     </Template>
+                    <EditTemplate Context="program">
+                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                      Size="ButtonSize.Small" Click="@(_ => Save(program))"/>
+                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                      Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelEdit(program))"/>
+                    </EditTemplate>
                 </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
-    </Template>
-    <Columns>
-        <RadzenDataGridColumn Title="Status" Property="@nameof(AccountProgramDto.Status)" MinWidth="125px"/>
-        <RadzenDataGridColumn Title="Req. Expiration" Property="@nameof(AccountProgramDto.RequireExpiration)"
-                              MinWidth="125px" TextAlign="TextAlign.Center">
-            <Template Context="program">
-                <RadzenCheckBox TValue="bool" @bind-Value="@program.RequireExpiration" ReadOnly="true"
-                                TextAlign="TextAlign.Center" TextStyle="TextStyle.Body2"/>
-            </Template>
-            <EditTemplate Context="program">
-                <RadzenCheckBox TValue="bool" @bind-Value="@program.RequireExpiration" TextAlign="TextAlign.Center"
-                                TextStyle="TextStyle.Body2" ReadOnly="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Effective Date" Property="@nameof(AccountProgramDto.Effective)" MinWidth="125px">
-            <Template Context="program">
-                <RadzenText Text="@($"{program.Effective:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
-            </Template>
-            <EditTemplate Context="program">
-                <RadzenDatePicker @bind-Value="@program.Effective" ShowTime="false" DateFormat="MM/dd/yyyy"
-                                  Name="Effective" TextStyle="TextStyle.Body2" Style="display: block"/>
-                <RadzenRequiredValidator Text="Effective Date is required" Component="Effective" Popup="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Expiration Date" Property="@nameof(AccountProgramDto.Expiration)" MinWidth="125px">
-            <Template Context="program">
-                <RadzenText Text="@($"{program.Expiration:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
-            </Template>
-            <EditTemplate Context="program">
-                <RadzenDatePicker @bind-Value="@program.Expiration" ShowTime="false" DateFormat="MM/dd/yyyy"
-                                  Name="Expiration" TextStyle="TextStyle.Body2" Style="display: block"/>
-                <RadzenRequiredValidator Text="Expiration Date is required" Component="Expiration" Popup="true"/>
-                <RadzenCompareValidator Value="@program.Effective" Component="Expiration" Popup="true"
-                                        Text="Expiration date should be greater or equal to Effective date."
-                                        Operator="CompareOperator.GreaterThanEqual"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Single" Property="@nameof(AccountProgramDto.Single)" TextAlign="TextAlign.Right"
-                              MinWidth="125px">
-            <HeaderTemplate>
-                <RadzenText Text="Single" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
-                            TextStyle="TextStyle.Subtitle2"/>
-            </HeaderTemplate>
-            <Template Context="program">
-                <RadzenText Text="@($"{program.Single:C0}")" TextAlign="TextAlign.Right" TextStyle="TextStyle.Body2"/>
-            </Template>
-            <EditTemplate Context="program">
-                <RadzenNumeric @bind-Value="@program.Single" Format="c0" ShowUpDown="false" Name="Single"
-                               TextStyle="TextStyle.Body2" Style="display: block"/>
-                <RadzenCompareValidator Component="Single" Operator="CompareOperator.GreaterThanEqual" Value="0"
-                                        Text="Single value should be greater or equal to zero." Popup="true"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Aggregate" Property="@nameof(AccountProgramDto.Aggregate)" MinWidth="125px"
-                              TextAlign="TextAlign.Right">
-            <HeaderTemplate>
-                <RadzenText Text="Aggregate" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
-                            TextStyle="TextStyle.Subtitle2"/>
-            </HeaderTemplate>
-            <Template Context="program">
-                <RadzenText Text="@($"{program.Aggregate:C0}")" TextAlign="TextAlign.Right"
-                            TextStyle="TextStyle.Body2"/>
-            </Template>
-            <EditTemplate Context="program">
-                <RadzenNumeric @bind-Value="@program.Aggregate" Format="c0" ShowUpDown="false" Name="Aggregate"
-                               TextStyle="TextStyle.Body2" Style="display: block"/>
-                <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual" Value="0"
-                                        Text="Aggregate value should be greater or equal to zero." Popup="true"/>
-                <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual"
-                                        Value="@program.Single" Popup="true"
-                                        Text="Aggregate must be less than or equal to Single"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-        <RadzenDataGridColumn Width="125px" Filterable="false" Frozen="true" Resizable="false"
-                              reorderable="false" FrozenPosition="FrozenColumnPosition.Right">
-            <Template Context="program">
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem">
-                    <AuthorizeView Policy="InRoleCanProposeAccountProgram">
-                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small" Visible="@ShowEdit(program)"
-                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Edit))"
-                                      Click="@(_ => EditRow(program))" @onclick:stopPropagation="true"/>
-                    </AuthorizeView>
-                    <AuthorizeView Policy="InRoleCanProposeAccountProgram">
-                        <RadzenButton Icon="send" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small" Visible="@ShowRequestApproval(program)"
-                                      MouseEnter="@(arg => ShowTooltip(arg, Action.RequestApproval))"
-                                      Click="@(_ => RequestApproval(program))" @onclick:stopPropagation="true"/>
-                    </AuthorizeView>
-                    <AuthorizeView Policy="InRoleCanProposeAccountProgram">
-                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small" Visible="@ShowRequestApproval(program)"
-                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Remove))"
-                                      Click="@(_ => RemoveRow(program))" @onclick:stopPropagation="true"/>
-                    </AuthorizeView>
-                    <AuthorizeView Policy="InRoleCanApproveAccountProgram">
-                        <RadzenButton Icon="order_approve" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small" Visible="@ShowApprove(program)"
-                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Approve))"
-                                      Click="@(_ => Approve(program))" @onclick:stopPropagation="true"/>
-                    </AuthorizeView>
-                    <AuthorizeView Policy="InRoleCanApproveAccountProgram">
-                        <RadzenButton Icon="scan_delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small" Visible="@ShowDecline(program)"
-                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Decline))"
-                                      Click="@(_ => Decline(program))" @onclick:stopPropagation="true"/>
-                    </AuthorizeView>
-                    <AuthorizeView Policy="InRoleCanCancelAccountProgram">
-                        <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small" Visible="@ShowCancel(program)"
-                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Cancel))"
-                                      Click="@(_ => Cancel(program))" @onclick:stopPropagation="true"/>
-                    </AuthorizeView>
-                </RadzenStack>
-            </Template>
-            <EditTemplate Context="program">
-                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
-                              Size="ButtonSize.Small" Click="@(_ => Save(program))"/>
-                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
-                              Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelEdit(program))"/>
-            </EditTemplate>
-        </RadzenDataGridColumn>
-    </Columns>
-</RadzenDataGrid>
+    </RadzenRow>
+</RadzenStack>
 
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }

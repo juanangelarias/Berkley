@@ -1085,9 +1085,10 @@ namespace James.Data.Server
                 await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService));
         }
 
-        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
+        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo()
         {
-            return await ExecuteGet(async () => await query.GetUserEmployeeInfo(userName, contextFactory));
+            return await ExecuteGet(async () => await query.GetUserEmployeeInfo(contextFactory, userShared, 
+                loggingService));
         }
         
         public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)

@@ -382,7 +382,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetOnlineSystem(Guid id, string systemName);
         public Task<ISaveDataResult> DeleteOnlineSystem(Guid id);
         public Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName,
-            Guid insurerId);
+            Guid insurerId, int writingLimit);
         public Task<ISaveDataResult> DeleteOnlineBondSystem(Guid id);
         
         #endregion

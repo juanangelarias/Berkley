@@ -1,0 +1,283 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<RadzenRow class="rz-w-100">
+    <RadzenText Text="Online Bond System" TextStyle="TextStyle.Subtitle2" class="rz-mb-0 rz-pb-0 rz-mt-1"/>
+</RadzenRow>
+<RadzenRow>
+    <RadzenCard Variant="Variant.Filled" Visible="@(IsEditMode)" class="rz-w-100">
+        <RadzenTemplateForm TItem="OnlineSystemModel" Data="@_model" Submit="@Save" @ref="@_form">
+            <RadzenRow>
+                <RadzenColumn Size="3">
+                    <RadzenFormField Text="System name">
+                        <RadzenDropDown TValue="string" Data="Systems" ValueProperty="@nameof(AgentSystemDm.SystemName)"
+                                        TextProperty="@nameof(AgentSystemDm.SystemName)" Name="SystemName"
+                                        @bind-Value="_model!.SystemName"/>
+                        <RadzenRequiredValidator Text="System name is required" Component="SystemName"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenFormField Text="Insurer">
+                        <RadzenDropDown TValue="Guid" Data="Insurers" ValueProperty="@nameof(Insurer.Id)"
+                                        TextProperty="@nameof(Insurer.FullName)" Name="InsurerId"
+                                        @bind-Value="_model!.InsurerId"/>
+                        <RadzenRequiredValidator Text="Insurer is required" Component="InsurerId"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenFormField Text="Writing limit">
+                        <RadzenNumeric TValue="int" ShowUpDown="false" @bind-Value="_model!.WritingLimit"
+                                       Name="WritingLimit"/>
+                        <RadzenRequiredValidator Text="Writing limit is required" Component="WritingLimit"/>
+                        <RadzenNumericRangeValidator Min="1" Max="int.MaxValue"
+                                                     Text="Writing limit must be greater than 0"
+                                                     Component="WritingLimit"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn Size="3">
+                    <RadzenButton Text="Cancel" ButtonType="ButtonType.Button" Icon="cancel" Click="@Cancel"
+                                  ButtonStyle="ButtonStyle.Light" class="rz-mx-2"/>
+                    <RadzenButton Text="Save" ButtonType="ButtonType.Submit" Icon="save"
+                                  ButtonStyle="ButtonStyle.Success" class="rz-mx-2" Disabled="@(!Changed)"/>
+                </RadzenColumn>
+            </RadzenRow>
+        </RadzenTemplateForm>
+    </RadzenCard>
+
+    <RadzenCard Variant="Variant.Filled" Visible="@(!IsEditMode)" class="rz-w-100">
+        <RadzenRow JustifyContent="JustifyContent.SpaceBetween">
+            <RadzenColumn Size="3">
+                <RadzenRow>
+                    <RadzenText Text="System name" TextStyle="TextStyle.Caption" class="rz-mb-0 rz-pb-0" 
+                                Style="font-weight: bold;"/>
+                </RadzenRow>
+                <RadzenRow>
+                <RadzenText Text="@(_model?.SystemName ?? "Not defined")"/>
+                </RadzenRow>
+            </RadzenColumn>
+            <RadzenColumn Size="3">
+                <RadzenRow>
+                    <RadzenText Text="Insurer" TextStyle="TextStyle.Caption" class="rz-mb-0 rz-pb-0" 
+                                Style="font-weight: bold;"/>
+                </RadzenRow>
+                <RadzenRow>
+                <RadzenText Text="@(GetInsurerName(_model?.InsurerId))"/>
+                </RadzenRow>
+            </RadzenColumn>
+            <RadzenColumn Size="3">
+                <RadzenRow>
+                    <RadzenText Text="Writing limit" TextStyle="TextStyle.Caption" class="rz-mb-0 rz-pb-0" 
+                                Style="font-weight: bold;"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenText Text="@($"{_model?.WritingLimit:c0}")"/>
+                </RadzenRow>
+            </RadzenColumn>
+            <RadzenColumn Size="3">
+                <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Primary" Icon="edit" Click="@(Edit)"/>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenCard>
+</RadzenRow>
+
+@code {
+    [Parameter, EditorRequired] public Guid AgentId { get; set; }
+
+    private List<AgentSystemDm> Systems { get; set; } = [];
+    private OnlineBondSystem? AgentBondSystem { get; set; } = null!;
+    private List<Insurer> Insurers { get; set; } = [];
+
+    private RadzenTemplateForm<OnlineSystemModel> _form = null!;
+    
+    private OnlineSystemModel? _model;
+
+    private bool IsEditMode { get; set; }
+
+    private bool Changed => _model?.InsurerId != AgentBondSystem?.InsurerId ||
+                            _model?.SystemName != AgentBondSystem?.SystemName ||
+                            _model?.WritingLimit != AgentBondSystem?.WritingLimit;
+
+    #region Loaders
+
+    #region Systems Load
+
+    private IDataAccessResult<List<AgentSystemDm>> _systemsResult = null!;
+
+    private LoadItem SystemsLoad => AddEventNotify(new LoadItem<List<AgentSystemDm>>
+    {
+        Key = CacheKeys.OnlineSystems,
+        AsyncLoadTask = async () => _systemsResult = await DataAccess.GetOnlineSystems(),
+        CacheLoadTask = cache => _systemsResult = new DataAccessResult<List<AgentSystemDm>>
+        {
+            Data = (List<AgentSystemDm>)cache!
+        },
+        ResultVariable = () => _systemsResult,
+        AfterLoad = () => { Systems = _systemsResult.Data!; }
+    }, "agent systems");
+
+    #endregion
+
+    #region Insurers Load
+
+    private IDataAccessResult<List<Insurer>> _insurersResult = null!;
+
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
+    {
+        Key = CacheKeys.Insurers,
+        AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurersResult = new DataAccessResult<List<Insurer>>
+        {
+            Data = (List<Insurer>)cache!
+        },
+        ResultVariable = () => _insurersResult,
+        AfterLoad = () => { Insurers = _insurersResult.Data!; }
+    }, "insurers");
+
+    #endregion
+
+    #region AgentOnLineSystem Load
+
+    private IDataAccessResult<List<OnlineBondSystem>> _agentOnLineSystemResult = null!;
+
+    private LoadItem AgentOnLineSystemLoad => AddEventNotify(new LoadItem<List<OnlineBondSystem>>
+    {
+        Key = CacheKeys.AgentOnlineSystem(AgentId),
+        AsyncLoadTask = async () => _agentOnLineSystemResult = await DataAccess.GetOnlineBondSystemsByLegalEntity(AgentId),
+        CacheLoadTask = cache => _agentOnLineSystemResult = new DataAccessResult<List<OnlineBondSystem>>
+        {
+            Data = (List<OnlineBondSystem>)cache!
+        },
+        ResultVariable = () => _agentOnLineSystemResult,
+        AfterLoad = () =>
+        {
+            AgentBondSystem = _agentOnLineSystemResult.Data!.FirstOrDefault()
+                              ?? new OnlineBondSystem
+                              {
+                                  Id = Guid.NewGuid(),
+                                  LegalEntityId = AgentId,
+                                  WritingLimit = 0
+                              };
+            Reset();
+        }
+    }, "agent online system");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await ShowLoading();
+        await DataAccess.ParallelGetCacheOrDataAsync(SystemsLoad, InsurersLoad);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(AgentOnLineSystemLoad);
+    }
+
+    private string GetInsurerName(Guid? insurerId) =>
+        insurerId == null
+            ? "Not defined"
+            : Insurers.FirstOrDefault(i => i.IdNavigation.Id == insurerId)?.IdNavigation.FullName
+              ?? "Not defined";
+
+    private void Edit()
+    {
+        IsEditMode = true;
+    }
+
+    private void Cancel()
+    {
+        Reset();
+        IsEditMode = false;
+    }
+
+    private void Reset()
+    {
+        if (AgentBondSystem == null)
+        {
+            _model = new()
+            {
+                Id = Guid.NewGuid(),
+                SystemName = "No defined.",
+                InsurerId = Guid.Empty,
+                WritingLimit = 0
+            };
+        }
+        else
+        {
+            _model = new()
+            {
+                Id = AgentBondSystem.Id,
+                SystemName = AgentBondSystem.SystemName,
+                InsurerId = AgentBondSystem.InsurerId,
+                WritingLimit = AgentBondSystem.WritingLimit ?? 0
+            };
+        }
+    }
+
+    private async Task Save()
+    {
+        if(!_form.IsValid)
+            return;
+
+        if (AgentBondSystem?.Id == null || AgentBondSystem.Id == Guid.Empty)
+        {
+            AgentBondSystem = new()
+            {
+                Id = _model!.Id,
+                LegalEntityId = AgentId,
+                SystemName = _model!.SystemName!,
+                InsurerId = _model!.InsurerId,
+                WritingLimit = _model!.WritingLimit
+            };
+        }
+        else
+        {
+            AgentBondSystem.SystemName = _model!.SystemName!;
+            AgentBondSystem.InsurerId = _model!.InsurerId;
+            AgentBondSystem.WritingLimit = _model!.WritingLimit;
+        }
+
+        var response = await DataAccess.SetOnlineBondSystem(AgentBondSystem.Id,
+            AgentBondSystem.LegalEntityId, AgentBondSystem.SystemName, AgentBondSystem.InsurerId,
+            AgentBondSystem.WritingLimit ?? 0);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "agent online system");
+            return;
+        }
+
+        NotifySuccessfulSave("agent online system");
+
+        DataAccess.UpdateCache(CacheKeys.AgentOnlineSystem(AgentId), new List<OnlineBondSystem> { AgentBondSystem });
+
+        IsEditMode = false;
+    }
+
+    private class OnlineSystemModel
+    {
+        public Guid Id { get; set; }
+        
+        public string? SystemName { get; set; }
+        
+        public Guid InsurerId { get; set; }
+        
+        public int WritingLimit { get; set; }
+    }
+
+}

@@ -28,7 +28,10 @@
         </RadzenStack>
     </HeaderTemplate>
     <Template Context="agent">
-        <AgencyAgentLicenseGrid Agency="Agency" Agent="@agent"/>
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+            <AgentOnlineSystem AgentId="agent.AgentId"/>
+            <AgencyAgentLicenseGrid Agency="Agency" Agent="@agent"/>
+        </RadzenStack>
     </Template>
     <Columns>
         <RadzenDataGridColumn TItem="AgencyAgentDto" Title="First Name" Width="175px" Property="GivenName">

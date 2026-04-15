@@ -4447,6 +4447,7 @@ input SetOnlineBondSystemInput {
   legalEntityId: UUID!
   systemName: String!
   insurerId: UUID!
+  writingLimit: Int!
 }
 
 input AssignAgentInput {

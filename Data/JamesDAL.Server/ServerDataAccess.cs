@@ -1256,10 +1256,12 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await generalMutation.DeleteOnlineSystem(id, contextFactory));
         }
 
-        public async Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, Guid insurerId)
+        public async Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, 
+            Guid insurerId, int writingLimit)
         {
             return await ExecuteSave(async () =>
-                await generalMutation.SetOnlineBondSystem(id, legalEntityId, systemName, insurerId, contextFactory));
+                await generalMutation.SetOnlineBondSystem(id, legalEntityId, systemName, insurerId, writingLimit,
+                    contextFactory));
         }
 
         public async Task<ISaveDataResult> DeleteOnlineBondSystem(Guid id)

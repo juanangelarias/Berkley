@@ -1808,14 +1808,16 @@ namespace James.Data.Client
                 "DeleteOnlineSystem");
         }
 
-        public async Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, Guid insurerId)
+        public async Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, 
+            Guid insurerId, int writingLimit)
         {
             return await ExecuteSave(async () => await jamesClient.SetOnlineBondSystem.ExecuteAsync(new()
             {
                 Id = id,
                 LegalEntityId = legalEntityId,
                 SystemName = systemName,
-                InsurerId = insurerId
+                InsurerId = insurerId,
+                WritingLimit = writingLimit
             }));
         }
 

@@ -47,7 +47,7 @@ public partial class GeneralMutation
 
     [Authorize]
     public async Task<bool> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, Guid insurerId,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        int writingLimit, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
@@ -62,7 +62,8 @@ public partial class GeneralMutation
                     Id = id,
                     LegalEntityId = legalEntityId,
                     SystemName = systemName,
-                    InsurerId = insurerId
+                    InsurerId = insurerId,
+                    WritingLimit = writingLimit
                 });
         }
         else
@@ -70,6 +71,7 @@ public partial class GeneralMutation
             existing.LegalEntityId = legalEntityId;
             existing.SystemName = systemName;
             existing.InsurerId = insurerId;
+            existing.WritingLimit = writingLimit;
         }
         
         await ctx.SaveChangesAsync();

@@ -75,7 +75,9 @@
                 </RadzenRow>
             </RadzenColumn>
             <RadzenColumn Size="3">
-                <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Primary" Icon="edit" Click="@(Edit)"/>
+                <AuthorizeView Policy="InRoleCanEditAgentOnlineBondSystem">
+                     <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Primary" Icon="edit" Click="@(Edit)"/>
+                </AuthorizeView>
             </RadzenColumn>
         </RadzenRow>
     </RadzenCard>
@@ -264,7 +266,7 @@
 
         NotifySuccessfulSave("agent online system");
 
-        DataAccess.UpdateCache(CacheKeys.AgentOnlineSystem(AgentId), new List<OnlineBondSystem> { AgentBondSystem });
+        await DataAccess.UpdateCacheAsync(CacheKeys.AgentOnlineSystem(AgentId), new List<OnlineBondSystem> { AgentBondSystem });
 
         IsEditMode = false;
     }

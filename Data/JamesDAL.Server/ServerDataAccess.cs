@@ -946,7 +946,7 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAllAccountWatches(accountNum, contextFactory));
         }
 
-        public async Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum)
+        public async Task<IDataAccessResult<DateTime?>> GetFirstIndemnityDate(string accountNum)
         {
             return await ExecuteGet(async () => await query.GetFirstIndemnity(accountNum, contextFactory));
         }

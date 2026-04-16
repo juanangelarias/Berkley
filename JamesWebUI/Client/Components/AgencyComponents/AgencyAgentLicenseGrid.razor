@@ -340,7 +340,7 @@
             if (toDelete != null)
             {
                 Licenses.Remove(toDelete);
-                DataAccess.UpdateCache(LicensesKey, Licenses);
+                await DataAccess.UpdateCacheAsync(LicensesKey, Licenses);
             }
 
             await Grid.Reload();
@@ -382,7 +382,7 @@
         if (response != true)
             return;
 
-        DataAccess.Clear(LicensesKey);
+        await DataAccess.ClearAsync(LicensesKey);
         await LoadLicenses();
         await Grid.Reload();
     }
@@ -445,7 +445,7 @@
             license.InsurerId = license.Insurer.Id;
             Licenses.Add(license);
 
-            DataAccess.UpdateCache(LicensesKey, Licenses);
+            await DataAccess.UpdateCacheAsync(LicensesKey, Licenses);
         }
     }
 
@@ -476,7 +476,7 @@
         if (!result.Success)
             await HandleError("Error Setting Agency License", result.Errors);
         else
-            DataAccess.UpdateCache(LicensesKey, Licenses);
+            await DataAccess.UpdateCacheAsync(LicensesKey, Licenses);
     }
 
     private void ShowTooltip(ElementReference element, string type)

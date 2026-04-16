@@ -15,5 +15,6 @@ query GetOnlineBondSystemsByLegalEntity($entityId: UUID!) {
             }
         }
         systemName
+        writingLimit
     }
 }

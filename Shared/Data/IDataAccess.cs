@@ -29,13 +29,13 @@ namespace James.Shared.Data
         /// Clears cache
         /// </summary>
         /// <remarks>Use cautiously as this clears the cache for the entire server if it is called server-side</remarks>
-        public void Clear();
+        public Task ClearAsync();
 
         /// <summary>
         /// Clears cache for one cache key
         /// </summary>
         /// <param name="key">Cache key to clear</param>
-        public void Clear(string key);
+        public Task ClearAsync(string key);
 
         /// <summary>
         /// Updates or adds an item to the cache with an optional cache duration.
@@ -50,7 +50,7 @@ namespace James.Shared.Data
         /// If the key already exists in the cache, the existing entry is updated.
         /// If the key does not exist, a new cache entry is created.
         /// </remarks>
-        public void UpdateCache(string key, object data, TimeSpan? cacheDuration = null);
+        public Task UpdateCacheAsync(string key, object data, TimeSpan? cacheDuration = null);
 
         #endregion
 
@@ -338,7 +338,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteAccountWatch(Guid id);
 
         public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum);
-        public Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum);
+        public Task<IDataAccessResult<DateTime?>> GetFirstIndemnityDate(string accountNum);
         public Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum);
         public Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum);
         public Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum);

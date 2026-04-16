@@ -204,7 +204,7 @@
 
         await ShowLoading();
 
-        DataAccess.Clear(CacheKeys.AgencyAgentLicenses(AgencyId.ToString(), AgentId.ToString()));
+        await DataAccess.ClearAsync(CacheKeys.AgencyAgentLicenses(AgencyId.ToString(), AgentId.ToString()));
         await DataAccess.GetCacheOrLoadDataAsync(LicensesLoad);
 
         Licenses = [];

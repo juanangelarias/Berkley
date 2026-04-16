@@ -375,7 +375,7 @@
             LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
         }
 
-        DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
+        await DataAccess.UpdateCacheAsync(AgencyPOAKey(), PowerOfAttorneys);
     }
 
     private async Task OnPoaCreate(PowerOfAttorney powerOfAttorney)
@@ -397,7 +397,7 @@
         {
             powerOfAttorney.InsurerId = powerOfAttorney.Insurer.Id;
             PowerOfAttorneys.Add(powerOfAttorney);
-            DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
+            await DataAccess.UpdateCacheAsync(AgencyPOAKey(), PowerOfAttorneys);
         }
         else
             NotifySaveError(result.Errors, "Agency POA");
@@ -436,7 +436,7 @@
             if (toDelete != null)
             {
                 PowerOfAttorneys.Remove(toDelete);
-                DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
+                await DataAccess.UpdateCacheAsync(AgencyPOAKey(), PowerOfAttorneys);
             }
 
             NotifyDeleteSuccessful("agency POA deleted");

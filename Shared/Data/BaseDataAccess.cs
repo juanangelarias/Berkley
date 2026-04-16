@@ -42,7 +42,7 @@ namespace James.Shared.Data
                         if (BrowserStorageCache.UseBrowserStorageCache)
                         {
                             var localCachedValue = await BrowserStorageCache.GetCacheItem<object>(loadItem.Key);
-                            while (localCachedValue != null!) //NOTE:  Using while instead of if to allow the use of break; to leave early
+                            while (localCachedValue != null!) //NOTE: Using while instead of if to allow the use of break; to leave early
                             {
                                 if (localCachedValue.DataObject is JsonElement jElement )
                                 {
@@ -125,12 +125,14 @@ namespace James.Shared.Data
                 }
                 else
                 {
-                    var errorList = new List<string>(loadItem.ResultVariable().Errors);
-                    errorList.Add("Maximum number of retries exceeded.");
+                    var errorList = new List<string>(loadItem.ResultVariable().Errors)
+                    {
+                        "Maximum number of retries exceeded."
+                    };
                     loadItem.LoadErrorsEncountered(errorList.ToArray(), true);
                 }
 
-            ExpireCacheIfNeeded: //<Evil grin>Label used by a goto statement!</Evil grin>
+                ExpireCacheIfNeeded: //<Evil grin>Label used by a goto statement!</Evil grin>
 
                 if (0 == ++_cacheUses % CacheUsesUntilGarbageCollection)
                     ReleaseExpired();
@@ -169,48 +171,53 @@ namespace James.Shared.Data
         /// </summary>
         private void ReleaseExpired()
         {
+            if (_isReleasingExpired)
+                //Quit if a previous ReleaseExpired() is still running
+                return;
+
+            _isReleasingExpired = true;
+
             //This will run async and return immediately to the calling function/
-            Task.Factory.StartNew(() =>
+            _ = Task.Run(async () =>
             {
-                if (_isReleasingExpired)
-                    //Quit if a previous ReleaseExpired() is still running
-                    return;
-                lock (_releasingExpiredLockObject)
-                    try
-                    {
-                        _isReleasingExpired = true;
-                        var expired = _cachedResults.Where(cr => cr.Value.CacheUntil < DateTime.Now).Select(cr => cr.Key)
-                            .ToArray();
-                        foreach (var expiredCacheItemKey in expired)
-                            Clear(expiredCacheItemKey);
-                    }
-                    finally
-                    {
-                        _isReleasingExpired = false;
-                    }
+                try
+                {
+                    var expired = _cachedResults.Where(cr => cr.Value.CacheUntil < DateTime.Now).Select(cr => cr.Key)
+                        .ToArray();
+                    foreach (var expiredCacheItemKey in expired)
+                        await ClearAsync(expiredCacheItemKey);
+                }
+                catch (Exception exception)
+                {
+                    logger.LogException(exception, "Exception during background cache expiration",
+                        category: StandardLoggingCategories.DataAccess);
+                }
+                finally
+                {
+                    _isReleasingExpired = false;
+                }
             });
         }
 
         private bool _isReleasingExpired;
-        private readonly object _releasingExpiredLockObject = new();
 
         /// <summary>
         /// Clears cache
         /// </summary>
         /// <remarks>Use cautiously as this clears the cache for the entire server if it is called server-side</remarks>
-        public void Clear()
+        public async Task ClearAsync()
         {
             _cachedResults.Clear();
 
             if (BrowserStorageCache.UseBrowserStorageCache)
-                BrowserStorageCache.ClearAsync().GetAwaiter().GetResult();
+                await BrowserStorageCache.ClearAsync();
         }
 
         /// <summary>
         /// Clears cache for one cache key
         /// </summary>
         /// <param name="key">Cache key to clear</param>
-        public void Clear(string key)
+        public async Task ClearAsync(string key)
         {
             if (_cachedResults.TryGetValue(key, out var oldValue) && oldValue.DataObject is IDisposable disposeIt)
                 disposeIt.Dispose();
@@ -218,7 +225,7 @@ namespace James.Shared.Data
             _cachedResults.Remove(key, out _);
 
             if (BrowserStorageCache.UseBrowserStorageCache)
-                BrowserStorageCache.RemoveItemAsync(key).GetAwaiter().GetResult();
+                await BrowserStorageCache.RemoveItemAsync(key);
         }
 
         /// <summary>
@@ -234,7 +241,7 @@ namespace James.Shared.Data
         /// If the key already exists in the cache, the existing entry is updated.
         /// If the key does not exist, a new cache entry is created.
         /// </remarks>
-        public void UpdateCache(string key, object data, TimeSpan? cacheDuration = null)
+        public async Task UpdateCacheAsync(string key, object data, TimeSpan? cacheDuration = null)
         {
             cacheDuration ??= TimeSpan.FromHours(1);
             var newData = new CachedResult
@@ -243,10 +250,10 @@ namespace James.Shared.Data
                 CacheUntil = DateTime.Now + cacheDuration.Value
             };
 
-            if (_cachedResults.TryGetValue(key, out _))
-                _cachedResults.TryRemove(key, out _);
-
+            await ClearAsync(key);
+            
             _cachedResults.TryAdd(key, newData);
+            await BrowserStorageCache.SetItemAsyncWithExpiry(key, cacheDuration.Value, data);
         }
     }
 }

@@ -68,7 +68,7 @@
             //NOTE: Subscriptions for the address editors are added via the AddressDisplay AddSubscription function
             li.Subscription = DataAccess.AddressCollectionModified(LegalEntityId, async void (_) =>
             {
-                DataAccess.Clear("addresses");
+                await DataAccess.ClearAsync("addresses");
                 await LoadAddresses();
             });
         }
@@ -104,7 +104,7 @@
             actual.PostalCode = address.PostalCode;
         }
 
-        DataAccess.UpdateCache($"Adds{LegalEntityId}", AllAddresses);
+        await DataAccess.UpdateCacheAsync($"Adds{LegalEntityId}", AllAddresses);
     }
 
     private async Task DeleteAddress(Guid id)

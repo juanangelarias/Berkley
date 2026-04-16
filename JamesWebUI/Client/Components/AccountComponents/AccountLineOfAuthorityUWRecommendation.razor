@@ -279,7 +279,7 @@
 
     private async Task UpdateCache()
     {
-        DataAccess.UpdateCache(CacheKeys.UnderwriterRecommendation(AccountNum), Recommendations);
+        await DataAccess.UpdateCacheAsync(CacheKeys.UnderwriterRecommendation(AccountNum), Recommendations);
 
         await _grid.Reload();
     }

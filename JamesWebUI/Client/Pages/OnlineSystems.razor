@@ -149,7 +149,7 @@
             .FirstOrDefault(s => s.Id == system.Id);
         _systems.Remove(toDelete!);
         
-        DataAccess.UpdateCache(CacheKeys.AgentSystems, _systems);
+        await DataAccess.UpdateCacheAsync(CacheKeys.AgentSystems, _systems);
 
         NotifyDeleteSuccessful("Record deleted successfully");
         _editMode = false;
@@ -185,7 +185,7 @@
         NotifySuccessfulSave("online system");
 
         _systems.Add(system);
-        DataAccess.UpdateCache(CacheKeys.AgentSystems, _systems);
+        await DataAccess.UpdateCacheAsync(CacheKeys.AgentSystems, _systems);
 
         _editMode = false;
     }
@@ -201,7 +201,7 @@
 
         NotifySuccessfulSave("online system");
 
-        DataAccess.UpdateCache(CacheKeys.AgentSystems, _systems);
+        await DataAccess.UpdateCacheAsync(CacheKeys.AgentSystems, _systems);
 
         _editMode = false;
     }

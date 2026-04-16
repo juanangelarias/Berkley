@@ -467,7 +467,7 @@
             .OrderByDescending(o => o.Effective)
             .ToList();
 
-        DataAccess.UpdateCache(CacheKeys.AccountPrograms(Account.AccountNum), Data);
+        await DataAccess.UpdateCacheAsync(CacheKeys.AccountPrograms(Account.AccountNum), Data);
 
         await Grid.Reload();
     }

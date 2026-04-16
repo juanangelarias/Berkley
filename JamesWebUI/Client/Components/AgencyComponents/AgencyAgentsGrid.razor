@@ -219,7 +219,7 @@
             return;
         
         if(reload)
-            DataAccess.Clear(CacheKeys.AgencyAgents(Agency.Id));
+            await DataAccess.ClearAsync(CacheKeys.AgencyAgents(Agency.Id));
 
         await DataAccess.GetCacheOrLoadDataAsync(AgencyAgentsLoad);
     }
@@ -359,7 +359,7 @@
         RemoveAgentFromList(agent.AgentId);
     }
 
-    private void RemoveAgentFromList(Guid agentId)
+    private async Task RemoveAgentFromList(Guid agentId)
     {
         var toDelete = Agents.FirstOrDefault(a => a.AgentId == agentId);
         if (toDelete == null)
@@ -367,9 +367,9 @@
 
         Agents.Remove(toDelete);
 
-        DataAccess.UpdateCache(CacheKeys.AgencyAgents(Agency.Id), Agents);
+        await DataAccess.UpdateCacheAsync(CacheKeys.AgencyAgents(Agency.Id), Agents);
         
-        Grid.Reload();
+        await Grid.Reload();
     }
 
     private async Task Save(AgencyAgentDto agent)
@@ -513,7 +513,7 @@
 
         NotifySuccessfulSave("agent");
 
-        DataAccess.UpdateCache(CacheKeys.AgencyAgents(Agency.Id), Agents);
+        await DataAccess.UpdateCacheAsync(CacheKeys.AgencyAgents(Agency.Id), Agents);
         _isEditing = false;
         _originalValues = null;
     }

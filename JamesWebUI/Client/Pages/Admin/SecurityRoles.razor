@@ -162,7 +162,7 @@
         var result = await DialogService.OpenAsync<AddSecurityRole>("Add security role");
         if (true == result)
         {
-            DataAccess.Clear(RolesLoadKey);
+            await DataAccess.ClearAsync(RolesLoadKey);
             await LocalStorageService.RemoveItemAsync(RolesLoadKey);
             await DataAccess.GetCacheOrLoadDataAsync(RolesLoadItem);
         }
@@ -171,7 +171,7 @@
     private async Task ReloadRoleMembers()
     {
         if (null == _currentSecurityRole) return;
-        DataAccess.Clear(MembersLoadKey(_currentSecurityRole.Role));
+        await DataAccess.ClearAsync(MembersLoadKey(_currentSecurityRole.Role));
         await LocalStorageService.RemoveItemAsync(MembersLoadKey(_currentSecurityRole.Role));
         await DataAccess.GetCacheOrLoadDataAsync(MembersLoadItem(_currentSecurityRole.Role));
     }

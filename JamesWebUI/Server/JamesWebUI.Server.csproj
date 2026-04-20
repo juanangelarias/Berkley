@@ -9,6 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\..\THIRD-PARTY-NOTICES.txt" Link="THIRD-PARTY-NOTICES.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ApplicationLog" Version="2.0.32" />
     <PackageReference Include="Auth0.AspNetCore.Authentication" Version="1.6.1" />
     <PackageReference Include="Azure.Identity" Version="1.17.1" />

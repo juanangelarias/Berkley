@@ -88,7 +88,6 @@ query GetAccountAgencyLOA($accountNum: String!) {
         loaSingle
         division
         bondType
-        status
     }
 }
 
@@ -107,6 +106,5 @@ query GetAccountAgencyLOAById($id: UUID!) {
         loaAggregate
         loaSingle
         sequenceNumber
-        status
     }
 }

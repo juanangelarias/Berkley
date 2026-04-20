@@ -2097,7 +2097,6 @@ type AccountAgencyLOADto {
   sequenceNumber: Int!
   createdById: UUID
   createdByName: String
-  status: String
 }
 
 type Indemnitor {

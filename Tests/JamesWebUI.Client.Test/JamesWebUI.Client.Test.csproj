@@ -46,6 +46,7 @@
     <Compile Include="Services\AddressPhoneFormatService.cs" />
     <Compile Include="Services\TestHttpContextAccessor.cs" />
     <Compile Include="Services\UserSettings.cs" />
+    <Compile Include="TestAuthStateProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="JamesFormFieldTests.cs" />

@@ -160,8 +160,6 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
             //Invalidate cache
             _settings = null;
             dataAccess.Clear(key);
-            //Update the browser cache asynchronously
-            localStorageService.RemoveItemAsync(cacheKey);
         }
 
         return await dataAccess.SetDefaultUserSetting(key, value);

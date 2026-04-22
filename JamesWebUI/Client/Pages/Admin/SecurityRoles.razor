@@ -163,7 +163,6 @@
         if (true == result)
         {
             await DataAccess.ClearAsync(RolesLoadKey);
-            await LocalStorageService.RemoveItemAsync(RolesLoadKey);
             await DataAccess.GetCacheOrLoadDataAsync(RolesLoadItem);
         }
     }
@@ -172,7 +171,6 @@
     {
         if (null == _currentSecurityRole) return;
         await DataAccess.ClearAsync(MembersLoadKey(_currentSecurityRole.Role));
-        await LocalStorageService.RemoveItemAsync(MembersLoadKey(_currentSecurityRole.Role));
         await DataAccess.GetCacheOrLoadDataAsync(MembersLoadItem(_currentSecurityRole.Role));
     }
 

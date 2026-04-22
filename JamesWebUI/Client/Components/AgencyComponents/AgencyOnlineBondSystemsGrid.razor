@@ -260,7 +260,7 @@
     private async Task DeleteSystem(OnlineBondSystem system)
     {
         var deleteConfirmed = await DialogService.Confirm("Are you sure?",
-            "Agency Online bond system Deletion",
+            "Agency online bond system deletion",
             new() { OkButtonText = "Yes", CancelButtonText = "No" });
 
         if (deleteConfirmed == false)

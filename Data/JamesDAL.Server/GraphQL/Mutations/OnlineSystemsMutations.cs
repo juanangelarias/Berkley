@@ -1,4 +1,5 @@
 ﻿using HotChocolate.Authorization;
+using Microsoft.Data.SqlClient;
 
 namespace James.Data.Server.GraphQL.Mutations;
 
@@ -20,7 +21,7 @@ public partial class GeneralMutation
         }
         else
         {
-            existing.SystemName = systemName;
+            throw new("Cannot update online system.");
         }
 
         await ctx.SaveChangesAsync();
@@ -32,17 +33,24 @@ public partial class GeneralMutation
     public async Task<bool> DeleteOnlineSystem(Guid id,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
-        var ctx = await contextFactory.CreateDbContextAsync();
-        var existing = await ctx.AgentSystemDms
-            .FirstOrDefaultAsync(f=>f.Id == id);
-        
-        if (existing is null)
-            return false;
-        
-        ctx.AgentSystemDms.Remove(existing);
-        await ctx.SaveChangesAsync();
-        
-        return true;
+        try
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            var existing = await ctx.AgentSystemDms
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (existing is null)
+                return false;
+
+            ctx.AgentSystemDms.Remove(existing);
+            await ctx.SaveChangesAsync();
+
+            return true;
+        }
+        catch (DbUpdateConcurrencyException exception) when (exception.InnerException is SqlException { Number: 574 })
+        {
+            throw new("Cannot delete record because it is in use.", exception);
+        }
     }
 
     [Authorize]

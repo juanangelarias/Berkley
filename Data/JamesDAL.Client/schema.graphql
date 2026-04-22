@@ -273,6 +273,10 @@ input AgencyLicenseBulkInsertInput {
   licenses: [AgencyLicenseBulkInput!]!
 }
 
+type LoaLogDeletePayload {
+  boolean: Boolean
+}
+
 input StatementBasisDmInput {
   id: UUID!
   created: DateTime!
@@ -1228,6 +1232,11 @@ input PowerOfAttorneyInput {
   statusNavigation: PowerOfAttorneyStatusDmInput!
 }
 
+input LoaLogChangeStatusInput {
+  accountLoaId: UUID!
+  newStatusTxt: String!
+}
+
 input AccountStatusLogInput {
   id: UUID!
   created: DateTime!
@@ -1417,6 +1426,10 @@ input SfaabondTypeDmInput {
   modified: DateTime!
   sfaabondType: String!
   bonds: [BondInput!]!
+}
+
+type SetAgencyLoaPayload {
+  boolean: Boolean
 }
 
 input BalanceSheetInput {
@@ -2122,6 +2135,10 @@ type AgencyCompetition {
   enteredByNavigation: Employee!
 }
 
+type LoaLogChangeStatusPayload {
+  boolean: Boolean
+}
+
 input BondRequestInput {
   id: UUID!
   created: DateTime!
@@ -2383,6 +2400,22 @@ input SetEmployeeIsActiveInput {
   isActive: Boolean!
 }
 
+type AccountAgencyLOADto {
+  id: UUID!
+  accountNum: String!
+  agencyNumber: String!
+  effective: DateTime!
+  expiration: DateTime!
+  loaSingle: Int!
+  loaAggregate: Int!
+  division: String
+  bondType: String
+  created: DateTime!
+  sequenceNumber: Int!
+  createdById: UUID
+  createdByName: String
+}
+
 type LawEntity {
   id: UUID!
   created: DateTime!
@@ -2497,6 +2530,11 @@ type Mutation {
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   deleteAccountProgram(input: DeleteAccountProgramInput!): DeleteAccountProgramPayload!
   accountProgramChangeStatus(input: AccountProgramChangeStatusInput!): AccountProgramChangeStatusPayload!
+  setLoaLog(input: SetLoaLogInput!): SetLoaLogPayload!
+  loaLogDelete(input: LoaLogDeleteInput!): LoaLogDeletePayload!
+  loaLogChangeStatus(input: LoaLogChangeStatusInput!): LoaLogChangeStatusPayload!
+  setAgencyLoa(input: SetAgencyLoaInput!): SetAgencyLoaPayload!
+  agencyLoaDelete(input: AgencyLoaDeleteInput!): AgencyLoaDeletePayload!
   setOnlineSystem(input: SetOnlineSystemInput!): SetOnlineSystemPayload!
   deleteOnlineSystem(input: DeleteOnlineSystemInput!): DeleteOnlineSystemPayload!
   setOnlineBondSystem(input: SetOnlineBondSystemInput!): SetOnlineBondSystemPayload!
@@ -3137,6 +3175,10 @@ type CreateLicensePayload {
   boolean: Boolean
 }
 
+input LoaLogDeleteInput {
+  accountLoaId: UUID!
+}
+
 input SetAccountAdditionalInformationInput {
   accountId: UUID!
   fullIndemnity: Boolean
@@ -3253,6 +3295,10 @@ input BidStatusDmInput {
   bondRequests: [BondRequestInput!]!
 }
 
+input AgencyLoaDeleteInput {
+  agencyLoaId: UUID!
+}
+
 input LineOfAuthorityReasonInput {
   id: UUID!
   created: DateTime!
@@ -3345,6 +3391,10 @@ input AgentsInAgencyInput {
   comments: String
   agency: AgencyInput!
   agent: AgentInput!
+}
+
+type SetLoaLogPayload {
+  boolean: Boolean
 }
 
 type BondModTransaction {
@@ -3605,7 +3655,7 @@ input SetAccountCommercialInfoInput {
 
 type Query {
   accountByNumber(accountNumber: String): Account
-  firstIndemnity(accountNum: String!): LocalDate
+  firstIndemnity(accountNum: String!): DateTime
   searchAccounts(searchString: String!): [Account!]!
   lastPrivateEquityByAccount(accountNum: String!): PrivateEquity
   lastIndemnitorByAccount(accountNum: String!): Indemnitor
@@ -3694,6 +3744,8 @@ type Query {
   accountLOAs(accountNum: String!): AccountLOAsDto!
   accountPrograms(accountNum: String!): [AccountProgramDto!]!
   accountProgramById(id: UUID!): AccountProgramDto!
+  accountAgencyLOA(accountNum: String!): [AccountAgencyLOADto!]!
+  accountAgencyLOAById(id: UUID!): AccountAgencyLOADto
   userLOAByDivision(division: String!): [UserLineOfAuthority!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
@@ -4091,6 +4143,20 @@ type InventoryDocumentDm {
   agencyInventories: [AgencyInventory!]!
 }
 
+input SetAgencyLoaInput {
+  id: UUID!
+  agencyNumber: String!
+  accountNum: String!
+  effective: DateTime!
+  expiration: DateTime!
+  loaSinge: Int!
+  loaAggregate: Int!
+  comments: String!
+  division: String!
+  bondType: String!
+  conditions: String!
+}
+
 input PhoneNumberInput {
   id: UUID!
   created: DateTime!
@@ -4398,6 +4464,21 @@ input BondRequestCommercialInput {
   sfaaCodeNavigation: SfaaInput
   statusNavigation: BidStatusDmInput!
   underWriter: UnderwriterInput
+}
+
+input SetLoaLogInput {
+  id: UUID!
+  accountNum: String!
+  effective: DateTime!
+  expiration: DateTime!
+  loaSingle: Int!
+  loaAggregate: Int!
+  comments: String!
+  status: String!
+  division: String!
+  bondType: String!
+  conditions: String!
+  homeOfficeApproved: Boolean!
 }
 
 input RemovePrincipalFromSecurityRoleInput {
@@ -5090,6 +5171,10 @@ input NotebookEntryInput {
 }
 
 scalar UUID
+
+type AgencyLoaDeletePayload {
+  boolean: Boolean
+}
 
 type DeleteUnderwriterRecommendationPayload {
   boolean: Boolean

@@ -35,6 +35,7 @@ public static class CacheKeys
     public static string AgencyAgents(Guid agencyId) => $"AgencyContacts-{agencyId}";
     public static string AgencyLocations(Guid agencyId) => $"AgencyLocations-{agencyId}";
     public static string AgencyInventory(Guid agencyId) => $"AgencyInventory-{agencyId}";
+    public static string AgentOnlineSystem(Guid agentId) => $"AgentOnlineSystem-{agentId}";
 
     // C
     public static string CreditReport(string accountNumber) => $"BondTransactions-{accountNumber}";
@@ -68,8 +69,8 @@ public static class CacheKeys
     public const string AddressTypes = "AddressTypes";
     public const string AgenciesDto = "AgenciesDto";
     public const string AgenciesLookup = "AgenciesLookup";
-
     public const string AgencyStatuses = "AgencyStatuses";
+    public const string AgentSystems = "AgentSystems";
     // B
     public const string BondBlocks = "BondBlocks";
     public const string Branches = "Branches";
@@ -83,14 +84,14 @@ public static class CacheKeys
     public const string CreditReportAgencies = "CreditReportAgencies";
     // D
     public const string Divisions = "Divisions";
-
     public const string DocumentTypes = "DocumentTypes";
-
     // E
     public const string EmailTypes = "EmailTypes";
     // I
     public const string IndustryCodes = "IndustryCodes";
     public const string Insurers = "Insurers";
+    // O
+    public const string OnlineSystems= "OnlineSystems";
     // P
     public const string PhoneTypes = "PhoneTypes";
     // R

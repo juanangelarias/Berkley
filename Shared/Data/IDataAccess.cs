@@ -29,13 +29,13 @@ namespace James.Shared.Data
         /// Clears cache
         /// </summary>
         /// <remarks>Use cautiously as this clears the cache for the entire server if it is called server-side</remarks>
-        public void Clear();
+        public Task ClearAsync();
 
         /// <summary>
         /// Clears cache for one cache key
         /// </summary>
         /// <param name="key">Cache key to clear</param>
-        public void Clear(string key);
+        public Task ClearAsync(string key);
 
         /// <summary>
         /// Updates or adds an item to the cache with an optional cache duration.
@@ -50,7 +50,7 @@ namespace James.Shared.Data
         /// If the key already exists in the cache, the existing entry is updated.
         /// If the key does not exist, a new cache entry is created.
         /// </remarks>
-        public void UpdateCache(string key, object data, TimeSpan? cacheDuration = null);
+        public Task UpdateCacheAsync(string key, object data, TimeSpan? cacheDuration = null);
 
         #endregion
 
@@ -213,6 +213,8 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId, Guid? agentId,
             bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
             Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive);
+        
+        public Task<ISaveDataResult> UpdateAgencyLicenseBulk(List<AgencyLicense> licenses);
 
         public Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
             string documentType, string? addressee, Guid addressId, string address1, string? address2, string? address3,
@@ -336,7 +338,7 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> DeleteAccountWatch(Guid id);
 
         public Task<IDataAccessResult<List<AccountWatch>>> GetAccountWatches(string accountNum);
-        public Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum);
+        public Task<IDataAccessResult<DateTime?>> GetFirstIndemnityDate(string accountNum);
         public Task<IDataAccessResult<AccountAlertPackageDto>> GetAccountAlerts(int period, string accountNum);
         public Task<IDataAccessResult<PrivateEquity?>> GetLastPrivateEquityByAccount(string accountNum);
         public Task<IDataAccessResult<Indemnitor?>> GetLastIndemnitorByAccount(string accountNum);
@@ -381,6 +383,19 @@ namespace James.Shared.Data
             string bondType, string conditions);
         public Task<ISaveDataResult> AgencyLoaDelete(Guid id);
 
+        #endregion
+        
+        #region
+
+        public Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems();
+        public Task<IDataAccessResult<List<OnlineBondSystem>>> GetOnlineBondSystemsByLegalEntity(Guid entityId);
+
+        public Task<ISaveDataResult> SetOnlineSystem(Guid id, string systemName);
+        public Task<ISaveDataResult> DeleteOnlineSystem(Guid id);
+        public Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName,
+            Guid insurerId, int writingLimit);
+        public Task<ISaveDataResult> DeleteOnlineBondSystem(Guid id);
+        
         #endregion
         
         public Task<IDataAccessResult<List<AccountProgramStatusDm>>> GetAllAccountProgramStatuses();

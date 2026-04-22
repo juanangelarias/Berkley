@@ -365,6 +365,9 @@ namespace James.Data.Server.GraphQL.Queries
                 .Where(lic => lic.IsActive && lic.AgencyId == agencyId && lic.AgentId == agentId)
                 .Include(lic => lic.Insurer)
                 .ThenInclude(lic => lic.IdNavigation)
+                .OrderBy(o=>o.AgencyId)
+                .ThenBy(o=>o.AgentId)
+                .ThenBy(o=>o.State)
                 .ToListAsync();
 
             return result;

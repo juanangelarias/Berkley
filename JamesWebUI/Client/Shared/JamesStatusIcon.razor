@@ -1,6 +1,9 @@
 ﻿
-<RadzenIcon Icon="circle" class="filled-icon" Style="font-size: 1.0rem;" IconStyle="@IconStyle"/>
+<RadzenIcon Icon="circle" class="@GetClass()" Style="font-size: 1.0rem;" IconStyle="@IconStyle"/>
 
 @code {
-    [Parameter, EditorRequired] public IconStyle IconStyle { get; set; }    
+    [Parameter, EditorRequired] public IconStyle IconStyle { get; set; }
+    [Parameter] public string Class { get; set; } = "";
+    
+    private string GetClass() => $"filled-icon {Class}";
 }

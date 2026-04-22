@@ -146,11 +146,14 @@
                         <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles" />
                         <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions" />
                         <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings" />
+                        <RadzenPanelMenuItem Text="Domain Tables" Icon="settings" Expanded="false">
+                            <RadzenPanelMenuItem Text="Online Systems" Icon="cloud_download" Path="OnlineSystems" />
+                        </RadzenPanelMenuItem>
                     </RadzenPanelMenuItem>
                 </RadzenPanelMenu>
             </RadzenRow>
         </AuthorizeView>
-        <RadzenRow>
+        <RadzenRow JustifyContent="JustifyContent.Center">
             <RadzenIcon Icon="info" MouseEnter="@(args => ShowTooltip(args, "Info"))"
                         IconStyle="IconStyle.Info" Style="font-size: 1.25rem;" class="rz-ml-5"/>
         </RadzenRow>

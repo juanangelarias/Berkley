@@ -1,0 +1,20 @@
+query GetOnlineSystems {
+    onlineSystems {
+        id
+        systemName
+    }
+}
+
+query GetOnlineBondSystemsByLegalEntity($entityId: UUID!) {
+    onlineBondSystemsByLegalEntity(legalEntityId: $entityId) {
+        id
+        insurerId
+        insurer {
+            idNavigation {
+                fullName
+            }
+        }
+        systemName
+        writingLimit
+    }
+}

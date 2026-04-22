@@ -182,30 +182,35 @@ public class DataCache : IDataCache
     /// </summary>
     private void ReleaseExpired()
     {
+        if (_isReleasingExpired)
+            //Quit if a previous ReleaseExpired() is still running
+            return;
+
+        _isReleasingExpired = true;
+
         //This will run async and return immediately to the calling function/
-        Task.Factory.StartNew(() =>
+        _ = Task.Run(() =>
         {
-            if (_isReleasingExpired)
-                //Quit if a previous ReleaseExpired() is still running
-                return;
-            lock (_releasingExpiredLockObject)
-                try
-                {
-                    _isReleasingExpired = true;
-                    var expired = _cachedResults.Where(cr => cr.Value.CacheUntil < DateTime.Now).Select(cr => cr.Key)
-                        .ToArray();
-                    foreach (var expiredCacheItemKey in expired)
-                        Clear(expiredCacheItemKey);
-                }
-                finally
-                {
-                    _isReleasingExpired = false;
-                }
+            try
+            {
+                var expired = _cachedResults.Where(cr => cr.Value.CacheUntil < DateTime.Now).Select(cr => cr.Key)
+                    .ToArray();
+                foreach (var expiredCacheItemKey in expired)
+                    Clear(expiredCacheItemKey);
+            }
+            catch (Exception exception)
+            {
+                _logger?.LogException(exception, "Exception during background cache expiration",
+                    category: StandardLoggingCategories.DataAccess);
+            }
+            finally
+            {
+                _isReleasingExpired = false;
+            }
         });
     }
 
     private bool _isReleasingExpired;
-    private readonly object _releasingExpiredLockObject = new();
 
     /// <summary>
     /// Clears cache

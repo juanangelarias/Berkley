@@ -285,7 +285,7 @@
             if (toRemove != null)
                 AgencyInventories.Remove(toRemove);
 
-            DataAccess.UpdateCache($"Inventory{AgencyId}", AgencyInventories);
+            await DataAccess.UpdateCacheAsync($"Inventory{AgencyId}", AgencyInventories);
 
             NotifySuccessfulSave("agency inventory deleted");
             await Grid.Reload();

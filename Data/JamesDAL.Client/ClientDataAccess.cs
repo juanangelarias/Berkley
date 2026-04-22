@@ -745,6 +745,33 @@ namespace James.Data.Client
                 }), graphQlFunctionName: "SetPowerOfAttorney");
         }
 
+        public async Task<ISaveDataResult> UpdateAgencyLicenseBulk(List<AgencyLicense> licenses)
+        {
+            var list = new List<AgencyLicenseInput>(licenses.Select(license => new AgencyLicenseInput
+            {
+                Id = license.Id,
+                AgencyId = license.AgencyId,
+                AgentId = license.AgentId,
+                State = license.State,
+                LicenseNumber = license.LicenseNumber,
+                IsResident = license.IsResident,
+                InsurerId = license.InsurerId,
+                Expiration = license.Expiration,
+                Comments = license.Comments,
+                Appointment = license.Appointment,
+                Termination = license.Termination,
+                AppointingState = license.AppointingState,
+                IsActive = license.IsActive,
+                ImagingId = license.ImagingId,
+                
+            }));
+            return await ExecuteSave(async () => await jamesClient.UpdateAgencyLicenseBulk.ExecuteAsync(
+                new UpdateAgencyLicenseBulkInput
+                {
+                    Licenses = list
+                }), graphQlFunctionName: "UpdateAgencyLicenseBulk");
+        }
+
         public async Task<ISaveDataResult> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
             string documentType, string? addressee,
             Guid addressId, string address1, string? address2, string? address3, string city, string? stateCode,
@@ -1137,9 +1164,9 @@ namespace James.Data.Client
             return response;
         }
 
-        public async Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum)
+        public async Task<IDataAccessResult<DateTime?>> GetFirstIndemnityDate(string accountNum)
         {
-            var response = await ExecuteGet<DateOnly?>(async () =>
+            var response = await ExecuteGet<DateTime?>(async () =>
                 await jamesClient.GetFirstIndemnity.ExecuteAsync(accountNum));
 
             return response;
@@ -1401,9 +1428,8 @@ namespace James.Data.Client
         }
 
         public async Task<IDataAccessResult<Obligee>> CreateObligee(Guid id, string fullName, string obligeeType,
-            bool printStatusLetter, string? notes,
-            string address1, string? address2, string city, string state, string postalCode, string? phoneNumber,
-            string? email)
+            bool printStatusLetter, string? notes, string address1, string? address2, string city, string state, 
+            string postalCode, string? phoneNumber, string? email)
         {
             var saveResult = await jamesClient.CreateObligee.ExecuteAsync(new CreateObligeeInput
             {
@@ -1425,10 +1451,8 @@ namespace James.Data.Client
         }
 
         public async Task<ISaveDataResult> CreateLicense(Guid licenseId, Guid agencyId, Guid? agentId,
-            bool appointingState,
-            string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
-            Guid insurerId, bool isResident, string? licenseNumber, string state,
-            bool isActive)
+            bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration, DateOnly? termination,
+            Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive)
         {
             var saveResult = await jamesClient.CreateLicense.ExecuteAsync(new CreateLicenseInput
             {
@@ -1505,9 +1529,8 @@ namespace James.Data.Client
         }
 
         public async Task<IDataAccessResult<AgencyLicense>> SetAgencyLicense(Guid licenseId, Guid agencyId,
-            Guid? agentId, bool appointingState, string? comments,
-            DateOnly? appointment, DateOnly? expiration, DateOnly? termination, Guid insurerId, bool isResident,
-            string? licenseNumber, string state, bool isActive)
+            Guid? agentId, bool appointingState, string? comments, DateOnly? appointment, DateOnly? expiration,
+            DateOnly? termination, Guid insurerId, bool isResident, string? licenseNumber, string state, bool isActive)
         {
             return await ExecuteGet<AgencyLicense>(
                 async () => await jamesClient.SetAgencyLicense.ExecuteAsync(new SetAgencyLicenseInput
@@ -1682,8 +1705,7 @@ namespace James.Data.Client
         }
 
         public async Task<ISaveDataResult> SetUnderwriterRecommendation(Guid id, string accountNum, Guid postedBy,
-            string comments,
-            string description)
+            string comments, string description)
         {
             return await ExecuteSave(async () => await jamesClient.SetUnderwriterRecommendation
                 .ExecuteAsync(new SetUnderwriterRecommendationInput
@@ -1747,6 +1769,64 @@ namespace James.Data.Client
                 await jamesClient.GetLoaLogsByAccount.ExecuteAsync(accountNum), "LoaLogsByAccount");
             
             return result;
+        }
+
+        #endregion
+        
+        #region OnlineSystem
+        
+        public async Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems()
+        {
+            var result =
+                await ExecuteGet<List<AgentSystemDm>>(async () => await jamesClient.GetOnlineSystems.ExecuteAsync(),
+                    "OnlineSystems");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<List<OnlineBondSystem>>> GetOnlineBondSystemsByLegalEntity(Guid entityId)
+        {
+            var result = await ExecuteGet<List<OnlineBondSystem>>(
+                async () => await jamesClient.GetOnlineBondSystemsByLegalEntity.ExecuteAsync(entityId),
+                "OnlineBondSystemsByLegalEntity");
+            
+            return result;
+        }
+
+        public async Task<ISaveDataResult> SetOnlineSystem(Guid id, string systemName)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetOnlineSystem.ExecuteAsync(new()
+            {
+                Id = id, 
+                SystemName = systemName
+            }), "SetOnlineSystem");
+        }
+
+        public async Task<ISaveDataResult> DeleteOnlineSystem(Guid id)
+        {
+            return await ExecuteSave(async () => await jamesClient.DeleteOnlineSystem.ExecuteAsync(new() { Id = id }),
+                "DeleteOnlineSystem");
+        }
+
+        public async Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, 
+            Guid insurerId, int writingLimit)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetOnlineBondSystem.ExecuteAsync(new()
+            {
+                Id = id,
+                LegalEntityId = legalEntityId,
+                SystemName = systemName,
+                InsurerId = insurerId,
+                WritingLimit = writingLimit
+            }));
+        }
+
+        public async Task<ISaveDataResult> DeleteOnlineBondSystem(Guid id)
+        {
+            return await ExecuteSave(async () => await jamesClient.DeleteOnlineBondSystem.ExecuteAsync(new()
+            {
+                Id = id
+            }), "DeleteOnlineBondSystem");
         }
 
         #endregion

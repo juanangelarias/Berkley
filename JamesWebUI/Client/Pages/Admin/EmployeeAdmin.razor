@@ -109,8 +109,8 @@
     {
         var result = await DialogService.OpenAsync<AddEmployee>("Add Employee");
         //TODO: If no Employees were added, skip the below
-        DataAccess.Clear("emp");
-        DataAccess.Clear("empAll");
+        await DataAccess.ClearAsync("emp");
+        await DataAccess.ClearAsync("empAll");
         await DataAccess.GetCacheOrLoadDataAsync(EmployeesLoadItem(_activeOnly));
     }
 

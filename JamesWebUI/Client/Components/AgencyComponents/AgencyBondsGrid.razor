@@ -158,7 +158,7 @@
 
     private IDataAccessResult<List<AgencyBondDto>> _agencyBondsResult = null!;
 
-    private LoadItem AgencyBondsLoad => AddEventNotify(new()
+    private LoadItem AgencyBondsLoad => AddEventNotify(new LoadItem<List<AgencyBondDto>>
     {
         Key = CacheKeys.AgencyBonds(Agency.Id, AccountNum ?? string.Empty, _skip, _take),
         AsyncLoadTask = async () => _agencyBondsResult = await DataAccess.GetAgencyBonds(Agency.Id, AccountNum, _skip, _take),

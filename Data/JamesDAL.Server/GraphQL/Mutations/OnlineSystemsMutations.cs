@@ -19,9 +19,9 @@ public partial class GeneralMutation
             ctx.AgentSystemDms
                 .Add(new() { Id = id, SystemName = systemName });
         }
-        else
+        else if (existing.SystemName != systemName)
         {
-            throw new("Cannot update online system.");
+            throw new($"{systemName} is already in use. Domain Table record values should not be edited, only added or deleted.");
         }
 
         await ctx.SaveChangesAsync();
@@ -47,7 +47,7 @@ public partial class GeneralMutation
 
             return true;
         }
-        catch (DbUpdateConcurrencyException exception) when (exception.InnerException is SqlException { Number: 574 })
+        catch (DbUpdateException exception) when (exception.InnerException is SqlException { Number: 547 })
         {
             throw new("Cannot delete record because it is in use.", exception);
         }

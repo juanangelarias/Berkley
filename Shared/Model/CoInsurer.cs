@@ -19,4 +19,6 @@ public partial class CoInsurer
     public double? Percentage { get; set; }
 
     public string? Comments { get; set; }
+
+    public virtual Insurer Insurer { get; set; } = null!;
 }

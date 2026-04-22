@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace James.Shared.Model;
 //Generated for DB
 
-public partial class FinancialAccountTypeDm
+public partial class PersonalFinancialFor
 {
     public Guid Id { get; set; }
 
@@ -12,9 +12,9 @@ public partial class FinancialAccountTypeDm
 
     public DateTime Modified { get; set; }
 
-    public string FinancialAccountType { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
-    public string? Title { get; set; }
+    public string? Comment { get; set; }
 
-    public string UsedIn { get; set; } = null!;
+    public virtual FinancialStatement IdNavigation { get; set; } = null!;
 }

@@ -22,6 +22,8 @@ public partial class Obligee
 
     public string? Notes { get; set; }
 
+    public virtual ICollection<AdditionalObligee> AdditionalObligees { get; set; } = new List<AdditionalObligee>();
+
     public virtual ICollection<BondRequest> BondRequests { get; set; } = new List<BondRequest>();
 
     public virtual Employee? EditedByNavigation { get; set; }

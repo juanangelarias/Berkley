@@ -13,4 +13,6 @@ public partial class RenewalRequestSource
     public DateTime Modified { get; set; }
 
     public string Source { get; set; } = null!;
+
+    public virtual ICollection<RenewalRequest> RenewalRequests { get; set; } = new List<RenewalRequest>();
 }

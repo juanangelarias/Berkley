@@ -194,8 +194,6 @@ public partial class Account
 
     public virtual BusinessTypeRiskCodeDm? BusinessTypeRiskCode { get; set; }
 
-    public virtual ICollection<CashFlowStatement> CashFlowStatements { get; set; } = new List<CashFlowStatement>();
-
     public virtual ICollection<CoPrincipal> CoPrincipals { get; set; } = new List<CoPrincipal>();
 
     public virtual LegalEntity? Cpacontact { get; set; }

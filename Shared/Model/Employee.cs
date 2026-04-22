@@ -82,6 +82,8 @@ public partial class Employee
 
     public virtual ICollection<Obligee> Obligees { get; set; } = new List<Obligee>();
 
+    public virtual Branch? PrimaryBranch { get; set; }
+
     public virtual ICollection<PrivateEquity> PrivateEquities { get; set; } = new List<PrivateEquity>();
 
     public virtual ICollection<Surcharge> Surcharges { get; set; } = new List<Surcharge>();

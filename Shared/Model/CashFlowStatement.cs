@@ -18,13 +18,13 @@ public partial class CashFlowStatement
 
     public string Type { get; set; } = null!;
 
-    public string? Basis { get; set; }
+    public string Basis { get; set; } = null!;
+
+    public string Quality { get; set; } = null!;
 
     public string Scaling { get; set; } = null!;
 
     public string? TaxBasis { get; set; }
-
-    public string? Quality { get; set; }
 
     public int? NetIncome { get; set; }
 
@@ -34,7 +34,13 @@ public partial class CashFlowStatement
 
     public int? AccountsReceivableRetention { get; set; }
 
-    public int? B2cee { get; set; }
+    public int? CostEarningsExceedingBillings { get; set; }
+
+    public int? AccountsPayable { get; set; }
+
+    public int? AccountsPayableRetention { get; set; }
+
+    public int? BillingsExceedingCostEarnings { get; set; }
 
     public int? AllOtherCashFlow { get; set; }
 
@@ -62,15 +68,13 @@ public partial class CashFlowStatement
 
     public int? NetFixedAssetsAcquiredDebt { get; set; }
 
-    public virtual Account AccountNumNavigation { get; set; } = null!;
+    public bool Completed { get; set; }
 
-    public virtual StatementBasisDm? BasisNavigation { get; set; }
+    public virtual StatementBasisDm BasisNavigation { get; set; } = null!;
 
-    public virtual StatementQualityDm? QualityNavigation { get; set; }
+    public virtual StatementQualityDm QualityNavigation { get; set; } = null!;
 
     public virtual ScalingDm ScalingNavigation { get; set; } = null!;
-
-    public virtual TaxBasisDm? TaxBasisNavigation { get; set; }
 
     public virtual StatementTypeDm TypeNavigation { get; set; } = null!;
 }

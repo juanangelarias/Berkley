@@ -255,40 +255,40 @@ query GetAgencyInventory($agencyId: UUID!){
     }
 }
 
-query GetAgencyPOAs($agencyId: UUID!, $activeOnly: Boolean!) {
-  agencyPOAs(agencyId: $agencyId, activeOnly: $activeOnly) {
-    id
-    comments
-    status
-    limit
-    referenceNumber
-    currentIssued
-    firstIssued
-    insurerId
-    imagingId
-    insurer {
-      id
-      fullName
-      idNavigation {
-        fullName
-      }
-      defaultRateGroup
-    }
-    powerOfAttorneyDocumentStatuses {
-      id
-      requested
-      received
-      comments
-      documentTypeId
-      documentType {
-        name
+query GetAgencyPOAs($agencyId: UUID!, $statusFilter: String!) {
+    agencyPOAs(agencyId: $agencyId, statusFilter: $statusFilter) {
         id
-      }
+        comments
+        status
+        limit
+        referenceNumber
+        currentIssued
+        firstIssued
+        insurerId
+        imagingId
+        insurer {
+            id
+            fullName
+            idNavigation {
+                fullName
+            }
+            defaultRateGroup
+        }
+        powerOfAttorneyDocumentStatuses {
+            id
+            requested
+            received
+            comments
+            documentTypeId
+            documentType {
+                name
+                id
+            }
+        }
+        agency {
+            agencyNumber
+        }
     }
-    agency {
-      agencyNumber
-    }
-  }
 }
 
 query GetAgencyRelatedParties($input: UUID!){

@@ -36,13 +36,19 @@
                     <RadzenText Text="Active POAs" Style="font-weight: bold;"/>
                 </RadzenRow>
                 <RadzenRow>
-                    <AgencyPOAGrid Agency="Agency" ActiveOnly="true"/>
+                    <AgencyPOAGrid Agency="Agency" StatusFilter="Active"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <RadzenText Text="In process POAs" Style="font-weight: bold; margin-top: 1rem;"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <AgencyPOAGrid Agency="Agency" StatusFilter="In Process"/>
                 </RadzenRow>
                 <RadzenRow>
                     <RadzenText Text="Terminated POAs" Style="font-weight: bold; margin-top: 1rem;"/>
                 </RadzenRow>
                 <RadzenRow>
-                    <AgencyPOAGrid Agency="Agency" ActiveOnly="false"/>
+                    <AgencyPOAGrid Agency="Agency" StatusFilter="Terminated"/>
                 </RadzenRow>
             </Animate>
         </PositionSavingTabsItem>

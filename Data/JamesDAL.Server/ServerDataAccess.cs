@@ -314,9 +314,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetEmailTypes(contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly)
+        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, string statusFilter)
         {
-            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, activeOnly, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, statusFilter, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()

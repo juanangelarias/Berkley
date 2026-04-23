@@ -41,7 +41,7 @@ namespace JamesWebUI.Client.Test.Services
         }
 
         [Fact]
-        public async Task T1_GetUserSettings()
+        public async Task GetUserSettings()
         {
             var uss = GetUserSettingsService();
             //var dataAccess = _lazyServiceProvider!.Value.GetService<IDataAccess>();
@@ -55,7 +55,7 @@ namespace JamesWebUI.Client.Test.Services
         }
 
         [Fact]
-        public async Task T2_SetUserSetting()
+        public async Task SetUserSetting()
         {
             var uss = GetUserSettingsService();
             //Add a key/value and confirm it 
@@ -75,7 +75,7 @@ namespace JamesWebUI.Client.Test.Services
         }
 
         [Fact]
-        public async Task T3_SetDefaultUserSetting()
+        public async Task SetDefaultUserSetting()
         {
             var uss = GetUserSettingsService();
             //Add a key/value and confirm it 

@@ -3689,7 +3689,7 @@ type Query {
   allActiveAgencies: [AgencyDto!]!
   agencyLicenses(agencyId: UUID! agents: Boolean!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
-  agencyPOAs(agencyId: UUID! activeOnly: Boolean!): [PowerOfAttorney!]!
+  agencyPOAs(agencyId: UUID! statusFilter: String!): [PowerOfAttorney!]!
   poaDocumentNames: [PowerOfAttorneyDocumentNameDm!]!
   allPoaStatuses: [PowerOfAttorneyStatusDm!]!
   agencyRelatedParties(agencyId: UUID!): [AgencyLocationsDto!]!

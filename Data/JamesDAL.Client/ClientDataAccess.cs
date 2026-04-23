@@ -1770,6 +1770,86 @@ namespace James.Data.Client
             
             return result;
         }
+        
+        public async Task<IDataAccessResult<List<AccountAgencyLOADto>>> GetAccountAgencyLOA(string accountNum)
+        {
+            var result = await ExecuteGet<List<AccountAgencyLOADto>>(async () =>
+                await jamesClient.GetAccountAgencyLOA.ExecuteAsync(accountNum), "AccountAgencyLOA");
+            
+            return result;
+        }
+        
+        public async Task<IDataAccessResult<AccountAgencyLOADto?>> GetAccountAgencyLOAById(Guid id)
+        {
+            var result = await ExecuteGet<AccountAgencyLOADto?>(async () =>
+                await jamesClient.GetAccountAgencyLOAById.ExecuteAsync(id), "AccountAgencyLOAById");
+
+            return result;
+        }
+
+        public async Task<ISaveDataResult> SetLoaLog(Guid id, string accountNum, DateTime effective, DateTime expiration, int loaSingle, int loaAggregate,
+            string comments, string status, string division, string bondType, string conditions, bool homeOfficeApproved)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetLoaLog.ExecuteAsync(new()
+            {
+                Id = id,
+                AccountNum = accountNum,
+                Effective = effective,
+                Expiration = expiration,
+                LoaSingle = loaSingle,
+                LoaAggregate = loaAggregate,
+                Comments = comments,
+                Status = status,
+                Division = division,
+                BondType = bondType,
+                Conditions = conditions,
+                HomeOfficeApproved = homeOfficeApproved
+            }));
+        }
+        
+        public async Task<ISaveDataResult> LoaLogDelete(Guid id)
+        {
+            return await ExecuteSave(async () => await jamesClient.LoaLogDelete.ExecuteAsync(new()
+            {
+                AccountLoaId = id
+            }));
+        }
+        
+        public async Task<ISaveDataResult> LoaLogChangeStatus(Guid id, string newStatus)
+        {
+            return await ExecuteSave(async () => await jamesClient.LoaLogChangeStatus.ExecuteAsync(new()
+            {
+                AccountLoaId = id,
+                NewStatusTxt = newStatus
+            }));
+        }
+        
+        public async Task<ISaveDataResult> SetAgencyLoa(Guid id, string agencyNumber, string accountNum, DateTime effective, DateTime expiration,
+            int loaSinge, int loaAggregate, string comments, string division, string bondType, string conditions)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetAgencyLoa.ExecuteAsync(new()
+            {
+                Id = id,
+                AgencyNumber = agencyNumber,
+                AccountNum = accountNum,
+                Effective = effective,
+                Expiration = expiration,
+                LoaSinge = loaSinge,
+                LoaAggregate = loaAggregate,
+                Comments = comments,
+                Division = division,
+                BondType = bondType,
+                Conditions = conditions
+            }));
+        }
+        
+        public async Task<ISaveDataResult> AgencyLoaDelete(Guid id)
+        {
+            return await ExecuteSave(async () => await jamesClient.AgencyLoaDelete.ExecuteAsync(new()
+            {
+                AgencyLoaId = id
+            }));
+        }
 
         #endregion
         

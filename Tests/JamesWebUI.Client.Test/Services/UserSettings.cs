@@ -22,6 +22,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Serilog;
 using System.Net.Http.Headers;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 using Xunit.Abstractions;
@@ -149,7 +151,16 @@ namespace JamesWebUI.Client.Test.Services
             services.AddScoped<IBrowserStorageCache, NoBrowserStorageCache>();
             services.AddScoped<ImagingKong0Helper>();
             services.AddScoped<ServerImagingAccess>();
-            services.AddScoped<AgencyMutation>();
+            
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, "TestUser"),
+                new Claim(ClaimTypes.WindowsAccountName, "WindowsAccountName")
+            };
+            var identity = new ClaimsIdentity(claims, authenticationType: "TestAuth");
+            var user = new ClaimsPrincipal(identity);
+            services.AddScoped<AuthenticationStateProvider>(_ => new TestAuthStateProvider(user));
+            
             services.AddScoped<UserSettingService>();
             services.AddSingleton(typeof(ILogger), typeof(NullLogger));
             services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));

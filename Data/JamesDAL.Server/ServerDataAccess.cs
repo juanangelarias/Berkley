@@ -1230,6 +1230,47 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetLoaLogsByAccount(accountNum, contextFactory));
         }
+        
+        public async Task<IDataAccessResult<List<AccountAgencyLOADto>>> GetAccountAgencyLOA(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetAccountAgencyLOA(accountNum, contextFactory));
+        }
+        
+        public async Task<IDataAccessResult<AccountAgencyLOADto?>> GetAccountAgencyLOAById(Guid id)
+        {
+            return await ExecuteGet(async () => await query.GetAccountAgencyLOAById(id, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetLoaLog(Guid id, string accountNum, DateTime effective, DateTime expiration, int loaSingle, int loaAggregate,
+            string comments, string status, string division, string bondType, string conditions, bool homeOfficeApproved)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetLoaLog(id, accountNum, effective, expiration,
+                loaSingle, loaAggregate, comments, status, division, bondType, conditions, homeOfficeApproved,
+                contextFactory, contextAccessor));
+        }
+        
+        public async Task<ISaveDataResult> LoaLogDelete(Guid id)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.LoaLogDelete(id, contextFactory, contextAccessor));
+        }
+        
+        public async Task<ISaveDataResult> LoaLogChangeStatus(Guid id, string newStatus)
+        {
+            return await ExecuteSave(async () => await generalMutation.LoaLogChangeStatus(id, newStatus, contextFactory, contextAccessor));
+        }
+        
+        public async Task<ISaveDataResult> SetAgencyLoa(Guid id, string agencyNumber, string accountNum, DateTime effective, DateTime expiration,
+            int loaSinge, int loaAggregate, string comments, string division, string bondType, string conditions)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetAgencyLoa(id, agencyNumber, accountNum, effective, expiration,
+                loaSinge, loaAggregate, comments, division, bondType, conditions, contextFactory, contextAccessor));
+        }
+        
+        public async Task<ISaveDataResult> AgencyLoaDelete(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.AgencyLoaDelete(id, contextFactory, contextAccessor));
+        }
 
         #endregion
         

@@ -171,7 +171,7 @@
     private List<AccountLOADto> _accountLoaList = [];
     private List<DivisionDm> _divisions = [];
     private List<string> _bondTypes = [];
-    
+
     private bool ShowEdit(AccountLOADto loa) => loa.Status == "PROPOSED";
     private bool ShowRequestApproval(AccountLOADto loa) => loa.Status == "PROPOSED";
     private bool ShowApprove(AccountLOADto loa) => loa.Status == "APPROVAL REQUESTED";
@@ -193,10 +193,7 @@
             Data = (List<DivisionDm>)cache!
         },
         ResultVariable = () => _divisionsResult,
-        AfterLoad = () =>
-        {
-            _divisions = _divisionsResult.Data!;
-        }
+        AfterLoad = () => { _divisions = _divisionsResult.Data!; }
     }, "divisions");
 
     #endregion
@@ -214,10 +211,7 @@
             Data = (List<AccountLOADto>)cache!
         },
         ResultVariable = () => _accountLOAResult,
-        AfterLoad = () =>
-        {
-            _accountLoaList = _accountLOAResult.Data!;
-        }
+        AfterLoad = () => { _accountLoaList = _accountLOAResult.Data!; }
     }, "account LOA");
 
     #endregion
@@ -319,7 +313,7 @@
 
         TooltipService.Open(element, message, options);
     }
-    
+
     private async Task<bool> ConfirmAction(Action action)
     {
         var message = action switch
@@ -360,4 +354,5 @@
         Decline,
         Cancel
     }
+
 }

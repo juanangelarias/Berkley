@@ -4,7 +4,7 @@
 @inject TooltipService TooltipService
 
 
-<RadzenStack Orientation="Orientation.Vertical"  Gap="1rem" class="rz-mb-3" Style="max-height: 490px;">
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem" class="rz-mb-3" Style="max-height: 490px;">
     <RadzenRow>
         <RadzenText Text="Account Program" TextStyle="TextStyle.DisplayH6"/>
     </RadzenRow>
@@ -203,9 +203,10 @@
     private List<UserLineOfAuthority> _userLOA = [];
     private Dictionary<string, AccountProgramStatusDm> _statuses = new();
 
-    private bool ShowEdit(AccountProgramDto program) => program.Status == "PROPOSED";
+    private bool ShowEdit(AccountProgramDto program) => program.Status is "PROPOSED" or "DECLINED";
+    private bool ShowDelete(AccountProgramDto program) => program.Status == "PROPOSED";
     private bool ShowRequestApproval(AccountProgramDto program) => program.Status == "PROPOSED";
-    private bool ShowApprove(AccountProgramDto program) => program.Status == "APPROVAL REQUESTED";
+    private bool ShowApprove(AccountProgramDto program) => program.Status is "APPROVAL REQUESTED" or "DECLINED";
     private bool ShowDecline(AccountProgramDto program) => program.Status == "APPROVAL REQUESTED";
     private bool ShowCancel(AccountProgramDto program) => program.Status == "APPROVED";
 
@@ -261,10 +262,7 @@
             Data = (List<UserLineOfAuthority>)cache!
         },
         ResultVariable = () => _userLOAByDivisionResult,
-        AfterLoad = () =>
-        {
-            _userLOA = _userLOAByDivisionResult.Data!;
-        }
+        AfterLoad = () => { _userLOA = _userLOAByDivisionResult.Data!; }
     }, "user LOA by division");
 
     #endregion

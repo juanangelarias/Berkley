@@ -1,4 +1,4 @@
-﻿using HotChocolate.Authorization;
+using HotChocolate.Authorization;
 using James.Shared;
 using James.Shared.Dto;
 using Microsoft.AspNetCore.Http;

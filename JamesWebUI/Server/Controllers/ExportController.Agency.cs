@@ -49,8 +49,8 @@ namespace JamesWebUI.Server.Controllers
                 : ToExcel(ApplyQuery(licenseQuery, Request.Query), $"{fileName}.xlsx");
         }
 
-        [HttpGet("/export/AgencyPOAs/{agencyId:guid}/{activeOnly:bool}/{format=Excel}")]
-        public async Task<ActionResult> ExportAgencyPOAs(Guid agencyId, bool activeOnly, ExportFormat format)
+        [HttpGet("/export/AgencyPOAs/{agencyId:guid}/{activeOnly}/{format=Excel}")]
+        public async Task<ActionResult> ExportAgencyPOAs(Guid agencyId, string statusFilter, ExportFormat format)
         {
             if (Guid.Empty == agencyId)
                 return new StatusCodeResult(422); //Unprocessable content
@@ -59,7 +59,7 @@ namespace JamesWebUI.Server.Controllers
             IDataAccessResult<Agency?> agencyNameNumberResult = null!;
             var loads = new List<Func<Task>>
             {
-                async () => { poaResult = await DataAccess.GetAgencyPoas(agencyId, activeOnly); },
+                async () => { poaResult = await DataAccess.GetAgencyPoas(agencyId, statusFilter); },
                 async () => { agencyNameNumberResult = await DataAccess.GetAgencyNameAndNumberById(agencyId); }
             };
             await Task.WhenAll(loads.Select(l => l()));

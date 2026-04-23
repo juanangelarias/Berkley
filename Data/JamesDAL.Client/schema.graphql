@@ -3605,7 +3605,7 @@ input SetAccountCommercialInfoInput {
 
 type Query {
   accountByNumber(accountNumber: String): Account
-  firstIndemnity(accountNum: String!): LocalDate
+  firstIndemnity(accountNum: String!): DateTime
   searchAccounts(searchString: String!): [Account!]!
   lastPrivateEquityByAccount(accountNum: String!): PrivateEquity
   lastIndemnitorByAccount(accountNum: String!): Indemnitor
@@ -3639,7 +3639,7 @@ type Query {
   allActiveAgencies: [AgencyDto!]!
   agencyLicenses(agencyId: UUID! agents: Boolean!): [AgencyLicense!]!
   agencyStatuses: [AgencyStatusDm!]!
-  agencyPOAs(agencyId: UUID! activeOnly: Boolean!): [PowerOfAttorney!]!
+  agencyPOAs(agencyId: UUID! statusFilter: String!): [PowerOfAttorney!]!
   poaDocumentNames: [PowerOfAttorneyDocumentNameDm!]!
   allPoaStatuses: [PowerOfAttorneyStatusDm!]!
   agencyRelatedParties(agencyId: UUID!): [AgencyLocationsDto!]!

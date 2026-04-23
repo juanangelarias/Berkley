@@ -151,19 +151,6 @@
                 <RadzenTextBox @bind-Value="@license.Comments"  Style="width:95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Certificate" MinWidth="10px" TextAlign="TextAlign.Center" Filterable="false"
-                              Width="175px">
-            <Template Context="lic">
-                @*ToDo: Add Security in InlineImagingDocument to only allow uploading/viewing of documents that the user has access to*@
-                <InlineImagingDocument DocumentShortName="License Certificate"
-                                       DocumentCategory="ImagingDocumentCategory.Agency"
-                                       DocumentId="@lic.ImagingId"
-                                       DocumentType="AGALIC"
-                                       ImagingId="@lic.Agency.AgencyNumber"
-                                       UploadAction=@(async void (guid) => await CertificateUploaded(guid, lic.Id))
-                                       UploadErrorAction=@(msg => LogUploadError(msg, lic))/>
-            </Template>
-        </RadzenDataGridColumn>
         <RadzenDataGridColumn Width="75px" MinWidth="75px" TItem="AgencyLicense" Filterable="false" Sortable="false"
                               TextAlign="TextAlign.Right" Frozen="true" FrozenPosition="FrozenColumnPosition.Right"
                               Resizable="false">

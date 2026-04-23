@@ -97,7 +97,7 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<List<AgencyLicense>>> GetAgencyAgentLicenses(Guid agencyId, Guid agentId);
         public Task<IDataAccessResult<List<AgencyStatusDm>>> GetAgencyStatuses();
         public Task<IDataAccessResult<List<AgencyStatusLog>>> GetAgencyStatusLog(string agencyNumber);
-        public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly);
+        public Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, string statusFilter);
         public Task<IDataAccessResult<List<JamesLookup>>> GetAgencyList();
 
         #region Agents

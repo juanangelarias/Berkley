@@ -506,10 +506,10 @@ namespace James.Data.Client
                 async () => await jamesClient.SearchAgencies.ExecuteAsync(search, activeOnly), "SearchAgencies");
         }
 
-        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly)
+        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, string statusFilter)
         {
             var result = await ExecuteGet<List<PowerOfAttorney>>(
-                async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId, activeOnly), "AgencyPOAs");
+                async () => await jamesClient.GetAgencyPOAs.ExecuteAsync(agencyId, statusFilter), "AgencyPOAs");
 
             return result;
         }

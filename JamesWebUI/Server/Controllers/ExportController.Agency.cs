@@ -49,7 +49,7 @@ namespace JamesWebUI.Server.Controllers
                 : ToExcel(ApplyQuery(licenseQuery, Request.Query), $"{fileName}.xlsx");
         }
 
-        [HttpGet("/export/AgencyPOAs/{agencyId:guid}/{activeOnly}/{format=Excel}")]
+        [HttpGet("/export/AgencyPOAs/{agencyId:guid}/{statusFilter}/{format=Excel}")]
         public async Task<ActionResult> ExportAgencyPOAs(Guid agencyId, string statusFilter, ExportFormat format)
         {
             if (Guid.Empty == agencyId)

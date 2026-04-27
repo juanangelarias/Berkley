@@ -236,34 +236,34 @@
 
     private async Task InsertRow()
     {
-        await ShowLoading();
+        await ToBeDevelopedDialog();
+        
+        /*await ShowLoading();
 
         var newAccountLOA = new AccountLOADto
         {
             Id = Guid.NewGuid(),
-            CreatedById = null,
             CreatedByName = UserPrincipal.Identity.Name,
             AccountNum = AccountNum,
             Status = "PROPOSED"
         };
         
-        await _grid.InsertRow(newAccountLOA);
-        await ToBeDevelopedDialog();
+        await _grid.InsertRow(newAccountLOA);*/
     }
 
     private async Task EditRow(AccountLOADto loa)
     {
-        await ShowLoading();
-        await _grid.EditRow(loa);
         await ToBeDevelopedDialog();
+        /*await ShowLoading();
+        await _grid.EditRow(loa);*/
     }
 
     private async Task RemoveRow(AccountLOADto loa)
     {
-        await ShowLoading();
+        /*await ShowLoading();
         var confirm = await ConfirmAction(Action.Remove);
         if(!confirm) 
-            return;
+            return;*/
         
         //ToDo Implement removal
         await ToBeDevelopedDialog();
@@ -342,7 +342,7 @@
             .OrderByDescending(o => o.Effective)
             .ToList();
         
-        DataAccess.UpdateCache(CacheKeys.AccountLOA(AccountNum), _accountLoaList);
+        await DataAccess.UpdateCacheAsync(CacheKeys.AccountLOA(AccountNum), _accountLoaList);
         
         await _grid.Reload();
     }

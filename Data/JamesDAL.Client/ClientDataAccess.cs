@@ -1776,10 +1776,11 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<AccountLOADto>> GetLoaLogById(Guid id)
         {
-            var result = await ExecuteGet<AccountLOADto>(async () =>
+            throw new NotImplementedException();
+            /*var result = await ExecuteGet<AccountLOADto>(async () =>
                 await jamesClient.GetLoaLogById.ExecuteAsync(id), "LoaLogById");
-            
-            return result;
+
+            return result;*/
         }
 
         public async Task<IDataAccessResult<List<AccountAgencyLOADto>>> GetAccountAgencyLOA(string accountNum)

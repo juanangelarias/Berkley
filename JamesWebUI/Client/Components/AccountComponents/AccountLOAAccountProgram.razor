@@ -1,7 +1,6 @@
-﻿@inherits JamesLayoutComponentBase
+﻿@inherits JamesGridLayoutComponentBase<AccountProgramDto>
 
 @inject IDataAccess DataAccess
-@inject IUserSettingService UserSettingService
 @inject TooltipService TooltipService
 
 
@@ -200,7 +199,6 @@
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
-    private RadzenDataGrid<AccountProgramDto> _grid = null!;
     private List<AccountProgramDto> Data { get; set; } = [];
     private List<UserLineOfAuthority> _userLOA = [];
     private Dictionary<string, AccountProgramStatusDm> _statuses = new();
@@ -286,7 +284,7 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-        _userLOA = await UserSettingService.GetUserLOAByDivision(Account.Division);
+        
         await LoadData();
     }
 
@@ -308,13 +306,13 @@
             StatusId = _statuses["PROPOSED"].Id,
             Status = "PROPOSED"
         };
-        await _grid.InsertRow(newAccountProgram);
+        await Grid.InsertRow(newAccountProgram);
     }
 
     private async Task EditRow(AccountProgramDto program)
     {
         await ShowLoading();
-        await _grid.EditRow(program);
+        await Grid.EditRow(program);
     }
 
     private async Task DeleteRow(AccountProgramDto program)
@@ -330,7 +328,7 @@
         var toDelete = Data.FirstOrDefault(f => f.Id == program.Id);
         if (toDelete != null)
             Data.Remove(toDelete);
-        await _grid.Reload();
+        await Grid.Reload();
     }
 
     private async Task RemoveRow(AccountProgramDto program)
@@ -355,7 +353,7 @@
             return;
 
         Data.Remove(record);
-        await _grid.Reload();
+        await Grid.Reload();
     }
 
     private async Task RequestApproval(AccountProgramDto program)

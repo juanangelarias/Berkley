@@ -1,0 +1,388 @@
+﻿@using Blazorise.DeepCloner
+@inherits JamesGridLayoutComponentBase<OnlineBondSystem>
+@inject IDataAccess DataAccess
+
+<RadzenDataGrid TItem="OnlineBondSystem" @ref="@Grid" Data="@OnlineBondSystems" ColumnWidth="125px"
+                Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
+                @bind-Settings="@GridSettings" AllowSorting="true" Density="Density.Compact"
+                SelectionMode="DataGridSelectionMode.Single" AllowFiltering="true" FilterMode="FilterMode.Advanced"
+                AllowColumnResize="true" RowUpdate="UpdateSystem" EditMode="DataGridEditMode.Single"
+                RowCreate="@CreateSystem" IsLoading="@IsLoading" Sort="@ShowLoading" Page="@ShowLoading"
+                Filter="@ShowLoading">
+    <HeaderTemplate>
+        <AuthorizeView Policy="InRoleCanEditAgencyOnlineBondSystem" Context="header">
+            <RadzenButton Icon="add" Text="New Online Bond System" Variant="Variant.Text" Click="@NewSystem"
+                          Disabled="@_isEditMode" @onclick:stopPropagation="true"/>
+        </AuthorizeView>
+    </HeaderTemplate>
+    <Columns>
+        <RadzenDataGridColumn Title="System Name" Property="@nameof(OnlineBondSystem.SystemName)" Width="250px"
+                              MinWidth="50px">
+            <Template Context="system">
+                <RadzenText Text="@system.SystemName" TextStyle="TextStyle.Body2"/>
+            </Template>
+            <EditTemplate Context="system">
+                <RadzenDropDown TValue="string" @bind-Value="@system.SystemName" Data="@AvailableSystems"
+                                TextProperty="@(nameof(AgentSystemDm.SystemName))" 
+                                ValueProperty="@nameof(AgentSystemDm.SystemName)"
+                                Change="@(() => OnSystemChange(system))" Name="SystemName"/>
+                <RadzenRequiredValidator Text="System Name is required" ComponentId="SystemName"/>
+                <RadzenCustomValidator Text="System Name must be unique" ComponentId="SystemName" 
+                                       Validator="@(() => ValidateOnlineSystem(system))"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Insurer" Property="@nameof(OnlineBondSystem.Insurer.FullName)"
+                              Width="250px" MinWidth="50px">
+            <Template Context="system">
+                <RadzenText Text="@system.Insurer.FullName" TextStyle="TextStyle.Body2"/>
+            </Template>
+            <EditTemplate Context="system">
+                <RadzenDropDown TValue="Guid" @bind-Value="@system.InsurerId" Data="@Insurers" 
+                                TextProperty="@nameof(Insurer.FullName)" ValueProperty="@nameof(Insurer.Id)"
+                                Change="@(() => OnInsurerChange(system))" Name="Insurer"/>
+                <RadzenRequiredValidator Text="Insurer is required" ComponentId="Insurer"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Writing Limit" Property="@nameof(OnlineBondSystem.WritingLimit)" Width="150px"
+                              MinWidth="50px" TextAlign="TextAlign.Right">
+            <Template Context="system">
+                <RadzenText Text="@($"{system.WritingLimit:c0}")" TextStyle="TextStyle.Body2"
+                            TextAlign="TextAlign.Right"/>
+            </Template>
+            <EditTemplate Context="system">
+                <RadzenNumeric TValue="int?" @bind-Value="@system.WritingLimit" Min="1" ShowUpDown="false"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="75px" Filterable="false" Sortable="false" Groupable="false" MinWidth="75px"
+                              MaxWidth="75px" TextAlign="TextAlign.Right" Frozen="true"
+                              FrozenPosition="FrozenColumnPosition.Right" Resizable="false">
+            <Template Context="system">
+                <AuthorizeView Policy="InRoleCanEditAgencyOnlineBondSystem" context="detail">
+                    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Click="@(() => EditSystem(system))"
+                                      class="rz-ml-2" Disabled="@_isEditMode" @onclick:stopPropagation="true"
+                                      Variant="Variant.Flat" Size="ButtonSize.Small"/>
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                      Click="@(() => DeleteSystem(system))" Variant="Variant.Flat" 
+                                      class="rz-ml-2" Disabled="@_isEditMode" @onclick:stopPropagation="true"/>
+                    </RadzenStack>
+                </AuthorizeView>
+            </Template>
+            <EditTemplate context="system">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center">
+                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Click="@(() => SaveSystem(system))"
+                                  class="rz-ml-2" variant="Variant.Flat" @onclick:stopPropagation="true" 
+                                  Size="ButtonSize.Small"/>
+                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Click="@(() => CancelSystem(system))"
+                                  class="rz-ml-2" @onclick:stopPropagation="true" Size="ButtonSize.Small"
+                                  Variant="Variant.Flat" Shade="Shade.Lighter"/>
+                </RadzenStack>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+
+@code {
+    [Parameter, EditorRequired] public Guid AgencyId { get; set; }
+
+    private List<OnlineBondSystem> OnlineBondSystems { get; set; } = [];
+    private List<AgentSystemDm> Systems { get; set; } = [];
+    private List<AgentSystemDm> AvailableSystems { get; set; } = [];
+    private List<Insurer> Insurers { get; set; } = [];
+
+    private bool _isEditMode;
+    private OnlineBondSystem? _originalOnLineBondSystem;
+    private string _agentOnlineSystemKey = "";
+
+    #region Loaders
+
+    #region Systems Load
+
+    private IDataAccessResult<List<AgentSystemDm>> _systemsResult = null!;
+
+    private LoadItem SystemsLoad => AddEventNotify(new LoadItem<List<AgentSystemDm>>
+    {
+        Key = CacheKeys.OnlineSystems,
+        AsyncLoadTask = async () => _systemsResult = await DataAccess.GetOnlineSystems(),
+        CacheLoadTask = cache => _systemsResult = new DataAccessResult<List<AgentSystemDm>>
+        {
+            Data = (List<AgentSystemDm>)cache!
+        },
+        ResultVariable = () => _systemsResult,
+        AfterLoad = () => { Systems = _systemsResult.Data!; }
+    }, "agency systems");
+
+    #endregion
+
+    #region Insurers Load
+
+    private IDataAccessResult<List<Insurer>> _insurersResult = null!;
+
+    private LoadItem InsurersLoad => AddEventNotify(new LoadItem<List<Insurer>>
+    {
+        Key = CacheKeys.Insurers,
+        AsyncLoadTask = async () => _insurersResult = await DataAccess.GetAllInsurers(),
+        CacheLoadTask = cache => _insurersResult = new DataAccessResult<List<Insurer>>
+        {
+            Data = (List<Insurer>)cache!
+        },
+        ResultVariable = () => _insurersResult,
+        AfterLoad = () => { Insurers = _insurersResult.Data!; }
+    }, "insurers");
+
+    #endregion
+
+    #region AgentOnLineSystem Load
+
+    private IDataAccessResult<List<OnlineBondSystem>> _agentOnLineSystemResult = null!;
+
+    private LoadItem AgentOnLineSystemLoad => AddEventNotify(new LoadItem<List<OnlineBondSystem>>
+    {
+        Key = _agentOnlineSystemKey,
+        AsyncLoadTask = async () => _agentOnLineSystemResult = await DataAccess.GetOnlineBondSystemsByLegalEntity(AgencyId),
+        CacheLoadTask = cache => _agentOnLineSystemResult = new DataAccessResult<List<OnlineBondSystem>>
+        {
+            Data = (List<OnlineBondSystem>)cache!
+        },
+        ResultVariable = () => _agentOnLineSystemResult,
+        AfterLoad = () => { OnlineBondSystems = _agentOnLineSystemResult.Data!; }
+    }, "agent online system");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await ShowLoading();
+
+        await DataAccess.ParallelGetCacheOrDataAsync(InsurersLoad, SystemsLoad);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _agentOnlineSystemKey = CacheKeys.OnlineSystems + AgencyId;
+        
+        await LoadAgencyOnlineSystems();
+    }
+
+    private async Task LoadAgencyOnlineSystems()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(AgentOnLineSystemLoad);
+    }
+
+    private async Task UpdateSystem(OnlineBondSystem arg)
+    {
+        await SetOnlineBondSystem(arg);
+    }
+
+    private async Task CreateSystem(OnlineBondSystem arg)
+    {
+        await SetOnlineBondSystem(arg, true);
+    }
+
+    private async Task SetOnlineBondSystem(OnlineBondSystem system, bool isNew = false)
+    {
+        var result = await DataAccess.SetOnlineBondSystem(system.Id, AgencyId, system.SystemName, system.InsurerId,
+            system.WritingLimit!.Value);
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "online bond system");
+            return;
+        }
+
+        NotifySuccessfulSave("online bond system");
+
+        if (isNew)
+        {
+            OnlineBondSystems.Add(system);
+        }
+        else
+        {
+            var toDelete = OnlineBondSystems.FirstOrDefault(s => s.Id == system.Id);
+            if (toDelete != null)
+            {
+                OnlineBondSystems.Remove(toDelete);
+                OnlineBondSystems.Add(system);
+            }
+        }
+
+        await DataAccess.UpdateCacheAsync(_agentOnlineSystemKey, OnlineBondSystems);
+
+        await Grid.Reload();
+    }
+
+    private async Task NewSystem(MouseEventArgs arg)
+    {
+        await ShowLoading();
+
+        var newSystem = new OnlineBondSystem
+        {
+            Id = Guid.NewGuid(),
+            LegalEntityId = AgencyId,
+            SystemNameNavigation = new()
+            {
+                SystemName = ""
+            },
+            Insurer = new()
+            {
+                IdNavigation = new()
+                {
+                    FullName = ""
+                }
+            }
+        };
+        
+        SetAvailableSystems(null);
+
+        _isEditMode = true;
+
+        await Grid.InsertRow(newSystem);
+    }
+
+    private async Task EditSystem(OnlineBondSystem system)
+    {
+        _isEditMode = true;
+        _originalOnLineBondSystem = system.DeepClone();
+
+        SetAvailableSystems(system.SystemName);
+        
+        await ShowLoading();
+        await Grid.EditRow(system);
+    }
+
+    private async Task DeleteSystem(OnlineBondSystem system)
+    {
+        var deleteConfirmed = await DialogService.Confirm("Are you sure?",
+            "Agency online bond system deletion",
+            new() { OkButtonText = "Yes", CancelButtonText = "No" });
+
+        if (deleteConfirmed == false)
+            return;
+        
+        _isEditMode = false;
+        
+        await ShowLoading();
+        var result = await DataAccess.DeleteOnlineBondSystem(system.Id);
+        if (!result.Success)
+        {
+            NotifyDeleteError(result.Errors, "online bond system");
+            return;
+        }
+        
+        var toDelete = OnlineBondSystems.FirstOrDefault(s => s.Id == system.Id);
+        if (toDelete != null)
+        {
+            OnlineBondSystems.Remove(toDelete);
+            
+            await DataAccess.UpdateCacheAsync(_agentOnlineSystemKey, OnlineBondSystems);
+            
+            await Grid.Reload();
+        }
+    }
+
+    private async Task SaveSystem(OnlineBondSystem system)
+    {
+        if(!ValidateFields(system))
+            return;
+
+        await ShowLoading();
+        
+        await Grid.UpdateRow(system);
+        await Grid.Reload();
+        
+        _originalOnLineBondSystem = null;
+        _isEditMode = false;
+    }
+
+    private bool ValidateFields(OnlineBondSystem system)
+    {
+        var valid = true;
+        if (string.IsNullOrEmpty(system.SystemName))
+        {
+            NotifyValidationError("System Name is required");
+            valid = false;
+        }
+
+        if (!ValidateOnlineSystem(system))
+        {
+            NotifyValidationError("System Name must be unique");
+            valid = false;
+        }
+
+    if (system.InsurerId == Guid.Empty)
+        {
+            NotifyValidationError("Insurer is required");
+            valid = false;
+        }
+
+        if (!(system.WritingLimit < 1)) 
+            return valid;
+        
+        NotifyValidationError("Writing Limit must be greater than 0");
+
+        return false;
+    }
+
+    private void NotifyValidationError(string message)
+    {
+        var notMessage = new NotificationMessage
+        {
+            Severity = NotificationSeverity.Error,
+            Summary = message,
+            Duration = 3000, 
+            CloseOnClick = true
+        };
+        NotificationService.Notify(notMessage);
+    }
+
+    private async Task CancelSystem(OnlineBondSystem system)
+    {
+        system.InsurerId = _originalOnLineBondSystem?.InsurerId ?? Guid.Empty;
+        system.Insurer = _originalOnLineBondSystem?.Insurer ?? new();
+        system.SystemName = _originalOnLineBondSystem?.SystemName ?? "";
+        system.WritingLimit = _originalOnLineBondSystem?.WritingLimit ?? 0;
+        
+        _originalOnLineBondSystem = null;
+        _isEditMode = false;
+        
+        await ShowLoading();
+        Grid.CancelEditRow(system);
+    }
+
+    private void OnInsurerChange(OnlineBondSystem system)
+    {
+        system.Insurer = Insurers.FirstOrDefault(i => i.Id == system.InsurerId) ?? new();
+    }
+
+    private void OnSystemChange(OnlineBondSystem system)
+    {
+        system.SystemNameNavigation = Systems.FirstOrDefault(s => s.SystemName == system.SystemName)
+                                      ?? new();
+    }
+
+    private bool ValidateOnlineSystem(OnlineBondSystem system)
+    {
+        return !OnlineBondSystems.Any(s => s.SystemName == system.SystemName && s.Id != system.Id);
+    }
+
+    private void SetAvailableSystems(string? systemName)
+    {
+        var usedSystemNames = OnlineBondSystems
+            .Select(s => s.SystemName)
+            .ToList();
+        
+        if (usedSystemNames.Any(s => s == systemName))
+            usedSystemNames.Remove(systemName);
+        
+        AvailableSystems = Systems
+            .Where(s => usedSystemNames.All(u => u != s.SystemName) )
+            .ToList();
+    }
+}

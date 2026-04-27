@@ -2,6 +2,7 @@
 using HotChocolate.Subscriptions;
 using James.Shared;
 using System.Diagnostics;
+using James.Shared.Dto;
 
 namespace James.Data.Server.GraphQL.Mutations
 {
@@ -9,7 +10,7 @@ namespace James.Data.Server.GraphQL.Mutations
     public class AgencyMutation
     {
         [Authorize]
-        public async Task<Agency> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9,
+        public async Task<AgencyAgentDto> CreateAgency(Guid parentId, string fullName, string branch, bool nasbp, bool w9,
             bool need1099, bool profitSharing, string address1, string address2, string address3, string city,
             string stateCode, string postalCode, string billingAddress1, string billingAddress2, string billingAddress3,
             string billingCity, string billingStateCode, string billingPostalCode,
@@ -65,7 +66,7 @@ namespace James.Data.Server.GraphQL.Mutations
                 AddressId = newBillingAddress.Id
             };
             //TODO: Insert the new agency
-            return new Agency();
+            return new AgencyAgentDto();
         }
 
         public async Task<AgencyInventory> SetAgencyInventory(Guid inventoryId, DateTime? sent, int? quantity,
@@ -173,6 +174,69 @@ namespace James.Data.Server.GraphQL.Mutations
                 return false;
             }
             //UNDONE: Support subscriptions with event sender
+        }
+
+        [Authorize]
+        public async Task<bool> UpdateAgencyLicenseBulk(List<AgencyLicense> licenses,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            var trn = await ctx.Database.BeginTransactionAsync();
+            
+            try
+            {
+                foreach (var license in licenses)
+                {
+                    var actualLicense = await ctx.AgencyLicenses.FindAsync(license.Id);
+                    if (actualLicense != null)
+                    {
+                        actualLicense.AgencyId = license.AgencyId;
+                        actualLicense.AgentId = license.AgentId;
+                        actualLicense.State = license.State;
+                        actualLicense.LicenseNumber = license.LicenseNumber;
+                        actualLicense.IsResident = license.IsResident;
+                        actualLicense.InsurerId = license.InsurerId;
+                        actualLicense.Expiration = license.Expiration;
+                        actualLicense.Comments = license.Comments;
+                        actualLicense.Appointment = license.Appointment;
+                        actualLicense.Termination = license.Termination;
+                        actualLicense.AppointingState = license.AppointingState;
+                        actualLicense.IsActive = license.IsActive;
+                        actualLicense.ImagingId = license.ImagingId;
+                    }
+                    else
+                    {
+                        actualLicense = new AgencyLicense
+                        {
+                            Id = license.Id,
+                            AgencyId = license.AgencyId,
+                            AgentId = license.AgentId,
+                            State = license.State,
+                            LicenseNumber = license.LicenseNumber,
+                            IsResident = license.IsResident,
+                            InsurerId = license.InsurerId,
+                            Expiration = license.Expiration,
+                            Comments = license.Comments,
+                            Appointment = license.Appointment,
+                            Termination = license.Termination,
+                            AppointingState = license.AppointingState,
+                            IsActive = license.IsActive,
+                            ImagingId = license.ImagingId
+                        };
+                        
+                        ctx.Add(actualLicense);
+                    }
+                    await ctx.SaveChangesAsync();
+                }
+                await trn.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await trn.RollbackAsync();
+                return false;
+            }
         }
 
         [Authorize]
@@ -488,8 +552,7 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
-        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId,
-            [Service] ITopicEventSender eventSender,
+        public async Task<bool> DeleteAgencyCommissionRate(Guid commRateId, [Service] ITopicEventSender eventSender,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();

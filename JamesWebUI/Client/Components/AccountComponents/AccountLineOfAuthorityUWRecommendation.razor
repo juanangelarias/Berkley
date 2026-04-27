@@ -3,63 +3,74 @@
 @inject IDataAccess DataAccess
 @inject IUserSettingService UserSettingService
 
-<RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid" Density="Density.Compact"
-                Style="max-height: 400px;">
-    <HeaderTemplate>
-        <AuthorizeView Policy="InRoleCanSetUnderwritingRecommendation">
-            <RadzenButton Icon="add" Text="New Recommendation" Variant="Variant.Text" Click="@InsertRow"
-                          Visible="@( _userInfo?.IsUnderwriter == true)"/>            
-        </AuthorizeView>
-    </HeaderTemplate>
-    <Template Context="recommendation">
-        <RadzenStack Orientation="Orientation.Vertical" Gap="0">
-            <RadzenRow>
-                <RadzenText Text="@recommendation.Description" TextStyle="TextStyle.Subtitle1"/>
-            </RadzenRow>
-            <RadzenRow Style="max-height: 8rem; overflow: auto;">
-                <RadzenText Text="@recommendation.Comments" Style="width: 100%;" TextStyle="TextStyle.Body1"
-                            class="rz-text-wrap"/>
-            </RadzenRow>
-        </RadzenStack>
-    </Template>
-    <Columns>
-        <RadzenDataGridColumn Title="UW" TItem="UnderwriterRecommendation"
-                              Property="UnderwriterRecommendation.PostedByNavigation.FullName"/>
-        <RadzenDataGridColumn Title="Posted on" Property="@nameof(UnderwriterRecommendation.Created)"
-                              FormatString="{0:d}" Width="100px"/>
-        <RadzenDataGridColumn Title="Description" Property="@nameof(UnderwriterRecommendation.Description)"/>
-        <RadzenDataGridColumn Width="85px" MinWidth="85px" TItem="UnderwriterRecommendation" Filterable="false"
-                              Sortable="false" TextAlign="TextAlign.Right" Frozen="true"
-                              FrozenPosition="FrozenColumnPosition.Right" Resizable="false">
-            <Template Context="recommendation">
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem" class="rz-mb-3" Style="max-height: 490px;">
+    <RadzenRow>
+        <RadzenText Text="Underwriting Recommendation" TextStyle="TextStyle.DisplayH6"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenDataGrid TItem="UnderwriterRecommendation" Data="@Recommendations" @ref="@_grid"
+                        Style="max-height: 450px;">
+            <HeaderTemplate>
                 <AuthorizeView Policy="InRoleCanSetUnderwritingRecommendation">
-                    <RadzenButton Icon="edit"
-                                  ButtonStyle="ButtonStyle.Light"
-                                  Variant="Variant.Flat"
-                                  Size="ButtonSize.Small"
-                                  Click="@(_ => EditRow(recommendation))"
-                                  @onclick:stopPropagation="true"
-                                  Visible="@CanEdit(recommendation)"/>
+                    <RadzenButton Icon="add" Text="New Recommendation" Variant="Variant.Text" Click="@InsertRow"
+                                  Visible="@(_userInfo?.IsUnderwriter == true)"/>
                 </AuthorizeView>
-                <AuthorizeView Policy="InRoleCanDeleteUnderwritingRecommendation">
-                    <RadzenButton ButtonStyle="ButtonStyle.Danger"
-                                  Icon="delete"
-                                  Variant="Variant.Flat"
-                                  Shade="Shade.Lighter"
-                                  Size="ButtonSize.Small"
-                                  class="my-1 ms-1"
-                                  Click="@(_ => DeleteRow(recommendation))"
-                                  @onclick:stopPropagation="true"
-                                  Visible="@CanEdit(recommendation)">
-                    </RadzenButton>
-                </AuthorizeView>
+            </HeaderTemplate>
+            <Template Context="recommendation">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                    <RadzenRow>
+                        <RadzenText Text="@recommendation.Description" TextStyle="TextStyle.Subtitle1"/>
+                    </RadzenRow>
+                    <RadzenRow Style="max-height: 8rem; overflow: auto;">
+                        <RadzenText Text="@recommendation.Comments" Style="width: 100%;" TextStyle="TextStyle.Body1"
+                                    class="rz-text-wrap"/>
+                    </RadzenRow>
+                </RadzenStack>
             </Template>
-        </RadzenDataGridColumn>
-    </Columns>
-    <LoadingTemplate>
-        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
-    </LoadingTemplate>
-</RadzenDataGrid>
+            <Columns>
+                <RadzenDataGridColumn Title="UW" TItem="UnderwriterRecommendation"
+                                      Property="UnderwriterRecommendation.PostedByNavigation.FullName"/>
+                <RadzenDataGridColumn Title="Posted on" Property="@nameof(UnderwriterRecommendation.Created)"
+                                      MinWidth="125px">
+                    <Template Context="recommendation">
+                        <RadzenText Text="@($"{recommendation.Created:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Description" Property="@nameof(UnderwriterRecommendation.Description)"/>
+                <RadzenDataGridColumn Width="85px" MinWidth="85px" TItem="UnderwriterRecommendation" Filterable="false"
+                                      Sortable="false" TextAlign="TextAlign.Right" Frozen="true"
+                                      FrozenPosition="FrozenColumnPosition.Right" Resizable="false">
+                    <Template Context="recommendation">
+                        <AuthorizeView Policy="InRoleCanSetUnderwritingRecommendation">
+                            <RadzenButton Icon="edit"
+                                          ButtonStyle="ButtonStyle.Light"
+                                          Variant="Variant.Flat"
+                                          Size="ButtonSize.Small"
+                                          Click="@(_ => EditRow(recommendation))"
+                                          @onclick:stopPropagation="true"
+                                          Visible="@CanEdit(recommendation)"/>
+                        </AuthorizeView>
+                        <AuthorizeView Policy="InRoleCanDeleteUnderwritingRecommendation">
+                            <RadzenButton ButtonStyle="ButtonStyle.Danger"
+                                          Icon="delete"
+                                          Variant="Variant.Flat"
+                                          Shade="Shade.Lighter"
+                                          Size="ButtonSize.Small"
+                                          class="my-1 ms-1"
+                                          Click="@(_ => DeleteRow(recommendation))"
+                                          @onclick:stopPropagation="true"
+                                          Visible="@CanEdit(recommendation)">
+                            </RadzenButton>
+                        </AuthorizeView>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+            <LoadingTemplate>
+                <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+            </LoadingTemplate>
+        </RadzenDataGrid>
+    </RadzenRow>
+</RadzenStack>
 
 @code {
     [Parameter, EditorRequired] public string AccountNum { get; set; }
@@ -91,7 +102,7 @@
                 {
                     Id = s.Id,
                     Code = s.IdNavigation.Initials,
-                    Name = s.IdNavigation.FullName,
+                    Name = s.IdNavigation.FullName
                 })
                 .ToList();
         }
@@ -112,7 +123,10 @@
             Data = (List<UnderwriterRecommendation>)cache!
         },
         ResultVariable = () => _recommendationsResult,
-        AfterLoad = () => { Recommendations = _recommendationsResult.Data!; }
+        AfterLoad = () =>
+        {
+            Recommendations = _recommendationsResult.Data!;
+        }
     }, "underwriters recommendations");
 
     #endregion
@@ -132,7 +146,6 @@
         await ShowLoading();
         
         await base.OnParametersSetAsync();
-
         await LoadRecommendations();
     }
 
@@ -160,7 +173,7 @@
                     AccountNum = AccountNum,
                     Created = DateTime.Now,
                     Comments = string.Empty,
-                    Description = string.Empty,
+                    Description = string.Empty
                 }
             }
         };
@@ -181,7 +194,7 @@
             return;
         }
 
-        newRecommendation.PostedByNavigation = new Employee
+        newRecommendation.PostedByNavigation = new()
         {
             Id = newRecommendation.PostedBy,
             FullName = _underwritersLookup
@@ -262,7 +275,7 @@
 
     private DialogOptions GetDialogOptions()
     {
-        return new DialogOptions
+        return new()
         {
             Draggable = true,
             Resizable = false,
@@ -274,7 +287,7 @@
 
     private async Task UpdateCache()
     {
-        DataAccess.UpdateCache(CacheKeys.UnderwriterRecommendation(AccountNum), Recommendations);
+        await DataAccess.UpdateCacheAsync(CacheKeys.UnderwriterRecommendation(AccountNum), Recommendations);
 
         await _grid.Reload();
     }

@@ -36,7 +36,6 @@
   <ItemGroup>
       <ProjectReference Include="..\..\Data\JamesDAL.Server\James.Data.Server.csproj" />
       <ProjectReference Include="..\..\JamesWebUI\Server\JamesWebUI.Server.csproj" />
-      <ProjectReference Include="..\..\JApplicationLog\ApplicationLog.csproj" />
       <ProjectReference Include="..\..\Test\James.Test.Shared\James.Test.Shared.csproj" />
       <ProjectReference Include="..\\..\\JamesWebUI\\Client\\JamesWebUI.Client.csproj" />
       <ProjectReference Include="..\\..\\Shared\\James.Shared.csproj" />
@@ -47,6 +46,7 @@
     <Compile Include="Services\AddressPhoneFormatService.cs" />
     <Compile Include="Services\TestHttpContextAccessor.cs" />
     <Compile Include="Services\UserSettings.cs" />
+    <Compile Include="TestAuthStateProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="JamesFormFieldTests.cs" />

@@ -1,0 +1,29 @@
+﻿mutation SetAgent($input: SetAgentInput!) {
+    setAgent(input: $input) {
+        boolean
+    }
+}
+
+mutation TransferAgent($input: TransferAgentInput!){
+    transferAgent(input: $input){
+        boolean
+    }
+}
+
+mutation UpdateAndTransferAgent($input: UpdateAndTransferAgentInput!){
+    updateAndTransferAgent(input: $input) {
+        boolean
+    }
+}
+
+mutation DisassociateAgent($input: DisassociateAgentInput!){
+    disassociateAgent(input: $input){
+        boolean
+    }
+}
+
+mutation AssignAgent($input: AssignAgentInput!){
+    assignAgent(input: $input){
+        boolean
+    }
+}

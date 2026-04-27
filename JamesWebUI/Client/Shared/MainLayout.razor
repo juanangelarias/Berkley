@@ -135,26 +135,32 @@
                     //TODO: Remove this when confirmed that it doesn't show up on servers.
                     <RadzenPanelMenuItem Text="@Environment.MachineName" Icon="build" Path="GraphQl"/>
                 }
-                <RadzenPanelMenuItem Text="Tools" Icon="settings">
-                    <RadzenPanelMenuItem Text="Clear cache" Icon="cached" Click="@(ClearCache)"/>
-                </RadzenPanelMenuItem>
             </RadzenPanelMenu>
         </RadzenRow>
         <AuthorizeView Policy="InRoleChangePermissions">
             <RadzenRow>&nbsp;</RadzenRow>
             <RadzenRow>
-                <RadzenPanelMenu
-                    DisplayStyle="@(_sidebarExpanded ? MenuItemDisplayStyle.IconAndText : MenuItemDisplayStyle.Icon)"
-                    Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
+                <RadzenPanelMenu DisplayStyle="@(_sidebarExpanded? MenuItemDisplayStyle.IconAndText: MenuItemDisplayStyle.Icon)"
+                                 Style="background: #FCFCFC; border-color:#FCFCFC; font-weight: bold; color: #404040">
                     <RadzenPanelMenuItem Text="Admin" Icon="admin_panel_settings" Expanded="true" Path="Admin">
-                        <RadzenPanelMenuItem Text="Employees" Icon="people" Path="Employees"/>
-                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles"/>
-                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions"/>
-                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings"/>
+                        <RadzenPanelMenuItem Text="Employees" Icon="people" Path="Employees" />
+                        <RadzenPanelMenuItem Text="Roles" Icon="security" Path="SecurityRoles" />
+                        <RadzenPanelMenuItem Text="Permissions" Icon="lock_open" Path="Permissions" />
+                        <RadzenPanelMenuItem Text="Settings" Icon="settings" Path="Settings" />
+                        <RadzenPanelMenuItem Text="Domain Tables" Icon="settings" Expanded="false">
+                            <RadzenPanelMenuItem Text="Online Systems" Icon="cloud_download" Path="OnlineSystems" />
+                        </RadzenPanelMenuItem>
+                        <RadzenPanelMenuItem Text="Tools" Icon="settings">
+                            <RadzenPanelMenuItem Text="Clear cache" Icon="cached" Click="@(ClearCache)"/>
+                        </RadzenPanelMenuItem>
                     </RadzenPanelMenuItem>
                 </RadzenPanelMenu>
             </RadzenRow>
         </AuthorizeView>
+        <RadzenRow JustifyContent="JustifyContent.Center">
+            <RadzenIcon Icon="info" MouseEnter="@(args => ShowTooltip(args, "Info"))"
+                        IconStyle="IconStyle.Info" Style="font-size: 1.25rem;" class="rz-ml-5"/>
+        </RadzenRow>
     </RadzenSidebar>
     <RadzenBody>
         <ErrorBoundary>
@@ -243,5 +249,34 @@
 
         // Force a full page reload from the server (bypasses browser cache)
         NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+
+    private void ShowTooltip(ElementReference args, string type)
+    {
+        if (type != "Info") 
+            return;
+
+        var version = typeof(Program)
+            .Assembly
+            .GetName()
+            .Version;
+        
+        var rendering = OperatingSystem.IsBrowser()
+            ? "Client Side"
+            : "Server Side";
+
+        RenderFragment message = __builder =>
+        {
+            <div class="rz-mx-3">
+                <div class="row">
+                    Version: @version
+                </div>
+                <div class="row">
+                    Mode: @rendering
+                </div>
+            </div>
+        };
+
+        TooltipService.Open(args, ds=> message);
     }
 }

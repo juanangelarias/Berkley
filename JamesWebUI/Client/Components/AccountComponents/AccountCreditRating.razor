@@ -212,7 +212,7 @@
             if (toDelete != null)
             {
                 _creditReports.Remove(toDelete);
-                DataAccess.UpdateCache(CacheKeys.CreditReport(Account.AccountNum), _creditReports);
+                await DataAccess.UpdateCacheAsync(CacheKeys.CreditReport(Account.AccountNum), _creditReports);
             }
 
             await Grid.Reload();

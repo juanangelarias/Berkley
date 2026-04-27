@@ -323,7 +323,7 @@
             .OrderByDescending(f => f.Effective)
             .ToList();
 
-        DataAccess.UpdateCache(CacheKeys.AccountAgencyLoa(Account.AccountNum), _data);
+        DataAccess.UpdateCacheAsync(CacheKeys.AccountAgencyLoa(Account.AccountNum), _data);
 
         await _grid.Reload();
     }

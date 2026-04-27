@@ -166,7 +166,7 @@
             NotifySaveIssue(cumulativeSaveErrors.ToArray(),"Adding new roll members failed.");
 
         //Reload members
-        DataAccess.Clear($"RlMbr{Role}");
+        await DataAccess.ClearAsync($"RlMbr{Role}");
         await DataAccess.GetCacheOrLoadDataAsync(MembersLoadItem(Role));
         if (closeAfterwards)
             DialogService.Close(HasAdded);

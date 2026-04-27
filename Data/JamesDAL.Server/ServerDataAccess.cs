@@ -159,6 +159,7 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAllInventoryDocTypes(contextFactory));
         }
+        
         public async Task<IDataAccessResult<List<AgencyBondDto>>> GetAgencyBonds(Guid agencyId, string? accountNum, int skip, int take)
         {
             return await ExecuteGet(async () => await query.GetAgencyBonds(agencyId, accountNum, skip, take, contextFactory));
@@ -199,6 +200,13 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAgencyStatusLog(agencyNumber, contextFactory));
         }
 
+        public async Task<IDataAccessResult<List<JamesLookup>>> GetAgencyList()
+        {
+            return await ExecuteGet(async () => await query.GetAgencyList(contextFactory));
+        }
+
+        #region Agent
+
         public async Task<IDataAccessResult<Agent>> GetAgent(Guid agentId)
         {
             return await ExecuteGet(async () => await query.GetAgentByAgentId(agentId, contextFactory));
@@ -208,6 +216,53 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.SearchAgents(searchString, contextFactory));
         }
+
+        public async Task<ISaveDataResult> SetAgent(Guid agentAgencyId, Guid agentId, string givenName,
+            string middleInitial, string familyName,
+            string nationalProducerNumber, string countryCode, string phoneNumber, string email, string? extension,
+            Guid agencyId, bool aif, bool isNew)
+        {
+            var response = await ExecuteSave(async () => await generalMutation.SetAgent(agentAgencyId, 
+                agentId, givenName, middleInitial, familyName, nationalProducerNumber, countryCode, phoneNumber, email, 
+                extension, agencyId, aif, isNew, contextFactory));
+
+            return response;
+        }
+
+        public async Task<ISaveDataResult> TransferAgent(Guid agentId, Guid originAgencyId, Guid destinationAgencyId,
+            bool transferLicenses)
+        {
+            return await ExecuteSave(async () => await generalMutation.TransferAgent(agentId, originAgencyId, destinationAgencyId,
+                transferLicenses, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> UpdateAndTransferAgent(Guid agentAgencyId, Guid agentId, string givenName, string middleInitial, string familyName,
+            string nationalProducerNumber, string countryCode, string phoneNumber, string email, string? extension, bool aif,
+            Guid originAgencyId, Guid destinationAgencyId)
+        {
+            return await ExecuteSave(async () => await generalMutation.UpdateAndTransferAgent(agentAgencyId, agentId,
+                givenName, middleInitial, familyName, nationalProducerNumber, countryCode, phoneNumber, email,
+                extension, aif, originAgencyId, destinationAgencyId, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DisassociateAgent(Guid agentId, Guid agencyId)
+        {
+            return await  ExecuteSave(async () => await generalMutation.DisassociateAgent(agentId, agencyId, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<AgencyAgentDto?>> GetAgentByNationalProducerNumber(string nationalProducerNumber, Guid agencyId)
+        {
+            return await ExecuteGet(async () =>
+                await query.GetAgentByNationalProducerNumber(nationalProducerNumber, agencyId, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> AssignAgent(Guid agentId, Guid agencyId)
+        {
+            return await  ExecuteSave(async () => await generalMutation.AssignAgent(agentId, agencyId, contextFactory));
+        }
+
+        #endregion
+
         public async Task<IDataAccessResult<List<AgencyLocationsDto>>> GetAgencyRelatedParties(Guid agencyId)
         {
             return await ExecuteGet(async () => await query.GetAgencyRelatedParties(agencyId, contextFactory));
@@ -259,9 +314,9 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetEmailTypes(contextFactory));
         }
 
-        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, bool activeOnly)
+        public async Task<IDataAccessResult<List<PowerOfAttorney>>> GetAgencyPoas(Guid agencyId, string statusFilter)
         {
-            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, activeOnly, contextFactory));
+            return await ExecuteGet(async () => await query.GetAgencyPOAs(agencyId, statusFilter, contextFactory));
         }
 
         public async Task<IDataAccessResult<List<PowerOfAttorneyStatusDm>>> GetAllPoaStatuses()
@@ -319,7 +374,8 @@ namespace James.Data.Server
                 contextFactory));
         }
 
-        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum, string type)
+        public async Task<IDataAccessResult<AccountAnnualPremiumDto>> GetAccountAnnualPremiums(string accountNum,            
+            string type)
         {
             return await ExecuteGet(async () => await query.GetAccountAnnualPremiums(accountNum, type, contextFactory));
         }
@@ -328,7 +384,9 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetAccountBondCollaterals(accountNum, contextFactory));
         }
-        public async Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum)
+
+        public async Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(
+            string accountNum)
         {
             return await ExecuteGet(async () => await query.GetAccountOutstandingLiability(accountNum, contextFactory));
         }
@@ -478,6 +536,20 @@ namespace James.Data.Server
             catch (AggregateException ae)
             {
                 return new SaveDataResult { Errors = ae.InnerExceptions.Select(e => e.Message).ToArray() };
+            }
+            catch (Exception ex)
+            {
+                return new SaveDataResult { Errors = [ex.Message] };
+            }
+        }
+
+        public async Task<ISaveDataResult> UpdateAgencyLicenseBulk(List<AgencyLicense> licenses)
+        {
+            try
+            {
+                await agencyMutation.UpdateAgencyLicenseBulk(licenses, contextFactory);
+                
+                return new SaveDataResult();
             }
             catch (Exception ex)
             {
@@ -721,10 +793,14 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetBondNumber(bondRequestNumber, contextFactory));
         }
-        public async Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start, DateTime end, string filter)
+
+        public async Task<IDataAccessResult<List<BondBlock>>> GetBondBlocksByAgency(Guid agencyId, DateTime start,
+            DateTime end, string filter)
         {
-            return await ExecuteGet(async () => await query.GetBondBlocksByAgency(agencyId, start, end, filter, contextFactory));
+            return await ExecuteGet(async () =>
+                await query.GetBondBlocksByAgency(agencyId, start, end, filter, contextFactory));
         }
+
         public async Task<IDataAccessResult<List<Bond>>> GetBondsByBlock(Guid bondBlockId)
         {
             return await ExecuteGet(async () => await query.GetBondsByBlock(bondBlockId, contextFactory));
@@ -870,7 +946,7 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetAllAccountWatches(accountNum, contextFactory));
         }
 
-        public async Task<IDataAccessResult<DateOnly?>> GetFirstIndemnityDate(string accountNum)
+        public async Task<IDataAccessResult<DateTime?>> GetFirstIndemnityDate(string accountNum)
         {
             return await ExecuteGet(async () => await query.GetFirstIndemnity(accountNum, contextFactory));
         }
@@ -1007,22 +1083,26 @@ namespace James.Data.Server
 
         public async Task<IDataAccessResult<Dictionary<string, string>>> GetAllUserSettings()
         {
-            return await ExecuteGet(async () => new Dictionary<string, string>(await query.GetAllUserSettings(contextFactory, contextAccessor)));
+            return await ExecuteGet(async () =>
+                new Dictionary<string, string>(await query.GetAllUserSettings(contextFactory, contextAccessor)));
         }
 
         public async Task<ISaveDataResult> SetUserSetting(string key, string? value)
         {
-            return await ExecuteSave(async () => await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor, loggingService));
+            return await ExecuteSave(async () =>
+                await generalMutation.SetUserSetting(key, value, contextFactory, contextAccessor, loggingService));
         }
 
         public async Task<ISaveDataResult> SetDefaultUserSetting(string key, string? value)
         {
-            return await ExecuteSave(async () => await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService));
+            return await ExecuteSave(async () =>
+                await generalMutation.SetDefaultUserSetting(key, value, contextFactory, loggingService));
         }
-        
-        public async  Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo(string userName)
+
+        public async Task<IDataAccessResult<UserInfoDto?>> GetUserEmployeeInfo()
         {
-            return await ExecuteGet(async () => await query.GetUserEmployeeInfo(userName, contextFactory));
+            return await ExecuteGet(async () => await query.GetUserEmployeeInfo(contextFactory, userShared, 
+                loggingService));
         }
         
         public async Task<IDataAccessResult<List<UserLineOfAuthority>>> GetUserLOAByDivision(string division)
@@ -1092,14 +1172,15 @@ namespace James.Data.Server
         }
 
         #endregion
-        
+
         #region Underwriter
 
         public async Task<IDataAccessResult<List<UnderwriterRecommendation>>> GetUnderwriterRecommendationByAccount(
             string accountNum)
         {
-            var result = await ExecuteGet(async () => await query.GetUnderwriterRecommendationByAccount(accountNum, contextFactory));
-            
+            var result = await ExecuteGet(async () =>
+                await query.GetUnderwriterRecommendationByAccount(accountNum, contextFactory));
+
             return result;
         }
 
@@ -1194,6 +1275,44 @@ namespace James.Data.Server
         public async Task<ISaveDataResult> AgencyLoaDelete(Guid id)
         {
             return await ExecuteSave(async () => await generalMutation.AgencyLoaDelete(id, contextFactory, contextAccessor));
+        }
+
+        #endregion
+        
+        #region OnlineSystem
+        
+        public async Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems()
+        {
+            return await ExecuteGet(async () => await query.GetOnlineSystems(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<List<OnlineBondSystem>>> GetOnlineBondSystemsByLegalEntity(Guid entityId)
+        {
+            return await ExecuteGet(async () =>
+                await query.GetOnlineBondSystemsByLegalEntity(entityId, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetOnlineSystem(Guid id, string systemName)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetOnlineSystem(id, systemName, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteOnlineSystem(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteOnlineSystem(id, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetOnlineBondSystem(Guid id, Guid legalEntityId, string systemName, 
+            Guid insurerId, int writingLimit)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.SetOnlineBondSystem(id, legalEntityId, systemName, insurerId, writingLimit,
+                    contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteOnlineBondSystem(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteOnlineBondSystem(id, contextFactory));
         }
 
         #endregion

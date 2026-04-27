@@ -2,10 +2,8 @@
     accountPrograms(accountNum: $accountNum){
         accountNum
         aggregate
-        approvedById
         approvedByName
         approvedDate
-        createdById
         createdByName
         effective
         expiration
@@ -22,7 +20,6 @@
             oldAggregate
             oldSingle
             oldStatus
-            statusChangeBy
             statusChangeByFullName
             statusDate
         }
@@ -32,7 +29,6 @@
 query GetAccountProgramById($id: UUID!) {
     accountProgramById(id: $id) {
         id
-        createdById
         createdByName
         accountNum
         single
@@ -40,7 +36,6 @@ query GetAccountProgramById($id: UUID!) {
         effective
         expiration
         status
-        approvedById
         approvedByName
         approvedDate
         logs {
@@ -61,13 +56,11 @@ query GetLoaLogsByAccount($accountNum: String!) {
     loaLogsByAccount(accountNumber: $accountNum) {
         id
         accountNum
-        approvedById
         approvedByName
         bondType
         comments
         conditions
         created
-        createdById
         createdByName
         division
         effective
@@ -95,7 +88,6 @@ query GetAccountAgencyLOA($accountNum: String!) {
         loaSingle
         division
         bondType
-        status
     }
 }
 
@@ -114,7 +106,6 @@ query GetAccountAgencyLOAById($id: UUID!) {
         loaAggregate
         loaSingle
         sequenceNumber
-        status
     }
 }
 

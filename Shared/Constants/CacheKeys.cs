@@ -21,14 +21,21 @@ public static class CacheKeys
     public static string AccountPrograms(string accountNumber) => $"AccountPrograms-{accountNumber}";
     public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
     public static string Agency(string agencyNumber) => $"Agency-{agencyNumber}";
+    public static string AgencyAccounts(string agencyNumber) => $"AgencyAccounts-{agencyNumber}";
     public static string AgencyAgents(string id) => $"AgencyAgents-{id}";
     public static string AgencyAgentLicenses(string agencyId, string agentId) =>
         $"AgencyAgentLicenses-{agencyId}-{agentId}";
+    public static string AgencyBonds(Guid agencyId, string accountNum, int skip, int take) =>
+        $"AgencyBond-{agencyId}-{accountNum ?? "NoAccount"}-{skip}-{take}";
+    public static string AgencyBondByBlock(Guid agencyId, Guid bondBlockId) => $"BondByBlock-{bondBlockId}-{agencyId}";
+    public static string AgencyCommissionRates(Guid agencyId) => $"AgencyCommissionRates-{agencyId}";
     public static string AgencyLicenses(string id) => $"AgencyLicenses-{id}";
     public static string AccountLOAs(string accountNumber) => $"AccountLOAs-{accountNumber}";
-
-    // B
-    public static string BondByBlock(Guid bondBlockId) => $"BondByBlock-{bondBlockId}";
+    public static string AgencyBondBlocks(Guid agencyId) => $"AgencyBondBlocks-{agencyId}";
+    public static string AgencyAgents(Guid agencyId) => $"AgencyContacts-{agencyId}";
+    public static string AgencyLocations(Guid agencyId) => $"AgencyLocations-{agencyId}";
+    public static string AgencyInventory(Guid agencyId) => $"AgencyInventory-{agencyId}";
+    public static string AgentOnlineSystem(Guid agentId) => $"AgentOnlineSystem-{agentId}";
 
     // C
     public static string CreditReport(string accountNumber) => $"BondTransactions-{accountNumber}";
@@ -61,51 +68,43 @@ public static class CacheKeys
     public const string AccountProgramStatuses = "AccountProgramStatuses";
     public const string AddressTypes = "AddressTypes";
     public const string AgenciesDto = "AgenciesDto";
+    public const string AgenciesLookup = "AgenciesLookup";
     public const string AgencyStatuses = "AgencyStatuses";
-
+    public const string AgentSystems = "AgentSystems";
     // B
     public const string BondBlocks = "BondBlocks";
     public const string Branches = "Branches";
     public const string BusinessClasses = "BusinessClasses";
-
     public const string BusinessTypes = "BusinessTypes";
-
     // C
     public const string CommercialBondTypes = "CommercialBondTypes";
     public const string CommercialRates = "CommercialRates";
     public const string ContractRates = "ContractRates";
     public const string Countries = "Countries";
-
     public const string CreditReportAgencies = "CreditReportAgencies";
     // D
     public const string Divisions = "Divisions";
-
+    public const string DocumentTypes = "DocumentTypes";
     // E
     public const string EmailTypes = "EmailTypes";
-
     // I
     public const string IndustryCodes = "IndustryCodes";
-
     public const string Insurers = "Insurers";
-
+    // O
+    public const string OnlineSystems= "OnlineSystems";
     // P
     public const string PhoneTypes = "PhoneTypes";
-
     // R
     public const string RateGroups = "RateGroups";
     public const string RateTypes = "RateTypes";
     public const string RiskTypes = "RiskTypes";
     public const string RiskCommission = "RiskCommission";
-
     // S
     public const string SecRoles = "SecRoles";
     public const string SicCodes = "SicCodes";
-
     public const string States = "States";
-
     // U
     public const string Underwriters = "Underwriters";
-
     // W
     public const string WatchStatuses = "WatchStatuses";
 }

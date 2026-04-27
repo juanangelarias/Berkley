@@ -1,10 +1,10 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Collections.Concurrent;
 
 namespace James.Shared.Server.Kong0;
 
 public class KongTokenRequest
 {
-    private static readonly Dictionary<Type, KongTokenRequest> _requests = new();
+    private static readonly ConcurrentDictionary<Type, KongTokenRequest> _requests = new();
     public static KongTokenRequest SetRequest(Type type, KongTokenRequest request)
     {
         _requests[type] = request;

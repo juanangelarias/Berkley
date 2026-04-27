@@ -109,7 +109,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
         {
             _settings = null;
             await localStorageService.RemoveItemAsync(cacheKey);
-            dataAccess.Clear(cacheKey);
+            await dataAccess.ClearAsync(cacheKey);
             await _semaphore.WaitAsync();
             try
             {
@@ -144,7 +144,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
             if (value != null)
                 _settings[key] = value;
             else _settings.Remove(key);
-            dataAccess.UpdateCache(cacheKey, _settings);
+            await dataAccess.UpdateCacheAsync(cacheKey, _settings);
             //Update the browser cache asynchronously
             localStorageService.SetItemAsyncWithExpiry(cacheKey, TimeSpan.FromDays(1), _settings);
         }
@@ -159,7 +159,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
             var cacheKey = CacheKey(username!);
             //Invalidate cache
             _settings = null;
-            dataAccess.Clear(key);
+            await dataAccess.ClearAsync(key);
             //Update the browser cache asynchronously
             localStorageService.RemoveItemAsync(cacheKey);
         }
@@ -169,11 +169,7 @@ public class UserSettingService(IDataAccess dataAccess, ILocalStorageService loc
     
     public async Task<UserInfoDto?> GetUserEmployeeInfoAsync()
     {
-        var userName = await GetUserName();
-        if(userName == null) 
-            return null;
-
-        var response = await dataAccess.GetUserEmployeeInfo(userName);
+        var response = await dataAccess.GetUserEmployeeInfo();
         
         return response.Success
             ? response.Data!

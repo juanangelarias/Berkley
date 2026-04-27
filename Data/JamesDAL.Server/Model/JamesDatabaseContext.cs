@@ -14,6 +14,7 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<Account> Accounts { get; set; }
 
+    //Keep
     public DbSet<AccountChild> AccountChildren { get; set; }
 
     public virtual DbSet<AccountParentAncestorSafe> AccountParentAncestorSaves { get; set; }
@@ -93,6 +94,8 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<Bond> Bonds { get; set; }
 
     public virtual DbSet<BondBlock> BondBlocks { get; set; }
+
+    public virtual DbSet<BondBlockAllowedAgency> BondBlockAllowedAgencies { get; set; }
 
     public virtual DbSet<BondHold> BondHolds { get; set; }
 
@@ -374,6 +377,8 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<VImagingCategoryTabDivisionType> VImagingCategoryTabDivisionTypes { get; set; }
 
+    public virtual DbSet<VLineOfAuthorityHistory> VLineOfAuthorityHistories { get; set; }
+
     public virtual DbSet<VSecurityPrincipal> VSecurityPrincipals { get; set; }
 
     public virtual DbSet<VoidedBond> VoidedBonds { get; set; }
@@ -561,6 +566,7 @@ public partial class JamesDatabaseContext : DbContext
                 .HasConstraintName("FK_Account_UnderWriter");
         });
 
+		//Keep
         modelBuilder.Entity<AccountChild>(entity =>
         {
             entity.HasNoKey();
@@ -629,6 +635,13 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.AccountNum)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AccountProgram_Account");
+
+            entity.HasOne(d => d.ApprovedByNavigation).WithMany(p => p.AccountProgramApprovedByNavigations).HasForeignKey(d => d.ApprovedBy);
+
+            entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.AccountProgramCreatedByNavigations)
+                .HasForeignKey(d => d.CreatedBy)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AccountProgram_Employee");
 
             entity.HasOne(d => d.Status).WithMany(p => p.AccountPrograms)
                 .HasForeignKey(d => d.StatusId)
@@ -1724,6 +1737,36 @@ public partial class JamesDatabaseContext : DbContext
             entity.HasOne(d => d.IssuedByNavigation).WithMany(p => p.BondBlocks)
                 .HasForeignKey(d => d.IssuedBy)
                 .HasConstraintName("FK_BondBlock_Employee");
+        });
+
+        modelBuilder.Entity<BondBlockAllowedAgency>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.ToTable("BondBlockAllowedAgency");
+
+            entity.HasIndex(e => new { e.BondBlockId, e.AgencyNumber }, "UQ_BondBlockAllowedAgency").IsUnique();
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())", "DF_BondBlockAllowedAgency_Id");
+            entity.Property(e => e.AgencyNumber)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())", "DF_BondBlockAllowedAgency_Created")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())", "DF_BondBlockAllowedAgency_Modified")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.AgencyNumberNavigation).WithMany(p => p.BondBlockAllowedAgencies)
+                .HasForeignKey(d => d.AgencyNumber)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BondBlockAllowedAgency_AGency");
+
+            entity.HasOne(d => d.BondBlock).WithMany(p => p.BondBlockAllowedAgencies)
+                .HasForeignKey(d => d.BondBlockId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BondBlockAllowedAgency_BondBlock");
         });
 
         modelBuilder.Entity<BondHold>(entity =>
@@ -3736,6 +3779,10 @@ public partial class JamesDatabaseContext : DbContext
             entity.HasOne(d => d.DivisionNavigation).WithMany(p => p.LineOfAuthorityLogs)
                 .HasForeignKey(d => d.Division)
                 .HasConstraintName("FK_LineOfAuthorityLog_DivisionDM");
+
+            entity.HasOne(d => d.Reason).WithMany(p => p.LineOfAuthorityLogs)
+                .HasForeignKey(d => d.ReasonId)
+                .HasConstraintName("FK_LineOfAuthorityLog_LineOfAuthorityReason");
 
             entity.HasOne(d => d.StatusNavigation).WithMany(p => p.LineOfAuthorityLogs)
                 .HasForeignKey(d => d.Status)
@@ -5783,6 +5830,37 @@ public partial class JamesDatabaseContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.TypeDescription)
                 .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<VLineOfAuthorityHistory>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("vLineOfAuthorityHistory");
+
+            entity.Property(e => e.AccountNum)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.Approved).HasColumnType("datetime");
+            entity.Property(e => e.BondType)
+                .HasMaxLength(12)
+                .IsUnicode(false);
+            entity.Property(e => e.Created).HasColumnType("datetime");
+            entity.Property(e => e.Division)
+                .HasMaxLength(4)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Effective).HasColumnType("datetime");
+            entity.Property(e => e.Expiration).HasColumnType("datetime");
+            entity.Property(e => e.Loaaggregate).HasColumnName("LOAAggregate");
+            entity.Property(e => e.Loasingle).HasColumnName("LOASingle");
+            entity.Property(e => e.Modified).HasColumnType("datetime");
+            entity.Property(e => e.PreviousStatus)
+                .HasMaxLength(12)
+                .IsUnicode(false);
+            entity.Property(e => e.Status)
+                .HasMaxLength(12)
                 .IsUnicode(false);
         });
 

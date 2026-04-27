@@ -20,7 +20,7 @@
         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
             <AuthorizeView Policy="InRoleCanAddAgencyPOA">
                 <RadzenButton Icon="add" Text="New POA" Variant="Variant.Text" Click="@InsertPOARow"
-                              Visible="@(ActiveOnly)"/>
+                              Visible="@(StatusFilter == "Active")"/>
             </AuthorizeView>
             <BsgExportGridToButton IsLoading="@IsLoading" ExportGrid="ExportGrid" ExportFormat="DefaultExportFormat"/>
             <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Style="margin-left: 3rem">
@@ -96,15 +96,20 @@
                 <RadzenTextBox @bind-Value="poa.ReferenceNumber" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" FormatString="{0:d}" Width="200px"
+        <RadzenDataGridColumn Title="First Issue Date" Property="FirstIssued" Width="200px"
                               MinWidth="200px" TextAlign="TextAlign.Center">
+            <Template Context="poa">
+                <RadzenText Text="@($"{poa.FirstIssued:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </Template>
             <EditTemplate Context="poa">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.FirstIssued" Style="width: 95%"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" FormatString="{0:d}"
-                              SortOrder="SortOrder.Descending" Width="240px" MinWidth="240px"
-                              TextAlign="TextAlign.Center">
+        <RadzenDataGridColumn Title="Current POA Date" Property="CurrentIssued" SortOrder="SortOrder.Descending"
+                              Width="240px" MinWidth="240px" TextAlign="TextAlign.Center">
+            <EditTemplate Context="poa">
+                <RadzenText Text="@($"{poa.CurrentIssued:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+            </EditTemplate>
             <EditTemplate Context="poa">
                 <RadzenDatePicker TValue="DateOnly?" @bind-Value="@poa.CurrentIssued" Style="width: 95%"/>
             </EditTemplate>
@@ -123,7 +128,7 @@
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" TItem="PowerOfAttorney"
                               Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="75px"
-                              MinWidth="80px" Pickable="false" Visible="@(ActiveOnly)" >
+                              MinWidth="80px" Pickable="false" Visible="@(StatusFilter == "Active")" >
             <Template Context="poa">
                 <AuthorizeView Policy="InRoleCanEditAgencyPOA">
                     <RadzenButton Variant="Variant.Flat"
@@ -174,7 +179,7 @@
 @code
 {
     [Parameter, EditorRequired] public required Agency Agency { get; set; }
-    [Parameter, EditorRequired] public required bool ActiveOnly { get; set; }
+    [Parameter, EditorRequired] public required string StatusFilter { get; set; }
 
     private List<PowerOfAttorney> PowerOfAttorneys { get; set; } = [];
 
@@ -193,7 +198,7 @@
     private LoadItem AgencyPoasLoad => AddEventNotify(new LoadItem<List<PowerOfAttorney>>
     {
         Key = AgencyPOAKey(),
-        AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id, ActiveOnly),
+        AsyncLoadTask = async () => _poas = await DataAccess.GetAgencyPoas(Agency.Id, StatusFilter),
         CacheLoadTask = cache => _poas = new DataAccessResult<List<PowerOfAttorney>>
         {
             Data = (List<PowerOfAttorney>)cache!
@@ -206,8 +211,7 @@
 
     private string AgencyPOAKey()
     {
-        var type = ActiveOnly ? "Active" : "Terminated";
-        var key = $"AgencyPOAs{Agency.Id}-{type}";
+        var key = $"AgencyPOAs{Agency.Id}-{StatusFilter}";
         return key;
     }
 
@@ -281,8 +285,7 @@
     {
         await base.OnParametersSetAsync();
 
-        var type = ActiveOnly ? "Active" : "Terminated";
-        GridSettingsKey = $"AgencyPOAGrid-{type}";
+        GridSettingsKey = $"AgencyPOAGrid-{StatusFilter}";
 
         await ShowLoading();
 
@@ -370,7 +373,7 @@
             LoggingService.LogError("Could not link document to POA.", string.Join("; ", result.Errors));
         }
 
-        DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
+        await DataAccess.UpdateCacheAsync(AgencyPOAKey(), PowerOfAttorneys);
     }
 
     private async Task OnPoaCreate(PowerOfAttorney powerOfAttorney)
@@ -392,7 +395,7 @@
         {
             powerOfAttorney.InsurerId = powerOfAttorney.Insurer.Id;
             PowerOfAttorneys.Add(powerOfAttorney);
-            DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
+            await DataAccess.UpdateCacheAsync(AgencyPOAKey(), PowerOfAttorneys);
         }
         else
             NotifySaveError(result.Errors, "Agency POA");
@@ -431,7 +434,7 @@
             if (toDelete != null)
             {
                 PowerOfAttorneys.Remove(toDelete);
-                DataAccess.UpdateCache(AgencyPOAKey(), PowerOfAttorneys);
+                await DataAccess.UpdateCacheAsync(AgencyPOAKey(), PowerOfAttorneys);
             }
 
             NotifyDeleteSuccessful("agency POA deleted");
@@ -480,7 +483,7 @@
         substitutions.AddSubstitution("CurrentIssued", "CurrentIssued", "Current Issued");
         substitutions.AddSubstitution("Limit", "Limit", "Limit");
         NavigationManager.NavigateTo(ExportDataGridUrl(Grid,
-                $"/export/AgencyPOAs/{Agency.Id}/{ActiveOnly}", format, substitutions),
+                $"/export/AgencyPOAs/{Agency.Id}/{StatusFilter}", format, substitutions),
             true);
     }
 

@@ -8,7 +8,7 @@
 	<StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
 	<CompressionEnabled>false</CompressionEnabled>
 	<NuGetAuditMode>all</NuGetAuditMode>
-	<LangVersion>14</LangVersion>
+    <LangVersion>14</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

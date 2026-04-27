@@ -1230,7 +1230,12 @@ namespace James.Data.Server
         {
             return await ExecuteGet(async () => await query.GetLoaLogsByAccount(accountNum, contextFactory));
         }
-        
+
+        public async Task<IDataAccessResult<AccountLOADto>> GetLoaLogById(Guid id)
+        {
+            return await ExecuteGet(async () => await query.GetLoaLogById(id, contextFactory));
+        }
+
         public async Task<IDataAccessResult<List<AccountAgencyLOADto>>> GetAccountAgencyLOA(string accountNum)
         {
             return await ExecuteGet(async () => await query.GetAccountAgencyLOA(accountNum, contextFactory));

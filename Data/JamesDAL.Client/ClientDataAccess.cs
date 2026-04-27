@@ -655,7 +655,10 @@ namespace James.Data.Client
 
         public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
         {
-            throw new NotImplementedException();
+            var result = await ExecuteGet<List<CreditReportDm>>(async () =>
+                await jamesClient.GetCreditReportAgencies.ExecuteAsync(), "CreditReportAgencies");
+
+            return result;
         }
 
         public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
@@ -1770,7 +1773,16 @@ namespace James.Data.Client
             
             return result;
         }
-        
+
+        public async Task<IDataAccessResult<AccountLOADto>> GetLoaLogById(Guid id)
+        {
+            throw new NotImplementedException();
+            /*var result = await ExecuteGet<AccountLOADto>(async () =>
+                await jamesClient.GetLoaLogById.ExecuteAsync(id), "LoaLogById");
+
+            return result;*/
+        }
+
         public async Task<IDataAccessResult<List<AccountAgencyLOADto>>> GetAccountAgencyLOA(string accountNum)
         {
             var result = await ExecuteGet<List<AccountAgencyLOADto>>(async () =>

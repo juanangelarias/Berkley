@@ -36,7 +36,7 @@
         <RadzenText Text="Bonded Principle" TextStyle="TextStyle.DisplayH5"/>
     </RadzenRow>
     <RadzenRow>
-        <RadzenDataGrid TItem="RelatedAccountDto" Data="@Data.RelatedAccounts">
+        <RadzenDataGrid TItem="RelatedAccountDto" Data="@Data.RelatedAccounts" IsLoading="@IsLoading">
             <Columns>
                 <RadzenDataGridColumn Title="Account Number" Property="@nameof(RelatedAccountDto.AccountNum)">
                     <Template>
@@ -47,6 +47,9 @@
                 <RadzenDataGridColumn Title="Account Name" Property="@nameof(RelatedAccountDto.AccountName)"/>
                 <RadzenDataGridColumn Title="Status" Property="@nameof(RelatedAccountDto.AccountStatus)"/>
             </Columns>
+            <LoadingTemplate>
+                <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+            </LoadingTemplate>
         </RadzenDataGrid>
     </RadzenRow>
 </RadzenStack>

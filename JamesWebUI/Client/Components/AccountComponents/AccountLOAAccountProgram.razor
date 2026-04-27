@@ -243,7 +243,10 @@
             Data = (List<AccountProgramStatusDm>)cache!
         },
         ResultVariable = () => _accountProgramStatusesResult,
-        AfterLoad = () => { _statuses = _accountProgramStatusesResult.Data!.ToDictionary(d => d.Description, d => d); },
+        AfterLoad = () =>
+        {
+            _statuses = _accountProgramStatusesResult.Data!.ToDictionary(d => d.Description, d => d);
+        },
         CacheDuration = TimeSpan.FromDays(7)
     }, "account program statuses");
 
@@ -272,14 +275,16 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
+        
+        await ShowLoading();
+        
         await DataAccess.GetCacheOrLoadDataAsync(AccountProgramStatusesLoad);
     }
 
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
-
+        
         await LoadData();
     }
 
@@ -292,7 +297,6 @@
     private async Task InsertRow()
     {
         await ShowLoading();
-
         var newAccountProgram = new AccountProgramDto
         {
             Id = Guid.NewGuid(),
@@ -302,7 +306,6 @@
             StatusId = _statuses["PROPOSED"].Id,
             Status = "PROPOSED"
         };
-
         await Grid.InsertRow(newAccountProgram);
     }
 
@@ -312,8 +315,26 @@
         await Grid.EditRow(program);
     }
 
+    private async Task DeleteRow(AccountProgramDto program)
+    {
+        await ShowLoading();
+        var response = await DataAccess.DeleteAccountProgram(program.Id);
+        if (!response.Success)
+        {
+            NotifyDeleteError(response.Errors, "account program");
+            return;
+        }
+
+        var toDelete = Data.FirstOrDefault(f => f.Id == program.Id);
+        if (toDelete != null)
+            Data.Remove(toDelete);
+        await Grid.Reload();
+    }
+
     private async Task RemoveRow(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.Remove);
         if (!confirm)
             return;
@@ -337,6 +358,8 @@
 
     private async Task RequestApproval(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.RequestApproval);
         if (!confirm)
             return;
@@ -354,6 +377,8 @@
 
     private async Task Approve(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.Approve);
         if (!confirm)
             return;
@@ -371,6 +396,8 @@
 
     private async Task Decline(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.Decline);
         if (!confirm)
             return;
@@ -388,6 +415,8 @@
 
     private async Task Cancel(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var confirm = await ConfirmAction(Action.Cancel);
         if (!confirm)
             return;
@@ -432,6 +461,8 @@
 
     private async Task ExecuteSetAccountProgram(AccountProgramDto program)
     {
+        await ShowLoading();
+        
         var result = await DataAccess.SetAccountProgram(program.Id, program.AccountNum, program.Effective,
             program.Expiration ?? new DateTime(9999, 12, 31), program.Single, program.Aggregate,
             "", program.StatusId);

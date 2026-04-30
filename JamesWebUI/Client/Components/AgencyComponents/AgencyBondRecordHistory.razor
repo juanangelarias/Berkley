@@ -234,7 +234,7 @@
         if (!_form.IsValid)
             return;
 
-        DataAccess.Clear(CacheKeys.AgencyBondBlocks(AgencyId));
+        await DataAccess.ClearAsync(CacheKeys.AgencyBondBlocks(AgencyId));
         await LoadBlocks();
         await Grid.Reload();
     }

@@ -1,0 +1,426 @@
+﻿@inherits JamesGridLayoutComponentBase<AccountProgramDto>
+
+@inject IDataAccess DataAccess
+@inject TooltipService TooltipService
+
+<RadzenDataGrid TItem="AccountAgencyLOADto" Data="@_data" @ref="@_grid" EditMode="DataGridEditMode.Single"
+                EmptyText="No records to display" Density="Density.Compact" SelectionMode="DataGridSelectionMode.Single"
+                AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true" IsLoading="@IsLoading"
+                Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading"
+                RowUpdate="UpdateGridRow" RowCreate="CreateGridRow" Style="max-height: 400px;">
+    <HeaderTemplate>
+        <AuthorizeView Policy="InRoleCanCreateAccountAgencyLoa">
+            <RadzenButton Icon="add" Text="Add new LOA" Variant="Variant.Text" Click="@InsertRow"/>
+        </AuthorizeView>
+    </HeaderTemplate>
+    <Columns>
+        <RadzenDataGridColumn Title="Print LOA" MinWidth="100px">
+            <Template Context="loa">
+                <RadzenButton Icon="picture_as_pdf" Variant="Variant.Text" Click="@(() => PrintLoa(loa))"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Effective Date" Property="@nameof(AccountLOADto.Effective)" MinWidth="125px">
+            <Template Context="loa">
+                <RadzenText Text="@loa.Effective.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
+            </Template>
+            <EditTemplate Context="loa">
+                <RadzenDatePicker @bind-Value="@loa.Effective" ShowTime="false" DateFormat="MM/dd/yyyy"
+                                  Name="Effective" TextStyle="TextStyle.Body2" Style="display: block"/>
+                <RadzenRequiredValidator Text="Effective Date is required" Component="Effective" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Expiration Date" Property="@nameof(AccountLOADto.Expiration)" MinWidth="125px">
+            <Template Context="loa">
+                <RadzenText Text="@loa.Expiration.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
+            </Template>
+            <EditTemplate Context="loa">
+                <RadzenDatePicker @bind-Value="@loa.Expiration" ShowTime="false" DateFormat="MM/dd/yyyy"
+                                  Name="Expiration" TextStyle="TextStyle.Body2" Style="display: block"/>
+                <RadzenRequiredValidator Text="Expiration Date is required" Component="Expiration" Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="LOA Single" Property="@nameof(AccountLOADto.LoaSingle)"
+                              TextAlign="TextAlign.Right" MinWidth="125px">
+            <HeaderTemplate>
+                <RadzenText Text="LOA Single" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
+                            TextStyle="TextStyle.Subtitle2"/>
+            </HeaderTemplate>
+            <Template Context="loa">
+                <RadzenText Text="@($"{loa.LoaSingle:C0}")" TextAlign="TextAlign.Right" TextStyle="TextStyle.Body2"/>
+            </Template>
+            <EditTemplate Context="loa">
+                <RadzenNumeric @bind-Value="@loa.LoaSingle" Format="c0" ShowUpDown="false" Name="Single"
+                               TextStyle="TextStyle.Body2" Style="display: block"/>
+                <RadzenCompareValidator Component="Single" Operator="CompareOperator.GreaterThanEqual" Value="0"
+                                        Text="Single value should be greater or equal to zero." Popup="true"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="LOA Aggregate" Property="@nameof(AccountLOADto.LoaAggregate)" MinWidth="125px"
+                              TextAlign="TextAlign.Right">
+            <HeaderTemplate>
+                <RadzenText Text="LOA Aggregate" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
+                            TextStyle="TextStyle.Subtitle2"/>
+            </HeaderTemplate>
+            <Template Context="loa">
+                <RadzenText Text="@($"{loa.LoaAggregate:C0}")" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Body2"/>
+            </Template>
+            <EditTemplate Context="loa">
+                <RadzenNumeric @bind-Value="@loa.LoaAggregate" Format="c0" ShowUpDown="false" Name="Aggregate"
+                               TextStyle="TextStyle.Body2" Style="display: block"/>
+                <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual" Value="0"
+                                        Text="Aggregate value should be greater or equal to zero." Popup="true"/>
+                <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual"
+                                        Value="@loa.LoaSingle" Popup="true"
+                                        Text="Aggregate must be less than or equal to Single"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Division" Property="@nameof(AccountLOADto.Division)" MinWidth="110px">
+            <Template Context="loa">
+                <RadzenText Text="@loa.Division" TextStyle="TextStyle.Body2"/>
+            </Template>
+            <EditTemplate Context="loa">
+                <RadzenDropDown TValue="string" @bind-Value="@loa.Division" Data="_divisions"
+                                TextProperty="@nameof(DivisionDm.DivisionCode)"
+                                ValueProperty="@nameof(DivisionDm.DivisionCode)"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Bond Type" Property="@nameof(AccountAgencyLOADto.BondType)" MinWidth="110px">
+            <Template Context="loa">
+                <RadzenText Text="@loa.BondType" TextStyle="TextStyle.Body2"/>
+            </Template>
+            <EditTemplate Context="loa">
+                <RadzenDropDown TValue="string" @bind-Value="@loa.BondType" Data="_bondTypes"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Enter Date" Property="@nameof(AccountAgencyLOADto.Created)" MinWidth="125px">
+            <Template Context="loa">
+                <RadzenText Text="@loa.Expiration.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="125px" Filterable="false" Frozen="true" Resizable="false"
+                              reorderable="false" FrozenPosition="FrozenColumnPosition.Right">
+            <Template Context="loa">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem">
+                    <AuthorizeView Policy="InRoleCanCreateAccountAgencyLoa">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                      Size="ButtonSize.Small"
+                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Edit))"
+                                      Click="@(_ => EditRow(loa))" @onclick:stopPropagation="true"/>
+                    </AuthorizeView>
+                    <AuthorizeView Policy="InRoleCanDeleteAccountAgencyLoa">
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                      Size="ButtonSize.Small"
+                                      MouseEnter="@(arg => ShowTooltip(arg, Action.Remove))"
+                                      Click="@(_ => DeleteRow(loa))" @onclick:stopPropagation="true"/>
+                    </AuthorizeView>
+                </RadzenStack>
+            </Template>
+            <EditTemplate Context="loa">
+                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                              MouseEnter="@(arg => ShowTooltip(arg, Action.Save))"
+                              Size="ButtonSize.Small" Click="@(_ => Save(loa))"/>
+                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                              MouseEnter="@(arg => ShowTooltip(arg, Action.Cancel))"
+                              Size="ButtonSize.Small" class="my-1 ms-1" Click="@(_ => CancelEdit(loa))"/>
+            </EditTemplate>
+        </RadzenDataGridColumn>
+    </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
+</RadzenDataGrid>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private RadzenDataGrid<AccountAgencyLOADto> _grid = null!;
+    private List<AccountAgencyLOADto> _data = [];
+    private List<AccountLOADto> _accountLoaList = [];
+    private List<DivisionDm> _divisions = [];
+    private List<string> _bondTypes = [];
+
+    #region Loaders
+
+    #region Divisions Load
+
+    private IDataAccessResult<List<DivisionDm>> _divisionsResult = null!;
+
+    private LoadItem DivisionsLoad => AddEventNotify(new LoadItem<List<DivisionDm>>
+    {
+        Key = CacheKeys.Divisions,
+        AsyncLoadTask = async () => _divisionsResult = await DataAccess.GetDivisions(),
+        CacheLoadTask = cache => _divisionsResult = new DataAccessResult<List<DivisionDm>>
+        {
+            Data = (List<DivisionDm>)cache!
+        },
+        ResultVariable = () => _divisionsResult,
+        AfterLoad = () => { _divisions = _divisionsResult.Data!; }
+    }, "divisions");
+
+    #endregion
+
+    #region AccountLOA Load
+
+    private IDataAccessResult<List<AccountLOADto>> _accountLOAResult = null!;
+
+    private LoadItem AccountLOALoad => AddEventNotify(new LoadItem<List<AccountLOADto>>
+    {
+        Key = CacheKeys.AccountLOA(Account.AccountNum),
+        AsyncLoadTask = async () => _accountLOAResult = await DataAccess.GetLoaLogsByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _accountLOAResult = new DataAccessResult<List<AccountLOADto>>
+        {
+            Data = (List<AccountLOADto>)cache!
+        },
+        ResultVariable = () => _accountLOAResult,
+        AfterLoad = () => { _accountLoaList = _accountLOAResult.Data!; }
+    }, "account LOA");
+
+    #endregion
+
+    #region AccountAgencyLOA Load
+
+    private IDataAccessResult<List<AccountAgencyLOADto>> _accountAgencyLOAResult = null!;
+
+    private LoadItem AccountAgencyLOALoad => AddEventNotify(new LoadItem<List<AccountAgencyLOADto>>
+    {
+        Key = CacheKeys.AccountAgencyLoa(Account.AccountNum),
+        AsyncLoadTask = async () => _accountAgencyLOAResult = await DataAccess.GetAccountAgencyLOA(Account.AccountNum),
+        CacheLoadTask = cache => _accountAgencyLOAResult = new DataAccessResult<List<AccountAgencyLOADto>>
+        {
+            Data = (List<AccountAgencyLOADto>)cache!
+        },
+        ResultVariable = () => _accountAgencyLOAResult,
+        AfterLoad = () => { _data = _accountAgencyLOAResult.Data!; }
+    }, "account agency LOA");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        await ShowLoading();
+        
+        _bondTypes = new(Enum.GetNames(typeof(BondType)));
+        await DataAccess.ParallelGetCacheOrDataAsync(AccountAgencyLOALoad, AccountLOALoad, DivisionsLoad);
+    }
+
+    private async Task InsertRow()
+    {
+        if (Account.AgencyNumber == null)
+        {
+            NotificationService.Notify(
+                NotificationSeverity.Error,
+                "Missing Agency Number",
+                "The Account is missing the Agency Number.");
+            return;
+        }
+
+        var newLoa = new AccountAgencyLOADto
+        {
+            Id = Guid.NewGuid(),
+            AccountNum = Account.AccountNum,
+            AgencyNumber = Account.AgencyNumber!,
+            Effective = DateTime.Today,
+        };
+        await _grid.InsertRow(newLoa);
+    }
+
+    private async Task EditRow(AccountAgencyLOADto loa)
+    {
+        await ShowLoading();
+        await _grid.EditRow(loa);
+    }
+
+    private async Task DeleteRow(AccountAgencyLOADto loa)
+    {
+        var confirm = await DialogService.Confirm("Are you sure you want to delete this row?", "Confirmation");
+        if (confirm != true)
+            return;
+        
+        await ShowLoading();
+        
+        var response = await DataAccess.AgencyLoaDelete(loa.Id);
+        if (!response.Success)
+        {
+            NotifyDeleteError(response.Errors, "agency LOA");
+            return;
+        }
+
+        var toDelete = _data.FirstOrDefault(f => f.Id == loa.Id);
+        if (toDelete != null)
+            _data.Remove(toDelete);
+        
+        await _grid.Reload();
+    }
+
+    private async Task Save(AccountAgencyLOADto loa)
+    {
+        if (!ValidateFields(loa))
+            return;
+        
+        await ShowLoading();
+        
+        await _grid.UpdateRow(loa);
+    }
+
+    private async Task CancelEdit(AccountAgencyLOADto loa)
+    {
+        await ShowLoading();
+        _grid.CancelEditRow(loa);
+    }
+
+    private async Task UpdateGridRow(AccountAgencyLOADto loa)
+    {
+        await ExecuteSetAccountLoa(loa);
+    }
+
+    private async Task CreateGridRow(AccountAgencyLOADto loa)
+    {
+        await ExecuteSetAccountLoa(loa);
+    }
+
+    private async Task ExecuteSetAccountLoa(AccountAgencyLOADto loa)
+    {
+        await ShowLoading();
+        
+        var result = await DataAccess.SetAgencyLoa(loa.Id, loa.AgencyNumber, loa.AccountNum, loa.Effective,
+            loa.Expiration, loa.LoaSingle, loa.LoaAggregate, "", loa.Division!, loa.BondType!, "");
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "agency LOA");
+            return;
+        }
+
+        NotifySuccessfulSave("agency LOA");
+        await ReloadData(loa.Id);
+    }
+
+    private async Task ReloadData(Guid id)
+    {
+        await ShowLoading();
+        
+        var editedResult = await DataAccess.GetAccountAgencyLOAById(id);
+        if (!editedResult.Success)
+        {
+            await HandleError("Error retrieving edited or created agency LOA", editedResult.Errors);
+            return;
+        }
+
+        var toDelete = _data.FirstOrDefault(f => f.Id == id);
+        if (toDelete != null)
+            _data.Remove(toDelete);
+
+        _data.Add(editedResult.Data!);
+        _data = _data
+            .OrderByDescending(f => f.Effective)
+            .ToList();
+
+        DataAccess.UpdateCacheAsync(CacheKeys.AccountAgencyLoa(Account.AccountNum), _data);
+
+        await _grid.Reload();
+    }
+
+    private bool ValidateFields(AccountAgencyLOADto loa)
+    {
+        var isValid = true;
+        if (string.IsNullOrWhiteSpace(loa.Division))
+        {
+            NotifyValidationError("The Division is required.");
+            isValid = false;
+        }
+
+        if (string.IsNullOrWhiteSpace(loa.BondType))
+        {
+            NotifyValidationError("The Bond Type is required.");
+            isValid = false;
+        }
+
+        var accLoas = _accountLoaList.Where(f =>
+                f.Status == "APPROVED" &&
+                f.AccountNum == loa.AccountNum &&
+                f.Division == loa.Division &&
+                f.BondType == loa.BondType)
+            .ToList();
+        if (!accLoas.Any())
+        {
+            NotifyValidationError("The Account/Agency LOA does not have a corresponding Account LOA.");
+            isValid = false;
+        }
+
+        if (loa.Expiration < loa.Effective)
+        {
+            NotifyValidationError("The Expiration date is before the Effective date.");
+            isValid = false;
+        }
+
+        var accLoa = accLoas
+            .FirstOrDefault(f => f.Effective <= loa.Effective && f.Expiration >= loa.Effective);
+        if (accLoa == null)
+        {
+            NotifyValidationError("The Account LOA does not have an effective date within the LOA effective and expiration dates.");
+            isValid = false;
+        }
+
+        if (accLoa == null || loa.LoaSingle > accLoa.LoaSingle)
+        {
+            NotifyValidationError("The Single LOA value is greater than the Account Program LOA Single value.");
+            isValid = false;
+        }
+
+        if (accLoa == null || loa.LoaAggregate > accLoa.LoaAggregate)
+        {
+            NotifyValidationError("The Aggregate LOA value is greater than the Account Program LOA Aggregate value.");
+            isValid = false;
+        }
+
+        if (loa.LoaSingle > loa.LoaAggregate)
+        {
+            NotifyValidationError("The Single LOA value is greater than the Aggregate LOA value.");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void NotifyValidationError(string detail) =>
+        NotificationService.Notify(NotificationSeverity.Error, "Validation Error", detail, TimeSpan.FromSeconds(3));
+
+    private void ShowTooltip(ElementReference element, Action name, TooltipOptions? options = null)
+    {
+        var message = name switch
+        {
+            Action.Edit => "Edit this row",
+            Action.Remove => "Delete this row",
+            Action.Save => "Save changes",
+            Action.Cancel => "Cancel edition",
+            _ => ""
+        };
+        TooltipService.Open(element, message, options);
+    }
+
+    private async Task PrintLoa(AccountAgencyLOADto loa)
+    {
+        await DialogService.Confirm("Function to be developed", "Print LOA", new ConfirmOptions
+        {
+            CloseDialogOnOverlayClick = true,
+            CloseDialogOnEsc = true
+        });
+    }
+
+    private enum Action
+    {
+        Edit,
+        Remove,
+        Save,
+        Cancel
+    }
+
+}

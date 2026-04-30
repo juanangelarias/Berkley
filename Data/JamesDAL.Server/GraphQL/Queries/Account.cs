@@ -69,7 +69,7 @@ public partial class Query
     }
 
     [Authorize]
-    public async Task<DateOnly?> GetFirstIndemnity(string accountNum,
+    public async Task<DateTime?> GetFirstIndemnity(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
@@ -78,7 +78,7 @@ public partial class Query
             .FirstOrDefault(r => r.AccountNum == accountNum)?
             .AgreementDate;
 
-        return firstIndemnity;
+        return firstIndemnity?.ToDateTime(new(0));
     }
 
     [Authorize]

@@ -195,7 +195,7 @@
         
         _targetAgency = agency;
         
-        DataAccess.Clear(CacheKeys.AgencyAgentLicenses(Agent.AgencyId.ToString()!, Agent.AgentId.ToString()));
+        await DataAccess.ClearAsync(CacheKeys.AgencyAgentLicenses(Agent.AgencyId.ToString()!, Agent.AgentId.ToString()));
         await DataAccess.GetCacheOrLoadDataAsync(AgencyLicensesLoad);
     }
 

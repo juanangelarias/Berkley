@@ -365,6 +365,9 @@ namespace James.Data.Server.GraphQL.Queries
                 .Where(lic => lic.IsActive && lic.AgencyId == agencyId && lic.AgentId == agentId)
                 .Include(lic => lic.Insurer)
                 .ThenInclude(lic => lic.IdNavigation)
+                .OrderBy(o=>o.AgencyId)
+                .ThenBy(o=>o.AgentId)
+                .ThenBy(o=>o.State)
                 .ToListAsync();
 
             return result;
@@ -440,14 +443,13 @@ namespace James.Data.Server.GraphQL.Queries
         }
 
         [Authorize]
-        public async Task<List<PowerOfAttorney>> GetAgencyPOAs(Guid agencyId, bool activeOnly,
+        public async Task<List<PowerOfAttorney>> GetAgencyPOAs(Guid agencyId, string statusFilter,
             [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
         {
             var ctx = await contextFactory.CreateDbContextAsync();
             var result = await ctx.PowerOfAttorneys
                 .Where(p => p.AgencyId.Equals(agencyId) &&
-                            (activeOnly && (p.Status == "Active" || p.Status == "In Process") ||
-                             !activeOnly && p.Status == "Terminated"))
+                            p.Status == statusFilter)
                 .Include(p => p.Insurer)
                 .ThenInclude(i => i.IdNavigation)
                 .Include(p => p.PowerOfAttorneyDocumentStatuses)

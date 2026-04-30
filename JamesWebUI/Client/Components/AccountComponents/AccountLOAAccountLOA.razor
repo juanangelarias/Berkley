@@ -171,11 +171,11 @@
     private List<AccountLOADto> _accountLoaList = [];
     private List<DivisionDm> _divisions = [];
     private List<string> _bondTypes = [];
-    
-    private bool ShowEdit(AccountLOADto loa) => loa.Status == "PROPOSED";
+
+    private bool ShowEdit(AccountLOADto loa) => loa.Status is "PROPOSED" or "DECLINED";
     private bool ShowRequestApproval(AccountLOADto loa) => loa.Status == "PROPOSED";
-    private bool ShowApprove(AccountLOADto loa) => loa.Status == "APPROVAL REQUESTED";
-    private bool ShowDecline(AccountLOADto loa) => loa.Status == "APPROVAL REQUESTED";
+    private bool ShowApprove(AccountLOADto loa) => loa.Status is "APP. REQ." or "DECLINED";
+    private bool ShowDecline(AccountLOADto loa) => loa.Status == "APP. REQ.";
     private bool ShowCancel(AccountLOADto loa) => loa.Status == "APPROVED";
 
     #region Loaders
@@ -193,10 +193,7 @@
             Data = (List<DivisionDm>)cache!
         },
         ResultVariable = () => _divisionsResult,
-        AfterLoad = () =>
-        {
-            _divisions = _divisionsResult.Data!;
-        }
+        AfterLoad = () => { _divisions = _divisionsResult.Data!; }
     }, "divisions");
 
     #endregion
@@ -214,10 +211,7 @@
             Data = (List<AccountLOADto>)cache!
         },
         ResultVariable = () => _accountLOAResult,
-        AfterLoad = () =>
-        {
-            _accountLoaList = _accountLOAResult.Data!;
-        }
+        AfterLoad = () => { _accountLoaList = _accountLOAResult.Data!; }
     }, "account LOA");
 
     #endregion
@@ -233,6 +227,8 @@
 
     private async Task LoadData()
     {
+        await ShowLoading();
+        
         _bondTypes = new(Enum.GetNames(typeof(BondType)));
 
         await DataAccess.ParallelGetCacheOrDataAsync(AccountLOALoad, DivisionsLoad);
@@ -241,15 +237,35 @@
     private async Task InsertRow()
     {
         await ToBeDevelopedDialog();
+        
+        /*await ShowLoading();
+
+        var newAccountLOA = new AccountLOADto
+        {
+            Id = Guid.NewGuid(),
+            CreatedByName = UserPrincipal.Identity.Name,
+            AccountNum = AccountNum,
+            Status = "PROPOSED"
+        };
+        
+        await _grid.InsertRow(newAccountLOA);*/
     }
 
     private async Task EditRow(AccountLOADto loa)
     {
         await ToBeDevelopedDialog();
+        /*await ShowLoading();
+        await _grid.EditRow(loa);*/
     }
 
     private async Task RemoveRow(AccountLOADto loa)
     {
+        /*await ShowLoading();
+        var confirm = await ConfirmAction(Action.Remove);
+        if(!confirm) 
+            return;*/
+        
+        //ToDo Implement removal
         await ToBeDevelopedDialog();
     }
 
@@ -285,23 +301,103 @@
 
     private async Task UpdateGridRow(AccountLOADto loa)
     {
+        await ExecuteSetAccountLoa(loa);
     }
 
     private async Task CreateGridRow(AccountLOADto loa)
     {
+        await ExecuteSetAccountLoa(loa);
     }
 
     private async Task ExecuteSetAccountLoa(AccountLOADto loa)
     {
+        await ShowLoading();
+
+        var result = await DataAccess.SetLoaLog(loa.Id, loa.AccountNum, loa.Effective, loa.Expiration, loa.LoaSingle, 
+            loa.LoaAggregate, loa.Comments, loa.Status, loa.Division, loa.BondType, loa.Conditions, 
+            loa.HomeOfficeApproved);
+
+        if (!result.Success)
+        {
+            NotifySaveError(result.Errors, "LOA log");
+            await ReloadData(loa.Id);
+        }
     }
 
     private async Task ReloadData(Guid id)
     {
+        var editedResult = await DataAccess.GetLoaLogById(id);
+        if (!editedResult.Success)
+        {
+            await HandleError("Error retrieving edited LOA log", editedResult.Errors);
+            return;
+        }
+        
+        var toDelete = _accountLoaList.Find(x => x.Id == id);
+        if(toDelete != null)
+            _accountLoaList.Remove(toDelete);
+        
+        _accountLoaList.Add(editedResult.Data!);
+        _accountLoaList = _accountLoaList
+            .OrderByDescending(o => o.Effective)
+            .ToList();
+        
+        await DataAccess.UpdateCacheAsync(CacheKeys.AccountLOA(AccountNum), _accountLoaList);
+        
+        await _grid.Reload();
     }
 
-    private bool ValidateFields(AccountProgramDto program)
+    private bool ValidateFields(AccountLOADto loa)
     {
-        return true;
+        var flag = true;
+
+        if (loa.Expiration < loa.Effective)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Expiration date cannot be before effective date",
+                Duration = 5000
+            });
+            flag = false;
+        }
+
+        if (loa.LoaSingle < 0)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Single LOA cannot be negative",
+                Duration = 5000
+            });
+            flag = false;
+        }
+
+        if (loa.LoaAggregate < 0)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Aggregate LOA cannot be negative",
+                Duration = 5000
+            });
+            flag = false;
+        }
+
+        if (loa.LoaSingle > loa.LoaAggregate)
+        {
+            NotificationService.Notify(new NotificationMessage
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "Single LOA cannot be greater than aggregate LOA",
+                Duration = 5000
+            });
+            flag = false;
+        }
+        
+        // ToDo: Check that the LOA is in the confinement of the AccountProgram
+        
+        return flag;
     }
 
     private void ShowTooltip(ElementReference element, Action name, TooltipOptions? options = null)
@@ -319,16 +415,16 @@
 
         TooltipService.Open(element, message, options);
     }
-    
+
     private async Task<bool> ConfirmAction(Action action)
     {
         var message = action switch
         {
             Action.RequestApproval => "Are you sure to submit for approval?",
-            Action.Remove => "Are you sure you want to remove this row?",
-            Action.Approve => "Are you sure you want to approve this row?",
-            Action.Decline => "Are you sure you want to decline this row?",
-            Action.Cancel => "Are you sure you want to cancel this row?",
+            Action.Remove => "Are you sure you want to remove this program?",
+            Action.Approve => "Are you sure you want to approve this program?",
+            Action.Decline => "Are you sure you want to decline this program?",
+            Action.Cancel => "Are you sure you want to cancel this program?",
             _ => ""
         };
 
@@ -360,4 +456,5 @@
         Decline,
         Cancel
     }
+
 }

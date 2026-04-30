@@ -15,3 +15,35 @@ mutation DeleteAccountProgram($id: UUID!) {
         boolean
     }
 }
+
+mutation SetLoaLog($input: SetLoaLogInput!) {
+    setLoaLog(input: $input) {
+        boolean
+    }
+}
+
+mutation LoaLogDelete($input: LoaLogDeleteInput!) {
+    loaLogDelete(input: $input) {
+        boolean
+    }
+}
+
+mutation LoaLogChangeStatus($input: LoaLogChangeStatusInput!) {
+    loaLogChangeStatus(input: $input) {
+        boolean
+    }
+}
+
+mutation SetAgencyLoa($input: SetAgencyLoaInput!){
+    setAgencyLoa(input: $input) {
+        boolean
+    }
+}
+
+mutation AgencyLoaDelete($input: AgencyLoaDeleteInput!) {
+    agencyLoaDelete(input: $input) {
+        boolean
+    }
+}
+
+

@@ -177,6 +177,69 @@ namespace James.Data.Server.GraphQL.Mutations
         }
 
         [Authorize]
+        public async Task<bool> UpdateAgencyLicenseBulk(List<AgencyLicense> licenses,
+            [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+        {
+            var ctx = await contextFactory.CreateDbContextAsync();
+            
+            var trn = await ctx.Database.BeginTransactionAsync();
+            
+            try
+            {
+                foreach (var license in licenses)
+                {
+                    var actualLicense = await ctx.AgencyLicenses.FindAsync(license.Id);
+                    if (actualLicense != null)
+                    {
+                        actualLicense.AgencyId = license.AgencyId;
+                        actualLicense.AgentId = license.AgentId;
+                        actualLicense.State = license.State;
+                        actualLicense.LicenseNumber = license.LicenseNumber;
+                        actualLicense.IsResident = license.IsResident;
+                        actualLicense.InsurerId = license.InsurerId;
+                        actualLicense.Expiration = license.Expiration;
+                        actualLicense.Comments = license.Comments;
+                        actualLicense.Appointment = license.Appointment;
+                        actualLicense.Termination = license.Termination;
+                        actualLicense.AppointingState = license.AppointingState;
+                        actualLicense.IsActive = license.IsActive;
+                        actualLicense.ImagingId = license.ImagingId;
+                    }
+                    else
+                    {
+                        actualLicense = new AgencyLicense
+                        {
+                            Id = license.Id,
+                            AgencyId = license.AgencyId,
+                            AgentId = license.AgentId,
+                            State = license.State,
+                            LicenseNumber = license.LicenseNumber,
+                            IsResident = license.IsResident,
+                            InsurerId = license.InsurerId,
+                            Expiration = license.Expiration,
+                            Comments = license.Comments,
+                            Appointment = license.Appointment,
+                            Termination = license.Termination,
+                            AppointingState = license.AppointingState,
+                            IsActive = license.IsActive,
+                            ImagingId = license.ImagingId
+                        };
+                        
+                        ctx.Add(actualLicense);
+                    }
+                    await ctx.SaveChangesAsync();
+                }
+                await trn.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await trn.RollbackAsync();
+                return false;
+            }
+        }
+
+        [Authorize]
         public async Task<bool> CreateAgencyStatusLog(Guid id, string agencyNumber, DateTime effective,
             string oldStatus, string newStatus, Guid changedBy, string? comments,
             [Service] ITopicEventSender eventSender, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)

@@ -28,9 +28,13 @@ public partial class BondBlock
 
     public Guid? AgencyId { get; set; }
 
-    public Guid? InsuredId { get; set; }
+    public Guid? InsurerId { get; set; }
+
+    public virtual Agency? Agency { get; set; }
 
     public virtual ICollection<BondBlockAllowedAgency> BondBlockAllowedAgencies { get; set; } = new List<BondBlockAllowedAgency>();
+
+    public virtual Insurer? Insurer { get; set; }
 
     public virtual Employee? IssuedByNavigation { get; set; }
 }

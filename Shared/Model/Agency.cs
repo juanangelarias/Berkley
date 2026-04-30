@@ -42,6 +42,8 @@ public partial class Agency
 
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
+    public virtual ICollection<AgencyCommission> AgencyCommissions { get; set; } = new List<AgencyCommission>();
+
     public virtual ICollection<AgencyCompetition> AgencyCompetitions { get; set; } = new List<AgencyCompetition>();
 
     public virtual ICollection<AgencyErrorAndOmission> AgencyErrorAndOmissions { get; set; } = new List<AgencyErrorAndOmission>();
@@ -58,7 +60,11 @@ public partial class Agency
 
     public virtual ICollection<BondBlockAllowedAgency> BondBlockAllowedAgencies { get; set; } = new List<BondBlockAllowedAgency>();
 
-    public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
+    public virtual ICollection<BondBlock> BondBlocks { get; set; } = new List<BondBlock>();
+
+    public virtual ICollection<BondTransaction> BondTransactionAgencies { get; set; } = new List<BondTransaction>();
+
+    public virtual ICollection<BondTransaction> BondTransactionAgencyChangeNavigations { get; set; } = new List<BondTransaction>();
 
     public virtual LegalEntity IdNavigation { get; set; } = null!;
 

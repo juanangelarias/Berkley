@@ -21,4 +21,6 @@ public partial class AdditionalObligee
     public string BondNumber { get; set; } = null!;
 
     public virtual Bond BondNumberNavigation { get; set; } = null!;
+
+    public virtual Obligee Obligee { get; set; } = null!;
 }

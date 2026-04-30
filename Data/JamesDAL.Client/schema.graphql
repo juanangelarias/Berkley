@@ -103,6 +103,7 @@ input ScalingDmInput {
   scaling: String!
   cashFlowStatements: [CashFlowStatementInput!]!
   commercialFinancials: [CommercialFinancialInput!]!
+  financialStatements: [FinancialStatementInput!]!
   personalFinancialHeaders: [PersonalFinancialHeaderInput!]!
 }
 
@@ -213,6 +214,7 @@ input StatementTypeDmInput {
   modified: DateTime!
   type: String!
   cashFlowStatements: [CashFlowStatementInput!]!
+  financialStatements: [FinancialStatementInput!]!
 }
 
 type DeleteOnlineBondSystemPayload {
@@ -247,6 +249,7 @@ input ObligeeInput {
   editedBy: UUID
   printStatusLetter: Boolean!
   notes: String
+  additionalObligees: [AdditionalObligeeInput!]!
   bondRequests: [BondRequestInput!]!
   editedByNavigation: EmployeeInput
   idNavigation: LegalEntityInput!
@@ -283,6 +286,7 @@ input StatementBasisDmInput {
   modified: DateTime!
   basis: String!
   cashFlowStatements: [CashFlowStatementInput!]!
+  financialStatements: [FinancialStatementInput!]!
   personalFinancialHeaders: [PersonalFinancialHeaderInput!]!
 }
 
@@ -303,6 +307,75 @@ type AccountReference {
   type: String
   idNavigation: LegalEntity!
   typeNavigation: ReferenceTypeDm
+}
+
+type FinancialRatio {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  statementId: UUID!
+  currentStated: Float
+  quickStated: Float
+  fixedAsssets2NetWorthStated: Float
+  gaexpenses2SalesStated: Float
+  arapbalanceStated: Float
+  underBills2SalesStated: Float
+  daysInCashStated: Float
+  appayableDaysStated: Float
+  arcollectionDaysStated: Float
+  arcollectionDatsNoReturnStated: Float
+  billingTurnoverDaysStated: Float
+  inventoryTurnoverDaysStated: Float
+  sales2EquityStated: Float
+  sales2TotalAssetsStated: Float
+  sales2WorkingCapitalStated: Float
+  underBills2EquityStated: Float
+  underBills2WorkingCapitalStated: Float
+  totalDebt2AssetsStated: Float
+  totalDebt2EquityStated: Float
+  totalDebt2WorkingCaptialStated: Float
+  termDebt2EquityStated: Float
+  termDebt2WorkingCapitalStated: Float
+  grossProfitMarginStated: Float
+  netProfitMarginStated: Float
+  operatingProfitMarginStated: Float
+  returnOnAssetsStated: Float
+  returnOnEquityStated: Float
+  returnNetRetainedStated: Float
+  workingCapital2AggregateProgramStated: Float
+  currentAllowed: Float
+  quickAllowed: Float
+  fixedAsssets2NetWorthAllowed: Float
+  gaexpenses2SalesAllowed: Float
+  arapbalanceAllowed: Float
+  underBills2SalesAllowed: Float
+  daysInCashAllowed: Float
+  appayableDaysAllowed: Float
+  arcollectionDaysAllowed: Float
+  arcollectionDatsNoReturnAllowed: Float
+  billingTurnoverDaysAllowed: Float
+  inventoryTurnoverDaysAllowed: Float
+  sales2EquityAllowed: Float
+  sales2TotalAssetsAllowed: Float
+  sales2WorkingCapitalAllowed: Float
+  underBills2EquityAllowed: Float
+  underBills2WorkingCapitalAllowed: Float
+  totalDebt2AssetsAllowed: Float
+  totalDebt2EquityAllowed: Float
+  totalDebt2WorkingCaptialAllowed: Float
+  termDebt2EquityAllowed: Float
+  termDebt2WorkingCapitalAllowed: Float
+  grossProfitMarginAllowed: Float
+  netProfitMarginAllowed: Float
+  operatingProfitMarginAllowed: Float
+  returnOnAssetsAllowed: Float
+  returnOnEquityAllowed: Float
+  returnNetRetainedAllowed: Float
+  workingCapital2AggregateProgramAllowed: Float
+  singleProgram2LargestJob: Float
+  aggregateProgram2Sales: Float
+  aggregateProgram2LargestBacklog: Float
+  statement: FinancialStatement!
 }
 
 input AgentInput {
@@ -473,6 +546,7 @@ input AgencyInput {
   errorsAndOmmissionsCoverage: Int
   need1099: Boolean!
   accounts: [AccountInput!]!
+  agencyCommissions: [AgencyCommissionInput!]!
   agencyCompetitions: [AgencyCompetitionInput!]!
   agencyErrorAndOmissions: [AgencyErrorAndOmissionInput!]!
   agencyInventories: [AgencyInventoryInput!]!
@@ -481,7 +555,9 @@ input AgencyInput {
   agentsInAgencies: [AgentsInAgencyInput!]!
   billingContact: LegalEntityInput
   bondBlockAllowedAgencies: [BondBlockAllowedAgencyInput!]!
-  bondTransactions: [BondTransactionInput!]!
+  bondBlocks: [BondBlockInput!]!
+  bondTransactionAgencies: [BondTransactionInput!]!
+  bondTransactionAgencyChangeNavigations: [BondTransactionInput!]!
   idNavigation: LegalEntityInput!
   powerOfAttorneys: [PowerOfAttorneyInput!]!
   statusNavigation: AgencyStatusDmInput!
@@ -507,6 +583,7 @@ type StatementQualityDm {
   modified: DateTime!
   quality: String!
   cashFlowStatements: [CashFlowStatement!]!
+  financialStatements: [FinancialStatement!]!
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
@@ -548,6 +625,24 @@ type LegalEntityPhone {
 
 type SetAgencyProfitSharingInfoPayload {
   boolean: Boolean
+}
+
+input FinancialDetailInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  statementId: UUID!
+  sequence: Int!
+  accountType: String!
+  accountName: String!
+  stated: Long
+  allowed: Long
+  comments: String
+  parentId: UUID
+  pkparentId: UUID!
+  inverseParent: [FinancialDetailInput!]!
+  parent: FinancialDetailInput
+  statement: FinancialStatementInput!
 }
 
 type LineOfAuthorityLog {
@@ -685,6 +780,7 @@ type StatementTypeDm {
   modified: DateTime!
   type: String!
   cashFlowStatements: [CashFlowStatement!]!
+  financialStatements: [FinancialStatement!]!
 }
 
 input BondBlockInput {
@@ -699,8 +795,10 @@ input BondBlockInput {
   issuedBy: UUID
   comments: String
   agencyId: UUID
-  insuredId: UUID
+  insurerId: UUID
+  agency: AgencyInput
   bondBlockAllowedAgencies: [BondBlockAllowedAgencyInput!]!
+  insurer: InsurerInput
   issuedByNavigation: EmployeeInput
 }
 
@@ -782,6 +880,39 @@ input ImagingTypeInput {
   type: String!
   description: String!
   imagingTabTypes: [ImagingTabTypeInput!]!
+}
+
+input FinancialStatementInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  statementDate: LocalDate!
+  version: Int!
+  financialType: String!
+  type: String!
+  basis: String!
+  quality: String!
+  scaling: String!
+  taxBasis: String
+  cashFromOperations: Long
+  cashFromInvestments: Long
+  cashFromFinancing: Long
+  netChangeCash: Long
+  comments: String
+  imagingId: UUID
+  balanceSheetCompleted: Boolean!
+  profitLossStatementCompleted: Boolean!
+  completed: Boolean!
+  basisNavigation: StatementBasisDmInput!
+  financialAggregates: [FinancialAggregateInput!]!
+  financialDetails: [FinancialDetailInput!]!
+  financialRatios: [FinancialRatioInput!]!
+  financialTypeNavigation: FinancialTypeDmInput!
+  personalFinancialFor: PersonalFinancialForInput
+  qualityNavigation: StatementQualityDmInput!
+  scalingNavigation: ScalingDmInput!
+  typeNavigation: StatementTypeDmInput!
 }
 
 type AccountProgramEmailNotificationGroup {
@@ -955,7 +1086,6 @@ type Account {
   businessTypeClassNavigation: BusinessTypeClassCodeDm
   businessTypeNavigation: BusinessTypeDm
   businessTypeRiskCode: BusinessTypeRiskCodeDm
-  cashFlowStatements: [CashFlowStatement!]!
   coPrincipals: [CoPrincipal!]!
   cpacontact: LegalEntity
   cpafirm: LegalEntity
@@ -1100,6 +1230,15 @@ input DeleteAgencyInventoryInput {
   inventoryId: UUID!
 }
 
+input TransactionPurposeDmInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  transactionPurpose: String!
+  bondTransactionPurpose: BondTransactionPurposeInput
+  bondTransactions: [BondTransactionInput!]!
+}
+
 type ImagingTabType {
   id: UUID!
   created: DateTime!
@@ -1163,6 +1302,24 @@ type LineOfAuthorityStatusDm {
   modified: DateTime!
   status: String!
   lineOfAuthorityLogs: [LineOfAuthorityLog!]!
+}
+
+type FinancialDetail {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  statementId: UUID!
+  sequence: Int!
+  accountType: String!
+  accountName: String!
+  stated: Long
+  allowed: Long
+  comments: String
+  parentId: UUID
+  pkparentId: UUID!
+  inverseParent: [FinancialDetail!]!
+  parent: FinancialDetail
+  statement: FinancialStatement!
 }
 
 type WatchStatusDm {
@@ -1302,6 +1459,7 @@ input EmployeeInput {
   notebookEntries: [NotebookEntryInput!]!
   notificationGroupMembers: [NotificationGroupMemberInput!]!
   obligees: [ObligeeInput!]!
+  primaryBranch: BranchInput
   privateEquities: [PrivateEquityInput!]!
   surcharges: [SurchargeInput!]!
   underwriterHomeOfficeLeadNavigations: [UnderwriterInput!]!
@@ -1513,6 +1671,7 @@ input AdditionalObligeeInput {
   interest: String
   bondNumber: String!
   bondNumberNavigation: BondInput!
+  obligee: ObligeeInput!
 }
 
 input CreateAgencyPOAInput {
@@ -1680,6 +1839,7 @@ input BranchInput {
   homeOfficeLead: UUID!
   accounts: [AccountInput!]!
   branchOfficeAddress: AddressInput!
+  employees: [EmployeeInput!]!
   homeOfficeLeadNavigation: EmployeeInput!
   phone: PhoneNumberInput!
   regionNavigation: RegionDmInput!
@@ -1698,7 +1858,6 @@ type TaxBasisDm {
   modified: DateTime!
   taxBasis: String!
   accounts: [Account!]!
-  cashFlowStatements: [CashFlowStatement!]!
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
@@ -1764,6 +1923,7 @@ type StatementBasisDm {
   modified: DateTime!
   basis: String!
   cashFlowStatements: [CashFlowStatement!]!
+  financialStatements: [FinancialStatement!]!
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
@@ -2234,6 +2394,7 @@ input BondTransactionPurposeInput {
   newValue: String!
   bondNumberNavigation: BondInput!
   bondTransaction: BondTransactionInput!
+  transactionPurposeNavigation: TransactionPurposeDmInput!
 }
 
 type KeyValuePairOfStringAndString {
@@ -2386,6 +2547,7 @@ type ScalingDm {
   scaling: String!
   cashFlowStatements: [CashFlowStatement!]!
   commercialFinancials: [CommercialFinancial!]!
+  financialStatements: [FinancialStatement!]!
   personalFinancialHeaders: [PersonalFinancialHeader!]!
 }
 
@@ -2802,9 +2964,11 @@ type Insurer {
   lenumPeopleSoft: String
   writingCompany: String
   agencyLicenses: [AgencyLicense!]!
+  bondBlocks: [BondBlock!]!
   bondHolds: [BondHold!]!
   bondTransactions: [BondTransaction!]!
   bonds: [Bond!]!
+  coInsurers: [CoInsurer!]!
   currencyCountryNavigation: CountryDm!
   idNavigation: LegalEntity!
   insurerStates: [InsurerState!]!
@@ -3097,15 +3261,18 @@ type CashFlowStatement {
   accountNum: String!
   statementDate: LocalDate!
   type: String!
-  basis: String
+  basis: String!
+  quality: String!
   scaling: String!
   taxBasis: String
-  quality: String
   netIncome: Int
   depreciationAmoritization: Int
   accountsReceivable: Int
   accountsReceivableRetention: Int
-  b2cee: Int
+  costEarningsExceedingBillings: Int
+  accountsPayable: Int
+  accountsPayableRetention: Int
+  billingsExceedingCostEarnings: Int
   allOtherCashFlow: Int
   totalCashFlowsOperations: Int
   netFixedAssetsAcquired: Int
@@ -3119,11 +3286,10 @@ type CashFlowStatement {
   totalCashFinancing: Int
   netChangeInCash: Int
   netFixedAssetsAcquiredDebt: Int
-  accountNumNavigation: Account!
-  basisNavigation: StatementBasisDm
-  qualityNavigation: StatementQualityDm
+  completed: Boolean!
+  basisNavigation: StatementBasisDm!
+  qualityNavigation: StatementQualityDm!
   scalingNavigation: ScalingDm!
-  taxBasisNavigation: TaxBasisDm
   typeNavigation: StatementTypeDm!
 }
 
@@ -3195,6 +3361,39 @@ input SetAccountAdditionalInformationInput {
 
 type DeleteOnlineSystemPayload {
   boolean: Boolean
+}
+
+type FinancialStatement {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  accountNum: String!
+  statementDate: LocalDate!
+  version: Int!
+  financialType: String!
+  type: String!
+  basis: String!
+  quality: String!
+  scaling: String!
+  taxBasis: String
+  cashFromOperations: Long
+  cashFromInvestments: Long
+  cashFromFinancing: Long
+  netChangeCash: Long
+  comments: String
+  imagingId: UUID
+  balanceSheetCompleted: Boolean!
+  profitLossStatementCompleted: Boolean!
+  completed: Boolean!
+  basisNavigation: StatementBasisDm!
+  financialAggregates: [FinancialAggregate!]!
+  financialDetails: [FinancialDetail!]!
+  financialRatios: [FinancialRatio!]!
+  financialTypeNavigation: FinancialTypeDm!
+  personalFinancialFor: PersonalFinancialFor
+  qualityNavigation: StatementQualityDm!
+  scalingNavigation: ScalingDm!
+  typeNavigation: StatementTypeDm!
 }
 
 input SetAccountGeneralInfoPanelInput {
@@ -3397,6 +3596,15 @@ type SetLoaLogPayload {
   boolean: Boolean
 }
 
+type PersonalFinancialFor {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  name: String!
+  comment: String
+  idNavigation: FinancialStatement!
+}
+
 type BondModTransaction {
   id: UUID!
   created: DateTime!
@@ -3484,6 +3692,17 @@ input DeleteAddressInput {
   identifier: String!
 }
 
+type CoInsurer {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  bondNumber: String!
+  insurerId: UUID!
+  percentage: Float
+  comments: String
+  insurer: Insurer!
+}
+
 input CreateAccountWatchInput {
   id: UUID!
   accountNum: String!
@@ -3527,8 +3746,10 @@ type BondBlock {
   issuedBy: UUID
   comments: String
   agencyId: UUID
-  insuredId: UUID
+  insurerId: UUID
+  agency: Agency
   bondBlockAllowedAgencies: [BondBlockAllowedAgency!]!
+  insurer: Insurer
   issuedByNavigation: Employee
 }
 
@@ -3587,6 +3808,17 @@ input IndustryCodeDmInput {
   code: String!
   industry: String!
   accounts: [AccountInput!]!
+}
+
+input CoInsurerInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  bondNumber: String!
+  insurerId: UUID!
+  percentage: Float
+  comments: String
+  insurer: InsurerInput!
 }
 
 type BidResultDm {
@@ -3902,9 +4134,11 @@ input InsurerInput {
   lenumPeopleSoft: String
   writingCompany: String
   agencyLicenses: [AgencyLicenseInput!]!
+  bondBlocks: [BondBlockInput!]!
   bondHolds: [BondHoldInput!]!
   bondTransactions: [BondTransactionInput!]!
   bonds: [BondInput!]!
+  coInsurers: [CoInsurerInput!]!
   currencyCountryNavigation: CountryDmInput!
   idNavigation: LegalEntityInput!
   insurerStates: [InsurerStateInput!]!
@@ -4496,6 +4730,15 @@ type AdditionalObligee {
   interest: String
   bondNumber: String!
   bondNumberNavigation: Bond!
+  obligee: Obligee!
+}
+
+input FinancialTypeDmInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  financialType: String!
+  financialStatements: [FinancialStatementInput!]!
 }
 
 type SicratioTypeDm {
@@ -4514,6 +4757,95 @@ input BusinessTypeClassCodeDmInput {
   classCode: Int!
   isContract: Boolean!
   accounts: [AccountInput!]!
+}
+
+input FinancialAggregateInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  statementId: UUID!
+  workingCapitalStated: Long
+  totalAssetsStated: Long
+  retainedEarningsStated: Long
+  earningsBeforeTaxesStated: Long
+  netWorthStated: Long
+  totalLiabilitiesStated: Long
+  totalEquityStated: Long
+  totalRevenueStated: Long
+  totalCostOfGoodsSoldStated: Long
+  currentAssetsStated: Long
+  currentLiabilitiesStated: Long
+  netIncomeStated: Long
+  inventoryStated: Long
+  fixedAssetsStated: Long
+  accountsReceivableStated: Long
+  accountsPayableStated: Long
+  subordinatedNotesStated: Long
+  retainageReceivedStated: Long
+  retainagePayableStated: Long
+  cashPlusEarningsGreaterThanBillingsStated: Long
+  billingsGreaterThanCostsPlusEarningsStated: Long
+  prepaidExpensesStated: Long
+  cashInventoryStated: Long
+  otherCurrentAssetsStated: Long
+  bankDebtStated: Long
+  gaexpensesStated: Long
+  operatingProfitStated: Long
+  incomeAfterTaxesStated: Long
+  cashStated: Long
+  notesStated: Long
+  qscoreStated: Long
+  qprofitStated: Long
+  qnetworthStated: Long
+  qleverageStated: Decimal
+  qworkingCapitalStated: Long
+  qcratioStated: Decimal
+  workingCapitalAllowed: Long
+  totalAssetsAllowed: Long
+  retainedEarningsAllowed: Long
+  earningsBeforeTaxesAllowed: Long
+  netWorthAllowed: Long
+  totalLiabilitiesAllowed: Long
+  totalEquityAllowed: Long
+  totalRevenueAllowed: Long
+  totalCostOfGoodsSoldAllowed: Long
+  currentAssetsAllowed: Long
+  currentLiabilitiesAllowed: Long
+  netIncomeAllowed: Long
+  inventoryAllowed: Long
+  fixedAssetsAllowed: Long
+  accountsReceivableAllowed: Long
+  accountsPayableAllowed: Long
+  subordinatedNotesAllowed: Long
+  retainageReceivedAllowed: Long
+  retainagePayableAllowed: Long
+  cashPlusEarningsGreaterThanBillingsAllowed: Long
+  billingsGreaterThanCostsPlusEarningsAllowed: Long
+  prepaidExpensesAllowed: Long
+  cashInventoryAllowed: Long
+  otherCurrentAssetsAllowed: Long
+  bankDebtAllowed: Long
+  gaexpensesAllowed: Long
+  operatingProfitAllowed: Long
+  incomeAfterTaxesAllowed: Long
+  cashAllowed: Long
+  notesAllowed: Long
+  qscoreAllowed: Long
+  qprofitAllowed: Long
+  qnetworthAllowed: Long
+  qleverageAllowed: Decimal
+  qworkingCapitalAllowed: Long
+  qcratioAllowed: Decimal
+  singleLoa: Long
+  aggregateLoa: Long
+  largestJob: Long
+  largestBacklog: Long
+  cashFromOperations: Long
+  cashFromInvestments: Long
+  cashFromFinancing: Long
+  comments: String
+  netChangeCash: Long
+  statement: FinancialStatementInput!
 }
 
 input NotebookInput {
@@ -4553,15 +4885,18 @@ input CashFlowStatementInput {
   accountNum: String!
   statementDate: LocalDate!
   type: String!
-  basis: String
+  basis: String!
+  quality: String!
   scaling: String!
   taxBasis: String
-  quality: String
   netIncome: Int
   depreciationAmoritization: Int
   accountsReceivable: Int
   accountsReceivableRetention: Int
-  b2cee: Int
+  costEarningsExceedingBillings: Int
+  accountsPayable: Int
+  accountsPayableRetention: Int
+  billingsExceedingCostEarnings: Int
   allOtherCashFlow: Int
   totalCashFlowsOperations: Int
   netFixedAssetsAcquired: Int
@@ -4575,11 +4910,10 @@ input CashFlowStatementInput {
   totalCashFinancing: Int
   netChangeInCash: Int
   netFixedAssetsAcquiredDebt: Int
-  accountNumNavigation: AccountInput!
-  basisNavigation: StatementBasisDmInput
-  qualityNavigation: StatementQualityDmInput
+  completed: Boolean!
+  basisNavigation: StatementBasisDmInput!
+  qualityNavigation: StatementQualityDmInput!
   scalingNavigation: ScalingDmInput!
-  taxBasisNavigation: TaxBasisDmInput
   typeNavigation: StatementTypeDmInput!
 }
 
@@ -4672,6 +5006,7 @@ type Agency {
   errorsAndOmmissionsCoverage: Int
   need1099: Boolean!
   accounts: [Account!]!
+  agencyCommissions: [AgencyCommission!]!
   agencyCompetitions: [AgencyCompetition!]!
   agencyErrorAndOmissions: [AgencyErrorAndOmission!]!
   agencyInventories: [AgencyInventory!]!
@@ -4679,7 +5014,9 @@ type Agency {
   agencyStatusLogs: [AgencyStatusLog!]!
   agentsInAgencies: [AgentsInAgency!]!
   bondBlockAllowedAgencies: [BondBlockAllowedAgency!]!
-  bondTransactions: [BondTransaction!]!
+  bondBlocks: [BondBlock!]!
+  bondTransactionAgencies: [BondTransaction!]!
+  bondTransactionAgencyChangeNavigations: [BondTransaction!]!
   idNavigation: LegalEntity!
   powerOfAttorneys: [PowerOfAttorney!]!
   statusNavigation: AgencyStatusDm!
@@ -4764,6 +5101,7 @@ type BondTransactionPurpose {
   newValue: String!
   bondNumberNavigation: Bond!
   bondTransaction: BondTransaction!
+  transactionPurposeNavigation: TransactionPurposeDm!
 }
 
 type RateGroupDm {
@@ -4856,6 +5194,7 @@ type BondTransaction {
   insurerId: UUID
   accountNumNavigation: Account!
   agency: Agency!
+  agencyChangeNavigation: Agency
   bondNumberNavigation: Bond!
   bondTransactionPurposes: [BondTransactionPurpose!]!
   divisionNavigation: DivisionDm!
@@ -4863,6 +5202,7 @@ type BondTransaction {
   regionNavigation: RegionDm!
   sfaaCodeNavigation: Sfaa!
   stateNavigation: State
+  transactionPurposeNavigation: TransactionPurposeDm
   underwriter: Underwriter!
 }
 
@@ -5071,6 +5411,7 @@ type Employee {
   notebookEntries: [NotebookEntry!]!
   notificationGroupMembers: [NotificationGroupMember!]!
   obligees: [Obligee!]!
+  primaryBranch: Branch
   privateEquities: [PrivateEquity!]!
   surcharges: [Surcharge!]!
   underwriterHomeOfficeLeadNavigations: [Underwriter!]!
@@ -5106,6 +5447,7 @@ input StatementQualityDmInput {
   modified: DateTime!
   quality: String!
   cashFlowStatements: [CashFlowStatementInput!]!
+  financialStatements: [FinancialStatementInput!]!
   personalFinancialHeaders: [PersonalFinancialHeaderInput!]!
 }
 
@@ -5115,6 +5457,75 @@ type ObligeeTypeDm {
   modified: DateTime!
   type: String!
   obligees: [Obligee!]!
+}
+
+input FinancialRatioInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  statementId: UUID!
+  currentStated: Float
+  quickStated: Float
+  fixedAsssets2NetWorthStated: Float
+  gaexpenses2SalesStated: Float
+  arapbalanceStated: Float
+  underBills2SalesStated: Float
+  daysInCashStated: Float
+  appayableDaysStated: Float
+  arcollectionDaysStated: Float
+  arcollectionDatsNoReturnStated: Float
+  billingTurnoverDaysStated: Float
+  inventoryTurnoverDaysStated: Float
+  sales2EquityStated: Float
+  sales2TotalAssetsStated: Float
+  sales2WorkingCapitalStated: Float
+  underBills2EquityStated: Float
+  underBills2WorkingCapitalStated: Float
+  totalDebt2AssetsStated: Float
+  totalDebt2EquityStated: Float
+  totalDebt2WorkingCaptialStated: Float
+  termDebt2EquityStated: Float
+  termDebt2WorkingCapitalStated: Float
+  grossProfitMarginStated: Float
+  netProfitMarginStated: Float
+  operatingProfitMarginStated: Float
+  returnOnAssetsStated: Float
+  returnOnEquityStated: Float
+  returnNetRetainedStated: Float
+  workingCapital2AggregateProgramStated: Float
+  currentAllowed: Float
+  quickAllowed: Float
+  fixedAsssets2NetWorthAllowed: Float
+  gaexpenses2SalesAllowed: Float
+  arapbalanceAllowed: Float
+  underBills2SalesAllowed: Float
+  daysInCashAllowed: Float
+  appayableDaysAllowed: Float
+  arcollectionDaysAllowed: Float
+  arcollectionDatsNoReturnAllowed: Float
+  billingTurnoverDaysAllowed: Float
+  inventoryTurnoverDaysAllowed: Float
+  sales2EquityAllowed: Float
+  sales2TotalAssetsAllowed: Float
+  sales2WorkingCapitalAllowed: Float
+  underBills2EquityAllowed: Float
+  underBills2WorkingCapitalAllowed: Float
+  totalDebt2AssetsAllowed: Float
+  totalDebt2EquityAllowed: Float
+  totalDebt2WorkingCaptialAllowed: Float
+  termDebt2EquityAllowed: Float
+  termDebt2WorkingCapitalAllowed: Float
+  grossProfitMarginAllowed: Float
+  netProfitMarginAllowed: Float
+  operatingProfitMarginAllowed: Float
+  returnOnAssetsAllowed: Float
+  returnOnEquityAllowed: Float
+  returnNetRetainedAllowed: Float
+  workingCapital2AggregateProgramAllowed: Float
+  singleProgram2LargestJob: Float
+  aggregateProgram2Sales: Float
+  aggregateProgram2LargestBacklog: Float
+  statement: FinancialStatementInput!
 }
 
 type AccountLOADto {
@@ -5479,8 +5890,25 @@ input CreateAddressInput {
   identifier: String!
 }
 
+type FinancialTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  financialType: String!
+  financialStatements: [FinancialStatement!]!
+}
+
 type LogInformationPayload {
   boolean: Boolean
+}
+
+input PersonalFinancialForInput {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  name: String!
+  comment: String
+  idNavigation: FinancialStatementInput!
 }
 
 input SetDefaultUserSettingInput {
@@ -5526,6 +5954,7 @@ input AgencyCommissionInput {
   effective: DateTime!
   expiration: DateTime
   expireIncluded: Int!
+  agency: AgencyInput!
 }
 
 type SaveCommissionRatesPayload {
@@ -5600,7 +6029,6 @@ input TaxBasisDmInput {
   modified: DateTime!
   taxBasis: String!
   accounts: [AccountInput!]!
-  cashFlowStatements: [CashFlowStatementInput!]!
   personalFinancialHeaders: [PersonalFinancialHeaderInput!]!
 }
 
@@ -5633,6 +6061,7 @@ type Obligee {
   editedBy: UUID
   printStatusLetter: Boolean!
   notes: String
+  additionalObligees: [AdditionalObligee!]!
   bondRequests: [BondRequest!]!
   editedByNavigation: Employee
   idNavigation: LegalEntity!
@@ -5830,6 +6259,7 @@ type Branch {
   homeOfficeLead: UUID!
   accounts: [Account!]!
   branchOfficeAddress: Address!
+  employees: [Employee!]!
   homeOfficeLeadNavigation: Employee!
   phone: PhoneNumber!
   regionNavigation: RegionDm!
@@ -5942,6 +6372,7 @@ type AgencyCommission {
   effective: DateTime!
   expiration: DateTime
   expireIncluded: Int!
+  agency: Agency!
 }
 
 type InsurerState {
@@ -6036,6 +6467,7 @@ input BondTransactionInput {
   insurerId: UUID
   accountNumNavigation: AccountInput!
   agency: AgencyInput!
+  agencyChangeNavigation: AgencyInput
   bondNumberNavigation: BondInput!
   bondTransactionPurposes: [BondTransactionPurposeInput!]!
   divisionNavigation: DivisionDmInput!
@@ -6043,6 +6475,7 @@ input BondTransactionInput {
   regionNavigation: RegionDmInput!
   sfaaCodeNavigation: SfaaInput!
   stateNavigation: StateInput
+  transactionPurposeNavigation: TransactionPurposeDmInput
   underwriter: UnderwriterInput!
 }
 
@@ -6064,6 +6497,104 @@ input WritingCompanyDmInput {
   modified: DateTime!
   name: String!
   insurers: [InsurerInput!]!
+}
+
+type TransactionPurposeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  transactionPurpose: String!
+  bondTransactionPurpose: BondTransactionPurpose
+  bondTransactions: [BondTransaction!]!
+}
+
+type FinancialAggregate {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  statementId: UUID!
+  workingCapitalStated: Long
+  totalAssetsStated: Long
+  retainedEarningsStated: Long
+  earningsBeforeTaxesStated: Long
+  netWorthStated: Long
+  totalLiabilitiesStated: Long
+  totalEquityStated: Long
+  totalRevenueStated: Long
+  totalCostOfGoodsSoldStated: Long
+  currentAssetsStated: Long
+  currentLiabilitiesStated: Long
+  netIncomeStated: Long
+  inventoryStated: Long
+  fixedAssetsStated: Long
+  accountsReceivableStated: Long
+  accountsPayableStated: Long
+  subordinatedNotesStated: Long
+  retainageReceivedStated: Long
+  retainagePayableStated: Long
+  cashPlusEarningsGreaterThanBillingsStated: Long
+  billingsGreaterThanCostsPlusEarningsStated: Long
+  prepaidExpensesStated: Long
+  cashInventoryStated: Long
+  otherCurrentAssetsStated: Long
+  bankDebtStated: Long
+  gaexpensesStated: Long
+  operatingProfitStated: Long
+  incomeAfterTaxesStated: Long
+  cashStated: Long
+  notesStated: Long
+  qscoreStated: Long
+  qprofitStated: Long
+  qnetworthStated: Long
+  qleverageStated: Decimal
+  qworkingCapitalStated: Long
+  qcratioStated: Decimal
+  workingCapitalAllowed: Long
+  totalAssetsAllowed: Long
+  retainedEarningsAllowed: Long
+  earningsBeforeTaxesAllowed: Long
+  netWorthAllowed: Long
+  totalLiabilitiesAllowed: Long
+  totalEquityAllowed: Long
+  totalRevenueAllowed: Long
+  totalCostOfGoodsSoldAllowed: Long
+  currentAssetsAllowed: Long
+  currentLiabilitiesAllowed: Long
+  netIncomeAllowed: Long
+  inventoryAllowed: Long
+  fixedAssetsAllowed: Long
+  accountsReceivableAllowed: Long
+  accountsPayableAllowed: Long
+  subordinatedNotesAllowed: Long
+  retainageReceivedAllowed: Long
+  retainagePayableAllowed: Long
+  cashPlusEarningsGreaterThanBillingsAllowed: Long
+  billingsGreaterThanCostsPlusEarningsAllowed: Long
+  prepaidExpensesAllowed: Long
+  cashInventoryAllowed: Long
+  otherCurrentAssetsAllowed: Long
+  bankDebtAllowed: Long
+  gaexpensesAllowed: Long
+  operatingProfitAllowed: Long
+  incomeAfterTaxesAllowed: Long
+  cashAllowed: Long
+  notesAllowed: Long
+  qscoreAllowed: Long
+  qprofitAllowed: Long
+  qnetworthAllowed: Long
+  qleverageAllowed: Decimal
+  qworkingCapitalAllowed: Long
+  qcratioAllowed: Decimal
+  singleLoa: Long
+  aggregateLoa: Long
+  largestJob: Long
+  largestBacklog: Long
+  cashFromOperations: Long
+  cashFromInvestments: Long
+  cashFromFinancing: Long
+  comments: String
+  netChangeCash: Long
+  statement: FinancialStatement!
 }
 
 type Security {
@@ -6184,7 +6715,6 @@ input AccountInput {
   businessTypeClassNavigation: BusinessTypeClassCodeDmInput
   businessTypeNavigation: BusinessTypeDmInput
   businessTypeRiskCode: BusinessTypeRiskCodeDmInput
-  cashFlowStatements: [CashFlowStatementInput!]!
   coPrincipals: [CoPrincipalInput!]!
   cpacontact: LegalEntityInput
   cpafirm: LegalEntityInput

@@ -29,4 +29,6 @@ public partial class BondTransactionPurpose
     public virtual Bond BondNumberNavigation { get; set; } = null!;
 
     public virtual BondTransaction BondTransaction { get; set; } = null!;
+
+    public virtual TransactionPurposeDm TransactionPurposeNavigation { get; set; } = null!;
 }

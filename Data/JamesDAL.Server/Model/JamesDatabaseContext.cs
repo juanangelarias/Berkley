@@ -177,7 +177,17 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<FinancialAccountTypeDm> FinancialAccountTypeDms { get; set; }
 
+    public virtual DbSet<FinancialAggregate> FinancialAggregates { get; set; }
+
+    public virtual DbSet<FinancialDefaultAccount> FinancialDefaultAccounts { get; set; }
+
+    public virtual DbSet<FinancialDetail> FinancialDetails { get; set; }
+
     public virtual DbSet<FinancialRatio> FinancialRatios { get; set; }
+
+    public virtual DbSet<FinancialStatement> FinancialStatements { get; set; }
+
+    public virtual DbSet<FinancialTypeDm> FinancialTypeDms { get; set; }
 
     public virtual DbSet<HomeOfficeEmailTeam> HomeOfficeEmailTeams { get; set; }
 
@@ -254,6 +264,8 @@ public partial class JamesDatabaseContext : DbContext
     public virtual DbSet<OtherBid> OtherBids { get; set; }
 
     public virtual DbSet<PermissionRole> PermissionRoles { get; set; }
+
+    public virtual DbSet<PersonalFinancialFor> PersonalFinancialFors { get; set; }
 
     public virtual DbSet<PersonalFinancialHeader> PersonalFinancialHeaders { get; set; }
 
@@ -333,11 +345,11 @@ public partial class JamesDatabaseContext : DbContext
 
     public virtual DbSet<SurchargeTypeDm> SurchargeTypeDms { get; set; }
 
-    public virtual DbSet<SystemNameDm> SystemNameDms { get; set; }
-
     public virtual DbSet<TaxBasisDm> TaxBasisDms { get; set; }
 
     public virtual DbSet<TicketTask> TicketTasks { get; set; }
+
+    public virtual DbSet<TransactionPurposeDm> TransactionPurposeDms { get; set; }
 
     public virtual DbSet<Underwriter> Underwriters { get; set; }
 
@@ -612,6 +624,8 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.ToTable("AccountProgram", tb => tb.HasTrigger("trgAccountProgramModified"));
 
+            entity.HasIndex(e => new { e.AccountNum, e.Effective }, "IX_AccountProgram_AccountNumEffective");
+
             entity.HasIndex(e => e.Effective, "IX_AccountProgram_Effective");
 
             entity.HasIndex(e => e.Expiration, "IX_AccountProgram_Expiration");
@@ -854,7 +868,7 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<AccountWatch>(entity =>
         {
-            entity.ToTable("AccountWatch");
+            entity.ToTable("AccountWatch", tb => tb.HasTrigger("trgAccountWatchModified"));
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())", "DF_AccountWatch_Id");
             entity.Property(e => e.AccountNum)
@@ -905,6 +919,11 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.BondNumber)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_AdditionalObligee_Bond");
+
+            entity.HasOne(d => d.Obligee).WithMany(p => p.AdditionalObligees)
+                .HasForeignKey(d => d.ObligeeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AdditionalObligee_Obligee");
         });
 
         modelBuilder.Entity<AdditionalRelatedParty>(entity =>
@@ -1069,6 +1088,12 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())", "DF_AgencyCommission_Modified")
                 .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Agency).WithMany(p => p.AgencyCommissions)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.AgencyId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_AgencyCommission_Agency");
         });
 
         modelBuilder.Entity<AgencyCompetition>(entity =>
@@ -1219,7 +1244,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("AgencyLineOfAuthorityAgent");
+            entity.ToTable("AgencyLineOfAuthorityAgent", tb => tb.HasTrigger("trgAgencyLineOfAuthorityAgentModified"));
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())", "DF_AgencyLineOfAuthorityAgent_Id");
             entity.Property(e => e.Created)
@@ -1244,7 +1269,11 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("AgencyLineOfAuthorityLog");
+            entity.ToTable("AgencyLineOfAuthorityLog", tb => tb.HasTrigger("trgAgencyLineOfAuthorityLogModified"));
+
+            entity.HasIndex(e => e.Effective, "IX_AgencyLineOfAuthorityLog_Effective");
+
+            entity.HasIndex(e => e.Expiration, "IX_AgencyLineOfAuthorityLog_Expiration");
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())", "DF_AgencyLineOfAuthorityLog_Id");
             entity.Property(e => e.AccountNum)
@@ -1450,7 +1479,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.AuthorityUsed).IsClustered(false);
 
-            entity.ToTable("AuthorityUsedDM");
+            entity.ToTable("AuthorityUsedDM", tb => tb.HasTrigger("trgAuthorityUsedDMModified"));
 
             entity.HasIndex(e => e.Id, "UQ_AuthorityUsedDM_Id").IsUnique();
 
@@ -1734,6 +1763,15 @@ public partial class JamesDatabaseContext : DbContext
                 .HasMaxLength(4)
                 .IsUnicode(false);
 
+            entity.HasOne(d => d.Agency).WithMany(p => p.BondBlocks)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.AgencyId)
+                .HasConstraintName("FK_BondBlock_Agency");
+
+            entity.HasOne(d => d.Insurer).WithMany(p => p.BondBlocks)
+                .HasForeignKey(d => d.InsurerId)
+                .HasConstraintName("FK_BondBlock_Insurer");
+
             entity.HasOne(d => d.IssuedByNavigation).WithMany(p => p.BondBlocks)
                 .HasForeignKey(d => d.IssuedBy)
                 .HasConstraintName("FK_BondBlock_Employee");
@@ -1743,7 +1781,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("BondBlockAllowedAgency");
+            entity.ToTable("BondBlockAllowedAgency", tb => tb.HasTrigger("trgBondBlockAllowedAgencyModified"));
 
             entity.HasIndex(e => new { e.BondBlockId, e.AgencyNumber }, "UQ_BondBlockAllowedAgency").IsUnique();
 
@@ -2153,7 +2191,12 @@ public partial class JamesDatabaseContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_BondTransaction_Account");
 
-            entity.HasOne(d => d.Agency).WithMany(p => p.BondTransactions)
+            entity.HasOne(d => d.AgencyChangeNavigation).WithMany(p => p.BondTransactionAgencyChangeNavigations)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.AgencyChange)
+                .HasConstraintName("FK_BondTransaction_AgencyChange");
+
+            entity.HasOne(d => d.Agency).WithMany(p => p.BondTransactionAgencies)
                 .HasPrincipalKey(p => p.Id)
                 .HasForeignKey(d => d.AgencyId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -2187,6 +2230,10 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.State)
                 .HasConstraintName("FK_BondTransaction_State");
 
+            entity.HasOne(d => d.TransactionPurposeNavigation).WithMany(p => p.BondTransactions)
+                .HasForeignKey(d => d.TransactionPurpose)
+                .HasConstraintName("FK_BondTransaction_TransactionPurposeDM");
+
             entity.HasOne(d => d.Underwriter).WithMany(p => p.BondTransactions)
                 .HasForeignKey(d => d.UnderwriterId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -2198,6 +2245,8 @@ public partial class JamesDatabaseContext : DbContext
             entity.HasKey(e => e.Id).IsClustered(false);
 
             entity.ToTable("BondTransactionPurpose", tb => tb.HasTrigger("trgBondTransactionPurposeModified"));
+
+            entity.HasIndex(e => e.TransactionPurpose, "UQ_BondTransactionPurpose_TransactionPurpose").IsUnique();
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_BondTransactionPurpose_Id");
             entity.Property(e => e.BondNumber)
@@ -2223,6 +2272,11 @@ public partial class JamesDatabaseContext : DbContext
                 .HasForeignKey(d => d.BondNumber)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_BondTransactionPurpose_Bond");
+
+            entity.HasOne(d => d.TransactionPurposeNavigation).WithOne(p => p.BondTransactionPurpose)
+                .HasForeignKey<BondTransactionPurpose>(d => d.TransactionPurpose)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_BondTransactionPurpose_TransactionPurposeDM");
 
             entity.HasOne(d => d.BondTransaction).WithMany(p => p.BondTransactionPurposes)
                 .HasPrincipalKey(p => new { p.BondNumber, p.BondMod, p.GroupNumber })
@@ -2404,23 +2458,24 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<CashFlowStatement>(entity =>
         {
-            entity.HasKey(e => e.Id).IsClustered(false);
+            entity.HasKey(e => new { e.AccountNum, e.StatementDate }).IsClustered(false);
 
-            entity.ToTable("CashFlowStatement", tb => tb.HasTrigger("trgCashFlowStatementModified"));
+            entity.ToTable("CashFlowStatement");
 
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_CashFlowStatement_Id");
+            entity.HasIndex(e => e.Id, "UQ_CashFlowStatement_Id").IsUnique();
+
             entity.Property(e => e.AccountNum)
                 .HasMaxLength(8)
                 .IsUnicode(false);
-            entity.Property(e => e.B2cee).HasColumnName("B2CEE");
             entity.Property(e => e.Basis)
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.Created)
-                .HasDefaultValueSql("(getdate())", "DF_FinancialStatementHeader_Created")
+                .HasDefaultValueSql("(getdate())", "DF_CashFlowStatement_Created")
                 .HasColumnType("datetime");
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_CashFlowStatement_Id");
             entity.Property(e => e.Modified)
-                .HasDefaultValueSql("(getdate())", "DF_FinancialStatementHeader_Modified")
+                .HasDefaultValueSql("(getdate())", "DF_CashFlowStatement_Modified")
                 .HasColumnType("datetime");
             entity.Property(e => e.NetChangeInCash).HasComputedColumnSql("(((((((((((isnull([NetIncome],(0))+isnull([DepreciationAmoritization],(0)))+isnull([AccountsReceivable],(0)))+isnull([AccountsReceivableRetention],(0)))+isnull([AllOtherCashFlow],(0)))+isnull([NetFixedAssetsAcquired],(0)))+isnull([AllOtherInvestments],(0)))+isnull([Distributions],(0)))+isnull([TermDebt],(0)))+isnull([LineOfCredit],(0)))+isnull([StockholderNotes],(0)))+isnull([AllOtherFinancing],(0)))", false);
             entity.Property(e => e.NetFixedAssetsAcquiredDebt).HasComputedColumnSql("(isnull([TermDebt],(0))-isnull([NetFixedAssetsAcquired],(0)))", false);
@@ -2440,27 +2495,20 @@ public partial class JamesDatabaseContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false);
 
-            entity.HasOne(d => d.AccountNumNavigation).WithMany(p => p.CashFlowStatements)
-                .HasForeignKey(d => d.AccountNum)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_CashFlowStatement_Account");
-
             entity.HasOne(d => d.BasisNavigation).WithMany(p => p.CashFlowStatements)
                 .HasForeignKey(d => d.Basis)
-                .HasConstraintName("FK_CAshFlowStatement_StatementBasisDM");
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CashFlowStatement_StatementBasisDM");
 
             entity.HasOne(d => d.QualityNavigation).WithMany(p => p.CashFlowStatements)
                 .HasForeignKey(d => d.Quality)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CashFlowStatement_StatementQualityDM");
 
             entity.HasOne(d => d.ScalingNavigation).WithMany(p => p.CashFlowStatements)
                 .HasForeignKey(d => d.Scaling)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_CashFlowStatement_ScalingDM");
-
-            entity.HasOne(d => d.TaxBasisNavigation).WithMany(p => p.CashFlowStatements)
-                .HasForeignKey(d => d.TaxBasis)
-                .HasConstraintName("FK_CashFlowStatement_TaxBasisDM");
 
             entity.HasOne(d => d.TypeNavigation).WithMany(p => p.CashFlowStatements)
                 .HasForeignKey(d => d.Type)
@@ -2484,6 +2532,11 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())", "DF_CoInsurer_Modified")
                 .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Insurer).WithMany(p => p.CoInsurers)
+                .HasForeignKey(d => d.InsurerId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_CoInsurer_Insurer");
         });
 
         modelBuilder.Entity<CoPrincipal>(entity =>
@@ -2594,7 +2647,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => new { e.AccountNum, e.Period }).IsClustered(false);
 
-            entity.ToTable("CommercialFinancial");
+            entity.ToTable("CommercialFinancial", tb => tb.HasTrigger("trgCommercialFinancialModified"));
 
             entity.HasIndex(e => e.Id, "UQ_CommercialFinancial_Id").IsUnique();
 
@@ -2818,7 +2871,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Code).IsClustered(false);
 
-            entity.ToTable("Currency");
+            entity.ToTable("Currency", tb => tb.HasTrigger("trgCurrencyModified"));
 
             entity.HasIndex(e => e.Id, "UQ_Currency_Id").IsUnique();
 
@@ -3132,56 +3185,289 @@ public partial class JamesDatabaseContext : DbContext
                 .HasDefaultValueSql("(getdate())", "DF_Employee_Modified")
                 .HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(128);
+
+            entity.HasOne(d => d.PrimaryBranch).WithMany(p => p.Employees)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.PrimaryBranchId)
+                .HasConstraintName("FK_Employee_Branch");
         });
 
         modelBuilder.Entity<FinancialAccountTypeDm>(entity =>
         {
-            entity.HasKey(e => e.AccountType);
+            entity.HasKey(e => e.FinancialAccountType).IsClustered(false);
 
-            entity.ToTable("FinancialAccountTypeDM", tb => tb.HasTrigger("trgFinancialAccountTypeDMModified"));
+            entity.ToTable("FinancialAccountTypeDM");
 
             entity.HasIndex(e => e.Id, "UQ_FinancialAccountTypeDM_Id").IsUnique();
 
+            entity.Property(e => e.FinancialAccountType)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialAccountTypeDM_Created")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())", "DF_FinancialAccountTypeDM_Id");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialAccountTypeDM_Modified")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Title).HasMaxLength(40);
+            entity.Property(e => e.UsedIn)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<FinancialAggregate>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.ToTable("FinancialAggregate");
+
+            entity.HasIndex(e => e.StatementId, "IX_FinancialAggregate_StatementId");
+
+            entity.HasIndex(e => e.Id, "UQ_FinancialAggregate_Id").IsUnique();
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialAggregate_Id");
+            entity.Property(e => e.AggregateLoa).HasColumnName("AggregateLOA");
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialAggregate_Created")
+                .HasColumnType("datetime");
+            entity.Property(e => e.GaexpensesAllowed).HasColumnName("GAExpensesAllowed");
+            entity.Property(e => e.GaexpensesStated).HasColumnName("GAExpensesStated");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialAggregate_Modified")
+                .HasColumnType("datetime");
+            entity.Property(e => e.QcratioAllowed)
+                .HasColumnType("decimal(12, 6)")
+                .HasColumnName("QCRatioAllowed");
+            entity.Property(e => e.QcratioStated)
+                .HasColumnType("decimal(12, 6)")
+                .HasColumnName("QCRatioStated");
+            entity.Property(e => e.QleverageAllowed)
+                .HasColumnType("decimal(12, 6)")
+                .HasColumnName("QLeverageAllowed");
+            entity.Property(e => e.QleverageStated)
+                .HasColumnType("decimal(12, 6)")
+                .HasColumnName("QLeverageStated");
+            entity.Property(e => e.QnetworthAllowed).HasColumnName("QNetworthAllowed");
+            entity.Property(e => e.QnetworthStated).HasColumnName("QNetworthStated");
+            entity.Property(e => e.QprofitAllowed).HasColumnName("QProfitAllowed");
+            entity.Property(e => e.QprofitStated).HasColumnName("QProfitStated");
+            entity.Property(e => e.QscoreAllowed).HasColumnName("QScoreAllowed");
+            entity.Property(e => e.QscoreStated).HasColumnName("QScoreStated");
+            entity.Property(e => e.QworkingCapitalAllowed).HasColumnName("QWorkingCapitalAllowed");
+            entity.Property(e => e.QworkingCapitalStated).HasColumnName("QWorkingCapitalStated");
+            entity.Property(e => e.SingleLoa).HasColumnName("SingleLOA");
+
+            entity.HasOne(d => d.Statement).WithMany(p => p.FinancialAggregates)
+                .HasForeignKey(d => d.StatementId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinancialAggregate_FinancialStatement");
+        });
+
+        modelBuilder.Entity<FinancialDefaultAccount>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.ToTable("FinancialDefaultAccount");
+
+            entity.HasIndex(e => new { e.AccountClass, e.AccountType, e.Sequence, e.PkparentId }, "UQ_FinancialDefaultAccount_AccountClass_AccountType_Sequence_PKParentId").IsUnique();
+
+            entity.HasIndex(e => e.Id, "UQ_FinancialDefaultAccount_Id").IsUnique();
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialDefaultAccount_Id");
+            entity.Property(e => e.AccountClass)
+                .HasMaxLength(4)
+                .IsUnicode(false);
+            entity.Property(e => e.AccountName).HasMaxLength(45);
             entity.Property(e => e.AccountType)
                 .HasMaxLength(2)
                 .IsUnicode(false)
                 .IsFixedLength();
             entity.Property(e => e.Created)
-                .HasDefaultValueSql("(getdate())", "DF_FinancialAccountType_Created")
+                .HasDefaultValueSql("(getdate())", "DF_FinancialDefaultAccount_Created")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialAccountTypeDM_Id");
             entity.Property(e => e.Modified)
-                .HasDefaultValueSql("(getdate())", "DF_FinancialAccountType_Modified")
+                .HasDefaultValueSql("(getdate())", "DF_FinancialDefaultAccount_Modified")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Title).HasMaxLength(40);
+            entity.Property(e => e.PkparentId)
+                .HasComputedColumnSql("(isnull([ParentId],'00000000-0000-0000-0000-000000000000'))", false)
+                .HasColumnName("PKParentId");
+
+            entity.HasOne(d => d.Parent).WithMany(p => p.InverseParent)
+                .HasForeignKey(d => d.ParentId)
+                .HasConstraintName("FK_FinancialDefaultAccount_FinancialDefaultAccount");
+        });
+
+        modelBuilder.Entity<FinancialDetail>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.ToTable("FinancialDetail");
+
+            entity.HasIndex(e => e.ParentId, "IX_FinancialDetail_ParentId");
+
+            entity.HasIndex(e => e.StatementId, "IX_FinancialDetail_StatementId");
+
+            entity.HasIndex(e => e.Id, "UQ_FinancialDetail_Id").IsUnique();
+
+            entity.HasIndex(e => new { e.StatementId, e.Sequence, e.AccountType, e.PkparentId }, "UQ_FinancialDetail_StatementId_Sequence_AccountType_PKParentId").IsUnique();
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialDetail_Id");
+            entity.Property(e => e.AccountName).HasMaxLength(45);
+            entity.Property(e => e.AccountType)
+                .HasMaxLength(2)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialDetail_Created")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialDetail_Modified")
+                .HasColumnType("datetime");
+            entity.Property(e => e.PkparentId)
+                .HasComputedColumnSql("(isnull([ParentId],'00000000-0000-0000-0000-000000000000'))", false)
+                .HasColumnName("PKParentId");
+
+            entity.HasOne(d => d.Parent).WithMany(p => p.InverseParent)
+                .HasForeignKey(d => d.ParentId)
+                .HasConstraintName("FK_FinancialDetail_FinancialDetail");
+
+            entity.HasOne(d => d.Statement).WithMany(p => p.FinancialDetails)
+                .HasForeignKey(d => d.StatementId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinancialDetail_FinancialStatement");
         });
 
         modelBuilder.Entity<FinancialRatio>(entity =>
         {
-            entity.HasKey(e => new { e.AccountNum, e.StatementDate })
+            entity.HasKey(e => e.Id)
                 .HasName("PK_FinancialRatios")
                 .IsClustered(false);
 
-            entity.ToTable("FinancialRatio", tb => tb.HasTrigger("trgFinancialRatioModified"));
+            entity.ToTable("FinancialRatio");
+
+            entity.HasIndex(e => e.StatementId, "IX_FinancialRatio_StatementId");
 
             entity.HasIndex(e => e.Id, "UQ_FinancialRatios_Id").IsUnique();
 
-            entity.Property(e => e.AccountNum)
-                .HasMaxLength(8)
-                .IsUnicode(false);
-            entity.Property(e => e.AppayableDays).HasColumnName("APPayableDays");
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialRatio_Id");
+            entity.Property(e => e.AppayableDaysAllowed).HasColumnName("APPayableDaysAllowed");
+            entity.Property(e => e.AppayableDaysStated).HasColumnName("APPayableDaysStated");
             entity.Property(e => e.ArapbalanceAllowed).HasColumnName("ARAPBalanceAllowed");
             entity.Property(e => e.ArapbalanceStated).HasColumnName("ARAPBalanceStated");
-            entity.Property(e => e.ArcollectionDatsNoReturn).HasColumnName("ARCollectionDatsNoReturn");
-            entity.Property(e => e.ArcollectionDays).HasColumnName("ARCollectionDays");
+            entity.Property(e => e.ArcollectionDatsNoReturnAllowed).HasColumnName("ARCollectionDatsNoReturnAllowed");
+            entity.Property(e => e.ArcollectionDatsNoReturnStated).HasColumnName("ARCollectionDatsNoReturnStated");
+            entity.Property(e => e.ArcollectionDaysAllowed).HasColumnName("ARCollectionDaysAllowed");
+            entity.Property(e => e.ArcollectionDaysStated).HasColumnName("ARCollectionDaysStated");
             entity.Property(e => e.Created)
-                .HasDefaultValueSql("(getdate())", "DF_FinancialRatios_Created")
+                .HasDefaultValueSql("(getdate())", "DF_FinancialRatio_Created")
                 .HasColumnType("datetime");
             entity.Property(e => e.Gaexpenses2SalesAllowed).HasColumnName("GAExpenses2SalesAllowed");
             entity.Property(e => e.Gaexpenses2SalesStated).HasColumnName("GAExpenses2SalesStated");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialRatio_Id");
             entity.Property(e => e.Modified)
-                .HasDefaultValueSql("(getdate())", "DF_FinancialRatios_Modified")
+                .HasDefaultValueSql("(getdate())", "DF_FinancialRatio_Modified")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.Statement).WithMany(p => p.FinancialRatios)
+                .HasForeignKey(d => d.StatementId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinancialRatio_FinancialStatement");
+        });
+
+        modelBuilder.Entity<FinancialStatement>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.ToTable("FinancialStatement");
+
+            entity.HasIndex(e => e.FinancialType, "IX_FinancialStatement_FinancialType");
+
+            entity.HasIndex(e => e.StatementDate, "IX_FinancialStatement_StatementDate");
+
+            entity.HasIndex(e => new { e.StatementDate, e.Version, e.FinancialType }, "IX_FinancialStatement_StatementDate_Version_FinancialType");
+
+            entity.HasIndex(e => e.Type, "IX_FinancialStatement_Type");
+
+            entity.HasIndex(e => new { e.Version, e.FinancialType }, "IX_FinancialStatement_Version_FinancialType");
+
+            entity.HasIndex(e => new { e.AccountNum, e.StatementDate, e.FinancialType, e.Version }, "UQ_FinancialStatement_AccountNum_StatementDate_FinancialType_Version").IsUnique();
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialStatement_Id");
+            entity.Property(e => e.AccountNum)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.Basis)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Completed).HasComputedColumnSql("([BalanceSheetCompleted]&[ProfitLossStatementCompleted])", false);
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialStatement_Created")
+                .HasColumnType("datetime");
+            entity.Property(e => e.FinancialType)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialStatement_Modified")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Quality)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Scaling)
+                .HasMaxLength(10)
+                .IsUnicode(false);
+            entity.Property(e => e.TaxBasis)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Type)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.BasisNavigation).WithMany(p => p.FinancialStatements)
+                .HasForeignKey(d => d.Basis)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinancialStatement_StatementBasisDM");
+
+            entity.HasOne(d => d.FinancialTypeNavigation).WithMany(p => p.FinancialStatements)
+                .HasForeignKey(d => d.FinancialType)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinancialStatement_FinancialTypeDM");
+
+            entity.HasOne(d => d.QualityNavigation).WithMany(p => p.FinancialStatements)
+                .HasForeignKey(d => d.Quality)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinancialStatement_StatementQualityDM");
+
+            entity.HasOne(d => d.ScalingNavigation).WithMany(p => p.FinancialStatements)
+                .HasForeignKey(d => d.Scaling)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinancialStatement_ScalingDM");
+
+            entity.HasOne(d => d.TypeNavigation).WithMany(p => p.FinancialStatements)
+                .HasForeignKey(d => d.Type)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FinancialStatement_StatementTypeDM");
+        });
+
+        modelBuilder.Entity<FinancialTypeDm>(entity =>
+        {
+            entity.HasKey(e => e.FinancialType)
+                .HasName("PK_FinancialType")
+                .IsClustered(false);
+
+            entity.ToTable("FinancialTypeDM");
+
+            entity.HasIndex(e => e.Id, "UQ_FinancialType_Id").IsUnique();
+
+            entity.Property(e => e.FinancialType)
+                .HasMaxLength(8)
+                .IsUnicode(false);
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialType_Created")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialType_Id");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())", "DF_FinancialType_Modified")
                 .HasColumnType("datetime");
         });
 
@@ -3380,7 +3666,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Code).IsClustered(false);
 
-            entity.ToTable("IndustryCodeDM");
+            entity.ToTable("IndustryCodeDM", tb => tb.HasTrigger("trgIndustryCodeDMModified"));
 
             entity.HasIndex(e => e.Id, "UQ_IndustryCodeDM_Id").IsUnique();
 
@@ -3737,6 +4023,12 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.ToTable("LineOfAuthorityLog", tb => tb.HasTrigger("trgLineOfAuthorityLogModified"));
 
+            entity.HasIndex(e => e.AccountNum, "IX_LineOfAuthorityLog_AccountNum");
+
+            entity.HasIndex(e => new { e.AccountNum, e.Effective, e.Expiration }, "IX_LineOfAuthorityLog_AccountNumEffective_Expiration");
+
+            entity.HasIndex(e => new { e.AccountNum, e.Status, e.Effective, e.Expiration }, "IX_LineOfAuthorityLog_AccountNum_StatusEffective_Expiration");
+
             entity.HasIndex(e => e.Effective, "IX_LineOfAuthorityLog_Effective");
 
             entity.HasIndex(e => e.Expiration, "IX_LineOfAuthorityLog_Expiration");
@@ -3794,7 +4086,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("LineOfAuthorityReason");
+            entity.ToTable("LineOfAuthorityReason", tb => tb.HasTrigger("trgLineOfAuthorityReasonModified"));
 
             entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())", "DF_LineOfAuthorityReason_Id");
             entity.Property(e => e.AccountNum)
@@ -3957,7 +4249,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.GroupName).IsClustered(false);
 
-            entity.ToTable("NotificationGroup");
+            entity.ToTable("NotificationGroup", tb => tb.HasTrigger("trgNotificationGroupModified"));
 
             entity.HasIndex(e => e.Id, "UQ_NotificationGroup_Id").IsUnique();
 
@@ -3977,7 +4269,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => new { e.GroupName, e.EmployeeId }).IsClustered(false);
 
-            entity.ToTable("NotificationGroupMember");
+            entity.ToTable("NotificationGroupMember", tb => tb.HasTrigger("trgNotificationGroupMemberModified"));
 
             entity.HasIndex(e => e.Id, "UQ_NotificationGroupMember_Id").IsUnique();
 
@@ -4225,6 +4517,30 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.Role)
                 .HasMaxLength(100)
                 .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<PersonalFinancialFor>(entity =>
+        {
+            entity.HasKey(e => e.Id).IsClustered(false);
+
+            entity.ToTable("PersonalFinancialFor");
+
+            entity.HasIndex(e => e.Id, "UQ_PersonalFinancialFor_Id").IsUnique();
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_PersonalFinancialFor_Id");
+            entity.Property(e => e.Comment).IsUnicode(false);
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())", "DF_PersonalFinancialFor_Created")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())", "DF_PersonalFinancialFor_Modified")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Name).HasMaxLength(35);
+
+            entity.HasOne(d => d.IdNavigation).WithOne(p => p.PersonalFinancialFor)
+                .HasForeignKey<PersonalFinancialFor>(d => d.Id)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PersonalFinancialFor_FinancialStatement");
         });
 
         modelBuilder.Entity<PersonalFinancialHeader>(entity =>
@@ -4520,7 +4836,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("PrivateEquity");
+            entity.ToTable("PrivateEquity", tb => tb.HasTrigger("trgPrivateEquityModified"));
 
             entity.HasIndex(e => new { e.AccountNum, e.FirmName, e.Year }, "UQ_PrivateEquity_AccountNum_FirmName_Year").IsUnique();
 
@@ -4802,6 +5118,11 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.RequestedBy).HasMaxLength(128);
             entity.Property(e => e.SendEmailTo).HasMaxLength(256);
             entity.Property(e => e.UnderWriterNotified).HasColumnType("datetime");
+
+            entity.HasOne(d => d.RenewalRequestSource).WithMany(p => p.RenewalRequests)
+                .HasPrincipalKey(p => p.Id)
+                .HasForeignKey(d => d.RenewalRequestSourceId)
+                .HasConstraintName("FK_RenewalRequest_RenewalRequestSource");
         });
 
         modelBuilder.Entity<RenewalRequestSource>(entity =>
@@ -4809,6 +5130,8 @@ public partial class JamesDatabaseContext : DbContext
             entity.HasKey(e => e.Source);
 
             entity.ToTable("RenewalRequestSource", tb => tb.HasTrigger("trgRenewalRequestSourceModified"));
+
+            entity.HasIndex(e => e.Id, "UQ_RenewalRequestSource_Id").IsUnique();
 
             entity.Property(e => e.Source).HasMaxLength(128);
             entity.Property(e => e.Created)
@@ -4927,7 +5250,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Id).IsClustered(false);
 
-            entity.ToTable("Security");
+            entity.ToTable("Security", tb => tb.HasTrigger("trgSecurityModified"));
 
             entity.HasIndex(e => e.Id, "UQ_Security_Id").IsUnique();
 
@@ -4952,7 +5275,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => e.Role);
 
-            entity.ToTable("SecurityRole");
+            entity.ToTable("SecurityRole", tb => tb.HasTrigger("trgSecurityRoleModified"));
 
             entity.HasIndex(e => e.Id, "UQ_SecurityRole_Id").IsUnique();
 
@@ -5267,26 +5590,6 @@ public partial class JamesDatabaseContext : DbContext
                 .HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<SystemNameDm>(entity =>
-        {
-            entity.HasKey(e => e.SystemName).IsClustered(false);
-
-            entity.ToTable("SystemNameDM", tb => tb.HasTrigger("trgSystemNameDMModified"));
-
-            entity.HasIndex(e => e.Id, "UQ_SystemNameDM_Id").IsUnique();
-
-            entity.Property(e => e.SystemName)
-                .HasMaxLength(30)
-                .IsUnicode(false);
-            entity.Property(e => e.Created)
-                .HasDefaultValueSql("(getdate())", "DF_SystemNameDM_Created")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_SystemNameDM_Id");
-            entity.Property(e => e.Modified)
-                .HasDefaultValueSql("(getdate())", "DF_SystemNameDM_Modified")
-                .HasColumnType("datetime");
-        });
-
         modelBuilder.Entity<TaxBasisDm>(entity =>
         {
             entity.HasKey(e => e.TaxBasis).IsClustered(false);
@@ -5322,6 +5625,26 @@ public partial class JamesDatabaseContext : DbContext
             entity.Property(e => e.RefTicket).HasColumnName("refTicket");
             entity.Property(e => e.TicketDate).HasColumnType("datetime");
             entity.Property(e => e.Title).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<TransactionPurposeDm>(entity =>
+        {
+            entity.HasKey(e => e.TransactionPurpose).IsClustered(false);
+
+            entity.ToTable("TransactionPurposeDM");
+
+            entity.HasIndex(e => e.Id, "UQ_TransactionPurposeDM_Id").IsUnique();
+
+            entity.Property(e => e.TransactionPurpose)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Created)
+                .HasDefaultValueSql("(getdate())", "DF_TransactionPurposeDM_Created")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())", "DF_TransactionPurposeDM_Id");
+            entity.Property(e => e.Modified)
+                .HasDefaultValueSql("(getdate())", "DF_TransactionPurposeDM_Modified")
+                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Underwriter>(entity =>
@@ -5524,7 +5847,7 @@ public partial class JamesDatabaseContext : DbContext
         {
             entity.HasKey(e => new { e.Username, e.Key }).IsClustered(false);
 
-            entity.ToTable("UserSetting");
+            entity.ToTable("UserSetting", tb => tb.HasTrigger("trgUserSettingModified"));
 
             entity.HasIndex(e => e.Id, "UQ_UserSetting_Id").IsUnique();
 

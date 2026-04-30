@@ -24,11 +24,15 @@ public partial class Insurer
 
     public virtual ICollection<AgencyLicense> AgencyLicenses { get; set; } = new List<AgencyLicense>();
 
+    public virtual ICollection<BondBlock> BondBlocks { get; set; } = new List<BondBlock>();
+
     public virtual ICollection<BondHold> BondHolds { get; set; } = new List<BondHold>();
 
     public virtual ICollection<BondTransaction> BondTransactions { get; set; } = new List<BondTransaction>();
 
     public virtual ICollection<Bond> Bonds { get; set; } = new List<Bond>();
+
+    public virtual ICollection<CoInsurer> CoInsurers { get; set; } = new List<CoInsurer>();
 
     public virtual CountryDm CurrencyCountryNavigation { get; set; } = null!;
 

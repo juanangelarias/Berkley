@@ -40,6 +40,8 @@ public partial class Branch
 
     public virtual Address BranchOfficeAddress { get; set; } = null!;
 
+    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+
     public virtual Employee HomeOfficeLeadNavigation { get; set; } = null!;
 
     public virtual PhoneNumber Phone { get; set; } = null!;

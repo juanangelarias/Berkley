@@ -27,4 +27,6 @@ public partial class AgencyCommission
     public DateTime? Expiration { get; set; }
 
     public int ExpireIncluded { get; set; }
+
+    public virtual Agency Agency { get; set; } = null!;
 }

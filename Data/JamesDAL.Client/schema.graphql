@@ -2630,7 +2630,7 @@ type BondBlock {
   issuedBy: UUID
   comments: String
   agencyId: UUID
-  insuredId: UUID
+  insurerId: UUID
   bondBlockAllowedAgencies: [BondBlockAllowedAgency!]!
   issuedByNavigation: Employee
 }

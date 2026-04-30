@@ -3267,40 +3267,41 @@ public partial class JamesDatabaseContext : DbContext
 
         modelBuilder.Entity<FinancialDefaultAccount>(entity =>
         {
-            entity.HasKey(e => new { e.AccountClass, e.AccountType, e.Sequence, e.PkparentId }).IsClustered(false);
+            entity.HasKey(e => e.Id).IsClustered(false);
 
             entity.ToTable("FinancialDefaultAccount");
 
+            entity.HasIndex(e => new { e.AccountClass, e.AccountType, e.Sequence, e.PkparentId }, "UQ_FinancialDefaultAccount_AccountClass_AccountType_Sequence_PKParentId").IsUnique();
+
             entity.HasIndex(e => e.Id, "UQ_FinancialDefaultAccount_Id").IsUnique();
 
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialDefaultAccount_Id");
             entity.Property(e => e.AccountClass)
                 .HasMaxLength(4)
                 .IsUnicode(false);
+            entity.Property(e => e.AccountName).HasMaxLength(45);
             entity.Property(e => e.AccountType)
                 .HasMaxLength(2)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.PkparentId)
-                .HasComputedColumnSql("(isnull([ParentId],'00000000-0000-0000-0000-000000000000'))", false)
-                .HasColumnName("PKParentId");
-            entity.Property(e => e.AccountName).HasMaxLength(45);
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())", "DF_FinancialDefaultAccount_Created")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialDefaultAccount_Id");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())", "DF_FinancialDefaultAccount_Modified")
                 .HasColumnType("datetime");
+            entity.Property(e => e.PkparentId)
+                .HasComputedColumnSql("(isnull([ParentId],'00000000-0000-0000-0000-000000000000'))", false)
+                .HasColumnName("PKParentId");
 
             entity.HasOne(d => d.Parent).WithMany(p => p.InverseParent)
-                .HasPrincipalKey(p => p.Id)
                 .HasForeignKey(d => d.ParentId)
                 .HasConstraintName("FK_FinancialDefaultAccount_FinancialDefaultAccount");
         });
 
         modelBuilder.Entity<FinancialDetail>(entity =>
         {
-            entity.HasKey(e => new { e.StatementId, e.Sequence, e.AccountType, e.PkparentId }).IsClustered(false);
+            entity.HasKey(e => e.Id).IsClustered(false);
 
             entity.ToTable("FinancialDetail");
 
@@ -3310,24 +3311,25 @@ public partial class JamesDatabaseContext : DbContext
 
             entity.HasIndex(e => e.Id, "UQ_FinancialDetail_Id").IsUnique();
 
+            entity.HasIndex(e => new { e.StatementId, e.Sequence, e.AccountType, e.PkparentId }, "UQ_FinancialDetail_StatementId_Sequence_AccountType_PKParentId").IsUnique();
+
+            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialDetail_Id");
+            entity.Property(e => e.AccountName).HasMaxLength(45);
             entity.Property(e => e.AccountType)
                 .HasMaxLength(2)
                 .IsUnicode(false)
                 .IsFixedLength();
-            entity.Property(e => e.PkparentId)
-                .HasComputedColumnSql("(isnull([ParentId],'00000000-0000-0000-0000-000000000000'))", false)
-                .HasColumnName("PKParentId");
-            entity.Property(e => e.AccountName).HasMaxLength(45);
             entity.Property(e => e.Created)
                 .HasDefaultValueSql("(getdate())", "DF_FinancialDetail_Created")
                 .HasColumnType("datetime");
-            entity.Property(e => e.Id).HasDefaultValueSql("(newid())", "DF_FinancialDetail_Id");
             entity.Property(e => e.Modified)
                 .HasDefaultValueSql("(getdate())", "DF_FinancialDetail_Modified")
                 .HasColumnType("datetime");
+            entity.Property(e => e.PkparentId)
+                .HasComputedColumnSql("(isnull([ParentId],'00000000-0000-0000-0000-000000000000'))", false)
+                .HasColumnName("PKParentId");
 
             entity.HasOne(d => d.Parent).WithMany(p => p.InverseParent)
-                .HasPrincipalKey(p => p.Id)
                 .HasForeignKey(d => d.ParentId)
                 .HasConstraintName("FK_FinancialDetail_FinancialDetail");
 

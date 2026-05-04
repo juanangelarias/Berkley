@@ -15,7 +15,7 @@ namespace James.Shared.Data
         /// Load multiple items in parallel and then run the afterAllLoaded when loading complete
         /// </summary>
         /// <param name="afterAllLoaded">Action to execute after all items have been loaded.</param>
-        /// <param name="loadItems">The LoadItem to load</param>1
+        /// <param name="loadItems">The LoadItem to load</param>
         /// <remarks>Use this is you need multiple data sets before contracting a final output.</remarks>
         public Task ParallelGetCacheOrDataAsync(Action? afterAllLoaded, params LoadItem[] loadItems);
 
@@ -384,13 +384,13 @@ namespace James.Shared.Data
             string bondType, string conditions);
         public Task<ISaveDataResult> AgencyLoaDelete(Guid id);
         
-        // Reason
+        // Reason - Renewal
 
         public Task<IDataAccessResult<List<LineOfAuthorityReason>>> GetLOAReasonByAccount(string accountNum);
 
         public Task<ISaveDataResult> SetLOAReason(Guid id, string accountNum, string type, string recommendation,
             string businessOverview, string bondRisk, string financialAnalysis, string debtHighlights,
-            string followUpConditions, string outlook);
+            string followUpConditions, string outlook, string keyChanges);
 
         public Task<ISaveDataResult> AssociateLOALogToReason(Guid reasonId, Guid loaLogId);
         public Task<ISaveDataResult> DisassociateLOALogToReason(Guid reasonId, Guid loaLogId);

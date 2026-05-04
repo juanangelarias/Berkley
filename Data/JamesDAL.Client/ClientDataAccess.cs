@@ -1874,7 +1874,8 @@ namespace James.Data.Client
         }
 
         public async Task<ISaveDataResult> SetLOAReason(Guid id, string accountNum, string type, string recommendation, string businessOverview,
-            string bondRisk, string financialAnalysis, string debtHighlights, string followUpConditions, string outlook)
+            string bondRisk, string financialAnalysis, string debtHighlights, string followUpConditions, string outlook,
+            string keyChanges)
         {
             return await ExecuteSave(async () => await jamesClient.SetLOAReason.ExecuteAsync(new SetLOAReasonInput
             {
@@ -1887,7 +1888,8 @@ namespace James.Data.Client
                 FinancialAnalysis = financialAnalysis,
                 DebtHighlights = debtHighlights,
                 FollowUpConditions = followUpConditions,
-                Outlook = outlook
+                Outlook = outlook,
+                KeyChanges = keyChanges,
             }));
         }
 

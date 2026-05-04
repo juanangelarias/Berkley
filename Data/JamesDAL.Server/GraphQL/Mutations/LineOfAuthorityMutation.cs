@@ -371,8 +371,8 @@ public partial class GeneralMutation
     [Authorize]
     public async Task<bool> SetLOAReason(Guid id, string accountNum, string type, string recommendation,
         string businessOverview, string bondRisk, string financialAnalysis, string debtHighlights,
-        string followUpConditions, string outlook, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IUserShared userShared)
+        string followUpConditions, string outlook, string keyChanges, 
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         
@@ -393,6 +393,7 @@ public partial class GeneralMutation
             var newReason = new LineOfAuthorityReason
             {
                 Id = id,
+                AccountNum = accountNum,
                 CreatedBy = employee.Id,
                 Type = type,
                 Recommendation = recommendation,
@@ -401,12 +402,14 @@ public partial class GeneralMutation
                 FinancialAnalysis = financialAnalysis,
                 DebtHighlights = debtHighlights,
                 FollowUpConditions = followUpConditions,
+                KeyChanges = keyChanges,
                 Outlook = outlook
             };
             ctx.LineOfAuthorityReasons.Add(newReason);
         }
         else
         {
+            existing.AccountNum = accountNum;
             existing.CreatedBy = employee.Id;
             existing.Type = type;
             existing.Recommendation = recommendation;
@@ -415,6 +418,7 @@ public partial class GeneralMutation
             existing.FinancialAnalysis = financialAnalysis;
             existing.DebtHighlights = debtHighlights;
             existing.FollowUpConditions = followUpConditions;
+            existing.KeyChanges = keyChanges;
             existing.Outlook = outlook;
             ctx.Update(existing);
         }
@@ -424,12 +428,12 @@ public partial class GeneralMutation
     }
 
     [Authorize]
-    public async Task<bool> AssociateLOALogToReason(Guid reasonId, Guid LoaLogId,
+    public async Task<bool> AssociateLOALogToReason(Guid reasonId, Guid loaLogId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var loaLog = await ctx.LineOfAuthorityLogs
-            .FirstOrDefaultAsync(f => f.Id == LoaLogId);
+            .FirstOrDefaultAsync(f => f.Id == loaLogId);
         
         if(loaLog == null)
             throw new NotFoundException("LOA Log not found");
@@ -438,7 +442,7 @@ public partial class GeneralMutation
             .Where(r => r.ReasonId == reasonId)
             .ToListAsync();
         
-        if(logsAssociated.Any(a=>a.Id == LoaLogId))
+        if(logsAssociated.Any(a=>a.Id == loaLogId))
             return true;
         
         if(logsAssociated.Any(a=>a.BondType == loaLog.BondType))
@@ -452,13 +456,13 @@ public partial class GeneralMutation
     }
 
     [Authorize]
-    public async Task<bool> DisassociateLOALogToReason(Guid reasonId, Guid LoaLogId,
+    public async Task<bool> DisassociateLOALogToReason(Guid reasonId, Guid loaLogId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var loaLog = await ctx.LineOfAuthorityLogs
-            .FirstOrDefaultAsync(f => f.Id == LoaLogId);
+            .FirstOrDefaultAsync(f => f.Id == loaLogId);
 
         if (loaLog == null)
             throw new NotFoundException("Loa Log not found");

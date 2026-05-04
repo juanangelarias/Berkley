@@ -1286,11 +1286,11 @@ namespace James.Data.Server
 
         public async Task<ISaveDataResult> SetLOAReason(Guid id, string accountNum, string type, string recommendation,
             string businessOverview, string bondRisk, string financialAnalysis, string debtHighlights, 
-            string followUpConditions, string outlook)
+            string followUpConditions, string outlook, string keyChanges)
         {
             return await ExecuteSave(async () => await generalMutation.SetLOAReason(id, accountNum, type,
                 recommendation, businessOverview, bondRisk, financialAnalysis, debtHighlights, followUpConditions, 
-                outlook, contextFactory, userShared));
+                outlook, keyChanges, contextFactory, userShared));
         }
 
         public async Task<ISaveDataResult> AssociateLOALogToReason(Guid reasonId, Guid loaLogId)

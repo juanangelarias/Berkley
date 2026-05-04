@@ -46,4 +46,20 @@ mutation AgencyLoaDelete($input: AgencyLoaDeleteInput!) {
     }
 }
 
+mutation SetLOAReason($input: SetLOAReasonInput!) {
+    setLOAReason(input: $input) {
+        boolean
+    }
+}
 
+mutation AssociateLOALogToReason($input: AssociateLOALogToReasonInput!){
+    associateLOALogToReason(input: $input){
+        boolean
+    }
+}
+
+mutation DisassociateLOALogToReason($input: DisassociateLOALogToReasonInput!){
+    disassociateLOALogToReason(input: $input){
+        boolean
+    }
+}

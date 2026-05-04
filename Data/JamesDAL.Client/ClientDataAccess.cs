@@ -1863,6 +1863,52 @@ namespace James.Data.Client
             }));
         }
 
+        // Reason - Renewal
+
+        public async Task<IDataAccessResult<List<LineOfAuthorityReason>>> GetLOAReasonByAccount(string accountNum)
+        {
+            var result = await ExecuteGet<List<LineOfAuthorityReason>>(async () =>
+                await jamesClient.GetLOAReasonByAccount.ExecuteAsync(accountNum), "GetLOAReasonByAccount");
+
+            return result;
+        }
+
+        public async Task<ISaveDataResult> SetLOAReason(Guid id, string accountNum, string type, string recommendation, string businessOverview,
+            string bondRisk, string financialAnalysis, string debtHighlights, string followUpConditions, string outlook)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetLOAReason.ExecuteAsync(new SetLOAReasonInput
+            {
+                Id = id,
+                AccountNum = accountNum,
+                Type = type,
+                Recommendation = recommendation,
+                BusinessOverview = businessOverview,
+                BondRisk = bondRisk,
+                FinancialAnalysis = financialAnalysis,
+                DebtHighlights = debtHighlights,
+                FollowUpConditions = followUpConditions,
+                Outlook = outlook
+            }));
+        }
+
+        public async Task<ISaveDataResult> AssociateLOALogToReason(Guid reasonId, Guid loaLogId)
+        {
+            return await ExecuteSave(async () => await jamesClient.AssociateLOALogToReason.ExecuteAsync(new()
+            {
+                ReasonId = reasonId,
+                LoaLogId = loaLogId
+            }));
+        }
+
+        public async Task<ISaveDataResult> DisassociateLOALogToReason(Guid reasonId, Guid loaLogId)
+        {
+            return await ExecuteSave(async () => await jamesClient.DisassociateLOALogToReason.ExecuteAsync(new()
+            {
+                ReasonId = reasonId,
+                LoaLogId = loaLogId
+            }));
+        }
+
         #endregion
         
         #region OnlineSystem

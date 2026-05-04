@@ -400,4 +400,22 @@ public partial class Query
             .Where(f => f.UserId == employee.Id && f.DivisionCode == division)
             .ToListAsync();
     }
+
+    // Reason - Renewals
+    [Authorize]
+    public async Task<List<LineOfAuthorityReason>> GetLOAReasonByAccount(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var reasons = await ctx.LineOfAuthorityReasons
+            .Include(i=>i.CreatedByNavigation)
+            .Include(i=>i.LineOfAuthorityLogs)
+            .ThenInclude(i=>i.CreatedByNavigation)
+            .Include(i=>i.LineOfAuthorityLogs)
+            .ThenInclude(i=>i.ApprovedByNavigation)
+            .Where(r => r.AccountNum == accountNum)
+            .ToListAsync();
+
+        return reasons;
+    }
 }

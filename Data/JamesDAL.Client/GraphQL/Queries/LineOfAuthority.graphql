@@ -108,3 +108,41 @@ query GetAccountAgencyLOAById($id: UUID!) {
         sequenceNumber
     }
 }
+
+query GetLOAReasonByAccount($accountNum: String!) {
+    loaReasonByAccount(accountNum: $accountNum){
+        id
+        accountNum
+        bondRisk
+        businessOverview
+        createdBy
+        createdByNavigation {
+            fullName
+        }
+        debtHighlights
+        financialAnalysis
+        followUpConditions
+        keyChanges
+        lineOfAuthorityLogs {
+            id
+            bondType
+            comments
+            conditions
+            createdBy
+            createdByNavigation {
+                fullName
+            }
+            division
+            effective
+            expiration
+            loaaggregate
+            loasingle
+            sequenceNumber
+            status
+            approvedBy
+            approvedByNavigation {
+                fullName
+            }
+        }
+    }
+}

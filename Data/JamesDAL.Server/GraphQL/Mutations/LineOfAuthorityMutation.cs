@@ -1,4 +1,5 @@
-﻿using James.Shared;
+﻿using James.Data.Server.Exceptions;
+using James.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -361,8 +362,114 @@ public partial class GeneralMutation
         var employee = await ctx.Employees
                            .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username) ??
                        await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.Email.StartsWith(username));
+                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(username));
 
         return employee ?? throw new GraphQLException("User not found in employee table.");
+    }
+    
+    // Reason - Renewal
+    [Authorize]
+    public async Task<bool> SetLOAReason(Guid id, string accountNum, string type, string recommendation,
+        string businessOverview, string bondRisk, string financialAnalysis, string debtHighlights,
+        string followUpConditions, string outlook, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IUserShared userShared)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        
+        var user = await userShared.GetCurrentUser();
+        var employee = await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
+                       await ctx.Employees
+                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
+
+        if (employee == null)
+            throw new GraphQLException("User not found in employee table.");
+
+        var existing = await ctx.LineOfAuthorityReasons
+            .FirstOrDefaultAsync(f => f.Id == id);
+
+        if (existing == null)
+        {
+            var newReason = new LineOfAuthorityReason
+            {
+                Id = id,
+                CreatedBy = employee.Id,
+                Type = type,
+                Recommendation = recommendation,
+                BusinessOverview = businessOverview,
+                BondRisk = bondRisk,
+                FinancialAnalysis = financialAnalysis,
+                DebtHighlights = debtHighlights,
+                FollowUpConditions = followUpConditions,
+                Outlook = outlook
+            };
+            ctx.LineOfAuthorityReasons.Add(newReason);
+        }
+        else
+        {
+            existing.CreatedBy = employee.Id;
+            existing.Type = type;
+            existing.Recommendation = recommendation;
+            existing.BusinessOverview = businessOverview;
+            existing.BondRisk = bondRisk;
+            existing.FinancialAnalysis = financialAnalysis;
+            existing.DebtHighlights = debtHighlights;
+            existing.FollowUpConditions = followUpConditions;
+            existing.Outlook = outlook;
+            ctx.Update(existing);
+        }
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> AssociateLOALogToReason(Guid reasonId, Guid LoaLogId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var loaLog = await ctx.LineOfAuthorityLogs
+            .FirstOrDefaultAsync(f => f.Id == LoaLogId);
+        
+        if(loaLog == null)
+            throw new NotFoundException("LOA Log not found");
+
+        var logsAssociated = await ctx.LineOfAuthorityLogs
+            .Where(r => r.ReasonId == reasonId)
+            .ToListAsync();
+        
+        if(logsAssociated.Any(a=>a.Id == LoaLogId))
+            return true;
+        
+        if(logsAssociated.Any(a=>a.BondType == loaLog.BondType))
+            throw new($"There is already a LOA Log associated with this reason and bond type ({loaLog.BondType})");
+
+        loaLog.ReasonId = reasonId;
+        ctx.Update(loaLog);
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+
+    [Authorize]
+    public async Task<bool> DisassociateLOALogToReason(Guid reasonId, Guid LoaLogId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var loaLog = await ctx.LineOfAuthorityLogs
+            .FirstOrDefaultAsync(f => f.Id == LoaLogId);
+
+        if (loaLog == null)
+            throw new NotFoundException("Loa Log not found");
+
+        if(loaLog.ReasonId != reasonId)
+            throw new("LOA Log is not associated with this reason");
+        
+        loaLog.ReasonId = null;
+        ctx.Update(loaLog);
+        await ctx.SaveChangesAsync();
+        
+        return true;
     }
 }

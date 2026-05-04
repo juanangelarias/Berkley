@@ -766,6 +766,10 @@ input UserLineOfAuthorityInput {
   user: EmployeeInput!
 }
 
+type SetLOAReasonPayload {
+  boolean: Boolean
+}
+
 input WatchStatusDmInput {
   id: UUID!
   created: DateTime!
@@ -2198,6 +2202,10 @@ type Indemnitor {
   familyName: String
 }
 
+type AssociateLOALogToReasonPayload {
+  boolean: Boolean
+}
+
 type DefaultGeneralLedgerAccount {
   id: UUID!
   created: DateTime!
@@ -2697,6 +2705,9 @@ type Mutation {
   loaLogChangeStatus(input: LoaLogChangeStatusInput!): LoaLogChangeStatusPayload!
   setAgencyLoa(input: SetAgencyLoaInput!): SetAgencyLoaPayload!
   agencyLoaDelete(input: AgencyLoaDeleteInput!): AgencyLoaDeletePayload!
+  setLOAReason(input: SetLOAReasonInput!): SetLOAReasonPayload!
+  associateLOALogToReason(input: AssociateLOALogToReasonInput!): AssociateLOALogToReasonPayload!
+  disassociateLOALogToReason(input: DisassociateLOALogToReasonInput!): DisassociateLOALogToReasonPayload!
   setOnlineSystem(input: SetOnlineSystemInput!): SetOnlineSystemPayload!
   deleteOnlineSystem(input: DeleteOnlineSystemInput!): DeleteOnlineSystemPayload!
   setOnlineBondSystem(input: SetOnlineBondSystemInput!): SetOnlineBondSystemPayload!
@@ -3296,6 +3307,10 @@ type CashFlowStatement {
 "The `Decimal` scalar type represents a decimal floating-point number."
 scalar Decimal
 
+type DisassociateLOALogToReasonPayload {
+  boolean: Boolean
+}
+
 type AgencyLicenseBulkInsertPayload {
   boolean: Boolean
 }
@@ -3838,6 +3853,19 @@ input NotebookEntryTypeDmInput {
   notebookEntries: [NotebookEntryInput!]!
 }
 
+input SetLOAReasonInput {
+  id: UUID!
+  accountNum: String!
+  type: String!
+  recommendation: String!
+  businessOverview: String!
+  bondRisk: String!
+  financialAnalysis: String!
+  debtHighlights: String!
+  followUpConditions: String!
+  outlook: String!
+}
+
 type PowerOfAttorneyDocumentStatus {
   id: UUID!
   created: DateTime!
@@ -3980,6 +4008,7 @@ type Query {
   accountAgencyLOA(accountNum: String!): [AccountAgencyLOADto!]!
   accountAgencyLOAById(id: UUID!): AccountAgencyLOADto
   userLOAByDivision(division: String!): [UserLineOfAuthority!]!
+  loaReasonByAccount(accountNum: String!): [LineOfAuthorityReason!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -4290,6 +4319,11 @@ type BondRequest {
   otherBids: [OtherBid!]!
   statusNavigation: BidStatusDm!
   underWriter: Underwriter
+}
+
+input DisassociateLOALogToReasonInput {
+  reasonId: UUID!
+  loaLogId: UUID!
 }
 
 type CreateAddressPayload {
@@ -5896,6 +5930,11 @@ type FinancialTypeDm {
   modified: DateTime!
   financialType: String!
   financialStatements: [FinancialStatement!]!
+}
+
+input AssociateLOALogToReasonInput {
+  reasonId: UUID!
+  loaLogId: UUID!
 }
 
 type LogInformationPayload {

@@ -1276,6 +1276,34 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await generalMutation.AgencyLoaDelete(id, contextFactory, contextAccessor));
         }
+        
+        // Reason - Renewal
+
+        public async Task<IDataAccessResult<List<LineOfAuthorityReason>>> GetLOAReasonByAccount(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetLOAReasonByAccount(accountNum, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetLOAReason(Guid id, string accountNum, string type, string recommendation,
+            string businessOverview, string bondRisk, string financialAnalysis, string debtHighlights, 
+            string followUpConditions, string outlook)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetLOAReason(id, accountNum, type,
+                recommendation, businessOverview, bondRisk, financialAnalysis, debtHighlights, followUpConditions, 
+                outlook, contextFactory, userShared));
+        }
+
+        public async Task<ISaveDataResult> AssociateLOALogToReason(Guid reasonId, Guid loaLogId)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.AssociateLOALogToReason(reasonId, loaLogId, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DisassociateLOALogToReason(Guid reasonId, Guid loaLogId)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.DisassociateLOALogToReason(reasonId, loaLogId, contextFactory));
+        }
 
         #endregion
         

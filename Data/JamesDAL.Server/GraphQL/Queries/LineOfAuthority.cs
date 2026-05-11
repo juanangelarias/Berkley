@@ -1,6 +1,8 @@
 using James.Shared.Dto;
 using System.Web.Http;
+using James.Data.Server.Exceptions;
 using James.Shared;
+using James.Shared.Constants;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -37,7 +39,8 @@ public partial class Query
                 HomeOfficeApproved = s.HomeOfficeApproved,
                 Comments = s.Comments,
                 Conditions = s.Conditions,
-                Status = s.Status
+                Status = s.Status,
+                ReasonId = s.ReasonId
             })
             .ToListAsync();
 
@@ -126,7 +129,7 @@ public partial class Query
             .OrderBy(o => o.AccountNum)
             .ThenBy(t => t.BondType)
             .ThenByDescending(t => t.Effective)
-            .Where(r => r.AccountNum == accountNum && r.Status == "Approved")
+            .Where(r => r.AccountNum == accountNum && r.Status == LOAStatus.Approved)
             .Select(s => new AccountLOADetailDto
             {
                 Aggregate = s.Loaaggregate,
@@ -138,8 +141,8 @@ public partial class Query
             })
             .ToListAsync();
 
-        var contract = data.FirstOrDefault(f => f.BondType == "Contract");
-        var commercial = data.FirstOrDefault(f => f.BondType == "Commercial");
+        var contract = data.FirstOrDefault(f => f.BondType == BondType.Contract.ToString());
+        var commercial = data.FirstOrDefault(f => f.BondType == BondType.Commercial.ToString());
 
         var result = new List<AccountLOADetailDto>();
         if (contract != null)
@@ -168,8 +171,8 @@ public partial class Query
             })
             .ToListAsync();
 
-        var contract = data.FirstOrDefault(f => f.BondType == "Contract");
-        var commercial = data.FirstOrDefault(f => f.BondType == "Commercial");
+        var contract = data.FirstOrDefault(f => f.BondType == BondType.Contract.ToString());
+        var commercial = data.FirstOrDefault(f => f.BondType == BondType.Commercial.ToString());
 
         var result = new List<AccountLOADetailDto>();
         if (contract != null)
@@ -417,5 +420,45 @@ public partial class Query
             .ToListAsync();
 
         return reasons;
+    }
+    
+    [Authorize]
+    public async Task<LineOfAuthorityReason> GetLOAReasonById(Guid reasonId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var reason = await ctx.LineOfAuthorityReasons
+            .Include(i=>i.CreatedByNavigation)
+            .Include(i=>i.LineOfAuthorityLogs)
+            .ThenInclude(i=>i.CreatedByNavigation)
+            .Include(i=>i.LineOfAuthorityLogs)
+            .ThenInclude(i=>i.ApprovedByNavigation)
+            .FirstOrDefaultAsync(r => r.Id == reasonId);
+
+        return reason ?? throw new NotFoundException("Line of Authority Reason not found");
+    }
+
+    [Authorize]
+    public async Task<List<string>> GetLoaRenewalFormsAvailableByAccount(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        // Infer available forms based on account LOA history
+        var hasContractLoa = await ctx.LineOfAuthorityLogs
+            .AnyAsync(l => l.AccountNum == accountNum && l.BondType == BondType.Contract.ToString());
+
+        var forms = new List<string>();
+
+        // Rapid renewal is generally for Commercial-only accounts
+        if (!hasContractLoa)
+        {
+            forms.Add("Rapid");
+        }
+
+        forms.Add("Short");
+        forms.Add("Standard");
+
+        return forms;
     }
 }

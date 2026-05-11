@@ -9,16 +9,19 @@ public static class CacheKeys
     // Calculated
     // A
     public static string Account(string accountNumber) => $"Account-{accountNumber}";
+    public static string AccountAbstract(string accountNumber) => $"AccountAbstract-{accountNumber}";
     public static string AccountAgencyLoa(string accountNum) => $"AccountAgencyLoa-{accountNum}";
     public static string AccountAlerts(string alertPeriod, string accountNumber) =>
         $"AccountAlerts-{alertPeriod}-{accountNumber}";
     public static string AccountAnnualPremiums(string accountNumber, string type) =>
         $"AccountAnnualPremiums-{accountNumber}-{type}";
     public static string AccountCollaterals(string accountNumber) => $"AccountCollaterals-{accountNumber}";
+    public static string AccountLastCreditReport(string accountNumber) => $"AccountLastCreditReport-{accountNumber}";
     public static string AccountLOA(string accountNum) => $"AccountLOA-{accountNum}";
     public static string AccountOutstandingLiability(string accountNumber) =>
         $"AccountOutstandingLiability-{accountNumber}";
     public static string AccountPrograms(string accountNumber) => $"AccountPrograms-{accountNumber}";
+    public static string AccountRenewalForms(string accountNumber) => $"AccountRenewalForms-{accountNumber}";
     public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
     public static string Agency(string agencyNumber) => $"Agency-{agencyNumber}";
     public static string AgencyAccounts(string agencyNumber) => $"AgencyAccounts-{agencyNumber}";
@@ -46,6 +49,7 @@ public static class CacheKeys
     public static string LegalEntityPhoneNumbers(Guid id) => $"LegalEntityPhoneNumbers-{id}";
     public static string LastIndemnitor(string accountNumber) => $"LastIndemnitor-{accountNumber}";
     public static string LastPrivateEquity(string accountNumber) => $"LastPrivateEquity-{accountNumber}";
+    public static string LOAReason(Guid id) => $"LOAReason-{id}";
 
     // U
     public static string UnderwriterRecommendation(string accountNum) => $"UnderwriterRecommendation-{accountNum}";

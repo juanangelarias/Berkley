@@ -1,5 +1,6 @@
-﻿using James.Data.Server.Exceptions;
+using James.Data.Server.Exceptions;
 using James.Shared;
+using James.Shared.Constants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
@@ -14,18 +15,7 @@ public partial class GeneralMutation
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        var userName = await userShared.GetUserName();
-
-        //ToDo: Review after we move to the new way to authenticate users that have this issue
-        //ToDo: (active directory account different than the email)
-
-        var employee = await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == userName) ??
-                       await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(userName));
-
-        if (employee == null)
-            throw new GraphQLException("User not found in employee table.");
+        var employee = await GetEmployeeAsync(ctx, userShared);
 
         AccountProgramStatusHistory CreateStatusLog(AccountProgramStatusHistory? lastLog) => new()
         {
@@ -34,7 +24,7 @@ public partial class GeneralMutation
             AccountNum = accountNum,
             OldStatus = lastLog?.NewStatus,
             NewStatus = statusId,
-            StatusDate = DateTime.Now,
+            StatusDate = DateTime.UtcNow,
             OldSingle = lastLog?.NewSingle,
             NewSingle = single,
             OldAggregate = lastLog?.NewAggregate,
@@ -47,10 +37,10 @@ public partial class GeneralMutation
         if (existing != null)
         {
             existing.Effective = effective;
-            existing.Expiration = expiration ?? new DateTime(9999, 12, 31);
+            existing.Expiration = expiration ?? new DateTime(9999, 12, 31, 0, 0, 0, DateTimeKind.Utc);
             existing.Single = single;
             existing.Aggregate = aggregate;
-            existing.Modified = DateTime.Now;
+            existing.Modified = DateTime.UtcNow;
             existing.CreatedBy = employee.Id;
             existing.Comments = comments;
 
@@ -70,13 +60,13 @@ public partial class GeneralMutation
                 Id = programId,
                 AccountNum = accountNum,
                 Effective = effective,
-                Expiration = expiration ?? new DateTime(9999, 12, 31),
+                Expiration = expiration ?? new DateTime(9999, 12, 31, 0, 0, 0, DateTimeKind.Utc),
                 Single = single,
                 Aggregate = aggregate,
                 StatusId = statusId,
-                Created = DateTime.Now,
+                Created = DateTime.UtcNow,
                 CreatedBy = employee.Id,
-                Modified = DateTime.Now,
+                Modified = DateTime.UtcNow,
                 ApprovedBy = null,
                 ApprovedDate = null,
                 Comments = comments
@@ -120,17 +110,7 @@ public partial class GeneralMutation
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        //ToDo: Review after we move to the new way to authenticate users that have this issue
-        //ToDo: (active directory account different than the email)
-        
-        var user = await userShared.GetCurrentUser();
-        var employee = await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
-                       await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
-
-        if (employee == null)
-            throw new GraphQLException("User not found in employee table.");
+        var employee = await GetEmployeeAsync(ctx, userShared);
 
         var newStatus = ctx.AccountProgramStatusDms
             .FirstOrDefault(f => f.Description.ToUpper() == newStatusTxt.ToUpper());
@@ -154,7 +134,7 @@ public partial class GeneralMutation
             AccountNum = program.AccountNum,
             OldStatus = lastLog?.NewStatus,
             NewStatus = newStatus.Id,
-            StatusDate = DateTime.Now,
+            StatusDate = DateTime.UtcNow,
             OldSingle = lastLog?.NewSingle,
             NewSingle = program.Single,
             OldAggregate = lastLog?.NewAggregate,
@@ -164,28 +144,28 @@ public partial class GeneralMutation
 
         ctx.AccountProgramStatusHistories.Add(newLog);
         program.StatusId = newStatus.Id;
-        program.Modified = DateTime.Now;
-        program.ApprovedDate = DateTime.Now;
+        program.Modified = DateTime.UtcNow;
+        program.ApprovedDate = DateTime.UtcNow;
 
-        if (newStatusTxt.ToUpper() == "APPROVED")
+        if (newStatusTxt.ToUpper() == LOAStatus.Approved)
         {
             program.ApprovedBy = employee.Id;
-            program.ApprovedDate = DateTime.Now;
+            program.ApprovedDate = DateTime.UtcNow;
         }
 
         await ctx.SaveChangesAsync();
 
-        if (newStatusTxt.ToUpper() == "APPROVAL REQUESTED")
+        if (newStatusTxt.ToUpper() == LOAStatus.ApprovalRequested)
         {
             // ToDo: Send email to approver
         }
 
-        if (newStatusTxt.ToUpper() == "APPROVED")
+        if (newStatusTxt.ToUpper() == LOAStatus.Approved)
         {
             // ToDo: Send approval email to the requester
         }
 
-        if (newStatusTxt.ToUpper() == "DECLINED")
+        if (newStatusTxt.ToUpper() == LOAStatus.Declined)
         {
             // ToDo: Send decline email to the requester
         }
@@ -195,13 +175,41 @@ public partial class GeneralMutation
 
     [Authorize]
     public async Task<bool> SetLoaLog(Guid id, string accountNum, DateTime effective, DateTime expiration,
-        int loaSingle, int loaAggregate, string comments, string status, string division, string bondType,
-        string conditions, bool homeOfficeApproved, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        int loaSingle, int loaAggregate, string? comments, string status, string? division, string? bondType,
+        string? conditions, bool homeOfficeApproved, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
+        [Service] IUserShared userShared)
     {
-        var ctx = await contextFactory.CreateDbContextAsync();
+        return await SetLoaLogInternal(id, accountNum, effective, expiration, loaSingle, loaAggregate, comments, status,
+            division, bondType, conditions, homeOfficeApproved, contextFactory, userShared);
+    }
 
-        var employee = await GetEmployee(contextAccessor, ctx);
+    /// <summary>
+    /// Renews or creates a new Line of Authority log.
+    /// </summary>
+    /// <param name="id">The unique identifier for the LOA log.</param>
+    /// <param name="accountNum">The account number.</param>
+    /// <param name="effective">The effective date.</param>
+    /// <param name="expiration">The expiration date.</param>
+    /// <param name="loaSingle">The single bond limit.</param>
+    /// <param name="loaAggregate">The aggregate bond limit.</param>
+    /// <param name="comments">Optional comments.</param>
+    /// <param name="status">The status of the LOA log.</param>
+    /// <param name="division">The division.</param>
+    /// <param name="bondType">The bond type.</param>
+    /// <param name="conditions">Optional conditions.</param>
+    /// <param name="homeOfficeApproved">Whether home office has approved.</param>
+    /// <param name="contextFactory">Database context factory.</param>
+    /// <param name="userShared">User shared service.</param>
+    /// <param name="existingCtx">Optional existing database context for transaction support.</param>
+    /// <returns>True if successful.</returns>
+    private async Task<bool> SetLoaLogInternal(Guid id, string accountNum, DateTime effective, DateTime expiration,
+        int loaSingle, int loaAggregate, string? comments, string status, string? division, string? bondType,
+        string? conditions, bool homeOfficeApproved, IDbContextFactory<JamesDatabaseContext> contextFactory,
+        IUserShared userShared, JamesDatabaseContext? existingCtx = null)
+    {
+        var ctx = existingCtx ?? await contextFactory.CreateDbContextAsync();
+
+        var employee = await GetEmployeeAsync(ctx, userShared);
 
         var loa = await ctx.LineOfAuthorityLogs.FindAsync(id);
         if (loa == null)
@@ -220,7 +228,7 @@ public partial class GeneralMutation
                 BondType = bondType,
                 Conditions = conditions,
                 HomeOfficeApproved = homeOfficeApproved,
-                CreatedBy = employee!.Id
+                CreatedBy = employee.Id,
             };
 
             ctx.LineOfAuthorityLogs.Add(loa);
@@ -238,26 +246,28 @@ public partial class GeneralMutation
             loa.BondType = bondType;
             loa.Conditions = conditions;
             loa.HomeOfficeApproved = homeOfficeApproved;
-            loa.CreatedBy = employee!.Id;
+            loa.CreatedBy = employee.Id;
         }
 
         // ToDo: add functionality to add the LoaHistory when creating or updating a LOA
 
-        await ctx.SaveChangesAsync();
+        if (existingCtx == null)
+        {
+            await ctx.SaveChangesAsync();
+        }
 
         return true;
     }
 
     [Authorize]
     public async Task<bool> LoaLogDelete(Guid accountLoaId,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
         var loa = await ctx.LineOfAuthorityLogs.FindAsync(accountLoaId);
         if (loa == null)
-            return false;
+            throw new NotFoundException("Line of authority log not found");
 
         ctx.LineOfAuthorityLogs.Remove(loa);
         await ctx.SaveChangesAsync();
@@ -268,7 +278,7 @@ public partial class GeneralMutation
     [Authorize]
     public async Task<bool> LoaLogChangeStatus(Guid accountLoaId, string newStatusTxt,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
@@ -276,12 +286,12 @@ public partial class GeneralMutation
         if (loa == null)
             throw new GraphQLException("Line of authority log not found");
 
-        var employee = await GetEmployee(contextAccessor, ctx);
+        var employee = await GetEmployeeAsync(ctx, userShared);
 
         // ToDo: add functionality to change the LoaHistory status when changing the LOA status
 
         loa.Status = newStatusTxt;
-        loa.Modified = DateTime.Now;
+        loa.Modified = DateTime.UtcNow;
         await ctx.SaveChangesAsync();
 
         return true;
@@ -291,10 +301,10 @@ public partial class GeneralMutation
     public async Task<bool> SetAgencyLoa(Guid id, string agencyNumber, string accountNum,
         DateTime effective, DateTime expiration, int loaSinge, int loaAggregate, string comments, string division,
         string bondType, string conditions, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        var employee = await GetEmployee(contextAccessor, ctx);
+        var employee = await GetEmployeeAsync(ctx, userShared);
 
         var loa = await ctx.AgencyLineOfAuthorityLogs.FindAsync(id);
         if (loa == null)
@@ -311,8 +321,8 @@ public partial class GeneralMutation
                 Comments = comments,
                 Division = division,
                 BondType = bondType,
-                CreatedBy = employee!.Id,
-                Conditions = conditions
+                CreatedBy = employee.Id,
+                Conditions = conditions,
             };
 
             ctx.AgencyLineOfAuthorityLogs.Add(loa);
@@ -338,8 +348,7 @@ public partial class GeneralMutation
 
     [Authorize]
     public async Task<bool> AgencyLoaDelete(Guid agencyLoaId,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory,
-        [Service] IHttpContextAccessor contextAccessor)
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
@@ -353,78 +362,77 @@ public partial class GeneralMutation
         return true;
     }
 
-    private static async Task<Employee?> GetEmployee(IHttpContextAccessor contextAccessor, JamesDatabaseContext ctx)
-    {
-        var username = contextAccessor.HttpContext?.User.FindFirst("nickname")?.Value;
-        if (null == username)
-            throw new UnauthorizedAccessException("Must be logged in to get user settings.");
 
-        var employee = await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == username) ??
-                       await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(username));
-
-        return employee ?? throw new GraphQLException("User not found in employee table.");
-    }
-    
     // Reason - Renewal
     [Authorize]
-    public async Task<bool> SetLOAReason(Guid id, string accountNum, string type, string recommendation,
-        string businessOverview, string bondRisk, string financialAnalysis, string debtHighlights,
-        string followUpConditions, string outlook, string keyChanges, 
+    public async Task<bool> SetLOAReason(LineOfAuthorityReason loaReason,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-        
-        var user = await userShared.GetCurrentUser();
-        var employee = await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.ActiveDirectoryAccount == user.Username) ??
-                       await ctx.Employees
-                           .FirstOrDefaultAsync(f => f.Email!.StartsWith(user.Username));
 
-        if (employee == null)
-            throw new GraphQLException("User not found in employee table.");
+        var employee = await GetEmployeeAsync(ctx, userShared);
 
         var existing = await ctx.LineOfAuthorityReasons
-            .FirstOrDefaultAsync(f => f.Id == id);
+            .FirstOrDefaultAsync(f => f.Id == loaReason.Id);
 
-        if (existing == null)
+        await using var transaction = await ctx.Database.BeginTransactionAsync();
+
+        try
         {
-            var newReason = new LineOfAuthorityReason
+            if (existing == null)
             {
-                Id = id,
-                AccountNum = accountNum,
-                CreatedBy = employee.Id,
-                Type = type,
-                Recommendation = recommendation,
-                BusinessOverview = businessOverview,
-                BondRisk = bondRisk,
-                FinancialAnalysis = financialAnalysis,
-                DebtHighlights = debtHighlights,
-                FollowUpConditions = followUpConditions,
-                KeyChanges = keyChanges,
-                Outlook = outlook
-            };
-            ctx.LineOfAuthorityReasons.Add(newReason);
+                var newReason = new LineOfAuthorityReason
+                {
+                    Id = loaReason.Id,
+                    AccountNum = loaReason.AccountNum,
+                    CreatedBy = employee.Id,
+                    Type = loaReason.Type,
+                    Recommendation = loaReason.Recommendation,
+                    BusinessOverview = loaReason.BusinessOverview,
+                    BondRisk = loaReason.BondRisk,
+                    FinancialAnalysis = loaReason.FinancialAnalysis,
+                    DebtHighlights = loaReason.DebtHighlights,
+                    FollowUpConditions = loaReason.FollowUpConditions,
+                    KeyChanges = loaReason.KeyChanges,
+                    Outlook = loaReason.Outlook,
+                };
+                ctx.LineOfAuthorityReasons.Add(newReason);
+            }
+            else
+            {
+                existing.AccountNum = loaReason.AccountNum;
+                existing.CreatedBy = employee.Id;
+                existing.Type = loaReason.Type;
+                existing.Recommendation = loaReason.Recommendation;
+                existing.BusinessOverview = loaReason.BusinessOverview;
+                existing.BondRisk = loaReason.BondRisk;
+                existing.FinancialAnalysis = loaReason.FinancialAnalysis;
+                existing.DebtHighlights = loaReason.DebtHighlights;
+                existing.FollowUpConditions = loaReason.FollowUpConditions;
+                existing.KeyChanges = loaReason.KeyChanges;
+                existing.Outlook = loaReason.Outlook;
+                ctx.Update(existing);
+            }
+
+            foreach (var log in loaReason.LineOfAuthorityLogs)
+            {
+                await SetLoaLogInternal(log.Id, log.AccountNum, log.Effective, log.Expiration, log.Loasingle, log.Loaaggregate,
+                    log.Comments, log.Status, log.Division, log.BondType, log.Conditions, log.HomeOfficeApproved,
+                    contextFactory, userShared, ctx);
+            }
+
+            await ctx.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            return true;
         }
-        else
+        catch (Exception)
         {
-            existing.AccountNum = accountNum;
-            existing.CreatedBy = employee.Id;
-            existing.Type = type;
-            existing.Recommendation = recommendation;
-            existing.BusinessOverview = businessOverview;
-            existing.BondRisk = bondRisk;
-            existing.FinancialAnalysis = financialAnalysis;
-            existing.DebtHighlights = debtHighlights;
-            existing.FollowUpConditions = followUpConditions;
-            existing.KeyChanges = keyChanges;
-            existing.Outlook = outlook;
-            ctx.Update(existing);
+            await transaction.RollbackAsync();
+
+            throw;
         }
-        await ctx.SaveChangesAsync();
-        
-        return true;
     }
 
     [Authorize]
@@ -434,24 +442,24 @@ public partial class GeneralMutation
         var ctx = await contextFactory.CreateDbContextAsync();
         var loaLog = await ctx.LineOfAuthorityLogs
             .FirstOrDefaultAsync(f => f.Id == loaLogId);
-        
-        if(loaLog == null)
+
+        if (loaLog == null)
             throw new NotFoundException("LOA Log not found");
 
         var logsAssociated = await ctx.LineOfAuthorityLogs
             .Where(r => r.ReasonId == reasonId)
             .ToListAsync();
-        
-        if(logsAssociated.Any(a=>a.Id == loaLogId))
+
+        if (logsAssociated.Any(a => a.Id == loaLogId))
             return true;
-        
-        if(logsAssociated.Any(a=>a.BondType == loaLog.BondType))
+
+        if (logsAssociated.Any(a => a.BondType == loaLog.BondType))
             throw new($"There is already a LOA Log associated with this reason and bond type ({loaLog.BondType})");
 
         loaLog.ReasonId = reasonId;
         ctx.Update(loaLog);
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 
@@ -467,13 +475,81 @@ public partial class GeneralMutation
         if (loaLog == null)
             throw new NotFoundException("Loa Log not found");
 
-        if(loaLog.ReasonId != reasonId)
+        if (loaLog.ReasonId != reasonId)
             throw new("LOA Log is not associated with this reason");
-        
+
         loaLog.ReasonId = null;
         ctx.Update(loaLog);
         await ctx.SaveChangesAsync();
-        
+
         return true;
+    }
+
+    [Authorize]
+    public async Task<bool> ApproveAccountLOA(Guid reasonId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var employee = await GetEmployeeAsync(ctx, userShared);
+
+        await using var trn = await ctx.Database.BeginTransactionAsync();
+        try
+        {
+            var loaLogs = ctx.LineOfAuthorityLogs
+                .Where(l => l.ReasonId == reasonId)
+                .ToList();
+
+            foreach (var loaLog in loaLogs)
+            {
+                loaLog.Status = LOAStatus.Approved;
+                loaLog.Approved = DateTime.UtcNow;
+                loaLog.ApprovedBy = employee.Id;
+                ctx.Update(loaLog);
+            }
+
+            await ctx.SaveChangesAsync();
+            await trn.CommitAsync();
+
+            return true;
+        }
+        catch (Exception)
+        {
+            await trn.RollbackAsync();
+            throw;
+        }
+    }
+
+    [Authorize]
+    public async Task<bool> DeclineAccountLOA(Guid reasonId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var employee = await GetEmployeeAsync(ctx, userShared);
+
+        await using var trn = await ctx.Database.BeginTransactionAsync();
+        try
+        {
+            var loaLogs = ctx.LineOfAuthorityLogs
+                .Where(l => l.ReasonId == reasonId)
+                .ToList();
+
+            foreach (var loaLog in loaLogs)
+            {
+                loaLog.Status = LOAStatus.Declined;
+                ctx.Update(loaLog);
+            }
+
+            await ctx.SaveChangesAsync();
+            await trn.CommitAsync();
+
+            return true;
+        }
+        catch (Exception)
+        {
+            await trn.RollbackAsync();
+            throw;
+        }
     }
 }

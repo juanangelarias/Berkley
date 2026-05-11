@@ -653,10 +653,34 @@ namespace James.Data.Client
             return result;
         }
 
+        public async Task<IDataAccessResult<CreditReportHistory?>> GetLastCreditReport(string accountNum)
+        {
+            var result = await ExecuteGet<CreditReportHistory?>(async ()=>
+                await jamesClient.GetLastCreditReport.ExecuteAsync(accountNum), "GetLastCreditReport");
+
+            return result;
+        }
+
         public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
         {
             var result = await ExecuteGet<List<CreditReportDm>>(async () =>
                 await jamesClient.GetCreditReportAgencies.ExecuteAsync(), "CreditReportAgencies");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<AccountAbstractDto>> GetAccountAbstract(string accountNum)
+        {
+            var result = await ExecuteGet<AccountAbstractDto>(async () =>
+                await jamesClient.GetAccountAbstract.ExecuteAsync(accountNum), "AccountAbstract");
+
+            return result;
+        }
+
+        public async Task<IDataAccessResult<LineOfAuthorityReason>> GetLOAReasonById(Guid reasonId)
+        {
+            var result = await ExecuteGet<LineOfAuthorityReason>(async () =>
+                await jamesClient.GetLoaReasonById.ExecuteAsync(reasonId), "LoaReasonById");
 
             return result;
         }
@@ -1865,6 +1889,15 @@ namespace James.Data.Client
 
         // Reason - Renewal
 
+        public async Task<IDataAccessResult<List<string>>> GetLoaRenewalFormsAvailableByAccount(string accountNum)
+        {
+            var result = await ExecuteGet<List<string>>(async () =>
+                    await jamesClient.GetLoaRenewalFormsAvailableByAccount.ExecuteAsync(accountNum),
+                "LoaRenewalFormsAvailableByAccount");
+            
+            return result;
+        }
+
         public async Task<IDataAccessResult<List<LineOfAuthorityReason>>> GetLOAReasonByAccount(string accountNum)
         {
             var result = await ExecuteGet<List<LineOfAuthorityReason>>(async () =>
@@ -1873,23 +1906,45 @@ namespace James.Data.Client
             return result;
         }
 
-        public async Task<ISaveDataResult> SetLOAReason(Guid id, string accountNum, string type, string recommendation, string businessOverview,
-            string bondRisk, string financialAnalysis, string debtHighlights, string followUpConditions, string outlook,
-            string keyChanges)
+        public async Task<ISaveDataResult> SetLOAReason(LineOfAuthorityReason reason)
         {
             return await ExecuteSave(async () => await jamesClient.SetLOAReason.ExecuteAsync(new SetLOAReasonInput
             {
-                Id = id,
-                AccountNum = accountNum,
-                Type = type,
-                Recommendation = recommendation,
-                BusinessOverview = businessOverview,
-                BondRisk = bondRisk,
-                FinancialAnalysis = financialAnalysis,
-                DebtHighlights = debtHighlights,
-                FollowUpConditions = followUpConditions,
-                Outlook = outlook,
-                KeyChanges = keyChanges,
+                LoaReason = new()
+                {
+                    Id = reason.Id,
+                    AccountNum = reason.AccountNum,
+                    Type = reason.Type,
+                    Recommendation = reason.Recommendation,
+                    BusinessOverview = reason.BusinessOverview,
+                    BondRisk = reason.BondRisk,
+                    FinancialAnalysis = reason.FinancialAnalysis,
+                    DebtHighlights = reason.DebtHighlights,
+                    FollowUpConditions = reason.FollowUpConditions,
+                    Outlook = reason.Outlook,
+                    KeyChanges = reason.KeyChanges,
+                    LineOfAuthorityLogs = reason.LineOfAuthorityLogs
+                        .Select(s=> new LineOfAuthorityLogInput
+                        {
+                            Id = s.Id,
+                            AccountNum = s.AccountNum,
+                            Approved = s.Approved,
+                            ApprovedBy = s.ApprovedBy,
+                            BondType = s.BondType,
+                            Comments = s.Comments,
+                            Conditions = s.Conditions,
+                            CreatedBy = s.CreatedBy,
+                            HomeOfficeApproved = s.HomeOfficeApproved,
+                            SequenceNumber = s.SequenceNumber,
+                            Effective = s.Effective,
+                            Expiration = s.Expiration,
+                            Loasingle = s.Loasingle,
+                            Loaaggregate = s.Loaaggregate,
+                            Status = s.Status,
+                            Division = s.Division,
+                            ReasonId = s.ReasonId
+                        }).ToList()
+                }
             }));
         }
 

@@ -3854,17 +3854,7 @@ input NotebookEntryTypeDmInput {
 }
 
 input SetLOAReasonInput {
-  id: UUID!
-  accountNum: String!
-  type: String!
-  recommendation: String!
-  businessOverview: String!
-  bondRisk: String!
-  financialAnalysis: String!
-  debtHighlights: String!
-  followUpConditions: String!
-  outlook: String!
-  keyChanges: String!
+  loaReason: LineOfAuthorityReasonInput!
 }
 
 type PowerOfAttorneyDocumentStatus {
@@ -3933,6 +3923,7 @@ type Query {
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
   relatedAccounts(accountNum: String!): AccountBondedPrincipleDto!
+  accountAbstract(accountNum: String!): AccountAbstractDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -3969,6 +3960,7 @@ type Query {
   nextBondBlockInitialNumber(prefix: String!): Int!
   branches: [Branch!]!
   creditReport(accountNumber: String!): [CreditReportHistory!]!
+  lastCreditReport(accountNumber: String!): CreditReportHistory
   creditReportAgencies: [CreditReportDm!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
@@ -4010,6 +4002,8 @@ type Query {
   accountAgencyLOAById(id: UUID!): AccountAgencyLOADto
   userLOAByDivision(division: String!): [UserLineOfAuthority!]!
   loaReasonByAccount(accountNum: String!): [LineOfAuthorityReason!]!
+  loaReasonById(reasonId: UUID!): LineOfAuthorityReason!
+  loaRenewalFormsAvailableByAccount(accountNum: String!): [String!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -4427,6 +4421,22 @@ input SetAgencyLoaInput {
   conditions: String!
 }
 
+type AccountAbstractDto {
+  accountNum: String!
+  privateOrPublic: String
+  currentOutstandingLiability: Int!
+  soleShareCoSurety: String!
+  coSureties: String!
+  collateral: Int!
+  potentialPremium: Int!
+  rate: String!
+  commission: String!
+  underwriter: String!
+  agencyName: String!
+  agentName: String!
+  lastCreditReport: CreditReportHistory
+}
+
 input PhoneNumberInput {
   id: UUID!
   created: DateTime!
@@ -4743,11 +4753,11 @@ input SetLoaLogInput {
   expiration: DateTime!
   loaSingle: Int!
   loaAggregate: Int!
-  comments: String!
+  comments: String
   status: String!
-  division: String!
-  bondType: String!
-  conditions: String!
+  division: String
+  bondType: String
+  conditions: String
   homeOfficeApproved: Boolean!
 }
 
@@ -5580,6 +5590,7 @@ type AccountLOADto {
   comments: String
   conditions: String
   status: String
+  reasonId: UUID
 }
 
 input BondModTransactionInput {

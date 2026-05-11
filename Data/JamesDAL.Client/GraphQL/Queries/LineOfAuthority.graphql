@@ -70,6 +70,7 @@ query GetLoaLogsByAccount($accountNum: String!) {
         loaSingle
         sequenceNumber
         status
+        reasonId
     }    
 }
 
@@ -145,4 +146,51 @@ query GetLOAReasonByAccount($accountNum: String!) {
             }
         }
     }
+}
+
+query GetLoaReasonById($reasonId: UUID!) {
+    loaReasonById(reasonId: $reasonId){
+        accountNum
+        bondRisk
+        businessOverview
+        createdBy
+        debtHighlights
+        financialAnalysis
+        followUpConditions
+        id
+        keyChanges
+        outlook
+        recommendation
+        type
+        lineOfAuthorityLogs {
+            accountNum
+            approved
+            approvedBy
+            bondType
+            approvedByNavigation {
+                fullName
+            }
+            comments
+            conditions
+            created
+            createdBy
+            createdByNavigation {
+                fullName
+            }
+            division
+            effective
+            expiration
+            homeOfficeApproved
+            id
+            loaaggregate
+            loasingle
+            reasonId
+            sequenceNumber
+            status
+        }
+    }
+}
+
+query GetLoaRenewalFormsAvailableByAccount($accountNum: String!) {
+    loaRenewalFormsAvailableByAccount(accountNum: $accountNum)
 }

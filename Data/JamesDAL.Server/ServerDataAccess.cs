@@ -396,9 +396,24 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetCreditReport(accountNum, contextFactory));
         }
 
+        public async Task<IDataAccessResult<CreditReportHistory?>> GetLastCreditReport(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetLastCreditReport(accountNum, contextFactory));
+        }
+
         public async Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies()
         {
             return await ExecuteGet(async () => await query.GetCreditReportAgencies(contextFactory));
+        }
+
+        public async Task<IDataAccessResult<AccountAbstractDto>> GetAccountAbstract(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetAccountAbstract(accountNum, contextFactory));
+        }
+
+        public async Task<IDataAccessResult<LineOfAuthorityReason>> GetLOAReasonById(Guid reasonId)
+        {
+            return await ExecuteGet(async () => await query.GetLOAReasonById(reasonId, contextFactory));
         }
 
         public async Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
@@ -1251,32 +1266,37 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () => await generalMutation.SetLoaLog(id, accountNum, effective, expiration,
                 loaSingle, loaAggregate, comments, status, division, bondType, conditions, homeOfficeApproved,
-                contextFactory, contextAccessor));
+                contextFactory, userShared));
         }
         
         public async Task<ISaveDataResult> LoaLogDelete(Guid id)
         {
             return await ExecuteSave(async () =>
-                await generalMutation.LoaLogDelete(id, contextFactory, contextAccessor));
+                await generalMutation.LoaLogDelete(id, contextFactory));
         }
         
         public async Task<ISaveDataResult> LoaLogChangeStatus(Guid id, string newStatus)
         {
-            return await ExecuteSave(async () => await generalMutation.LoaLogChangeStatus(id, newStatus, contextFactory, contextAccessor));
+            return await ExecuteSave(async () => await generalMutation.LoaLogChangeStatus(id, newStatus, contextFactory, userShared));
         }
         
         public async Task<ISaveDataResult> SetAgencyLoa(Guid id, string agencyNumber, string accountNum, DateTime effective, DateTime expiration,
             int loaSinge, int loaAggregate, string comments, string division, string bondType, string conditions)
         {
             return await ExecuteSave(async () => await generalMutation.SetAgencyLoa(id, agencyNumber, accountNum, effective, expiration,
-                loaSinge, loaAggregate, comments, division, bondType, conditions, contextFactory, contextAccessor));
+                loaSinge, loaAggregate, comments, division, bondType, conditions, contextFactory, userShared));
         }
         
         public async Task<ISaveDataResult> AgencyLoaDelete(Guid id)
         {
-            return await ExecuteSave(async () => await generalMutation.AgencyLoaDelete(id, contextFactory, contextAccessor));
+            return await ExecuteSave(async () => await generalMutation.AgencyLoaDelete(id, contextFactory));
         }
-        
+
+        public async Task<IDataAccessResult<List<string>>> GetLoaRenewalFormsAvailableByAccount(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetLoaRenewalFormsAvailableByAccount(accountNum, contextFactory));
+        }
+
         // Reason - Renewal
 
         public async Task<IDataAccessResult<List<LineOfAuthorityReason>>> GetLOAReasonByAccount(string accountNum)
@@ -1284,13 +1304,10 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetLOAReasonByAccount(accountNum, contextFactory));
         }
 
-        public async Task<ISaveDataResult> SetLOAReason(Guid id, string accountNum, string type, string recommendation,
-            string businessOverview, string bondRisk, string financialAnalysis, string debtHighlights, 
-            string followUpConditions, string outlook, string keyChanges)
+        public async Task<ISaveDataResult> SetLOAReason(LineOfAuthorityReason reason)
         {
-            return await ExecuteSave(async () => await generalMutation.SetLOAReason(id, accountNum, type,
-                recommendation, businessOverview, bondRisk, financialAnalysis, debtHighlights, followUpConditions, 
-                outlook, keyChanges, contextFactory, userShared));
+            return await ExecuteSave(async () =>
+                await generalMutation.SetLOAReason(reason, contextFactory, userShared));
         }
 
         public async Task<ISaveDataResult> AssociateLOALogToReason(Guid reasonId, Guid loaLogId)

@@ -1,0 +1,318 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject IUserSettingService UserSettingService
+
+<RadzenCard class="rz-w-100" Variant="Variant.Flat">
+    <RadzenRow AlignItems="AlignItems.Center" class="rz-mb-3">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem">
+            <RadzenButton Click="@RapidRenewalSelected" class="rz-py-0 rz-px-0" Style="width: 250px; height: 80px;"
+                          ButtonStyle="@(_isRapidRenewalSelected ? ButtonStyle.Success : ButtonStyle.Light)"
+                          Visible="@IsRapidRenewalVisible" Disabled="@ForApproval">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
+                    <RadzenText Text="Rapid Renewal" class="rz-mb-0"/>
+                    <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
+                    <RadzenText Text="Select to view details" TextStyle="TextStyle.Caption"/>
+                </RadzenStack>
+            </RadzenButton>
+            <RadzenButton Click="@ShortRenewalSelected" class="rz-py-0 rz-px-0" Style="width: 250px; height: 80px;"
+                          ButtonStyle="@(_isShortRenewalSelected ? ButtonStyle.Success : ButtonStyle.Light)"
+                          Visible="@IsShortRenewalVisible" Disabled="@ForApproval">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
+                    <RadzenText Text="Short Renewal" class="rz-mb-0"/>
+                    <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
+                    <RadzenText Text="Select to view details" TextStyle="TextStyle.Caption"/>
+                </RadzenStack>
+            </RadzenButton>
+            <RadzenButton Click="@StandardRenewalSelected" class="rz-py-0 rz-px-0" Style="width: 250px; height: 80px;"
+                          ButtonStyle="@(_isStandardRenewalSelected ? ButtonStyle.Success : ButtonStyle.Light)"
+                          Visible="@IsStandardRenewalVisible" Disabled="@ForApproval">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
+                    <RadzenText Text="Standard Renewal" class="rz-mb-0"/>
+                    <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
+                    <RadzenText Text="Select to view details" TextStyle="TextStyle.Caption"/>
+                </RadzenStack>
+            </RadzenButton>
+        </RadzenStack>
+    </RadzenRow>
+    <RadzenRow class="rz-mb-2">
+        <RadzenCard class="rz-w-100 rz-h-100">
+            <AccountAbstract Account="Account"/>
+        </RadzenCard>
+    </RadzenRow>
+    <RadzenTemplateForm Data="_data" @ref="@_form">
+        <RadzenRow class="rz-mb-2">
+            <AccountLOARenewalDetail AccountNum="@Account.AccountNum" History="@History" LOAList="@LOARecords"
+                                     OnLOAListChanged="@LoaListChanged"/>
+        </RadzenRow>
+        <RadzenRow Visible="_isRapidRenewalSelected">
+            <AccountLOARenewalRapid Data="@_data" IsReadOnly="@IsReadOnly" OnChanges="@OnRapidChanges"/>
+        </RadzenRow>
+        <RadzenRow Visible="_isShortRenewalSelected">
+            <AccountLOARenewalShort Data="@_data" IsReadOnly="@IsReadOnly" OnChanges="@OnShortChanges"/>
+        </RadzenRow>
+        <RadzenRow Visible="_isStandardRenewalSelected">
+            <AccountLOARenewalStandard Data="@_data" IsReadOnly="@IsReadOnly" OnChanges="@OnStandardChanges"/>
+        </RadzenRow>
+        <RadzenRow>
+            <ValidationSummary/>
+        </RadzenRow>
+        <RadzenRow class="rz-mt-3" JustifyContent="JustifyContent.Right">
+            <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Success"
+                          Click="@OnSave" Style="width: 150px;" Visible="@(!ForApproval)"/>
+            <RadzenButton Text="Save & Close" Icon="file_save" ButtonStyle="ButtonStyle.Primary"
+                          Click="OnSaveAndClose" Style="width: 150px;" Visible="@(!ForApproval)"/>
+            <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
+                          ButtonType="ButtonType.Reset" Style="width: 150px;" Visible="@(!ForApproval)"/>
+            
+            <RadzenButton Text="Approve" Icon="file_save" ButtonStyle="ButtonStyle.Success"
+                          Click="OnApprove" Style="width: 150px;" Visible="@(!ForApproval)"/>
+            <RadzenButton Text="Decline" Icon="cancel" Click="OnDecline" ButtonStyle="ButtonStyle.Warning"
+                          ButtonType="ButtonType.Reset" Style="width: 150px;" Visible="@(!ForApproval)"/>
+        </RadzenRow>
+    </RadzenTemplateForm>
+</RadzenCard>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+    [Parameter, EditorRequired] public required List<AccountLOADto> LOARecords { get; set; } = [];
+    [Parameter, EditorRequired] public required Dictionary<string, List<AccountLOADto>> History { get; set; } = new();
+    [Parameter, EditorRequired] public required Guid? ReasonId { get; set; }
+    [Parameter, EditorRequired] public required bool IsNew { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
+    [Parameter] public bool ForApproval { get; set; }
+
+    private RadzenTemplateForm<LineOfAuthorityReason> _form = null!;
+    private LineOfAuthorityReason _data = null!;
+    private bool _isRapidRenewalSelected;
+    private bool _isShortRenewalSelected;
+    private bool _isStandardRenewalSelected;
+    private List<string> _renewalForms = [];
+    private bool IsRapidRenewalVisible => _renewalForms.Contains("Rapid");
+    private bool IsShortRenewalVisible => _renewalForms.Contains("Short");
+    private bool IsStandardRenewalVisible => _renewalForms.Contains("Standard");
+
+    #region Loaders
+
+    #region RenewalForms Load
+
+    private IDataAccessResult<List<string>> _renewalFormsResult = null!;
+
+    private LoadItem RenewalFormsLoad => AddEventNotify(new LoadItem<List<string>>
+    {
+        Key = CacheKeys.AccountRenewalForms(Account.AccountNum),
+        AsyncLoadTask = async () => _renewalFormsResult = await DataAccess.GetLoaRenewalFormsAvailableByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _renewalFormsResult = new DataAccessResult<List<string>>
+        {
+            Data = (List<string>)cache!
+        },
+        ResultVariable = () => _renewalFormsResult,
+        AfterLoad = () => { _renewalForms = _renewalFormsResult.Data!; }
+    }, "renewal forms");
+
+    #endregion
+
+    #region LoaReason Load
+
+    private IDataAccessResult<LineOfAuthorityReason> _loaReasonResult = null!;
+
+    private LoadItem LoaReasonLoad => AddEventNotify(new LoadItem<LineOfAuthorityReason>
+    {
+        Key = CacheKeys.LOAReason(ReasonId!.Value),
+        AsyncLoadTask = async () => _loaReasonResult = await DataAccess.GetLOAReasonById(ReasonId!.Value),
+        CacheLoadTask = cache => _loaReasonResult = new DataAccessResult<LineOfAuthorityReason>
+        {
+            Data = (LineOfAuthorityReason)cache!
+        },
+        ResultVariable = () => _loaReasonResult,
+        AfterLoad = () => { _data = _loaReasonResult.Data!; }
+    }, "LOA reason");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        await DataAccess.GetCacheOrLoadDataAsync(RenewalFormsLoad);
+
+        if (IsNew)
+        {
+            var user = await UserSettingService.GetUserEmployeeInfoAsync();
+
+            _data = new()
+            {
+                AccountNum = Account.AccountNum,
+                CreatedBy = user!.EmployeeId,
+                LineOfAuthorityLogs = []
+            };
+        }
+        else
+        {
+            await DataAccess.GetCacheOrLoadDataAsync(LoaReasonLoad);
+        }
+
+        if (string.IsNullOrEmpty(_data.Type) && _renewalForms.Count != 0)
+        {
+            _data.Type = _renewalForms.First();
+        }
+
+        switch (_data.Type)
+        {
+            case "Rapid":
+                RapidRenewalSelected();
+                break;
+            case "Short":
+                ShortRenewalSelected();
+                break;
+            case "Standard":
+                StandardRenewalSelected();
+                break;
+        }
+    }
+
+    private void RapidRenewalSelected()
+    {
+        _isRapidRenewalSelected = true;
+        _isShortRenewalSelected = false;
+        _isStandardRenewalSelected = false;
+        _data.Type = "Rapid";
+    }
+
+    private void ShortRenewalSelected()
+    {
+        _isRapidRenewalSelected = false;
+        _isShortRenewalSelected = true;
+        _isStandardRenewalSelected = false;
+        _data.Type = "Short";
+    }
+
+    private void StandardRenewalSelected()
+    {
+        _isRapidRenewalSelected = false;
+        _isShortRenewalSelected = false;
+        _isStandardRenewalSelected = true;
+        _data.Type = "Standard";
+    }
+
+    private void OnRapidChanges(LineOfAuthorityReason data) => ApplyChanges(data, "Rapid");
+
+    private void OnShortChanges(LineOfAuthorityReason data) => ApplyChanges(data, "Short");
+
+    private void OnStandardChanges(LineOfAuthorityReason data) => ApplyChanges(data, "Standard");
+
+    private void ApplyChanges(LineOfAuthorityReason data, string type)
+    {
+        _data.Recommendation = data.Recommendation;
+        _data.FinancialAnalysis = data.FinancialAnalysis;
+
+        var isStandard = type == "Standard";
+        var isShort = type == "Short";
+        var isRapid = type == "Rapid";
+
+        if (isShort || isStandard)
+        {
+            _data.BusinessOverview = data.BusinessOverview;
+            _data.BondRisk = data.BondRisk;
+            _data.DebtHighlights = data.DebtHighlights;
+            _data.FollowUpConditions = data.FollowUpConditions;
+        }
+        else
+        {
+            _data.BusinessOverview = null;
+            _data.BondRisk = null;
+            _data.DebtHighlights = null;
+            _data.FollowUpConditions = null;
+        }
+
+        if (isStandard)
+        {
+            _data.KeyChanges = data.KeyChanges;
+            _data.Outlook = data.Outlook;
+        }
+        else
+        {
+            _data.KeyChanges = null;
+            _data.Outlook = null;
+        }
+    }
+
+    private void LoaListChanged(List<AccountLOADto> data)
+    {
+        LOARecords = data;
+        StateHasChanged();
+    }
+
+    private async Task OnSaveAndClose()
+    {
+        if (!_form.IsValid)
+            return;
+        
+        await OnSave();
+        
+        DialogService.Close(LOARecords);
+    }
+
+    private async Task OnSave()
+    {
+        if (!_form.IsValid)
+            return;
+
+        _data.LineOfAuthorityLogs = LOARecords.Select(s => new LineOfAuthorityLog
+        {
+            Id = s.Id,
+            AccountNum = s.AccountNum,
+            SequenceNumber = s.SequenceNumber,
+            Effective = s.Effective,
+            Expiration = s.Expiration,
+            Loasingle = s.LoaSingle,
+            Loaaggregate = s.LoaAggregate,
+            Comments = s.Comments,
+            Status = s.Status ?? LOAStatus.Proposed,
+            Division = s.Division,
+            BondType = s.BondType,
+            Conditions = s.Conditions,
+            HomeOfficeApproved = s.HomeOfficeApproved,
+            ReasonId = _data.Id
+        }).ToList();
+
+        var response = await DataAccess.SetLOAReason(_data);
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "LOA renewal");
+            return;
+        }
+
+        NotifySuccessfulSave("LOA renewal");
+
+        DialogService.Close();
+    }
+
+    private async Task OnCancel()
+    {
+        var confirmed = await DialogService.Confirm(
+            "Any changes made are going to be lost. Are you sure you want to cancel?",
+            "Cancel");
+
+        if (confirmed == true)
+            DialogService.Close();
+    }
+
+    private void OnApprove()
+    {
+        DialogService.Close("Approved");
+    }
+
+    public void OnDecline()
+    {
+        DialogService.Close("Declined");
+    }
+
+}

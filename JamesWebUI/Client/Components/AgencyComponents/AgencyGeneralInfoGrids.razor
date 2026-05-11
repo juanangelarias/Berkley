@@ -21,12 +21,6 @@
                     <RadzenRow>
                         <AgencyLicenseGrid Agency="Agency" AgentsLicenses="true"/>
                     </RadzenRow>
-                    <RadzenRow>
-                        <RadzenText Text="Agency Online Bond Systems" Style="font-weight: bold; margin-top: 1rem;"/>
-                    </RadzenRow>
-                    <RadzenRow>
-                        <AgencyOnlineBondSystemsGrid AgencyId="Agency.Id"/>
-                    </RadzenRow>
                 </RadzenStack>
             </Animate>
         </PositionSavingTabsItem>
@@ -52,9 +46,14 @@
                 </RadzenRow>
             </Animate>
         </PositionSavingTabsItem>
-        <PositionSavingTabsItem Text="Locations" TabName="Locations">
+        <PositionSavingTabsItem Text="Related Parties" TabName="RelatedParties">
             <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
                 <AgencyLocationsGrid AgencyId="Agency.Id" NotResumed="true"/>
+            </Animate>
+        </PositionSavingTabsItem>
+        <PositionSavingTabsItem Text="Agency Online Bond Systems" TabName="OnlineSystems">
+            <Animate Animation="Direction" Duration="TimeSpan.FromSeconds(0.5)">
+                <AgencyOnlineBondSystemsGrid AgencyId="Agency.Id"/>
             </Animate>
         </PositionSavingTabsItem>
     </Tabs>

@@ -1,8 +1,7 @@
-using James.Data.Server.Exceptions;
+﻿using James.Data.Server.Exceptions;
 using James.Shared;
 using James.Shared.Constants;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 
 namespace James.Data.Server.GraphQL.Mutations;
 
@@ -486,7 +485,38 @@ public partial class GeneralMutation
     }
 
     [Authorize]
-    public async Task<bool> ApproveAccountLOA(Guid reasonId,
+    public async Task<bool> AccountLOARequestForApproval(Guid reasonId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        await using var trn = await ctx.Database.BeginTransactionAsync();
+        try
+        {
+            var loaLogs = ctx.LineOfAuthorityLogs
+                .Where(l => l.ReasonId == reasonId)
+                .ToList();
+
+            foreach (var loaLog in loaLogs)
+            {
+                loaLog.Status = LOAStatus.ApprovalRequested;
+                ctx.Update(loaLog);
+            }
+
+            await ctx.SaveChangesAsync();
+            await trn.CommitAsync();
+
+            return true;
+        }
+        catch (Exception)
+        {
+            await trn.RollbackAsync();
+            throw;
+        }
+    }
+    
+    [Authorize]
+    public async Task<bool> AccountLOAApprove(Guid reasonId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
@@ -521,12 +551,10 @@ public partial class GeneralMutation
     }
 
     [Authorize]
-    public async Task<bool> DeclineAccountLOA(Guid reasonId,
-        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
+    public async Task<bool> AccountLOADecline(Guid reasonId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
-
-        var employee = await GetEmployeeAsync(ctx, userShared);
 
         await using var trn = await ctx.Database.BeginTransactionAsync();
         try

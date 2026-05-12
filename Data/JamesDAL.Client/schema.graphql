@@ -264,6 +264,10 @@ type CommercialBondTypeDm {
   commercialRates: [CommercialRate!]!
 }
 
+type AccountLOADeclinePayload {
+  boolean: Boolean
+}
+
 input SetPowerOfAttorneyDocumentStatusInput {
   id: UUID!
   requested: DateTime
@@ -1326,6 +1330,10 @@ type FinancialDetail {
   statement: FinancialStatement!
 }
 
+input AccountLOADeclineInput {
+  reasonId: UUID!
+}
+
 type WatchStatusDm {
   id: UUID!
   created: DateTime!
@@ -1485,6 +1493,10 @@ type AgencyErrorAndOmission {
   expiration: LocalDate!
   coverageLimit: Int!
   agency: Agency!
+}
+
+input AccountLOARequestForApprovalInput {
+  reasonId: UUID!
 }
 
 input KeyValuePairOfStringAndStringInput {
@@ -2038,6 +2050,10 @@ input LegalEntityPhoneInput {
   typeNavigation: PhoneTypeDmInput!
 }
 
+input AccountLOAApproveInput {
+  reasonId: UUID!
+}
+
 type AgencyAccountBondDto {
   bondNumber: String!
   effective: DateTime!
@@ -2054,6 +2070,10 @@ type AgencyAccountBondDto {
   status: String!
   appointment: DateTime!
   termination: DateTime!
+}
+
+type AccountLOAApprovePayload {
+  boolean: Boolean
 }
 
 type Address {
@@ -2708,6 +2728,9 @@ type Mutation {
   setLOAReason(input: SetLOAReasonInput!): SetLOAReasonPayload!
   associateLOALogToReason(input: AssociateLOALogToReasonInput!): AssociateLOALogToReasonPayload!
   disassociateLOALogToReason(input: DisassociateLOALogToReasonInput!): DisassociateLOALogToReasonPayload!
+  accountLOARequestForApproval(input: AccountLOARequestForApprovalInput!): AccountLOARequestForApprovalPayload!
+  accountLOAApprove(input: AccountLOAApproveInput!): AccountLOAApprovePayload!
+  accountLOADecline(input: AccountLOADeclineInput!): AccountLOADeclinePayload!
   setOnlineSystem(input: SetOnlineSystemInput!): SetOnlineSystemPayload!
   deleteOnlineSystem(input: DeleteOnlineSystemInput!): DeleteOnlineSystemPayload!
   setOnlineBondSystem(input: SetOnlineBondSystemInput!): SetOnlineBondSystemPayload!
@@ -3705,6 +3728,10 @@ type BalanceSheet {
 input DeleteAddressInput {
   addressId: UUID!
   identifier: String!
+}
+
+type AccountLOARequestForApprovalPayload {
+  boolean: Boolean
 }
 
 type CoInsurer {

@@ -22,11 +22,11 @@ public partial class Query
             {
                 Id = s.Id,
                 Created = s.Created,
-                CreatedByName = s.CreatedBy != null 
-                    ? s.CreatedByNavigation!.FullName 
+                CreatedByName = s.CreatedBy != null
+                    ? s.CreatedByNavigation!.FullName
                     : null,
-                ApprovedByName = s.ApprovedBy != null 
-                    ? s.ApprovedByNavigation!.FullName 
+                ApprovedByName = s.ApprovedBy != null
+                    ? s.ApprovedByNavigation!.FullName
                     : null,
                 AccountNum = s.AccountNum,
                 SequenceNumber = s.SequenceNumber,
@@ -82,7 +82,7 @@ public partial class Query
 
         return response;
     }
-    
+
     [Authorize]
     public async Task<AccountLOAsDto> GetAccountLOAs(string accountNum,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
@@ -381,7 +381,7 @@ public partial class Query
 
         return data;
     }
-    
+
     [Authorize]
     public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
@@ -411,28 +411,28 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var reasons = await ctx.LineOfAuthorityReasons
-            .Include(i=>i.CreatedByNavigation)
-            .Include(i=>i.LineOfAuthorityLogs)
-            .ThenInclude(i=>i.CreatedByNavigation)
-            .Include(i=>i.LineOfAuthorityLogs)
-            .ThenInclude(i=>i.ApprovedByNavigation)
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.LineOfAuthorityLogs)
+            .ThenInclude(i => i.CreatedByNavigation)
+            .Include(i => i.LineOfAuthorityLogs)
+            .ThenInclude(i => i.ApprovedByNavigation)
             .Where(r => r.AccountNum == accountNum)
             .ToListAsync();
 
         return reasons;
     }
-    
+
     [Authorize]
     public async Task<LineOfAuthorityReason> GetLOAReasonById(Guid reasonId,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
     {
         var ctx = await contextFactory.CreateDbContextAsync();
         var reason = await ctx.LineOfAuthorityReasons
-            .Include(i=>i.CreatedByNavigation)
-            .Include(i=>i.LineOfAuthorityLogs)
-            .ThenInclude(i=>i.CreatedByNavigation)
-            .Include(i=>i.LineOfAuthorityLogs)
-            .ThenInclude(i=>i.ApprovedByNavigation)
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.LineOfAuthorityLogs)
+            .ThenInclude(i => i.CreatedByNavigation)
+            .Include(i => i.LineOfAuthorityLogs)
+            .ThenInclude(i => i.ApprovedByNavigation)
             .FirstOrDefaultAsync(r => r.Id == reasonId);
 
         return reason ?? throw new NotFoundException("Line of Authority Reason not found");
@@ -446,7 +446,7 @@ public partial class Query
 
         // Infer available forms based on account LOA history
         var hasContractLoa = await ctx.LineOfAuthorityLogs
-            .AnyAsync(l => l.AccountNum == accountNum && l.BondType == BondType.Contract.ToString());
+            .AnyAsync(l => l.AccountNum == accountNum && l.BondType == nameof(BondType.Contract));
 
         var forms = new List<string>();
 
@@ -456,8 +456,7 @@ public partial class Query
             forms.Add("Rapid");
         }
 
-        forms.Add("Short");
-        forms.Add("Standard");
+        forms.AddRange("Short", "Standard");
 
         return forms;
     }

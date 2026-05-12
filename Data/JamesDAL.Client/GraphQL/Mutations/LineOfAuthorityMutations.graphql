@@ -63,3 +63,21 @@ mutation DisassociateLOALogToReason($input: DisassociateLOALogToReasonInput!){
         boolean
     }
 }
+
+mutation AccountLOARequestForApproval($input: AccountLOARequestForApprovalInput!){
+    accountLOARequestForApproval(input: $input){
+        boolean
+    }
+}
+
+mutation AccountLOAApprove($input: AccountLOAApproveInput!){
+    accountLOAApprove(input: $input){
+        boolean
+    }
+}
+
+mutation AccountLOADecline($input: AccountLOADeclineInput!){
+    accountLOADecline(input: $input){
+        boolean
+    }
+}

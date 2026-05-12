@@ -66,9 +66,9 @@
                           ButtonType="ButtonType.Reset" Style="width: 150px;" Visible="@(!ForApproval)"/>
             
             <RadzenButton Text="Approve" Icon="file_save" ButtonStyle="ButtonStyle.Success"
-                          Click="OnApprove" Style="width: 150px;" Visible="@(!ForApproval)"/>
+                          Click="OnApprove" Style="width: 150px;" Visible="@(ForApproval)"/>
             <RadzenButton Text="Decline" Icon="cancel" Click="OnDecline" ButtonStyle="ButtonStyle.Warning"
-                          ButtonType="ButtonType.Reset" Style="width: 150px;" Visible="@(!ForApproval)"/>
+                          ButtonType="ButtonType.Reset" Style="width: 150px;" Visible="@(ForApproval)"/>
         </RadzenRow>
     </RadzenTemplateForm>
 </RadzenCard>

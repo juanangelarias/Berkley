@@ -21,6 +21,7 @@ public static class CacheKeys
     public static string AccountOutstandingLiability(string accountNumber) =>
         $"AccountOutstandingLiability-{accountNumber}";
     public static string AccountPrograms(string accountNumber) => $"AccountPrograms-{accountNumber}";
+    public static string AccountLOARenewals(string accountNumber) => $"AccountLOARenewals-{accountNumber}";
     public static string AccountRenewalForms(string accountNumber) => $"AccountRenewalForms-{accountNumber}";
     public static string AccountWatches(string accountNumber) => $"AccountWatches-{accountNumber}";
     public static string Agency(string agencyNumber) => $"Agency-{agencyNumber}";

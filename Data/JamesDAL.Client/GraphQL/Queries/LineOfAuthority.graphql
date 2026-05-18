@@ -116,6 +116,7 @@ query GetLOAReasonByAccount($accountNum: String!) {
         accountNum
         bondRisk
         businessOverview
+        created
         createdBy
         createdByNavigation {
             fullName
@@ -124,11 +125,16 @@ query GetLOAReasonByAccount($accountNum: String!) {
         financialAnalysis
         followUpConditions
         keyChanges
+        outlook
+        recommendation
+        type
         lineOfAuthorityLogs {
             id
+            accountNum
             bondType
             comments
             conditions
+            created
             createdBy
             createdByNavigation {
                 fullName
@@ -136,8 +142,10 @@ query GetLOAReasonByAccount($accountNum: String!) {
             division
             effective
             expiration
+            homeOfficeApproved
             loaaggregate
             loasingle
+            reasonId
             sequenceNumber
             status
             approvedBy

@@ -8,12 +8,12 @@
         <RadzenText Text="Account Line of Authority" TextStyle="TextStyle.DisplayH6"/>
     </RadzenRow>
     <RadzenRow>
-        <RadzenDataGrid TItem="AccountLOADto" Data="@_accountLoaList" @ref="@_grid" EditMode="DataGridEditMode.Single"
+        <RadzenDataGrid TItem="AccountLOADto" Data="@_accountLoaList" EditMode="DataGridEditMode.Single"
                         EmptyText="No records to display" Density="Density.Compact"
                         SelectionMode="DataGridSelectionMode.Single"
                         AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true"
-                        IsLoading="@IsLoading"
-                        Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" Filter="ShowLoading">
+                        IsLoading="@IsLoading" Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" 
+                        Filter="ShowLoading">
             <HeaderTemplate>
                 <AuthorizeView Policy="InRoleCanProposeAccountLoa">
                     <RadzenButton Icon="add" Text="Add/Renew LOA" Variant="Variant.Text"
@@ -122,29 +122,9 @@
                                      Gap="1rem">
                             <AuthorizeView Policy="InRoleCanProposeAccountLoa">
                                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
-                                              Size="ButtonSize.Small"
-                                              Visible="@ShowEdit(loa)"
+                                              Size="ButtonSize.Small" 
                                               MouseEnter="@(arg => ShowTooltip(arg, Action.RequestApproval))"
                                               Click="@(_ => LoaRenewalReason(loa.ReasonId))"/>
-                            </AuthorizeView>
-                            <AuthorizeView Policy="InRoleCanProposeAccountLoa">
-                                <RadzenButton Icon="send" ButtonStyle="ButtonStyle.Primary" Variant="Variant.Flat"
-                                              Size="ButtonSize.Small" Visible="@ShowRequestApproval(loa)"
-                                              MouseEnter="@(arg => ShowTooltip(arg, Action.RequestApproval))"
-                                              Click="@(_ => RequestApproval(loa))" @onclick:stopPropagation="true"/>
-                            </AuthorizeView>
-                            <AuthorizeView Policy="InRoleCanApproveAccountLoa">
-                                <RadzenButton Icon="order_approve" ButtonStyle="ButtonStyle.Success"
-                                              Variant="Variant.Flat"
-                                              Size="ButtonSize.Small" Visible="@ShowApprove(loa)"
-                                              MouseEnter="@(arg => ShowTooltip(arg, Action.ApproveDecline))"
-                                              Click="@(_ => ApproveDecline(loa))" @onclick:stopPropagation="true"/>
-                            </AuthorizeView>
-                            <AuthorizeView Policy="InRoleCanCancelAccountLoa">
-                                <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
-                                              Size="ButtonSize.Small" Visible="@ShowCancel(loa)"
-                                              MouseEnter="@(arg => ShowTooltip(arg, Action.Cancel))"
-                                              Click="@(_ => Cancel(loa))" @onclick:stopPropagation="true"/>
                             </AuthorizeView>
                         </RadzenStack>
                     </Template>
@@ -157,15 +137,9 @@
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
-    private RadzenDataGrid<AccountLOADto> _grid = null!;
     private List<AccountLOADto> _accountLoaList = [];
     private List<DivisionDm> _divisions = [];
     private List<string> _bondTypes = [];
-
-    private bool ShowEdit(AccountLOADto loa) => loa is { ReasonId: not null, Status: "PROPOSED" or "DECLINED" };
-    private bool ShowRequestApproval(AccountLOADto loa) => loa.Status == "PROPOSED";
-    private bool ShowApprove(AccountLOADto loa) => loa.Status is "APP. REQ." or "DECLINED";
-    private bool ShowCancel(AccountLOADto loa) => loa.Status == "APPROVED";
 
     #region Loaders
 
@@ -223,67 +197,6 @@
         await DataAccess.ParallelGetCacheOrDataAsync(AccountLOALoad, DivisionsLoad);
     }
 
-    private async Task RequestApproval(AccountLOADto loa)
-    {
-        if(!await ConfirmAction(Action.RequestApproval))
-            return;
-            
-        await ToBeDevelopedDialog();
-    }
-
-    private async Task ApproveDecline(AccountLOADto loa)
-    {
-        var reasonId = loa.ReasonId;
-        if(reasonId == null)
-            return;
-        
-        var history = new Dictionary<string, List<AccountLOADto>>
-        {
-            { "Contract", _accountLoaList.Where(r => r.BondType == "Contract").ToList() },
-            { "Commercial", _accountLoaList.Where(r => r.BondType == "Commercial").ToList() }
-        };
-
-        var dialogOptions = DialogTools.GetDialogOptions(1536);
-        dialogOptions.Height = "100%";
-        dialogOptions.ShowClose = false;
-
-        var loas = _accountLoaList
-            .Where(r =>
-                r.ReasonId == reasonId)
-            .ToList();
-
-        var parameters = new Dictionary<string, object?>
-        {
-            { "Account", Account },
-            { "LOARecords", loas },
-            { "ReasonId", reasonId },
-            { "History", history },
-            { "IsNew", false }
-        };
-
-        var response = await DialogService.OpenAsync<AccountLOARenewal>("Renewal Reason", parameters!, dialogOptions);
-        var reason = (string)response;
-        if (reason != "Approved" && reason != "Declined")
-            return;
-
-        if (reason == "Approved")
-        {
-            
-        }
-        else // Declined
-        {
-            
-        }
-    }
-
-    private async Task Cancel(AccountLOADto loa)
-    {
-        if(!await ConfirmAction(Action.Cancel))
-            return;
-        
-        await ToBeDevelopedDialog();
-    }
-
     private void ShowTooltip(ElementReference element, Action name, TooltipOptions? options = null)
     {
         var message = name switch
@@ -297,20 +210,6 @@
         };
 
         TooltipService.Open(element, message, options);
-    }
-
-    private async Task<bool> ConfirmAction(Action action)
-    {
-        var message = action switch
-        {
-            Action.RequestApproval => "Are you sure to submit for LOA?",
-            Action.Remove => "Are you sure you want to remove this LOA?",
-            Action.ApproveDecline => "Are you sure you want to approve or decline this LOA?",
-            Action.Cancel => "Are you sure you want to cancel this LOA?",
-            _ => ""
-        };
-
-        return await DialogService.Confirm(message, "Confirmation") == true;
     }
 
     private async Task PrintLoa(AccountLOADto loa)
@@ -330,8 +229,6 @@
         dialogOptions.Height = "100%";
         dialogOptions.ShowClose = false;
 
-        var isNew = reasonId == null;
-
         var loas = _accountLoaList
             .Where(r =>
                 reasonId != null &&
@@ -344,7 +241,7 @@
             { "LOARecords", loas },
             { "ReasonId", reasonId },
             { "History", history },
-            { "IsNew", isNew }
+            { "CalledFromRenewal", false },
         };
 
         var response = await DialogService.OpenAsync<AccountLOARenewal>("Renewal Reason", parameters!, dialogOptions);
@@ -365,9 +262,9 @@
 
             foreach (var loa in loas)
             {
-                if (newLOARecords != null && newLOARecords.Any(a => a.Id == loa.Id)) 
+                if (newLOARecords != null && newLOARecords.Any(a => a.Id == loa.Id))
                     continue;
-                
+
                 var deleteResponse = await DataAccess.LoaLogDelete(loa.Id);
                 if (!deleteResponse.Success)
                 {
@@ -377,14 +274,14 @@
                         continue;
                     }
                 }
-                
+
                 var toDelete = _accountLoaList.FirstOrDefault(f => f.Id == loa.Id);
-                if(toDelete != null)
+                if (toDelete != null)
                     _accountLoaList.Remove(toDelete);
             }
 
             _accountLoaList = _accountLoaList
-                .OrderByDescending(r => r.Created)
+                .OrderByDescending(r => r.Effective)
                 .ToList();
 
             StateHasChanged();

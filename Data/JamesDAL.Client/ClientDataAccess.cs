@@ -1966,6 +1966,30 @@ namespace James.Data.Client
             }));
         }
 
+        public async Task<ISaveDataResult> AccountLOARequestForApproval(Guid reasonId)
+        {
+            return await ExecuteSave(async () => await jamesClient.AccountLOARequestForApproval.ExecuteAsync(new()
+            {
+                ReasonId = reasonId
+            }));
+        }
+
+        public async Task<ISaveDataResult> AccountLOAApprove(Guid reasonId)
+        {
+            return await ExecuteSave(async () => await jamesClient.AccountLOAApprove.ExecuteAsync(new()
+            {
+                ReasonId = reasonId
+            }));
+        }
+
+        public async Task<ISaveDataResult> AccountLOADecline(Guid reasonId)
+        {
+            return await ExecuteSave(async () => await jamesClient.AccountLOADecline.ExecuteAsync(new()
+            {
+                ReasonId = reasonId
+            }));
+        }
+
         #endregion
         
         #region OnlineSystem

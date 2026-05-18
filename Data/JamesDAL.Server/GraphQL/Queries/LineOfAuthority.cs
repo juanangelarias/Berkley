@@ -42,6 +42,8 @@ public partial class Query
                 Status = s.Status,
                 ReasonId = s.ReasonId
             })
+            .OrderBy(o=>o.AccountNum)
+            .ThenByDescending(o=>o.Effective)
             .ToListAsync();
 
         return response;
@@ -417,6 +419,8 @@ public partial class Query
             .Include(i => i.LineOfAuthorityLogs)
             .ThenInclude(i => i.ApprovedByNavigation)
             .Where(r => r.AccountNum == accountNum)
+            .OrderBy(o => o.AccountNum)
+            .ThenByDescending(o => o.Created)
             .ToListAsync();
 
         return reasons;
@@ -444,19 +448,9 @@ public partial class Query
     {
         var ctx = await contextFactory.CreateDbContextAsync();
 
-        // Infer available forms based on account LOA history
-        var hasContractLoa = await ctx.LineOfAuthorityLogs
-            .AnyAsync(l => l.AccountNum == accountNum && l.BondType == nameof(BondType.Contract));
-
-        var forms = new List<string>();
-
-        // Rapid renewal is generally for Commercial-only accounts
-        if (!hasContractLoa)
-        {
-            forms.Add("Rapid");
-        }
-
-        forms.AddRange("Short", "Standard");
+        var forms = new List<string> { LOARenewalType.Rapid, LOARenewalType.Short, LOARenewalType.Standard };
+        
+        // ToDo: Logic to determine what forms will be available for this account
 
         return forms;
     }

@@ -397,6 +397,9 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> SetLOAReason(LineOfAuthorityReason reason);
         public Task<ISaveDataResult> AssociateLOALogToReason(Guid reasonId, Guid loaLogId);
         public Task<ISaveDataResult> DisassociateLOALogToReason(Guid reasonId, Guid loaLogId);
+        public Task<ISaveDataResult> AccountLOARequestForApproval(Guid reasonId);
+        public Task<ISaveDataResult> AccountLOAApprove(Guid reasonId);
+        public Task<ISaveDataResult> AccountLOADecline(Guid reasonId);
         
         #endregion
         

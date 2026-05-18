@@ -1322,6 +1322,24 @@ namespace James.Data.Server
                 await generalMutation.DisassociateLOALogToReason(reasonId, loaLogId, contextFactory));
         }
 
+        public async Task<ISaveDataResult> AccountLOARequestForApproval(Guid reasonId)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.AccountLOARequestForApproval(reasonId, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> AccountLOAApprove(Guid reasonId)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.AccountLOAApprove(reasonId, contextFactory, userShared));
+        }
+
+        public async Task<ISaveDataResult> AccountLOADecline(Guid reasonId)
+        {
+            return await ExecuteSave(async () =>
+                await generalMutation.AccountLOADecline(reasonId, contextFactory));
+        }
+
         #endregion
         
         #region OnlineSystem

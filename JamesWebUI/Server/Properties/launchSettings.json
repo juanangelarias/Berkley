@@ -14,7 +14,7 @@
       "commandName": "Project",
       "launchBrowser": true,
       //"launchUrl": "Agency/322?tabsAgencyProfile=tabAgents",
-      "launchUrl": "account/67239?mn=1&ai=0",
+      "launchUrl": "account/67239?mn=2&ai=0",
       //"launchUrl": "OnlineSystems",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

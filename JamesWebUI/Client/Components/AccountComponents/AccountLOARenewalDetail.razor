@@ -9,7 +9,7 @@
 <RadzenDataGrid TItem="AccountLOADto" Data="LOAList" RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate"
                 SelectionMode="DataGridSelectionMode.Single" @ref="@_grid" ShowHeader="@(IsAddNewLOAVisible)"
                 class="my-grid-font">
-    <HeaderTemplate >
+    <HeaderTemplate>
         <RadzenButton Icon="add" Text="Add new LOA" Click="@AddNewLOA" Visible="@IsAddNewLOAVisible"
                       Variant="Variant.Text" Size="ButtonSize.Small"/>
     </HeaderTemplate>
@@ -32,7 +32,7 @@
                 <RadzenDataGridColumn Title="LOA Single" Property="@nameof(AccountLOADto.LoaSingle)"
                                       TextAlign="TextAlign.Right" MinWidth="125px">
                     <Template Context="loa">
-                        <RadzenText Text="@($"{loa.LoaSingle:C0}")" TextAlign="TextAlign.Right"
+                        <RadzenText Text="@(loa.LoaSingle.ToString("C0"))" TextAlign="TextAlign.Right"
                                     TextStyle="TextStyle.Body2"/>
                     </Template>
                 </RadzenDataGridColumn>
@@ -40,7 +40,7 @@
                                       MinWidth="125px"
                                       TextAlign="TextAlign.Right">
                     <Template Context="loa">
-                        <RadzenText Text="@($"{loa.LoaAggregate:C0}")" TextAlign="TextAlign.Right"
+                        <RadzenText Text="@(loa.LoaAggregate.ToString("C0"))" TextAlign="TextAlign.Right"
                                     TextStyle="TextStyle.Body2"/>
                     </Template>
                 </RadzenDataGridColumn>
@@ -70,8 +70,7 @@
             </Template>
             <EditTemplate Context="loa">
                 <RadzenDatePicker @bind-Value="@loa.Effective" ShowTime="false" DateFormat="MM/dd/yyyy"
-                                  Name="Effective" TextStyle="TextStyle.Body2" Style="display: block"
-                                  ReadOnly="@_isDatesReadonly"/>
+                                  Name="Effective" TextStyle="TextStyle.Body2" Style="display: block"/>
                 <RadzenRequiredValidator Text="Effective Date is required" Component="Effective" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
@@ -81,15 +80,14 @@
             </Template>
             <EditTemplate Context="loa">
                 <RadzenDatePicker @bind-Value="@loa.Expiration" ShowTime="false" DateFormat="MM/dd/yyyy"
-                                  Name="Expiration" TextStyle="TextStyle.Body2" Style="display: block"
-                                  ReadOnly="@_isDatesReadonly"/>
+                                  Name="Expiration" TextStyle="TextStyle.Body2" Style="display: block"/>
                 <RadzenRequiredValidator Text="Expiration Date is required" Component="Expiration" Popup="true"/>
             </EditTemplate>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="LOA Single" Property="@nameof(AccountLOADto.LoaSingle)"
                               TextAlign="TextAlign.Right" MinWidth="125px">
             <Template Context="loa">
-                <RadzenText Text="@($"{loa.LoaSingle:C0}")" TextAlign="TextAlign.Right" TextStyle="TextStyle.Body2"/>
+                <RadzenText Text="@(loa.LoaSingle.ToString("C0"))" TextAlign="TextAlign.Right" TextStyle="TextStyle.Body2"/>
             </Template>
             <EditTemplate Context="loa">
                 <RadzenNumeric @bind-Value="@loa.LoaSingle" Format="c0" ShowUpDown="false" Name="Single"
@@ -101,7 +99,7 @@
         <RadzenDataGridColumn Title="LOA Aggregate" Property="@nameof(AccountLOADto.LoaAggregate)" MinWidth="125px"
                               TextAlign="TextAlign.Right">
             <Template Context="loa">
-                <RadzenText Text="@($"{loa.LoaAggregate:C0}")" TextAlign="TextAlign.Right"
+                <RadzenText Text="@(loa.LoaAggregate.ToString("C0"))" TextAlign="TextAlign.Right"
                             TextStyle="TextStyle.Body2"/>
             </Template>
             <EditTemplate Context="loa">
@@ -110,19 +108,25 @@
                 <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual" Value="0"
                                         Text="Aggregate value should be greater or equal to zero." Popup="true"/>
                 <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual"
-                                        Value="@loa.LoaSingle" Popup="true"
+                                        Value="0" Popup="true"
                                         Text="Aggregate must be less than or equal to Single"/>
             </EditTemplate>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Status" Property="@nameof(AccountLOADto.Status)" MinWidth="110px"/>
+        <RadzenDataGridColumn Title="Status" Property="@nameof(AccountLOADto.Status)" MinWidth="110px">
+            <Template Context="loa">
+                <RadzenText Text="@loa.Status" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Division" Property="@nameof(AccountLOADto.Division)" MinWidth="110px">
-            <EditTemplate Context="loa">
-                <RadzenDropDown TValue="string" @bind-Value="@loa.Division" Data="_divisionOptions"
-                                TextProperty="@nameof(DivisionDm.Division)"
-                                ValueProperty="@nameof(DivisionDm.DivisionCode)"/>
-            </EditTemplate>
+            <Template Context="loa">
+                <RadzenText Text="@(_divisionOptions.FirstOrDefault(f => f.DivisionCode == loa.Division)?.Division)"
+                            TextStyle="TextStyle.Body2"/>
+            </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Bond Type" Property="@nameof(AccountLOADto.BondType)" MinWidth="110px">
+            <Template Context="loa">
+                <RadzenText Text="@loa.BondType" TextStyle="TextStyle.Body2"/>
+            </Template>
             <EditTemplate Context="loa">
                 <RadzenDropDown TValue="string" @bind-Value="@loa.BondType" Data="_bondTypeOptions"
                                 ReadOnly="@_isBondTypeReadOnly"/>
@@ -133,7 +137,11 @@
                 <RadzenText Text="@loa.Created.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
             </Template>
         </RadzenDataGridColumn>
-        <RadzenDataGridColumn Title="Created By" Property="@nameof(AccountLOADto.CreatedByName)" MinWidth="125px"/>
+        <RadzenDataGridColumn Title="Created By" Property="@nameof(AccountLOADto.CreatedByName)" MinWidth="125px">
+            <Template Context="loa">
+                <RadzenText Text="@loa.CreatedByName" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Home Office Approved" Property="@nameof(AccountLOADto.HomeOfficeApproved)"
                               MinWidth="150px">
             <Template Context="loa">
@@ -146,13 +154,13 @@
                 <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center" Gap="1rem">
                     <AuthorizeView Policy="InRoleCanProposeAccountLoa">
                         <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small" Visible="@(!_isEditMode)"
+                                      Size="ButtonSize.Small" Visible="@(!_isEditMode && !IsReadOnly)"
                                       MouseEnter="@(arg => ShowTooltip(arg, Action.Edit))"
                                       Click="@(_ => EditLOA(loa))" @onclick:stopPropagation="true"/>
                     </AuthorizeView>
                     <AuthorizeView Policy="InRoleCanProposeAccountLoa">
                         <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small" Visible="@(!_isEditMode)"
+                                      Size="ButtonSize.Small" Visible="@(!_isEditMode && !IsReadOnly)"
                                       MouseEnter="@(arg => ShowTooltip(arg, Action.Remove))"
                                       Click="@(_ => DeleteLOA(loa))" @onclick:stopPropagation="true"/>
                     </AuthorizeView>
@@ -169,18 +177,19 @@
 </RadzenDataGrid>
 
 @code {
-    [Parameter, EditorRequired] public required string AccountNum { get; set; }
+    [Parameter, EditorRequired] public required Account Account { get; set; }
     [Parameter, EditorRequired] public required List<AccountLOADto> LOAList { get; set; } = [];
     [Parameter, EditorRequired] public required Dictionary<string, List<AccountLOADto>> History { get; set; } = new();
+    [Parameter, EditorRequired] public required bool IsReadOnly { get; set; }
     [Parameter, EditorRequired] public required EventCallback<List<AccountLOADto>> OnLOAListChanged { get; set; }
-    [Parameter] public required bool IsReadOnly { get; set; }
 
     private const int MaxLoaCount = 2;
-    private bool IsAddNewLOAVisible => LOAList.Count < MaxLoaCount && !_isEditMode;
-    private List<AccountLOADto> CommercialLOAHistory => History["Commercial"];
-    private List<AccountLOADto> ContractLOAHistory => History["Contract"];
+    private bool IsAddNewLOAVisible => LOAList.Count < MaxLoaCount && !_isEditMode && !IsReadOnly;
+    private List<AccountLOADto> CommercialLOAHistory =>
+        History.TryGetValue("Commercial", out var history) ? history : new List<AccountLOADto>();
+    private List<AccountLOADto> ContractLOAHistory =>
+        History.TryGetValue("Contract", out var history) ? history : new List<AccountLOADto>();
     private bool _isBondTypeReadOnly;
-    private bool _isDatesReadonly;
     private readonly List<string> _bondTypeOptions = ["Commercial", "Contract"];
     private List<DivisionDm> _divisionOptions = [];
     private RadzenDataGrid<AccountLOADto> _grid = null!;
@@ -189,7 +198,7 @@
     private bool _adding;
     private string _actualUser = string.Empty;
     private bool _homeOfficeApprover;
-    
+
     #region Loaders
 
     #region Divisions Load
@@ -215,11 +224,11 @@
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        
-        var user  = await UserSettingService.GetUserEmployeeInfoAsync();
+
+        var user = await UserSettingService.GetUserEmployeeInfoAsync();
         _actualUser = user?.FullName ?? "";
         _homeOfficeApprover = user?.HomeOfficeApprover ?? false;
-        
+
         await DataAccess.GetCacheOrLoadDataAsync(DivisionsLoad);
     }
 
@@ -228,7 +237,6 @@
         if (LOAList.Count > 1)
             return;
 
-        _isDatesReadonly = false;
         _isBondTypeReadOnly = false;
 
         var first = LOAList.FirstOrDefault();
@@ -236,13 +244,14 @@
         {
             Id = Guid.NewGuid(),
             Created = DateTime.Now,
-            AccountNum = AccountNum,
-            Status = "PROPOSED",
+            Division = Account.Division,
+            AccountNum = Account.AccountNum,
+            Status = LOAStatus.Pending,
             CreatedByName = _actualUser,
             HomeOfficeApproved = _homeOfficeApprover,
         };
-        
-        if(first is not null)
+
+        if (first is not null)
         {
             newLOA.BondType = first.BondType == "Commercial"
                 ? "Contract"
@@ -264,6 +273,8 @@
 
         await _grid.EditRow(loa);
 
+        _isBondTypeReadOnly = LOAList.Count > 1;
+
         _adding = false;
         _isEditMode = true;
     }
@@ -275,6 +286,7 @@
             LOAList.Remove(toRemove);
 
         await _grid.Reload();
+        await OnLOAListChanged.InvokeAsync(LOAList);
     }
 
     private async Task SaveLOA(AccountLOADto loa)

@@ -30,16 +30,8 @@
                             TextStyle="TextStyle.Caption"/>
             </RadzenColumn>
             <RadzenColumn Size="6">
-                <RadzenText Text="@(_accountAbstract.CurrentOutstandingLiability.ToString("#,0"))"
+                <RadzenText Text="@(_accountAbstract.CurrentOutstandingLiability.ToString("c0"))"
                             TextAlign="TextAlign.Right" TextStyle="TextStyle.Caption"/>
-            </RadzenColumn>
-        </RadzenRow>
-        <RadzenRow>
-            <RadzenColumn Size="6">
-                <RadzenText Text="LOA Expiry Date" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
-            </RadzenColumn>
-            <RadzenColumn Size="6">
-                <RadzenText Text="@("TBD")" TextAlign="TextAlign.Right" TextStyle="TextStyle.Caption"/>
             </RadzenColumn>
         </RadzenRow>
     </RadzenColumn>
@@ -69,7 +61,7 @@
                 <RadzenText Text="Collateral" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
             </RadzenColumn>
             <RadzenColumn Size="6">
-                <RadzenText Text="@(_accountAbstract.Collateral.ToString("#,0"))" TextAlign="TextAlign.Right"
+                <RadzenText Text="@(_accountAbstract.Collateral.ToString("c0"))" TextAlign="TextAlign.Right"
                             TextStyle="TextStyle.Caption"/>
             </RadzenColumn>
         </RadzenRow>
@@ -78,7 +70,7 @@
                 <RadzenText Text="Premium (Potential)" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
             </RadzenColumn>
             <RadzenColumn Size="6">
-                <RadzenText Text="@(_accountAbstract.PotentialPremium.ToString("#,0"))" TextAlign="TextAlign.Right"
+                <RadzenText Text="@(_accountAbstract.PotentialPremium.ToString("c0"))" TextAlign="TextAlign.Right"
                             TextStyle="TextStyle.Caption"/>
             </RadzenColumn>
         </RadzenRow>

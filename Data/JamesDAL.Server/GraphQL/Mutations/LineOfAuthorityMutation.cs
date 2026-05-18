@@ -50,7 +50,7 @@ public partial class GeneralMutation
 
             var newLog = CreateStatusLog(lastLog);
             ctx.AccountProgramStatusHistories.Add(newLog);
-            ctx.Update(existing);
+            existing.StatusId = statusId;
         }
         else
         {
@@ -222,7 +222,7 @@ public partial class GeneralMutation
                 Loasingle = loaSingle,
                 Loaaggregate = loaAggregate,
                 Comments = comments,
-                Status = status,
+                Status = string.IsNullOrWhiteSpace(status) ? LOAStatus.Pending : status,
                 Division = division,
                 BondType = bondType,
                 Conditions = conditions,
@@ -240,7 +240,7 @@ public partial class GeneralMutation
             loa.Loasingle = loaSingle;
             loa.Loaaggregate = loaAggregate;
             loa.Comments = comments;
-            loa.Status = status;
+            loa.Status = string.IsNullOrWhiteSpace(status) ? LOAStatus.Pending : status;
             loa.Division = division;
             loa.BondType = bondType;
             loa.Conditions = conditions;
@@ -289,7 +289,7 @@ public partial class GeneralMutation
 
         // ToDo: add functionality to change the LoaHistory status when changing the LOA status
 
-        loa.Status = newStatusTxt;
+        loa.Status = string.IsNullOrWhiteSpace(newStatusTxt) ? LOAStatus.Pending : newStatusTxt;
         loa.Modified = DateTime.UtcNow;
         await ctx.SaveChangesAsync();
 
@@ -361,7 +361,6 @@ public partial class GeneralMutation
         return true;
     }
 
-
     // Reason - Renewal
     [Authorize]
     public async Task<bool> SetLOAReason(LineOfAuthorityReason loaReason,
@@ -410,24 +409,55 @@ public partial class GeneralMutation
                 existing.FollowUpConditions = loaReason.FollowUpConditions;
                 existing.KeyChanges = loaReason.KeyChanges;
                 existing.Outlook = loaReason.Outlook;
-                ctx.Update(existing);
             }
+            await ctx.SaveChangesAsync();
+
+            var incomingLogIds = loaReason.LineOfAuthorityLogs
+                .Select(s => s.Id)
+                .ToHashSet();
+
+            var logsToRemove = await ctx.LineOfAuthorityLogs
+                .Where(w => w.ReasonId == loaReason.Id && !incomingLogIds.Contains(w.Id))
+                .ToListAsync();
+
+            if (logsToRemove.Count != 0)
+                ctx.LineOfAuthorityLogs.RemoveRange(logsToRemove);
 
             foreach (var log in loaReason.LineOfAuthorityLogs)
             {
-                await SetLoaLogInternal(log.Id, log.AccountNum, log.Effective, log.Expiration, log.Loasingle, log.Loaaggregate,
-                    log.Comments, log.Status, log.Division, log.BondType, log.Conditions, log.HomeOfficeApproved,
-                    contextFactory, userShared, ctx);
+                var loa = await ctx.LineOfAuthorityLogs.FindAsync(log.Id);
+                
+                if (loa == null)
+                {
+                    log.CreatedBy = employee.Id;
+                    await ctx.LineOfAuthorityLogs.AddAsync(log);
+                }
+                else
+                {
+                    loa.AccountNum = log.AccountNum;
+                    loa.Effective = log.Effective;
+                    loa.Expiration = log.Expiration;
+                    loa.Loasingle = log.Loasingle;
+                    loa.Loaaggregate = log.Loaaggregate;
+                    loa.Comments = log.Comments;
+                    loa.Status = log.Status;
+                    loa.Division = log.Division;
+                    loa.BondType = log.BondType;
+                    loa.Conditions = log.Conditions;
+                    loa.HomeOfficeApproved = log.HomeOfficeApproved;
+                    loa.ReasonId = log.ReasonId;
+                }
             }
 
             await ctx.SaveChangesAsync();
-
             await transaction.CommitAsync();
 
             return true;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            Console.WriteLine($"Error saving renewal: {exception.Message}");
+            
             await transaction.RollbackAsync();
 
             throw;
@@ -456,7 +486,6 @@ public partial class GeneralMutation
             throw new($"There is already a LOA Log associated with this reason and bond type ({loaLog.BondType})");
 
         loaLog.ReasonId = reasonId;
-        ctx.Update(loaLog);
         await ctx.SaveChangesAsync();
 
         return true;
@@ -478,7 +507,6 @@ public partial class GeneralMutation
             throw new("LOA Log is not associated with this reason");
 
         loaLog.ReasonId = null;
-        ctx.Update(loaLog);
         await ctx.SaveChangesAsync();
 
         return true;
@@ -499,8 +527,7 @@ public partial class GeneralMutation
 
             foreach (var loaLog in loaLogs)
             {
-                loaLog.Status = LOAStatus.ApprovalRequested;
-                ctx.Update(loaLog);
+                loaLog.Status = LOAStatus.Proposed;
             }
 
             await ctx.SaveChangesAsync();
@@ -535,7 +562,6 @@ public partial class GeneralMutation
                 loaLog.Status = LOAStatus.Approved;
                 loaLog.Approved = DateTime.UtcNow;
                 loaLog.ApprovedBy = employee.Id;
-                ctx.Update(loaLog);
             }
 
             await ctx.SaveChangesAsync();
@@ -566,7 +592,6 @@ public partial class GeneralMutation
             foreach (var loaLog in loaLogs)
             {
                 loaLog.Status = LOAStatus.Declined;
-                ctx.Update(loaLog);
             }
 
             await ctx.SaveChangesAsync();

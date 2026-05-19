@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
 using StrawberryShake;
 using System.Text.Json.Serialization;
+using James.Shared.Model;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
 
@@ -21,6 +22,8 @@ builder.Services.AddAuthenticationStateDeserialization();
 
 builder.Services.AddHttpClient("JamesAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
 builder.Services.AddHttpClient(JamesClient.ClientName, client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress));
+
+builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 var graphqlHttpUrl = builder.HostEnvironment.BaseAddress + "graphql";
 var graphqlWebSocketUrl = graphqlHttpUrl.Replace("http", "ws", StringComparison.InvariantCultureIgnoreCase);

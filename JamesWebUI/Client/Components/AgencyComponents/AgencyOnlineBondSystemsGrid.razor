@@ -1,6 +1,7 @@
-﻿@using Blazorise.DeepCloner
-@inherits JamesGridLayoutComponentBase<OnlineBondSystem>
+﻿@inherits JamesGridLayoutComponentBase<OnlineBondSystem>
+
 @inject IDataAccess DataAccess
+@inject AppSettings AppSettings
 
 <RadzenDataGrid TItem="OnlineBondSystem" @ref="@Grid" Data="@OnlineBondSystems" ColumnWidth="125px"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
@@ -94,6 +95,8 @@
     private bool _isEditMode;
     private OnlineBondSystem? _originalOnLineBondSystem;
     private string _agentOnlineSystemKey = "";
+    private Guid? _onlineBondSystemInsurerId;
+    
 
     #region Loaders
 
@@ -128,7 +131,15 @@
             Data = (List<Insurer>)cache!
         },
         ResultVariable = () => _insurersResult,
-        AfterLoad = () => { Insurers = _insurersResult.Data!; }
+        AfterLoad = () =>
+        {
+            if(_onlineBondSystemInsurerId == null)
+                Insurers = _insurersResult.Data!;
+            else
+                Insurers = _insurersResult.Data!
+                    .Where(x => x.Id == _onlineBondSystemInsurerId)
+                    .ToList();
+        }
     }, "insurers");
 
     #endregion
@@ -159,6 +170,8 @@
 
         await ShowLoading();
 
+        _onlineBondSystemInsurerId = AppSettings.OnlineBondSystemInsurerId; 
+        
         await DataAccess.ParallelGetCacheOrDataAsync(InsurersLoad, SystemsLoad);
     }
 

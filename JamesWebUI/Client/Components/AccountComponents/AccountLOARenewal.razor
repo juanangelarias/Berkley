@@ -17,11 +17,11 @@
             <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"
                                Style="width: 200px;"/>
         </RadzenStack>
-        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Visible="@(_data != null)">
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Visible="@(_data != null && !IsReadOnly)">
             <RadzenButton Click="@(() => SelectRenewalType(LOARenewalType.Rapid))"
                           class="rz-py-3 rz-px-0 renewal-type-btn"
                           ButtonStyle="@(_data?.Type == LOARenewalType.Rapid ? ButtonStyle.Success : ButtonStyle.Light)"
-                          Visible="@IsRapidRenewalVisible" Disabled="@ForApproval">
+                          Visible="@IsRapidRenewalVisible">
                 <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
                     <RadzenText Text="Rapid Renewal" class="rz-mb-0"/>
                     <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
@@ -31,7 +31,7 @@
             <RadzenButton Click="@(() => SelectRenewalType(LOARenewalType.Short))"
                           class="rz-py-3 rz-px-0 renewal-type-btn"
                           ButtonStyle="@(_data?.Type == LOARenewalType.Short ? ButtonStyle.Success : ButtonStyle.Light)"
-                          Visible="@IsShortRenewalVisible" Disabled="@ForApproval">
+                          Visible="@IsShortRenewalVisible">
                 <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
                     <RadzenText Text="Short Renewal" class="rz-mb-0"/>
                     <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
@@ -41,7 +41,7 @@
             <RadzenButton Click="@(() => SelectRenewalType(LOARenewalType.Standard))"
                           class="rz-py-3 rz-px-0 renewal-type-btn"
                           ButtonStyle="@(_data?.Type == LOARenewalType.Standard ? ButtonStyle.Success : ButtonStyle.Light)"
-                          Visible="@IsStandardRenewalVisible" Disabled="@ForApproval">
+                          Visible="@IsStandardRenewalVisible">
                 <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
                     <RadzenText Text="Standard Renewal" class="rz-mb-0"/>
                     <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
@@ -49,59 +49,65 @@
                 </RadzenStack>
             </RadzenButton>
         </RadzenStack>
+        <RadzenText Text="@($"{_data?.Type} form")" TextStyle="TextStyle.DisplayH4"
+                    Visible="@(_data != null && IsReadOnly)"/>
     </RadzenRow>
     <RadzenRow class="rz-mb-2">
         <RadzenCard class="rz-w-100 rz-h-100">
-            <AccountLOARenewalAbstract Account="Account"/>
+            <AccountLOARenewalAbstract Account="@Account"/>
         </RadzenCard>
     </RadzenRow>
-    <RadzenRow Visible="@(_data != null)">
-        <RadzenTemplateForm Data="_data" @ref="@_form">
-            <RadzenRow class="rz-mb-2">
-                <AccountLOARenewalDetail Account="@Account" History="@History" LOAList="@LOARecords"
-                                         IsReadOnly="@(IsReadOnly || !CanEdit)"
-                                         OnLOAListChanged="@LoaListChanged"/>
-            </RadzenRow>
-            <RadzenRow Visible="@(_data?.Type == LOARenewalType.Rapid)">
-                <AccountLOARenewalRapid Data="@(_data!)" IsReadOnly="@(IsReadOnly || !CanEdit)"
-                                        OnChanges="@OnRenewalChanges"/>
-            </RadzenRow>
-            <RadzenRow Visible="@(_data?.Type == LOARenewalType.Short)">
-                <AccountLOARenewalShort Data="@(_data!)" IsReadOnly="@(IsReadOnly || !CanEdit)"
-                                        OnChanges="@OnRenewalChanges"/>
-            </RadzenRow>
-            <RadzenRow Visible="@(_data?.Type == LOARenewalType.Standard)">
-                <AccountLOARenewalStandard Data="@(_data!)" IsReadOnly="@(IsReadOnly || !CanEdit)"
-                                           OnChanges="@OnRenewalChanges"/>
-            </RadzenRow>
-            <RadzenRow>
-                <ValidationSummary/>
-            </RadzenRow>
-            <RadzenRow class="rz-mt-3" JustifyContent="JustifyContent.Right">
-                <RadzenButton Text="Cancel" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
-                              ButtonType="ButtonType.Reset" Style="width: 150px;"/>
+    @if (_data != null)
+    {
+        <RadzenRow>
+            <RadzenTemplateForm Data="_data" @ref="@_form">
+                <RadzenRow class="rz-mb-2">
+                    <AccountLOARenewalDetail Account="@Account" History="@History" LOAList="@LOARecords"
+                                             IsReadOnly="@(IsReadOnly || !CanEdit)"
+                                             OnLOAListChanged="@LoaListChanged"/>
+                </RadzenRow>
+                <RadzenRow Visible="@(_data.Type == LOARenewalType.Rapid)">
+                    <AccountLOARenewalRapid Data="@_data" IsReadOnly="@(IsReadOnly || !CanEdit)"
+                                            OnChanges="@OnRenewalChanges"/>
+                </RadzenRow>
+                <RadzenRow Visible="@(_data.Type == LOARenewalType.Short)">
+                    <AccountLOARenewalShort Data="@_data" IsReadOnly="@(IsReadOnly || !CanEdit)"
+                                            OnChanges="@OnRenewalChanges"/>
+                </RadzenRow>
+                <RadzenRow Visible="@(_data.Type == LOARenewalType.Standard)">
+                    <AccountLOARenewalStandard Data="@_data" IsReadOnly="@(IsReadOnly || !CanEdit)"
+                                               OnChanges="@OnRenewalChanges"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <ValidationSummary/>
+                </RadzenRow>
+                <RadzenRow class="rz-mt-3" JustifyContent="JustifyContent.Right">
+                    <RadzenButton Text="Close" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
+                                  ButtonType="ButtonType.Reset" Style="width: 150px;"/>
 
-                <AuthorizeView Policy="InRoleCanProposeAccountLoa" Context="renewal">
-                    <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Success"
-                                  Click="@OnSave" Style="width: 150px;" Visible="@(IsSaveVisible)"/>
-                    <RadzenButton Text="Save & Close" Icon="file_save" ButtonStyle="ButtonStyle.Primary"
-                                  Click="@OnSaveAndClose" Style="width: 150px;" Visible="@(IsSaveVisible)"/>
-                </AuthorizeView>
+                    <AuthorizeView Policy="InRoleCanProposeAccountLoa" Context="renewal">
+                        <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Success"
+                                      Click="@OnSave" Style="width: 150px;" Visible="@(IsSaveVisible)"/>
+                        <RadzenButton Text="Save & Close" Icon="file_save" ButtonStyle="ButtonStyle.Primary"
+                                      Click="@OnSaveAndClose" Style="width: 150px;" Visible="@(IsSaveVisible)"/>
+                    </AuthorizeView>
 
-                <AuthorizeView Policy="InRoleCanProposeAccountLoa" Context="renewal">
-                    <RadzenButton Text="Submit" Icon="send" ButtonStyle="ButtonStyle.Success"
-                                  Click="@OnSubmitForApproval" Style="width: 150px;" Visible="@(IsSubmitVisible)"/>
-                </AuthorizeView>
+                    <AuthorizeView Policy="InRoleCanProposeAccountLoa" Context="renewal">
+                        <RadzenButton Text="Submit" Icon="send" ButtonStyle="ButtonStyle.Success"
+                                      Click="@OnSubmitForApproval" Style="width: 150px;" Visible="@(IsSubmitVisible)"/>
+                    </AuthorizeView>
 
-                <AuthorizeView Policy="InRoleCanApproveAccountLoa" Context="renewal">
-                    <RadzenButton Text="Approve" Icon="file_save" ButtonStyle="ButtonStyle.Success"
-                                  Click="OnApprove" Style="width: 150px;" Visible="@(IsApproveVisible)"/>
-                    <RadzenButton Text="Decline" Icon="cancel" Click="OnDecline" ButtonStyle="ButtonStyle.Warning"
-                                  ButtonType="ButtonType.Reset" Style="width: 150px;" Visible="@(IsApproveVisible)"/>
-                </AuthorizeView>
-            </RadzenRow>
-        </RadzenTemplateForm>
-    </RadzenRow>
+                    <AuthorizeView Policy="InRoleCanApproveAccountLoa" Context="renewal">
+                        <RadzenButton Text="Approve" Icon="file_save" ButtonStyle="ButtonStyle.Success"
+                                      Click="OnApprove" Style="width: 150px;" Visible="@(IsApproveVisible)"/>
+                        <RadzenButton Text="Decline" Icon="cancel" Click="OnDecline" ButtonStyle="ButtonStyle.Warning"
+                                      ButtonType="ButtonType.Reset" Style="width: 150px;"
+                                      Visible="@(IsApproveVisible)"/>
+                    </AuthorizeView>
+                </RadzenRow>
+            </RadzenTemplateForm>
+        </RadzenRow>
+    }
 </RadzenCard>
 
 @code {
@@ -111,7 +117,6 @@
     [Parameter, EditorRequired] public required Guid? ReasonId { get; set; }
     [Parameter, EditorRequired] public required bool CalledFromRenewal { get; set; }
     [Parameter] public bool IsReadOnly { get; set; }
-    [Parameter] public bool ForApproval { get; set; }
 
     private RadzenTemplateForm<LineOfAuthorityReason>? _form;
     private LineOfAuthorityReason? _data;
@@ -125,9 +130,9 @@
     private bool _isNew;
     private bool _changed;
 
-    private bool IsSaveVisible => CanEdit;
-    private bool IsSubmitVisible => (Status is LOAStatus.Pending or LOAStatus.Declined) && IsValid && !_isNew;
-    private bool IsApproveVisible => Status == LOAStatus.Proposed;
+    private bool IsSaveVisible => CanEdit && (Status is LOAStatus.Pending or LOAStatus.Declined);
+    private bool IsSubmitVisible => (Status is LOAStatus.Pending or LOAStatus.Declined) && IsValid && !_isNew && !IsReadOnly;
+    private bool IsApproveVisible => Status == LOAStatus.Proposed && !IsReadOnly;
     private bool CanEdit => !IsReadOnly && (Status is LOAStatus.Pending or LOAStatus.Declined or "Unknown");
     private const int MinimumNarrativeLength = 75;
 
@@ -174,6 +179,9 @@
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        LOARecords ??= [];
+        History ??= new();
 
         await Load();
     }
@@ -343,6 +351,9 @@
 
         _isNew = false;
         _changed = false;
+
+        await ClearCache();
+
         return true;
     }
 
@@ -398,6 +409,8 @@
 
         LOARecords.ForEach(f => f.Status = LOAStatus.Proposed);
 
+        await ClearCache();
+
         Return();
     }
 
@@ -416,6 +429,8 @@
         NotifySuccessfulSave("approval");
 
         LOARecords.ForEach(f => f.Status = LOAStatus.Approved);
+
+        await ClearCache();
 
         Return();
     }
@@ -436,15 +451,16 @@
 
         LOARecords.ForEach(f => f.Status = LOAStatus.Declined);
 
+        await ClearCache();
         Return();
     }
 
     private void Return()
     {
-        if(CalledFromRenewal)
+        if (CalledFromRenewal)
         {
             _data!.LineOfAuthorityLogs = GetLineOfAuthorityLogs();
-            
+
             DialogService.Close(_data);
         }
         else
@@ -472,6 +488,14 @@
             HomeOfficeApproved = s.HomeOfficeApproved,
             ReasonId = _data!.Id
         }).ToList();
+    }
+
+    private async Task ClearCache()
+    {
+        await DataAccess.ClearAsync(CacheKeys.AccountRenewalForms(Account.AccountNum));
+        await DataAccess.ClearAsync(CacheKeys.LOAReason(_data!.Id));
+        await DataAccess.ClearAsync(CacheKeys.AccountLOA(Account.AccountNum));
+        await DataAccess.ClearAsync(CacheKeys.AccountLOARenewals(Account.AccountNum));
     }
 
 }

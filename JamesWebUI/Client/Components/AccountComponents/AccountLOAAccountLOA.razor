@@ -1,8 +1,6 @@
 ﻿@inherits JamesLayoutComponentBase
 
 @inject IDataAccess DataAccess
-@inject TooltipService TooltipService
-
 <RadzenStack Orientation="Orientation.Vertical" Gap="1rem" class="rz-mb-3" Style="max-height: 400px;">
     <RadzenRow>
         <RadzenText Text="Account Line of Authority" TextStyle="TextStyle.DisplayH6"/>
@@ -12,7 +10,7 @@
                         EmptyText="No records to display" Density="Density.Compact"
                         SelectionMode="DataGridSelectionMode.Single"
                         AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true"
-                        IsLoading="@IsLoading" Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading" 
+                        IsLoading="@IsLoading" Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading"
                         Filter="ShowLoading">
             <HeaderTemplate>
                 <AuthorizeView Policy="InRoleCanProposeAccountLoa">
@@ -86,7 +84,7 @@
                                                 Popup="true"/>
                         <RadzenCompareValidator Component="Aggregate" Operator="CompareOperator.GreaterThanEqual"
                                                 Value="@loa.LoaSingle" Popup="true"
-                                                Text="Aggregate must be less than or equal to Single"/>
+                                                Text="Aggregate must be greater than or equal to Single"/>
                     </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Status" Property="@nameof(AccountLOADto.Status)" MinWidth="110px"/>
@@ -104,7 +102,7 @@
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Enter Date" Property="@nameof(AccountLOADto.Created)" MinWidth="125px">
                     <Template Context="loa">
-                        <RadzenText Text="@loa.Expiration.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
+                        <RadzenText Text="@loa.Created.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Created By" Property="@nameof(AccountLOADto.CreatedByName)"
@@ -115,17 +113,18 @@
                         <RadzenCheckBox TValue="bool" @bind-Value="@loa.HomeOfficeApproved"/>
                     </Template>
                 </RadzenDataGridColumn>
-                <RadzenDataGridColumn Width="125px" Filterable="false" Frozen="true" Resizable="false"
-                                      reorderable="false" FrozenPosition="FrozenColumnPosition.Right">
+                <RadzenDataGridColumn TItem="AccountLOADto" Width="100px" Filterable="false" Frozen="true"
+                                      Resizable="false" reorderable="false" FrozenPosition="FrozenColumnPosition.Right">
                     <Template Context="loa">
                         <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center"
-                                     Gap="1rem">
+                                     Gap="1rem" Visible="@(loa.ReasonId != null)">
                             <AuthorizeView Policy="InRoleCanProposeAccountLoa">
                                 <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
-                                              Size="ButtonSize.Small" 
-                                              MouseEnter="@(arg => ShowTooltip(arg, Action.RequestApproval))"
-                                              Click="@(_ => LoaRenewalReason(loa.ReasonId))"/>
+                                              Click="@(_ => LoaRenewalReason(loa.ReasonId))" Size="ButtonSize.Small"
+                                              Visible="@(IsEditVisible(loa))"/>
                             </AuthorizeView>
+                            <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                          Click="@(_ => LoaRenewalReason(loa.ReasonId, true))" Size="ButtonSize.Small"/>
                         </RadzenStack>
                     </Template>
                 </RadzenDataGridColumn>
@@ -197,27 +196,12 @@
         await DataAccess.ParallelGetCacheOrDataAsync(AccountLOALoad, DivisionsLoad);
     }
 
-    private void ShowTooltip(ElementReference element, Action name, TooltipOptions? options = null)
-    {
-        var message = name switch
-        {
-            Action.Edit => "Edit this LOA",
-            Action.RequestApproval => "Request approval for this LOA",
-            Action.Remove => "Remove this LOA",
-            Action.ApproveDecline => "Approve or Decline this LOA",
-            Action.Cancel => "Cancel this LOA",
-            _ => ""
-        };
-
-        TooltipService.Open(element, message, options);
-    }
-
     private async Task PrintLoa(AccountLOADto loa)
     {
         await ToBeDevelopedDialog();
     }
 
-    private async Task LoaRenewalReason(Guid? reasonId)
+    private async Task LoaRenewalReason(Guid? reasonId, bool readOnly = false)
     {
         var history = new Dictionary<string, List<AccountLOADto>>
         {
@@ -242,6 +226,7 @@
             { "ReasonId", reasonId },
             { "History", history },
             { "CalledFromRenewal", false },
+            { "IsReadOnly", readOnly }
         };
 
         var response = await DialogService.OpenAsync<AccountLOARenewal>("Renewal Reason", parameters!, dialogOptions);
@@ -288,6 +273,11 @@
         }
     }
 
+    private bool IsEditVisible(AccountLOADto loa)
+    {
+        return loa.Status is LOAStatus.Pending or LOAStatus.Declined;
+    }
+
     private async Task ToBeDevelopedDialog()
     {
         await DialogService.Confirm(
@@ -297,15 +287,6 @@
                 CloseDialogOnOverlayClick = true,
                 CloseDialogOnEsc = true
             });
-    }
-
-    private enum Action
-    {
-        Edit,
-        RequestApproval,
-        Remove,
-        ApproveDecline,
-        Cancel
     }
 
 }

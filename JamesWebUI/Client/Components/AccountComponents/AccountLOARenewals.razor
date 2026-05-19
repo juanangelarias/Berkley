@@ -111,9 +111,11 @@
                              Gap="1rem">
                     <AuthorizeView Policy="InRoleCanProposeAccountLoa">
                         <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
-                                      Size="ButtonSize.Small"
-                                      Click="@(_ => LoaRenewalReason(reason))"/>
+                                      Click="@(_ => LoaRenewalReason(reason))" Size="ButtonSize.Small"
+                                      Visible="@(IsEditVisible(reason))"/>
                     </AuthorizeView>
+                    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                  Click="@(_ => LoaRenewalReason(reason, true))" Size="ButtonSize.Small"/>
                 </RadzenStack>
             </Template>
         </RadzenDataGridColumn>
@@ -129,18 +131,18 @@
 
     #region LOARenewals Load
 
-    private IDataAccessResult<List<LineOfAuthorityReason>> _lOARenewalsResult = null!;
+    private IDataAccessResult<List<LineOfAuthorityReason>> _loaRenewalsResult = null!;
 
     private LoadItem LOARenewalsLoad => AddEventNotify(new LoadItem<List<LineOfAuthorityReason>>
     {
         Key = CacheKeys.AccountLOARenewals(Account.AccountNum),
-        AsyncLoadTask = async () => _lOARenewalsResult = await DataAccess.GetLOAReasonByAccount(Account.AccountNum),
-        CacheLoadTask = cache => _lOARenewalsResult = new DataAccessResult<List<LineOfAuthorityReason>>
+        AsyncLoadTask = async () => _loaRenewalsResult = await DataAccess.GetLOAReasonByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _loaRenewalsResult = new DataAccessResult<List<LineOfAuthorityReason>>
         {
             Data = (List<LineOfAuthorityReason>)cache!
         },
-        ResultVariable = () => _lOARenewalsResult,
-        AfterLoad = () => { _reasons = _lOARenewalsResult.Data!; }
+        ResultVariable = () => _loaRenewalsResult,
+        AfterLoad = () => { _reasons = _loaRenewalsResult.Data!; }
     }, "lOA renewals");
 
     #endregion
@@ -161,7 +163,7 @@
         await DataAccess.GetCacheOrLoadDataAsync(LOARenewalsLoad);
     }
 
-    private async Task LoaRenewalReason(LineOfAuthorityReason? reason)
+    private async Task LoaRenewalReason(LineOfAuthorityReason? reason, bool readOnly = false)
     {
         var inputLoas = reason == null
             ? new List<AccountLOADto>()
@@ -206,6 +208,7 @@
             { "ReasonId", reason?.Id },
             { "History", history },
             { "CalledFromRenewal", true },
+            { "IsReadOnly", readOnly }
         };
 
         var response = await DialogService.OpenAsync<AccountLOARenewal>("Renewal Reason", parameters!, dialogOptions);
@@ -229,13 +232,19 @@
         }
     }
 
-    private string? GetStatus(LineOfAuthorityReason reason)
+    private string GetStatus(LineOfAuthorityReason reason)
     {
         var statuses = reason.LineOfAuthorityLogs.Select(s => s.Status)
             .Distinct()
             .ToList();
 
         return string.Join(", ", statuses);
+    }
+
+    private bool IsEditVisible(LineOfAuthorityReason reason)
+    {
+        var status = GetStatus(reason);
+        return status is LOAStatus.Pending or LOAStatus.Declined;
     }
 
 }

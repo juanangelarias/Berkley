@@ -329,13 +329,13 @@
             valid = false;
         }
 
-    if (system.InsurerId == Guid.Empty)
+        if (system.InsurerId == Guid.Empty)
         {
             NotifyValidationError("Insurer is required");
             valid = false;
         }
 
-        if (!(system.WritingLimit < 1)) 
+        if (system.WritingLimit is >= 1) 
             return valid;
         
         NotifyValidationError("Writing Limit must be greater than 0");

@@ -6,6 +6,8 @@ using James.Data.Server;
 using James.Data.Server.GraphQL;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.Model;
+using James.Shared.Model;
+using Microsoft.Extensions.Options;
 using James.Shared;
 using James.Shared.Constants;
 using James.Shared.Data;
@@ -46,6 +48,7 @@ try
     ConfirmAppSettingsEntry("Auth0:Authority");
     ConfirmAppSettingsEntry("Auth0:ClientId");
     ConfirmAppSettingsEntry("Auth0:ClientSecret");
+    ConfirmAppSettingsEntry("AppSettings:OnlineBondSystemInsurerId");
     var auth0Authority = config["Auth0:Authority"]!;
 
     var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
@@ -91,6 +94,9 @@ try
         .AddJamesGraphQlTypes()
         .AddMutationConventions()
         .AddInMemorySubscriptions();
+    
+    builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+    builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettings>>().Value);
     
     builder.Services.AddControllersWithViews();
     builder.Services.AddRazorPages();

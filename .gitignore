@@ -401,3 +401,5 @@ FodyWeavers.xsd
 /schema.graphql
 /Data/JamesDAL.Server/TempServer
 *.bak
+
+.junie/

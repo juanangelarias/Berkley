@@ -95,8 +95,8 @@
         <RadzenDataGridColumn Title="Financial Analysis" Property="@nameof(LineOfAuthorityReason.FinancialAnalysis)"
                               MinWidth="20rem" Width="20rem">
             <Template Context="reason">
-                <RadzenText Text="@reason.FinancialAnalysis" TextStyle="TextStyle.Body2"
-                            Style="white-space: pre-wrap; word-wrap: break-word;"/>
+                <RadzenText Text="@(Tools.TruncateString(reason.FinancialAnalysis ?? "", 150))"
+                            TextStyle="TextStyle.Body2" Style="white-space: pre-wrap; word-wrap: break-word;"/>
             </Template>
         </RadzenDataGridColumn>
         <RadzenDataGridColumn Title="Status" MinWidth="8rem" Width="8rem">

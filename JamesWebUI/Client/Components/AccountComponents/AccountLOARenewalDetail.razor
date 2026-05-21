@@ -5,10 +5,9 @@
 @inject TooltipService TooltipService
 @inject IUserSettingService UserSettingService
 
-
 <RadzenDataGrid TItem="AccountLOADto" Data="LOAList" RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate"
                 SelectionMode="DataGridSelectionMode.Single" @ref="@_grid" ShowHeader="@(IsAddNewLOAVisible)"
-                class="my-grid-font">
+                class="ard-grid-font">
     <HeaderTemplate>
         <RadzenButton Icon="add" Text="Add new LOA" Click="@AddNewLOA" Visible="@IsAddNewLOAVisible"
                       Variant="Variant.Text" Size="ButtonSize.Small"/>

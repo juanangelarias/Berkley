@@ -90,9 +90,6 @@
                                       Click="@OnSave" Style="width: 150px;" Visible="@(IsSaveVisible)"/>
                         <RadzenButton Text="Save & Close" Icon="file_save" ButtonStyle="ButtonStyle.Primary"
                                       Click="@OnSaveAndClose" Style="width: 150px;" Visible="@(IsSaveVisible)"/>
-                    </AuthorizeView>
-
-                    <AuthorizeView Policy="InRoleCanProposeAccountLoa" Context="renewal">
                         <RadzenButton Text="Submit" Icon="send" ButtonStyle="ButtonStyle.Success"
                                       Click="@OnSubmitForApproval" Style="width: 150px;" Visible="@(IsSubmitVisible)"/>
                     </AuthorizeView>
@@ -124,7 +121,10 @@
     private bool IsRapidRenewalVisible => _renewalForms.Contains(LOARenewalType.Rapid);
     private bool IsShortRenewalVisible => _renewalForms.Contains(LOARenewalType.Short);
     private bool IsStandardRenewalVisible => _renewalForms.Contains(LOARenewalType.Standard);
-    private bool IsValid => ValidateFields().Count == 0;
+    
+    private bool IsValid => AccountLOARenewalBusinessRules.ValidateLineOfAuthorityReason
+        (_data, LOARecords.Count).Count == 0;
+
     private string Status => LOARecords.FirstOrDefault()?.Status ?? "Unknown";
     private Guid? _lastReasonId;
     private bool _isNew;
@@ -238,26 +238,8 @@
 
     private void OnRenewalChanges(LineOfAuthorityReason data)
     {
-        ApplyBusinessRules();
+        AccountLOARenewalBusinessRules.ApplyFormBusinessRule(_data);
         _changed = true;
-    }
-
-    private void ApplyBusinessRules()
-    {
-        if (_data!.Type == LOARenewalType.Rapid)
-        {
-            _data.BusinessOverview = null;
-            _data.BondRisk = null;
-            _data.DebtHighlights = null;
-            _data.FollowUpConditions = null;
-            _data.KeyChanges = null;
-            _data.Outlook = null;
-        }
-        else if (_data.Type == LOARenewalType.Short)
-        {
-            _data.KeyChanges = null;
-            _data.Outlook = null;
-        }
     }
 
     private void LoaListChanged(List<AccountLOADto> data)
@@ -265,59 +247,6 @@
         LOARecords = data;
         _changed = true;
         StateHasChanged();
-    }
-
-    private List<string> ValidateFields()
-    {
-        if (_data == null)
-            return ["No data"];
-
-        var errors = new List<string>();
-        switch (_data.Type)
-        {
-            case LOARenewalType.Rapid:
-                if ((_data.Recommendation?.Length ?? 0) < MinimumNarrativeLength)
-                    errors.Add($"Criteria must be at least {MinimumNarrativeLength} characters");
-
-                if ((_data.FinancialAnalysis?.Length ?? 0) < MinimumNarrativeLength)
-                    errors.Add($"Financial Analysis must be at least {MinimumNarrativeLength} characters");
-                break;
-            case LOARenewalType.Short:
-                AddRequiredNarrativeErrors(errors,
-                    (nameof(_data.Recommendation), "Recommendation", _data.Recommendation),
-                    (nameof(_data.DebtHighlights), "Debt Highlights", _data.DebtHighlights),
-                    (nameof(_data.BusinessOverview), "Business Overview", _data.BusinessOverview),
-                    (nameof(_data.FollowUpConditions), "Follow Up Conditions", _data.FollowUpConditions),
-                    (nameof(_data.BondRisk), "Bond Risk", _data.BondRisk),
-                    (nameof(_data.FinancialAnalysis), "Financial Analysis", _data.FinancialAnalysis));
-                break;
-            case LOARenewalType.Standard:
-                AddRequiredNarrativeErrors(errors,
-                    (nameof(_data.Recommendation), "Recommendation", _data.Recommendation),
-                    (nameof(_data.DebtHighlights), "Debt Highlights", _data.DebtHighlights),
-                    (nameof(_data.BusinessOverview), "Business Overview", _data.BusinessOverview),
-                    (nameof(_data.FollowUpConditions), "Follow Up Conditions", _data.FollowUpConditions),
-                    (nameof(_data.BondRisk), "Bond Risk", _data.BondRisk),
-                    (nameof(_data.FinancialAnalysis), "Financial Analysis", _data.FinancialAnalysis),
-                    (nameof(_data.KeyChanges), "Key Changes", _data.KeyChanges),
-                    (nameof(_data.Outlook), "Outlook", _data.Outlook));
-                break;
-        }
-
-        if (LOARecords.Count == 0)
-            errors.Add("There is no Line of Authority to submit.");
-
-        return errors;
-    }
-
-    private static void AddRequiredNarrativeErrors(List<string> errors,
-        params (string Field, string Label, string? Value)[] fields)
-    {
-        foreach (var (_, label, value) in fields)
-        {
-            if ((value?.Length ?? 0) < MinimumNarrativeLength)
-                errors.Add($"{label} must be at least {MinimumNarrativeLength} characters");
-        }
     }
 
     private async Task OnSaveAndClose()
@@ -336,7 +265,7 @@
         if (!_form!.IsValid)
             return false;
 
-        ApplyBusinessRules();
+        AccountLOARenewalBusinessRules.ApplyFormBusinessRule(_data);
 
         _data!.LineOfAuthorityLogs = GetLineOfAuthorityLogs();
 
@@ -378,7 +307,7 @@
         if (_data == null)
             return;
 
-        var errors = ValidateFields();
+        var errors = AccountLOARenewalBusinessRules.ValidateLineOfAuthorityReason(_data, LOARecords.Count);
 
         if (errors.Count > 0)
         {

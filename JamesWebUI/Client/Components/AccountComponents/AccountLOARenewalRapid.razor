@@ -5,7 +5,8 @@
                 <RadzenTextArea @bind-Value="@Data.Recommendation" Placeholder="Criteria" Name="criteria"
                                 Change="@Changed" Rows="5" class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Criteria is required" Component="criteria" Popup="true"/>
-                <RadzenLengthValidator Min="75" Text="Criteria must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Criteria must be at least {_minimumNarrativeLength} characters")
                                        Component="criteria" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -14,7 +15,8 @@
                 <RadzenTextArea @bind-Value="@Data.FinancialAnalysis" Placeholder="Financial" Name="financial"
                                 Change="@Changed" Rows="5" class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Financial Analysis is required" Component="financial" Popup="true"/>
-                <RadzenLengthValidator Min="75" Text="Financial Analysis must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Financial Analysis must be at least {_minimumNarrativeLength} characters")
                                        Component="financial" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -26,6 +28,8 @@
     [Parameter, EditorRequired] public bool IsReadOnly { get; set; }
     [Parameter, EditorRequired] public EventCallback<LineOfAuthorityReason> OnChanges { get; set; }
 
+    private int _minimumNarrativeLength => AccountLOARenewalBusinessRules.GetMinimumNarrativeLength();
+    
     private async Task Changed()
     {
         await OnChanges.InvokeAsync(Data);

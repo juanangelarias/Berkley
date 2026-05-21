@@ -7,8 +7,8 @@
     </RadzenRow>
     <RadzenRow>
         <RadzenDataGrid TItem="AccountLOADto" Data="@_accountLoaList" EditMode="DataGridEditMode.Single"
-                        EmptyText="No records to display" Density="Density.Compact"
-                        SelectionMode="DataGridSelectionMode.Single"
+                        EmptyText="No records to display" Density="Density.Compact" @ref="_grid"
+                        SelectionMode="DataGridSelectionMode.Single" Style="max-height: 350px;"
                         AllowFiltering="true" FilterMode="FilterMode.Advanced" AllowColumnResize="true"
                         IsLoading="@IsLoading" Sort="@ShowLoading" Page="ShowLoading" Group="ShowLoading"
                         Filter="ShowLoading">
@@ -136,6 +136,7 @@
 @code {
     [Parameter, EditorRequired] public required Account Account { get; set; }
 
+    private RadzenDataGrid<AccountLOADto> _grid = null!;
     private List<AccountLOADto> _accountLoaList = [];
     private List<DivisionDm> _divisions = [];
     private List<string> _bondTypes = [];
@@ -269,6 +270,8 @@
                 .OrderByDescending(r => r.Effective)
                 .ToList();
 
+            await _grid.Reload();
+            
             StateHasChanged();
         }
     }

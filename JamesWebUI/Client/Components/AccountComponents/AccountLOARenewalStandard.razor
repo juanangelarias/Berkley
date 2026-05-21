@@ -5,7 +5,8 @@
                 <RadzenTextArea @bind-Value="@Data.Recommendation" Name="recommendation" Change="@Changed" Rows="3"
                                 class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Recommendation is required" Component="recommendation"/>
-                <RadzenLengthValidator Min="75" Text="Recommendation must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Recommendation must be at least {_minimumNarrativeLength} characters")
                                        Component="recommendation" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -14,7 +15,8 @@
                 <RadzenTextArea @bind-Value="@Data.BusinessOverview" Name="business" Change="@Changed" Rows="3"
                                 class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Business Overview is required" Component="business"/>
-                <RadzenLengthValidator Min="75" Text="Business Overview must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Business Overview must be at least {_minimumNarrativeLength} characters")
                                        Component="business" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -23,7 +25,8 @@
                 <RadzenTextArea @bind-Value="@Data.BondRisk" Name="bondRisk" Change="@Changed" Rows="3"
                                 class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Bond Risk is required" Component="bondRisk"/>
-                <RadzenLengthValidator Min="75" Text="Bond Risk must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Bond Risk must be at least {_minimumNarrativeLength} characters")
                                        Component="bondRisk" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -32,7 +35,8 @@
                 <RadzenTextArea @bind-Value="@Data.KeyChanges" Name="keyChanges" Change="@Changed" Rows="3"
                                 class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Key Changes is required" Component="keyChanges"/>
-                <RadzenLengthValidator Min="75" Text="Key Changes must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Key Changes must be at least {_minimumNarrativeLength} characters")
                                        Component="keyChanges" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -41,7 +45,8 @@
                 <RadzenTextArea @bind-Value="@Data.Outlook" Name="outlook" Change="@Changed" Rows="3"
                                 class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Outlook is required" Component="outlook"/>
-                <RadzenLengthValidator Min="75" Text="Outlook must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Overlook must be at least {_minimumNarrativeLength} characters")
                                        Component="outlook" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -50,7 +55,8 @@
                 <RadzenTextArea @bind-Value="@Data.FinancialAnalysis" Name="financial" Change="@Changed" Rows="3"
                                 class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Financial Data is required" Component="financial"/>
-                <RadzenLengthValidator Min="75" Text="Financial Data must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Financial Data must be at least {_minimumNarrativeLength} characters")
                                        Component="financial" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -59,7 +65,8 @@
                 <RadzenTextArea @bind-Value="@Data.DebtHighlights" Name="debtHighlights" Change="@Changed" Rows="3"
                                 class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Debt Highlights is required" Component="debtHighlights"/>
-                <RadzenLengthValidator Min="75" Text="Debt Highlights must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Debt Highlights must be at least {_minimumNarrativeLength} characters")
                                        Component="debtHighlights" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -68,7 +75,8 @@
                 <RadzenTextArea @bind-Value="@Data.FollowUpConditions" Name="conditions" Change="@Changed" Rows="3"
                                 class="rz-w-100" ReadOnly="@IsReadOnly"/>
                 <RadzenRequiredValidator Text="Follow-up Conditions is required" Component="conditions"/>
-                <RadzenLengthValidator Min="75" Text="Follow-up Conditions must be at least 75 characters"
+                <RadzenLengthValidator Min="@_minimumNarrativeLength" 
+                                       Text=@($"Follow-up Conditions must be at least {_minimumNarrativeLength} characters")
                                        Component="conditions" Popup="true"/>
             </RadzenFormField>
         </RadzenColumn>
@@ -80,6 +88,8 @@
     [Parameter, EditorRequired] public EventCallback<LineOfAuthorityReason> OnChanges { get; set; }
     [Parameter] public bool IsReadOnly { get; set; }
 
+    private int _minimumNarrativeLength => AccountLOARenewalBusinessRules.GetMinimumNarrativeLength();
+    
     private async Task Changed()
     {
         await OnChanges.InvokeAsync(Data);

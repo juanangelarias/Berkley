@@ -264,6 +264,10 @@ type CommercialBondTypeDm {
   commercialRates: [CommercialRate!]!
 }
 
+type AccountLOADeclinePayload {
+  boolean: Boolean
+}
+
 input SetPowerOfAttorneyDocumentStatusInput {
   id: UUID!
   requested: DateTime
@@ -764,6 +768,10 @@ input UserLineOfAuthorityInput {
   createdByNavigation: EmployeeInput!
   modifiedByNavigation: EmployeeInput!
   user: EmployeeInput!
+}
+
+type SetLOAReasonPayload {
+  boolean: Boolean
 }
 
 input WatchStatusDmInput {
@@ -1322,6 +1330,10 @@ type FinancialDetail {
   statement: FinancialStatement!
 }
 
+input AccountLOADeclineInput {
+  reasonId: UUID!
+}
+
 type WatchStatusDm {
   id: UUID!
   created: DateTime!
@@ -1481,6 +1493,10 @@ type AgencyErrorAndOmission {
   expiration: LocalDate!
   coverageLimit: Int!
   agency: Agency!
+}
+
+input AccountLOARequestForApprovalInput {
+  reasonId: UUID!
 }
 
 input KeyValuePairOfStringAndStringInput {
@@ -2034,6 +2050,10 @@ input LegalEntityPhoneInput {
   typeNavigation: PhoneTypeDmInput!
 }
 
+input AccountLOAApproveInput {
+  reasonId: UUID!
+}
+
 type AgencyAccountBondDto {
   bondNumber: String!
   effective: DateTime!
@@ -2050,6 +2070,10 @@ type AgencyAccountBondDto {
   status: String!
   appointment: DateTime!
   termination: DateTime!
+}
+
+type AccountLOAApprovePayload {
+  boolean: Boolean
 }
 
 type Address {
@@ -2196,6 +2220,10 @@ type Indemnitor {
   givenName: String
   middleInitial: String
   familyName: String
+}
+
+type AssociateLOALogToReasonPayload {
+  boolean: Boolean
 }
 
 type DefaultGeneralLedgerAccount {
@@ -2697,6 +2725,12 @@ type Mutation {
   loaLogChangeStatus(input: LoaLogChangeStatusInput!): LoaLogChangeStatusPayload!
   setAgencyLoa(input: SetAgencyLoaInput!): SetAgencyLoaPayload!
   agencyLoaDelete(input: AgencyLoaDeleteInput!): AgencyLoaDeletePayload!
+  setLOAReason(input: SetLOAReasonInput!): SetLOAReasonPayload!
+  associateLOALogToReason(input: AssociateLOALogToReasonInput!): AssociateLOALogToReasonPayload!
+  disassociateLOALogToReason(input: DisassociateLOALogToReasonInput!): DisassociateLOALogToReasonPayload!
+  accountLOARequestForApproval(input: AccountLOARequestForApprovalInput!): AccountLOARequestForApprovalPayload!
+  accountLOAApprove(input: AccountLOAApproveInput!): AccountLOAApprovePayload!
+  accountLOADecline(input: AccountLOADeclineInput!): AccountLOADeclinePayload!
   setOnlineSystem(input: SetOnlineSystemInput!): SetOnlineSystemPayload!
   deleteOnlineSystem(input: DeleteOnlineSystemInput!): DeleteOnlineSystemPayload!
   setOnlineBondSystem(input: SetOnlineBondSystemInput!): SetOnlineBondSystemPayload!
@@ -3296,6 +3330,10 @@ type CashFlowStatement {
 "The `Decimal` scalar type represents a decimal floating-point number."
 scalar Decimal
 
+type DisassociateLOALogToReasonPayload {
+  boolean: Boolean
+}
+
 type AgencyLicenseBulkInsertPayload {
   boolean: Boolean
 }
@@ -3692,6 +3730,10 @@ input DeleteAddressInput {
   identifier: String!
 }
 
+type AccountLOARequestForApprovalPayload {
+  boolean: Boolean
+}
+
 type CoInsurer {
   id: UUID!
   created: DateTime!
@@ -3838,6 +3880,10 @@ input NotebookEntryTypeDmInput {
   notebookEntries: [NotebookEntryInput!]!
 }
 
+input SetLOAReasonInput {
+  loaReason: LineOfAuthorityReasonInput!
+}
+
 type PowerOfAttorneyDocumentStatus {
   id: UUID!
   created: DateTime!
@@ -3904,6 +3950,7 @@ type Query {
   accountBondCollaterals(accountNum: String!): [AccountCollateralDto!]!
   accountOutstandingLiability(accountNum: String!): AccountOutstandingLiabilityDto!
   relatedAccounts(accountNum: String!): AccountBondedPrincipleDto!
+  accountAbstract(accountNum: String!): AccountAbstractDto!
   accountAlerts(period: Int! accountNum: String!): AccountAlertPackageDto!
   searchAgencies(stringToSearch: String activeOnly: Boolean!): [AgencySearchDto!]!
   agencyByAgencyNumber(agencyNumber: String!): Agency
@@ -3940,6 +3987,7 @@ type Query {
   nextBondBlockInitialNumber(prefix: String!): Int!
   branches: [Branch!]!
   creditReport(accountNumber: String!): [CreditReportHistory!]!
+  lastCreditReport(accountNumber: String!): CreditReportHistory
   creditReportAgencies: [CreditReportDm!]!
   divisions: [DivisionDm!]!
   address(addressId: UUID!): Address!
@@ -3980,6 +4028,9 @@ type Query {
   accountAgencyLOA(accountNum: String!): [AccountAgencyLOADto!]!
   accountAgencyLOAById(id: UUID!): AccountAgencyLOADto
   userLOAByDivision(division: String!): [UserLineOfAuthority!]!
+  loaReasonByAccount(accountNum: String!): [LineOfAuthorityReason!]!
+  loaReasonById(reasonId: UUID!): LineOfAuthorityReason!
+  loaRenewalFormsAvailableByAccount(accountNum: String!): [String!]!
   obligeeById(id: UUID!): Obligee
   obligeeByObligeeNumber(obligeeNumber: String!): Obligee
   obligeeTypes: [ObligeeTypeDm!]!
@@ -4292,6 +4343,11 @@ type BondRequest {
   underWriter: Underwriter
 }
 
+input DisassociateLOALogToReasonInput {
+  reasonId: UUID!
+  loaLogId: UUID!
+}
+
 type CreateAddressPayload {
   boolean: Boolean
 }
@@ -4390,6 +4446,22 @@ input SetAgencyLoaInput {
   division: String!
   bondType: String!
   conditions: String!
+}
+
+type AccountAbstractDto {
+  accountNum: String!
+  privateOrPublic: String
+  currentOutstandingLiability: Int!
+  soleShareCoSurety: String!
+  coSureties: String!
+  collateral: Int!
+  potentialPremium: Int!
+  rate: String!
+  commission: String!
+  underwriter: String!
+  agencyName: String!
+  agentName: String!
+  lastCreditReport: CreditReportHistory
 }
 
 input PhoneNumberInput {
@@ -4708,11 +4780,11 @@ input SetLoaLogInput {
   expiration: DateTime!
   loaSingle: Int!
   loaAggregate: Int!
-  comments: String!
+  comments: String
   status: String!
-  division: String!
-  bondType: String!
-  conditions: String!
+  division: String
+  bondType: String
+  conditions: String
   homeOfficeApproved: Boolean!
 }
 
@@ -5545,6 +5617,7 @@ type AccountLOADto {
   comments: String
   conditions: String
   status: String
+  reasonId: UUID
 }
 
 input BondModTransactionInput {
@@ -5896,6 +5969,11 @@ type FinancialTypeDm {
   modified: DateTime!
   financialType: String!
   financialStatements: [FinancialStatement!]!
+}
+
+input AssociateLOALogToReasonInput {
+  reasonId: UUID!
+  loaLogId: UUID!
 }
 
 type LogInformationPayload {

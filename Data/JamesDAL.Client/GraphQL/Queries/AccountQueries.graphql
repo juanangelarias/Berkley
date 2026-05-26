@@ -349,6 +349,16 @@ query GetCreditReport($accountNum: String!) {
     }
 }
 
+query GetLastCreditReport($accountNum: String!) {
+    lastCreditReport(accountNumber: $accountNum){
+        creditReport
+        definition
+        pulled
+        rating
+        remarks
+    }
+}
+
 query GetCreditReportAgencies {
     creditReportAgencies {
         id
@@ -369,4 +379,28 @@ query GetRelatedAccounts($accountNum: String!) {
             accountStatus
         }
     }    
+}
+
+query GetAccountAbstract($accountNum: String!) {
+    accountAbstract(accountNum: $accountNum){
+        accountNum
+        agencyName
+        agentName
+        collateral
+        commission
+        coSureties
+        currentOutstandingLiability
+        potentialPremium
+        privateOrPublic
+        rate
+        soleShareCoSurety
+        underwriter
+        lastCreditReport {
+            creditReport
+            definition
+            pulled
+            rating
+            remarks
+        }
+    }
 }

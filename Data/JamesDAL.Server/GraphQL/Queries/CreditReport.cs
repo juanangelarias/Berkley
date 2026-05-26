@@ -17,6 +17,19 @@ public partial class Query
 
         return creditReports;
     }
+    
+    [Authorize]
+    public async Task<CreditReportHistory?> GetLastCreditReport(string accountNumber,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var creditReports = await ctx.CreditReportHistories
+            .OrderBy(o => o.AccountNum)
+            .ThenByDescending(o => o.Pulled)
+            .FirstOrDefaultAsync(c => c.AccountNum == accountNumber);
+
+        return creditReports;
+    }
 
     [Authorize]
     public async Task<List<CreditReportDm>> GetCreditReportAgencies(

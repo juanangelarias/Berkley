@@ -1,0 +1,178 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject TooltipService TooltipService
+
+<RadzenRow class="rz-w-100">
+    <RadzenColumn Size="3">
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Public/Private" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.PrivateOrPublic)" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Credit rating" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.LastCreditReport?.Rating ?? "No available")"
+                            TextAlign="TextAlign.Right" TextStyle="TextStyle.Caption"
+                            MouseEnter="@(ShowCreditReportToolTip)"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Current outstanding liability" Style="white-space: normal;"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.CurrentOutstandingLiability.ToString("c0"))"
+                            TextAlign="TextAlign.Right" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenColumn>
+    <RadzenColumn SizeSM="12" SizeMD="6" SizeLG="3">
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Sole/Shared/Co-Surety" Style="white-space: normal;"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.SoleShareCoSurety)" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Sureties, if shared/Co-Surety" Style="white-space: normal;"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.CoSureties)" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Collateral" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.Collateral.ToString("c0"))" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Premium (Potential)" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.PotentialPremium.ToString("c0"))" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenColumn>
+    <RadzenColumn SizeSM="12" SizeMD="6" SizeLG="3">
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Rate" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.Rate)" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Commission" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.Commission)" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenColumn>
+    <RadzenColumn SizeSM="12" SizeMD="6" SizeLG="3">
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="BSG Underwriter" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.Underwriter)" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Broker/Agency Firm" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.AgencyName)" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenColumn Size="6">
+                <RadzenText Text="Broker/Agent" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+            <RadzenColumn Size="6">
+                <RadzenText Text="@(_accountAbstract.AgentName)" TextAlign="TextAlign.Right"
+                            TextStyle="TextStyle.Caption"/>
+            </RadzenColumn>
+        </RadzenRow>
+    </RadzenColumn>
+</RadzenRow>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private AccountAbstractDto _accountAbstract = new();
+
+    #region Loaders
+
+    #region AccountAbstract Load
+
+    private IDataAccessResult<AccountAbstractDto> _accountAbstractResult = null!;
+
+    private LoadItem AccountAbstractLoad => AddEventNotify(new LoadItem<AccountAbstractDto>
+    {
+        Key = CacheKeys.AccountAbstract(Account.AccountNum),
+        AsyncLoadTask = async () => _accountAbstractResult = await DataAccess.GetAccountAbstract(Account.AccountNum),
+        CacheLoadTask = cache => _accountAbstractResult = new DataAccessResult<AccountAbstractDto>
+        {
+            Data = (AccountAbstractDto)cache!
+        },
+        ResultVariable = () => _accountAbstractResult,
+        AfterLoad = () =>
+        {
+            _accountAbstract = _accountAbstractResult.Data!;
+        }
+    }, "account abstract");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await DataAccess.GetCacheOrLoadDataAsync(AccountAbstractLoad);
+    }
+
+    private void ShowCreditReportToolTip(ElementReference element)
+    {
+        var opts = new TooltipOptions
+        {
+            Position = TooltipPosition.Top,
+            Duration = 10000
+        };
+
+        TooltipService.Open(element, _ =>
+            @<CreditReportToolTip CreditReport="@_accountAbstract.LastCreditReport"/>, opts);
+    }
+
+}

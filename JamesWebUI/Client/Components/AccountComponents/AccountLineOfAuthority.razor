@@ -1,20 +1,20 @@
 ﻿@inherits JamesLayoutComponentBase
 
 <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
-    <RadzenRow Style="max-height: 700px;">
+    <RadzenRow Style="max-height: 400px; overflow-y: auto;" class="rz-pb-2">
         <AccountLineOfAuthorityUWRecommendation AccountNum="@Account.AccountNum"/>
     </RadzenRow>
-    <RadzenRow Style="max-height: 500px;" class="rz-pb-2">
+    <RadzenRow Style="max-height: 400px; overflow-y: auto;" class="rz-pb-2">
         <AccountLOAAccountProgram Account="@Account"/>
     </RadzenRow>
-    <RadzenRow Style="max-height: 500px" class="rz-pb-2">
-        <AccountLOAAccountLOA AccountNum="@Account.AccountNum"/>
+    <RadzenRow Style="max-height: 400px; overflow-y: auto;" class="rz-pb-2">
+        <AccountLOAAccountLOA Account="@Account"/>
     </RadzenRow>
     <RadzenRow class="rz-mt-1">
         <RadzenText Text="Agency Line of Authority" TextStyle="TextStyle.DisplayH6"/>
     </RadzenRow>
-    <RadzenRow Style="max-height: 500px">
-        <AccountLOAAgencyLOA Account="@Account"></AccountLOAAgencyLOA>
+    <RadzenRow Style="max-height: 400px; overflow-y: auto;" class="rz-pb-2">
+        <AccountLOAAgencyLOA Account="@Account"/>
     </RadzenRow>
 </RadzenStack>
 

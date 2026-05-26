@@ -18,4 +18,5 @@ public class AccountLOADto
     public string? Comments { get; set; } = string.Empty;
     public string? Conditions { get; set; } = string.Empty;
     public string? Status { get; set; } = string.Empty;
+    public Guid? ReasonId { get; set; }
 }

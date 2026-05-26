@@ -149,8 +149,14 @@ namespace James.Shared.Data
         public Task<IDataAccessResult<AccountOutstandingLiabilityDto>> GetAccountOutstandingLiability(string accountNum);
         
         public Task<IDataAccessResult<List<CreditReportHistory>>> GetCreditReport(string accountNum);
-
+        
+        public Task<IDataAccessResult<CreditReportHistory?>> GetLastCreditReport(string accountNum);
+        
         public Task<IDataAccessResult<List<CreditReportDm>>> GetCreditReportAgencies();
+        
+        public Task<IDataAccessResult<AccountAbstractDto>> GetAccountAbstract(string accountNum);
+
+        public Task<IDataAccessResult<LineOfAuthorityReason>> GetLOAReasonById(Guid reasonId);
         
         public Task<ISaveDataResult> SetCreditReport(Guid id, string creditReportAgency, string accountNum,
             DateTime pulledDate, string rating, string definition, string remarks);
@@ -383,7 +389,18 @@ namespace James.Shared.Data
             DateTime effective, DateTime expiration, int loaSinge, int loaAggregate, string comments, string division,
             string bondType, string conditions);
         public Task<ISaveDataResult> AgencyLoaDelete(Guid id);
+        
+        // Reason - Renewal
 
+        public Task<IDataAccessResult<List<string>>> GetLoaRenewalFormsAvailableByAccount(string accountNum);
+        public Task<IDataAccessResult<List<LineOfAuthorityReason>>> GetLOAReasonByAccount(string accountNum);
+        public Task<ISaveDataResult> SetLOAReason(LineOfAuthorityReason reason);
+        public Task<ISaveDataResult> AssociateLOALogToReason(Guid reasonId, Guid loaLogId);
+        public Task<ISaveDataResult> DisassociateLOALogToReason(Guid reasonId, Guid loaLogId);
+        public Task<ISaveDataResult> AccountLOARequestForApproval(Guid reasonId);
+        public Task<ISaveDataResult> AccountLOAApprove(Guid reasonId);
+        public Task<ISaveDataResult> AccountLOADecline(Guid reasonId);
+        
         #endregion
         
         #region

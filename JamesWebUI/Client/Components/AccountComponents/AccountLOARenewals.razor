@@ -1,0 +1,250 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<RadzenDataGrid TItem="LineOfAuthorityReason" Data="@_reasons">
+    <HeaderTemplate>
+        <RadzenButton Text="Add a new Renewal" ButtonStyle="ButtonStyle.Success" Variant="Variant.Text"
+                      Click="@(_ => LoaRenewalReason(null))"/>
+    </HeaderTemplate>
+    <Template Context="reason">
+        <RadzenDataGrid TItem="LineOfAuthorityLog" Data="@reason.LineOfAuthorityLogs">
+            <Columns>
+                <RadzenDataGridColumn Title="Effective Date" Property="@nameof(LineOfAuthorityLog.Effective)"
+                                      MinWidth="125px">
+                    <Template Context="loa">
+                        <RadzenText Text="@loa.Effective.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Expiration Date" Property="@nameof(LineOfAuthorityLog.Expiration)"
+                                      MinWidth="125px">
+                    <Template Context="loa">
+                        <RadzenText Text="@loa.Expiration.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="LOA Single" Property="@nameof(LineOfAuthorityLog.Loasingle)"
+                                      TextAlign="TextAlign.Right" MinWidth="125px">
+                    <HeaderTemplate>
+                        <RadzenText Text="LOA Single" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
+                                    TextStyle="TextStyle.Subtitle2"/>
+                    </HeaderTemplate>
+                    <Template Context="loa">
+                        <RadzenText Text="@($"{loa.Loasingle:C0}")" TextAlign="TextAlign.Right"
+                                    TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="LOA Aggregate" Property="@nameof(LineOfAuthorityLog.Loaaggregate)"
+                                      MinWidth="125px" TextAlign="TextAlign.Right">
+                    <HeaderTemplate>
+                        <RadzenText Text="LOA Aggregate" TextAlign="TextAlign.Right" class="rz-pr-4 rz-pt-2"
+                                    TextStyle="TextStyle.Subtitle2"/>
+                    </HeaderTemplate>
+                    <Template Context="loa">
+                        <RadzenText Text="@($"{loa.Loaaggregate:C0}")" TextAlign="TextAlign.Right"
+                                    TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Status" Property="@nameof(LineOfAuthorityLog.Status)" MinWidth="110px"/>
+                <RadzenDataGridColumn Title="Division" Property="@nameof(LineOfAuthorityLog.Division)" MinWidth="110px">
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Bond Type" Property="@nameof(LineOfAuthorityLog.BondType)"
+                                      MinWidth="110px">
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Enter Date" Property="@nameof(LineOfAuthorityLog.Created)"
+                                      MinWidth="125px">
+                    <Template Context="loa">
+                        <RadzenText Text="@loa.Created.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Created By"
+                                      Property="CreatedByNavigation.FullName"
+                                      MinWidth="125px">
+                    <Template Context="loa">
+                        <RadzenText Text="@loa.CreatedByNavigation?.FullName" TextStyle="TextStyle.Body2"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Home Office Approved"
+                                      Property="@nameof(LineOfAuthorityLog.HomeOfficeApproved)"
+                                      MinWidth="150px">
+                    <Template Context="loa">
+                        <RadzenCheckBox TValue="bool" @bind-Value="@loa.HomeOfficeApproved"/>
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </Template>
+    <Columns>
+        <RadzenDataGridColumn Title="Created" Property="@(nameof(LineOfAuthorityReason.Created))" MinWidth="7rem"
+                              Width="7rem">
+            <Template Context="reason">
+                <RadzenText Text="@reason.Created.ToString("MM/dd/yyyy")" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Created By" Property="CreatedByNavigation.FullName"
+                              MinWidth="12rem" Width="12rem">
+            <Template Context="reason">
+                <RadzenText Text="@reason.CreatedByNavigation?.FullName" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Type" Property="@(nameof(LineOfAuthorityReason.Type))" MinWidth="6rem"
+                              Width="6rem">
+            <Template Context="reason">
+                <RadzenText Text="@reason.Type" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Financial Analysis" Property="@nameof(LineOfAuthorityReason.FinancialAnalysis)"
+                              MinWidth="20rem" Width="20rem">
+            <Template Context="reason">
+                <RadzenText Text="@(Tools.TruncateString(reason.FinancialAnalysis ?? "", 150))"
+                            TextStyle="TextStyle.Body2" Style="white-space: pre-wrap; word-wrap: break-word;"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Title="Status" MinWidth="8rem" Width="8rem">
+            <Template Context="reason">
+                <RadzenText Text="@(GetStatus(reason))" TextStyle="TextStyle.Body2"/>
+            </Template>
+        </RadzenDataGridColumn>
+        <RadzenDataGridColumn Width="6rem" MinWidth="6rem" Filterable="false" Frozen="true" Resizable="false"
+                              reorderable="false" FrozenPosition="FrozenColumnPosition.Right">
+            <Template Context="reason">
+                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.Center"
+                             Gap="1rem">
+                    <AuthorizeView Policy="InRoleCanProposeAccountLoa">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                      Click="@(_ => LoaRenewalReason(reason))" Size="ButtonSize.Small"
+                                      Visible="@(IsEditVisible(reason))"/>
+                    </AuthorizeView>
+                    <RadzenButton Icon="visibility" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                  Click="@(_ => LoaRenewalReason(reason, true))" Size="ButtonSize.Small"/>
+                </RadzenStack>
+            </Template>
+        </RadzenDataGridColumn>
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+
+    private List<LineOfAuthorityReason> _reasons = [];
+
+    #region Loaders
+
+    #region LOARenewals Load
+
+    private IDataAccessResult<List<LineOfAuthorityReason>> _loaRenewalsResult = null!;
+
+    private LoadItem LOARenewalsLoad => AddEventNotify(new LoadItem<List<LineOfAuthorityReason>>
+    {
+        Key = CacheKeys.AccountLOARenewals(Account.AccountNum),
+        AsyncLoadTask = async () => _loaRenewalsResult = await DataAccess.GetLOAReasonByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _loaRenewalsResult = new DataAccessResult<List<LineOfAuthorityReason>>
+        {
+            Data = (List<LineOfAuthorityReason>)cache!
+        },
+        ResultVariable = () => _loaRenewalsResult,
+        AfterLoad = () => { _reasons = _loaRenewalsResult.Data!; }
+    }, "lOA renewals");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        await ShowLoading();
+
+        await DataAccess.GetCacheOrLoadDataAsync(LOARenewalsLoad);
+    }
+
+    private async Task LoaRenewalReason(LineOfAuthorityReason? reason, bool readOnly = false)
+    {
+        var inputLoas = reason == null
+            ? new List<AccountLOADto>()
+            : reason.LineOfAuthorityLogs
+                .Select(s => new AccountLOADto
+                {
+                    Id = s.Id,
+                    Created = s.Created,
+                    CreatedByName = s.CreatedByNavigation?.FullName,
+                    ApprovedByName = s.ApprovedByNavigation?.FullName,
+                    AccountNum = s.AccountNum,
+                    SequenceNumber = s.SequenceNumber,
+                    Effective = s.Effective,
+                    Expiration = s.Expiration,
+                    LoaSingle = s.Loasingle,
+                    LoaAggregate = s.Loaaggregate,
+                    Division = s.Division,
+                    BondType = s.BondType,
+                    HomeOfficeApproved = s.HomeOfficeApproved,
+                    Comments = s.Comments,
+                    Status = s.Status,
+                    ReasonId = s.ReasonId
+                })
+                .ToList();
+
+        var history = inputLoas.Count == 0
+            ? new Dictionary<string, List<AccountLOADto>>()
+            : new Dictionary<string, List<AccountLOADto>>
+            {
+                { "Contract", inputLoas.Where(r => r.BondType == "Contract").ToList() },
+                { "Commercial", inputLoas.Where(r => r.BondType == "Commercial").ToList() }
+            };
+
+        var dialogOptions = DialogTools.GetDialogOptions(1536);
+        dialogOptions.Height = "100%";
+        dialogOptions.ShowClose = false;
+
+        var parameters = new Dictionary<string, object?>
+        {
+            { "Account", Account },
+            { "LOARecords", inputLoas },
+            { "ReasonId", reason?.Id },
+            { "History", history },
+            { "CalledFromRenewal", true },
+            { "IsReadOnly", readOnly }
+        };
+
+        var response = await DialogService.OpenAsync<AccountLOARenewal>("Renewal Reason", parameters!, dialogOptions);
+
+        if (response != null)
+        {
+            var reasonResponse = (LineOfAuthorityReason)response;
+
+            var existing = _reasons.FirstOrDefault(f => f.Id == reasonResponse.Id);
+            if (existing != null)
+                _reasons.Remove(existing);
+
+            _reasons.Add(reasonResponse);
+
+            _reasons = _reasons
+                .OrderBy(o => o.AccountNum)
+                .ThenByDescending(o => o.Created)
+                .ToList();
+
+            StateHasChanged();
+        }
+    }
+
+    private string GetStatus(LineOfAuthorityReason reason)
+    {
+        var statuses = reason.LineOfAuthorityLogs.Select(s => s.Status)
+            .Distinct()
+            .ToList();
+
+        return string.Join(", ", statuses);
+    }
+
+    private bool IsEditVisible(LineOfAuthorityReason reason)
+    {
+        var status = GetStatus(reason);
+        return status is LOAStatus.Pending or LOAStatus.Declined;
+    }
+
+}

@@ -1798,7 +1798,7 @@ namespace James.Data.Client
             return result;
         }
 
-        public async Task<IDataAccessResult<AccountLOADto>> GetLoaLogById(Guid id)
+        public async Task<IDataAccessResult<AccountLOADto?>> GetLoaLogById(Guid id)
         {
             throw new NotImplementedException();
             /*var result = await ExecuteGet<AccountLOADto>(async () =>
@@ -1989,10 +1989,28 @@ namespace James.Data.Client
                 ReasonId = reasonId
             }));
         }
-
-        #endregion
         
         #region OnlineSystem
+
+        #region Indemnity and Bank
+
+        public async Task<ISaveDataResult> SetBankCpaLegalData(string accountNum, string bank, string bankReferenceName,
+            int bankLoc, int bankLocUsed)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetBankCpaLegalData.ExecuteAsync(
+                new()
+                {
+                    AccountNum = accountNum,
+                    Bank = bank,
+                    BankReferenceName = bankReferenceName,
+                    BankLoc = bankLoc,
+                    BankLocUsed = bankLocUsed,
+                }));
+        }
+
+        #endregion
+
+        #endregion
         
         public async Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems()
         {

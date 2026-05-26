@@ -377,7 +377,7 @@ namespace James.Shared.Data
             string newStatusTxt);
         public Task<ISaveDataResult> DeleteAccountProgram(Guid accountProgramId);
         public Task<IDataAccessResult<List<AccountLOADto>>> GetLoaLogsByAccount(string accountNum);
-        public Task<IDataAccessResult<AccountLOADto>> GetLoaLogById(Guid id);
+        public Task<IDataAccessResult<AccountLOADto?>> GetLoaLogById(Guid id);
         public Task<IDataAccessResult<List<AccountAgencyLOADto>>> GetAccountAgencyLOA(string accountNum);
         public Task<IDataAccessResult<AccountAgencyLOADto?>> GetAccountAgencyLOAById(Guid id);
         public Task<ISaveDataResult> SetLoaLog(Guid id, string accountNum, DateTime effective, DateTime expiration,
@@ -401,6 +401,13 @@ namespace James.Shared.Data
         public Task<ISaveDataResult> AccountLOAApprove(Guid reasonId);
         public Task<ISaveDataResult> AccountLOADecline(Guid reasonId);
         
+        #endregion
+
+        #region Indemnity and Bank
+
+        public Task<ISaveDataResult> SetBankCpaLegalData(string accountNum, string bank, string bankReferenceName, 
+            int bankLoc, int bankLocUsed);
+
         #endregion
         
         #region

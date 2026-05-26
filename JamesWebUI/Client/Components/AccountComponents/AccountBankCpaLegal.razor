@@ -1,69 +1,74 @@
-﻿<RadzenRow JustifyContent="JustifyContent.Left">
+﻿@inherits  JamesLayoutComponentBase
+
+@inject IDataAccess DataClient
+
+<RadzenRow JustifyContent="JustifyContent.Left">
     <RadzenColumn Size="4">
-        <RadzenPanel class="rz-w-100">
-            <HeaderTemplate>
-                <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.SpaceBetween"
-                             AlignItems="AlignItems.Center" Style="width: 100%">
-                    <RadzenLabel Text="Bank Information"/>
+        <RadzenTemplateForm TItem="BankInformation" Data="@_bankInfo" @ref="@_form">
+            <RadzenFieldset Text="Bank Information" class="rz-pt-0">
+                <RadzenRow JustifyContent="JustifyContent.Right" class="rz-my-0 rz-py-0">
                     <RadzenButton Icon="edit" Variant="Variant.Text" ButtonStyle="ButtonStyle.Primary"
-                                  Click="@Edit" Size="ButtonSize.Small"/>
-                </RadzenStack>
-            </HeaderTemplate>
-            <ChildContent>
-                <RadzenRow>
-                    <RadzenTemplateForm TItem="BankInformation" Data="@_bankInfo" @ref="@_form">
-                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
-                            <RadzenRow>
-                                <RadzenFormField Text="Bank" class="rz-w-100">
-                                    <RadzenTextBox @bind-Value="_bankInfo.BankName" Name="bankName"
-                                                   ReadOnly="@_isReadOnly"/>
-                                    <RadzenLengthValidator Max="60" Text="Bank name cannot exceed 60 characters"
-                                                           Component="bankName"/>
-                                </RadzenFormField>
-                            </RadzenRow>
-                            <RadzenRow>
-                                <RadzenFormField Text="Bank reference name" class="rz-w-100">
-                                    <RadzenTextBox @bind-Value="_bankInfo.BankReferenceName" Name="bankReferenceName"
-                                                   ReadOnly="@_isReadOnly"/>
-                                    <RadzenLengthValidator Max="30" Text="Bank name cannot exceed 30 characters"
-                                                           Component="bankReferenceName"/>
-                                </RadzenFormField>
-                            </RadzenRow>
-                            <RadzenRow>
-                                <RadzenFormField Text="Total bank limit" class="rz-w-100">
-                                    <RadzenNumeric TValue="int?" @bind-Value="_bankInfo.BankLOC" Name="bankLOC"
-                                                   ReadOnly="@_isReadOnly" Min="0" ShowUpDown="false" Format="c0"/>
-                                    <RadzenNumericRangeValidator Min="0" Text="Bank limit cannot be negative"
-                                                                 Component="bankLOC"/>
-                                </RadzenFormField>
-                            </RadzenRow>
-                            <RadzenRow>
-                                <RadzenFormField Text="Used" class="rz-w-100">
-                                    <RadzenNumeric TValue="int?" @bind-Value="_bankInfo.BackLOCUsed"
-                                                   Name="bankLOCUsed" ReadOnly="@_isReadOnly" Min="0"
-                                                   ShowUpDown="false" Format="c0"/>
-                                    <RadzenNumericRangeValidator Min="0" Text="Bank limit used cannot be negative"
-                                                                 Component="bankLOCUsed"/>
-                                </RadzenFormField>
-                            </RadzenRow>
-                            <RadzenRow JustifyContent="JustifyContent.Right" Gap="1rem" class="rz-mt-2"
-                                       Visible="@(!_isReadOnly)">
-                                <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="@Cancel"
-                                              Style="width: 125px"/>
-                                <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Success" Click="@Save"
-                                              Style="width: 125px"/>
-                            </RadzenRow>
-                            <RadzenRow class="rz-mt-4">
-                                <ul>
-                                    <li>Expiry Date / Maturity Scheduled Incorporated</li>
-                                    <li>Amount Available or in use (Revolving line of credit - letters of credit</li>
-                                </ul>
-                            </RadzenRow>
-                        </RadzenStack>
-                    </RadzenTemplateForm>
+                                  Click="@Edit" Size="ButtonSize.Small" class="rz-mt-0 rz-pt-0"
+                                  Visible="@_isReadOnly"/>
                 </RadzenRow>
-            </ChildContent>
-        </RadzenPanel>
+                <RadzenRow>
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.25rem">
+                        <RadzenRow>
+                            <RadzenFormField Text="Bank" class="rz-w-100">
+                                <RadzenTextBox @bind-Value="_bankInfo.BankName" Name="bankName"
+                                               ReadOnly="@_isReadOnly"/>
+                                <RadzenLengthValidator Max="60" Text="Bank name cannot exceed 60 characters"
+                                                       Component="bankName"/>
+                            </RadzenFormField>
+                        </RadzenRow>
+                        <RadzenRow>
+                            <RadzenFormField Text="Bank reference name" class="rz-w-100">
+                                <RadzenTextBox @bind-Value="_bankInfo.BankReferenceName" Name="bankReferenceName"
+                                               ReadOnly="@_isReadOnly"/>
+                                <RadzenLengthValidator Max="30" Text="Bank name cannot exceed 30 characters"
+                                                       Component="bankReferenceName"/>
+                            </RadzenFormField>
+                        </RadzenRow>
+                        <RadzenRow>
+                            <RadzenFormField Text="Total bank limit" class="rz-w-100">
+                                <RadzenNumeric TValue="int?" @bind-Value="_bankInfo.BankLOC" Name="bankLOC"
+                                               ReadOnly="@_isReadOnly" Min="0" ShowUpDown="false" Format="c0"/>
+                                <RadzenNumericRangeValidator Min="0" Text="Bank limit cannot be negative"
+                                                             Component="bankLOC"/>
+                            </RadzenFormField>
+                        </RadzenRow>
+                        <RadzenRow>
+                            <RadzenFormField Text="Used" class="rz-w-100">
+                                <RadzenNumeric TValue="int?" @bind-Value="_bankInfo.BackLOCUsed"
+                                               Name="bankLOCUsed" ReadOnly="@_isReadOnly" Min="0"
+                                               ShowUpDown="false" Format="c0"/>
+                                <RadzenNumericRangeValidator Min="0" Text="Bank limit used cannot be negative"
+                                                             Component="bankLOCUsed"/>
+                            </RadzenFormField>
+                        </RadzenRow>
+                        <RadzenRow class="rz-mt-4">
+                            <ul>
+                                <li>
+                                    <RadzenText Text="Expiry Date / Maturity Scheduled Incorporated"
+                                                TextStyle="TextStyle.Caption"/>
+                                </li>
+                                <li>
+                                    <RadzenText TextStyle="TextStyle.Caption"
+                                                Text="Amount Available or in use (Revolving line of credit - letters of credit"/>
+                                </li>
+                            </ul>
+                        </RadzenRow>
+                        <RadzenRow JustifyContent="JustifyContent.Right" Gap="1rem" class="rz-mt-2"
+                                   Visible="@(!_isReadOnly)">
+                            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light" Click="@Cancel"
+                                          Style="width: 125px"/>
+                            <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Success" Click="@Save"
+                                          Style="width: 125px"/>
+                        </RadzenRow>
+                    </RadzenStack>
+                </RadzenRow>
+            </RadzenFieldset>
+        </RadzenTemplateForm>
     </RadzenColumn>
 </RadzenRow>
 
@@ -105,8 +110,20 @@
 
     private async Task Save()
     {
-        // ToDo: Execute save operation
-        
+        if (!_form.IsValid)
+            return;
+
+        var response = await DataClient.SetBankCpaLegalData(Account.AccountNum, _bankInfo.BankName ?? "", 
+            _bankInfo.BankReferenceName ?? "", _bankInfo.BankLOC ?? 0, _bankInfo.BackLOCUsed ?? 0);
+
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "Bank, CPA, Legal");
+            return;
+        }
+
+        NotifySuccessfulSave("Bank, CPA, Legal");
+
         _isReadOnly = true;
     }
 

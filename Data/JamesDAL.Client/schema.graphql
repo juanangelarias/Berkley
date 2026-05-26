@@ -1749,6 +1749,14 @@ type CommercialFinancial {
   scalingNavigation: ScalingDm!
 }
 
+input SetBankCpaLegalDataInput {
+  accountNum: String!
+  bank: String!
+  bankReferenceName: String!
+  bankLoc: Int!
+  bankLocUsed: Int!
+}
+
 input SetAccountSystemsInput {
   accountId: UUID!
   estimatingSystem: String
@@ -2667,6 +2675,7 @@ type Mutation {
   createAccountWatch(input: CreateAccountWatchInput!): CreateAccountWatchPayload!
   updateAccountWatch(input: UpdateAccountWatchInput!): UpdateAccountWatchPayload!
   deleteAccountWatch(input: DeleteAccountWatchInput!): DeleteAccountWatchPayload!
+  setBankCpaLegalData(input: SetBankCpaLegalDataInput!): SetBankCpaLegalDataPayload!
   setAccountCommercialInfo(input: SetAccountCommercialInfoInput!): SetAccountCommercialInfoPayload!
   setAccountAgencyAndAgent(input: SetAccountAgencyAndAgentInput!): SetAccountAgencyAndAgentPayload!
   createAgency(input: CreateAgencyInput!): CreateAgencyPayload!
@@ -4608,6 +4617,10 @@ input AccountProgramInput {
 input SetEmployeeEmailInput {
   employeeId: UUID!
   email: String!
+}
+
+type SetBankCpaLegalDataPayload {
+  boolean: Boolean
 }
 
 input DeleteUnderwriterRecommendationInput {

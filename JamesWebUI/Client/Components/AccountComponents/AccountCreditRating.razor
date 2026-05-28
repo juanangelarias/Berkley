@@ -160,6 +160,7 @@
     {
         await ShowLoading();
 
+        await DataAccess.GetCacheOrLoadDataAsync(CreditReportAgenciesLoad);
         await DataAccess.GetCacheOrLoadDataAsync(CreditReportsLoad);
     }
 

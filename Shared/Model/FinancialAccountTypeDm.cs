@@ -12,7 +12,9 @@ public partial class FinancialAccountTypeDm
 
     public DateTime Modified { get; set; }
 
-    public string AccountType { get; set; } = null!;
+    public string FinancialAccountType { get; set; } = null!;
 
     public string? Title { get; set; }
+
+    public string UsedIn { get; set; } = null!;
 }

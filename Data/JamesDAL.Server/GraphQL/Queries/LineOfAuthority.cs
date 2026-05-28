@@ -1,6 +1,8 @@
 using James.Shared.Dto;
 using System.Web.Http;
+using James.Data.Server.Exceptions;
 using James.Shared;
+using James.Shared.Constants;
 
 namespace James.Data.Server.GraphQL.Queries;
 
@@ -20,11 +22,50 @@ public partial class Query
             {
                 Id = s.Id,
                 Created = s.Created,
-                CreatedByName = s.CreatedBy != null 
-                    ? s.CreatedByNavigation!.FullName 
+                CreatedByName = s.CreatedBy != null
+                    ? s.CreatedByNavigation!.FullName
                     : null,
-                ApprovedByName = s.ApprovedBy != null 
-                    ? s.ApprovedByNavigation!.FullName 
+                ApprovedByName = s.ApprovedBy != null
+                    ? s.ApprovedByNavigation!.FullName
+                    : null,
+                AccountNum = s.AccountNum,
+                SequenceNumber = s.SequenceNumber,
+                Effective = s.Effective,
+                Expiration = s.Expiration,
+                LoaSingle = s.Loasingle,
+                LoaAggregate = s.Loaaggregate,
+                Division = s.Division,
+                BondType = s.BondType,
+                HomeOfficeApproved = s.HomeOfficeApproved,
+                Comments = s.Comments,
+                Conditions = s.Conditions,
+                Status = s.Status,
+                ReasonId = s.ReasonId
+            })
+            .OrderBy(o=>o.AccountNum)
+            .ThenByDescending(o=>o.Effective)
+            .ToListAsync();
+
+        return response;
+    }
+
+    public async Task<AccountLOADto?> GetLoaLogById(Guid id,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var response = await ctx.LineOfAuthorityLogs
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.ApprovedByNavigation)
+            .Select(s => new AccountLOADto
+            {
+                Id = s.Id,
+                Created = s.Created,
+                CreatedByName = s.CreatedBy != null
+                    ? s.CreatedByNavigation!.FullName
+                    : null,
+                ApprovedByName = s.ApprovedBy != null
+                    ? s.ApprovedByNavigation!.FullName
                     : null,
                 AccountNum = s.AccountNum,
                 SequenceNumber = s.SequenceNumber,
@@ -39,7 +80,7 @@ public partial class Query
                 Conditions = s.Conditions,
                 Status = s.Status
             })
-            .ToListAsync();
+            .FirstOrDefaultAsync(l => l.Id == id);
 
         return response;
     }
@@ -90,7 +131,7 @@ public partial class Query
             .OrderBy(o => o.AccountNum)
             .ThenBy(t => t.BondType)
             .ThenByDescending(t => t.Effective)
-            .Where(r => r.AccountNum == accountNum && r.Status == "Approved")
+            .Where(r => r.AccountNum == accountNum && r.Status == LOAStatus.Approved)
             .Select(s => new AccountLOADetailDto
             {
                 Aggregate = s.Loaaggregate,
@@ -102,8 +143,8 @@ public partial class Query
             })
             .ToListAsync();
 
-        var contract = data.FirstOrDefault(f => f.BondType == "Contract");
-        var commercial = data.FirstOrDefault(f => f.BondType == "Commercial");
+        var contract = data.FirstOrDefault(f => f.BondType == BondType.Contract.ToString());
+        var commercial = data.FirstOrDefault(f => f.BondType == BondType.Commercial.ToString());
 
         var result = new List<AccountLOADetailDto>();
         if (contract != null)
@@ -132,8 +173,8 @@ public partial class Query
             })
             .ToListAsync();
 
-        var contract = data.FirstOrDefault(f => f.BondType == "Contract");
-        var commercial = data.FirstOrDefault(f => f.BondType == "Commercial");
+        var contract = data.FirstOrDefault(f => f.BondType == BondType.Contract.ToString());
+        var commercial = data.FirstOrDefault(f => f.BondType == BondType.Commercial.ToString());
 
         var result = new List<AccountLOADetailDto>();
         if (contract != null)
@@ -342,7 +383,7 @@ public partial class Query
 
         return data;
     }
-    
+
     [Authorize]
     public async Task<List<UserLineOfAuthority>> GetUserLOAByDivision(string division,
         [Service] IDbContextFactory<JamesDatabaseContext> contextFactory, [Service] IUserShared userShared)
@@ -363,5 +404,54 @@ public partial class Query
         return await ctx.UserLineOfAuthorities
             .Where(f => f.UserId == employee.Id && f.DivisionCode == division)
             .ToListAsync();
+    }
+
+    // Reason - Renewals
+    [Authorize]
+    public async Task<List<LineOfAuthorityReason>> GetLOAReasonByAccount(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var reasons = await ctx.LineOfAuthorityReasons
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.LineOfAuthorityLogs)
+            .ThenInclude(i => i.CreatedByNavigation)
+            .Include(i => i.LineOfAuthorityLogs)
+            .ThenInclude(i => i.ApprovedByNavigation)
+            .Where(r => r.AccountNum == accountNum)
+            .OrderBy(o => o.AccountNum)
+            .ThenByDescending(o => o.Created)
+            .ToListAsync();
+
+        return reasons;
+    }
+
+    [Authorize]
+    public async Task<LineOfAuthorityReason> GetLOAReasonById(Guid reasonId,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+        var reason = await ctx.LineOfAuthorityReasons
+            .Include(i => i.CreatedByNavigation)
+            .Include(i => i.LineOfAuthorityLogs)
+            .ThenInclude(i => i.CreatedByNavigation)
+            .Include(i => i.LineOfAuthorityLogs)
+            .ThenInclude(i => i.ApprovedByNavigation)
+            .FirstOrDefaultAsync(r => r.Id == reasonId);
+
+        return reason ?? throw new NotFoundException("Line of Authority Reason not found");
+    }
+
+    [Authorize]
+    public async Task<List<string>> GetLoaRenewalFormsAvailableByAccount(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var forms = new List<string> { LOARenewalType.Rapid, LOARenewalType.Short, LOARenewalType.Standard };
+        
+        // ToDo: Logic to determine what forms will be available for this account
+
+        return forms;
     }
 }

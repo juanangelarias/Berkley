@@ -51,4 +51,6 @@ public partial class RenewalRequest
     public DateTime? ContinuationCertificateUploaded { get; set; }
 
     public DateTime? ContinuationCertificateEmailed { get; set; }
+
+    public virtual RenewalRequestSource? RenewalRequestSource { get; set; }
 }

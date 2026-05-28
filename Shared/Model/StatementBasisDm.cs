@@ -16,5 +16,7 @@ public partial class StatementBasisDm
 
     public virtual ICollection<CashFlowStatement> CashFlowStatements { get; set; } = new List<CashFlowStatement>();
 
+    public virtual ICollection<FinancialStatement> FinancialStatements { get; set; } = new List<FinancialStatement>();
+
     public virtual ICollection<PersonalFinancialHeader> PersonalFinancialHeaders { get; set; } = new List<PersonalFinancialHeader>();
 }

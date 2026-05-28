@@ -6,12 +6,11 @@
 @inject IDataAccess DataAccess
 
 <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center">
-    <RadzenText Text="Search Account: " Style="margin-right: 0;" />
-    <RadzenAutoComplete @ref="@AutoComplete" MinLength="3" Style="width: 60%;" 
-                        TextProperty="IdNavigation.FullName"
-                        Variant="Variant.Text" SelectedItemChanged="@ResultSelected"
-                        Placeholder="Account Name, Account No." Data="@SearchResults" LoadData="SearchAccount"
-                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
+    <RadzenText Text="Search Account: " Style="margin-right: 0;"/>
+    <RadzenAutoComplete @ref="@AutoComplete" MinLength="3" Style="width: 60%;"
+                        @bind-Value="@_searchValue"
+                        Data="@SearchResults" TextProperty="IdNavigation.FullName"
+                        SelectedItemChanged="@ResultSelected" LoadData="@SearchAccount">
         <Template Context="account">
             <RadzenStack Orientation="Orientation.Horizontal" Style="width:70%;">
                 <RadzenIcon Icon="person"/>
@@ -28,14 +27,13 @@
     [Parameter, EditorRequired] public EventCallback<string> SetAccount { get; set; }
     [Parameter, EditorRequired] public EventCallback CreateNewAccount { get; set; }
 
-    private List<Account> SearchResults { get; set; } = new List<Account>();
-    private Account SelectedAccount { get; set; } = new Account();
+    private string _searchValue = string.Empty;
+    private List<Account> SearchResults { get; set; } = new();
     private RadzenAutoComplete AutoComplete { get; set; } = null!;
-
 
     private async Task SearchAccount(LoadDataArgs args)
     {
-        var result = await DataAccess.SearchAccounts(args.Filter);
+        var result = await DataAccess.SearchAccounts(args.Filter ?? "");
 
         if (result.Errors.Any())
         {
@@ -47,14 +45,15 @@
         }
     }
 
-    private void ResultSelected(dynamic args)
+    private async Task ResultSelected(object? arg)
     {
-        var account = SearchResults.FirstOrDefault();
+        var account = (Account?)arg;
         if (account == null)
             return;
-        
+
+        await SetAccount.InvokeAsync(account.AccountNum);
         NavigationManager.NavigateTo($"account/{account.AccountNum}");
-        AutoComplete.Value = "";
+        _searchValue = string.Empty;
     }
 
 }

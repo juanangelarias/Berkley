@@ -1,0 +1,430 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+@inject IUserSettingService UserSettingService
+
+<style>
+    .renewal-type-btn {
+        width: 225px;
+        height: 90px;
+    }
+</style>
+
+<RadzenCard class="rz-w-100" Variant="Variant.Flat">
+    <RadzenRow AlignItems="AlignItems.Center" class="rz-mb-3">
+        <RadzenStack AlignItems="AlignItems.Center" JustifyContent="JustifyContent.Center" class="rz-w-100"
+                     Style="min-height: 80px;" Visible="@(_data == null)">
+            <RadzenProgressBar Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"
+                               Style="width: 200px;"/>
+        </RadzenStack>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Visible="@(_data != null && !IsReadOnly)">
+            <RadzenButton Click="@(() => SelectRenewalType(LOARenewalType.Rapid))"
+                          class="rz-py-3 rz-px-0 renewal-type-btn"
+                          ButtonStyle="@(_data?.Type == LOARenewalType.Rapid ? ButtonStyle.Success : ButtonStyle.Light)"
+                          Visible="@IsRapidRenewalVisible">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
+                    <RadzenText Text="Rapid Renewal" class="rz-mb-0"/>
+                    <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
+                    <RadzenText Text="Select to view details" TextStyle="TextStyle.Caption"/>
+                </RadzenStack>
+            </RadzenButton>
+            <RadzenButton Click="@(() => SelectRenewalType(LOARenewalType.Short))"
+                          class="rz-py-3 rz-px-0 renewal-type-btn"
+                          ButtonStyle="@(_data?.Type == LOARenewalType.Short ? ButtonStyle.Success : ButtonStyle.Light)"
+                          Visible="@IsShortRenewalVisible">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
+                    <RadzenText Text="Short Renewal" class="rz-mb-0"/>
+                    <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
+                    <RadzenText Text="Select to view details" TextStyle="TextStyle.Caption"/>
+                </RadzenStack>
+            </RadzenButton>
+            <RadzenButton Click="@(() => SelectRenewalType(LOARenewalType.Standard))"
+                          class="rz-py-3 rz-px-0 renewal-type-btn"
+                          ButtonStyle="@(_data?.Type == LOARenewalType.Standard ? ButtonStyle.Success : ButtonStyle.Light)"
+                          Visible="@IsStandardRenewalVisible">
+                <RadzenStack Orientation="Orientation.Vertical" JustifyContent="JustifyContent.Center" Gap="0.1">
+                    <RadzenText Text="Standard Renewal" class="rz-mb-0"/>
+                    <hr style="border: 1px solid black; margin-top: 4px; margin-bottom: 12px;">
+                    <RadzenText Text="Select to view details" TextStyle="TextStyle.Caption"/>
+                </RadzenStack>
+            </RadzenButton>
+        </RadzenStack>
+        <RadzenText Text="@($"{_data?.Type} form")" TextStyle="TextStyle.DisplayH4"
+                    Visible="@(_data != null && IsReadOnly)"/>
+    </RadzenRow>
+    <RadzenRow class="rz-mb-2">
+        <RadzenCard class="rz-w-100 rz-h-100">
+            <AccountLOARenewalAbstract Account="@Account"/>
+        </RadzenCard>
+    </RadzenRow>
+    @if (_data != null)
+    {
+        <RadzenRow>
+            <RadzenTemplateForm Data="_data" @ref="@_form">
+                <RadzenRow class="rz-mb-2">
+                    <AccountLOARenewalDetail Account="@Account" History="@History" LOAList="@LOARecords"
+                                             IsReadOnly="@(IsReadOnly || !CanEdit)"
+                                             OnLOAListChanged="@LoaListChanged"/>
+                </RadzenRow>
+                <RadzenRow Visible="@(_data.Type == LOARenewalType.Rapid)">
+                    <AccountLOARenewalRapid Data="@_data" IsReadOnly="@(IsReadOnly || !CanEdit)"
+                                            OnChanges="@OnRenewalChanges"/>
+                </RadzenRow>
+                <RadzenRow Visible="@(_data.Type == LOARenewalType.Short)">
+                    <AccountLOARenewalShort Data="@_data" IsReadOnly="@(IsReadOnly || !CanEdit)"
+                                            OnChanges="@OnRenewalChanges"/>
+                </RadzenRow>
+                <RadzenRow Visible="@(_data.Type == LOARenewalType.Standard)">
+                    <AccountLOARenewalStandard Data="@_data" IsReadOnly="@(IsReadOnly || !CanEdit)"
+                                               OnChanges="@OnRenewalChanges"/>
+                </RadzenRow>
+                <RadzenRow>
+                    <ValidationSummary/>
+                </RadzenRow>
+                <RadzenRow class="rz-mt-3" JustifyContent="JustifyContent.Right">
+                    <RadzenButton Text="Close" Icon="cancel" Click="OnCancel" ButtonStyle="ButtonStyle.Light"
+                                  ButtonType="ButtonType.Reset" Style="width: 150px;"/>
+
+                    <AuthorizeView Policy="InRoleCanProposeAccountLoa" Context="renewal">
+                        <RadzenButton Text="Save" Icon="save" ButtonStyle="ButtonStyle.Success"
+                                      Click="@OnSave" Style="width: 150px;" Visible="@(IsSaveVisible)"/>
+                        <RadzenButton Text="Save & Close" Icon="file_save" ButtonStyle="ButtonStyle.Primary"
+                                      Click="@OnSaveAndClose" Style="width: 150px;" Visible="@(IsSaveVisible)"/>
+                        <RadzenButton Text="Submit" Icon="send" ButtonStyle="ButtonStyle.Success"
+                                      Click="@OnSubmitForApproval" Style="width: 150px;" Visible="@(IsSubmitVisible)"/>
+                    </AuthorizeView>
+
+                    <AuthorizeView Policy="InRoleCanApproveAccountLoa" Context="renewal">
+                        <RadzenButton Text="Approve" Icon="file_save" ButtonStyle="ButtonStyle.Success"
+                                      Click="OnApprove" Style="width: 150px;" Visible="@(IsApproveVisible)"/>
+                        <RadzenButton Text="Decline" Icon="cancel" Click="OnDecline" ButtonStyle="ButtonStyle.Warning"
+                                      ButtonType="ButtonType.Reset" Style="width: 150px;"
+                                      Visible="@(IsApproveVisible)"/>
+                    </AuthorizeView>
+                </RadzenRow>
+            </RadzenTemplateForm>
+        </RadzenRow>
+    }
+</RadzenCard>
+
+@code {
+    [Parameter, EditorRequired] public required Account Account { get; set; }
+    [Parameter, EditorRequired] public required List<AccountLOADto> LOARecords { get; set; } = [];
+    [Parameter, EditorRequired] public required Dictionary<string, List<AccountLOADto>> History { get; set; } = new();
+    [Parameter, EditorRequired] public required Guid? ReasonId { get; set; }
+    [Parameter, EditorRequired] public required bool CalledFromRenewal { get; set; }
+    [Parameter] public bool IsReadOnly { get; set; }
+
+    private RadzenTemplateForm<LineOfAuthorityReason>? _form;
+    private LineOfAuthorityReason? _data;
+    private List<string> _renewalForms = [];
+    private bool IsRapidRenewalVisible => _renewalForms.Contains(LOARenewalType.Rapid);
+    private bool IsShortRenewalVisible => _renewalForms.Contains(LOARenewalType.Short);
+    private bool IsStandardRenewalVisible => _renewalForms.Contains(LOARenewalType.Standard);
+    
+    private bool IsValid => AccountLOARenewalBusinessRules.ValidateLineOfAuthorityReason
+        (_data, LOARecords.Count).Count == 0;
+
+    private string Status => LOARecords.FirstOrDefault()?.Status ?? "Unknown";
+    private Guid? _lastReasonId;
+    private bool _isNew;
+    private bool _changed;
+
+    private bool IsSaveVisible => CanEdit && (Status is LOAStatus.Pending or LOAStatus.Declined);
+    private bool IsSubmitVisible => (Status is LOAStatus.Pending or LOAStatus.Declined) && IsValid && !_isNew && !IsReadOnly;
+    private bool IsApproveVisible => Status == LOAStatus.Proposed && !IsReadOnly;
+    private bool CanEdit => !IsReadOnly && (Status is LOAStatus.Pending or LOAStatus.Declined or "Unknown");
+    private const int MinimumNarrativeLength = 75;
+
+    #region Loaders
+
+    #region RenewalForms Load
+
+    private IDataAccessResult<List<string>> _renewalFormsResult = null!;
+
+    private LoadItem RenewalFormsLoad => AddEventNotify(new LoadItem<List<string>>
+    {
+        Key = CacheKeys.AccountRenewalForms(Account.AccountNum),
+        AsyncLoadTask = async () => _renewalFormsResult = await DataAccess.GetLoaRenewalFormsAvailableByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _renewalFormsResult = new DataAccessResult<List<string>>
+        {
+            Data = (List<string>)cache!
+        },
+        ResultVariable = () => _renewalFormsResult,
+        AfterLoad = () => { _renewalForms = _renewalFormsResult.Data!; }
+    }, "renewal forms");
+
+    #endregion
+
+    #region LoaReason Load
+
+    private IDataAccessResult<LineOfAuthorityReason> _loaReasonResult = null!;
+
+    private LoadItem LoaReasonLoad => AddEventNotify(new LoadItem<LineOfAuthorityReason>
+    {
+        Key = CacheKeys.LOAReason(ReasonId!.Value),
+        AsyncLoadTask = async () => _loaReasonResult = await DataAccess.GetLOAReasonById(ReasonId!.Value),
+        CacheLoadTask = cache => _loaReasonResult = new DataAccessResult<LineOfAuthorityReason>
+        {
+            Data = (LineOfAuthorityReason)cache!
+        },
+        ResultVariable = () => _loaReasonResult,
+        AfterLoad = () => { _data = _loaReasonResult.Data!; }
+    }, "LOA reason");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        LOARecords ??= [];
+        History ??= new();
+
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        if (_lastReasonId == ReasonId && _data != null)
+            return;
+
+        _lastReasonId = ReasonId;
+        IsLoading = true;
+        try
+        {
+            await DataAccess.GetCacheOrLoadDataAsync(RenewalFormsLoad);
+
+            _isNew = ReasonId == null;
+
+            if (_isNew)
+            {
+                if (_data == null)
+                {
+                    var user = await UserSettingService.GetUserEmployeeInfoAsync();
+
+                    _data = new()
+                    {
+                        Id = Guid.NewGuid(),
+                        AccountNum = Account.AccountNum,
+                        CreatedBy = user!.EmployeeId,
+                        LineOfAuthorityLogs = []
+                    };
+                }
+            }
+            else
+            {
+                await DataAccess.GetCacheOrLoadDataAsync(LoaReasonLoad);
+            }
+
+            if (_data != null && string.IsNullOrEmpty(_data.Type) && _renewalForms.Count != 0)
+            {
+                _data.Type = _renewalForms.First();
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void SelectRenewalType(string type)
+    {
+        _data!.Type = type;
+        _changed = true;
+    }
+
+    private void OnRenewalChanges(LineOfAuthorityReason data)
+    {
+        AccountLOARenewalBusinessRules.ApplyFormBusinessRule(_data);
+        _changed = true;
+    }
+
+    private void LoaListChanged(List<AccountLOADto> data)
+    {
+        LOARecords = data;
+        _changed = true;
+        StateHasChanged();
+    }
+
+    private async Task OnSaveAndClose()
+    {
+        if (await SaveAsync())
+            Return();
+    }
+
+    private async Task OnSave()
+    {
+        await SaveAsync();
+    }
+
+    private async Task<bool> SaveAsync()
+    {
+        if (!_form!.IsValid)
+            return false;
+
+        AccountLOARenewalBusinessRules.ApplyFormBusinessRule(_data);
+
+        _data!.LineOfAuthorityLogs = GetLineOfAuthorityLogs();
+
+        var response = await DataAccess.SetLOAReason(_data);
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "LOA renewal");
+            return false;
+        }
+
+        NotifySuccessfulSave("LOA renewal");
+
+        _isNew = false;
+        _changed = false;
+
+        await ClearCache();
+
+        return true;
+    }
+
+    private async Task OnCancel()
+    {
+        if (IsReadOnly || !_changed)
+        {
+            DialogService.Close();
+            return;
+        }
+
+        var confirmed = await DialogService.Confirm(
+            "Any changes made are going to be lost. Are you sure you want to cancel?",
+            "Cancel");
+
+        if (confirmed == true)
+            Return();
+    }
+
+    private async Task OnSubmitForApproval()
+    {
+        if (_data == null)
+            return;
+
+        var errors = AccountLOARenewalBusinessRules.ValidateLineOfAuthorityReason(_data, LOARecords.Count);
+
+        if (errors.Count > 0)
+        {
+            NotificationService.Notify(new()
+            {
+                Severity = NotificationSeverity.Error,
+                Summary = "LOA renewal",
+                DetailContent = _ =>
+                    @<ul>
+                        @foreach (var error in errors)
+                        {
+                            <li>@error</li>
+                        }
+                    </ul>,
+                Duration = 5000
+            });
+            return;
+        }
+
+        var response = await DataAccess.AccountLOARequestForApproval(_data.Id);
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "submit for approval");
+            return;
+        }
+
+        NotifySuccessfulSave("submit for approval");
+
+        LOARecords.ForEach(f => f.Status = LOAStatus.Proposed);
+
+        await ClearCache();
+
+        Return();
+    }
+
+    private async Task OnApprove()
+    {
+        if (_data == null)
+            return;
+
+        var response = await DataAccess.AccountLOAApprove(_data.Id);
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "approval");
+            return;
+        }
+
+        NotifySuccessfulSave("approval");
+
+        LOARecords.ForEach(f => f.Status = LOAStatus.Approved);
+
+        await ClearCache();
+
+        Return();
+    }
+
+    private async Task OnDecline()
+    {
+        if (_data == null)
+            return;
+
+        var response = await DataAccess.AccountLOADecline(_data.Id);
+        if (!response.Success)
+        {
+            NotifySaveError(response.Errors, "decline");
+            return;
+        }
+
+        NotifySuccessfulSave("declined");
+
+        LOARecords.ForEach(f => f.Status = LOAStatus.Declined);
+
+        await ClearCache();
+        Return();
+    }
+
+    private void Return()
+    {
+        if (CalledFromRenewal)
+        {
+            _data!.LineOfAuthorityLogs = GetLineOfAuthorityLogs();
+
+            DialogService.Close(_data);
+        }
+        else
+        {
+            DialogService.Close(LOARecords);
+        }
+    }
+
+    private List<LineOfAuthorityLog> GetLineOfAuthorityLogs()
+    {
+        return LOARecords.Select(s => new LineOfAuthorityLog
+        {
+            Id = s.Id,
+            AccountNum = s.AccountNum,
+            SequenceNumber = s.SequenceNumber,
+            Effective = s.Effective,
+            Expiration = s.Expiration,
+            Loasingle = s.LoaSingle,
+            Loaaggregate = s.LoaAggregate,
+            Comments = s.Comments,
+            Status = string.IsNullOrWhiteSpace(s.Status) ? LOAStatus.Pending : s.Status!,
+            Division = s.Division,
+            BondType = s.BondType,
+            Conditions = s.Conditions,
+            HomeOfficeApproved = s.HomeOfficeApproved,
+            ReasonId = _data!.Id
+        }).ToList();
+    }
+
+    private async Task ClearCache()
+    {
+        await DataAccess.ClearAsync(CacheKeys.AccountRenewalForms(Account.AccountNum));
+        await DataAccess.ClearAsync(CacheKeys.LOAReason(_data!.Id));
+        await DataAccess.ClearAsync(CacheKeys.AccountLOA(Account.AccountNum));
+        await DataAccess.ClearAsync(CacheKeys.AccountLOARenewals(Account.AccountNum));
+    }
+
+}

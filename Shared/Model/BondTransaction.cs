@@ -98,6 +98,8 @@ public partial class BondTransaction
 
     public virtual Agency Agency { get; set; } = null!;
 
+    public virtual Agency? AgencyChangeNavigation { get; set; }
+
     public virtual Bond BondNumberNavigation { get; set; } = null!;
 
     public virtual ICollection<BondTransactionPurpose> BondTransactionPurposes { get; set; } = new List<BondTransactionPurpose>();
@@ -111,6 +113,8 @@ public partial class BondTransaction
     public virtual Sfaa SfaaCodeNavigation { get; set; } = null!;
 
     public virtual State? StateNavigation { get; set; }
+
+    public virtual TransactionPurposeDm? TransactionPurposeNavigation { get; set; }
 
     public virtual Underwriter Underwriter { get; set; } = null!;
 }

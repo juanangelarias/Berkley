@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace James.Shared.Model;
+//Generated for DB
+
+public partial class FinancialTypeDm
+{
+    public Guid Id { get; set; }
+
+    public DateTime Created { get; set; }
+
+    public DateTime Modified { get; set; }
+
+    public string FinancialType { get; set; } = null!;
+
+    public virtual ICollection<FinancialStatement> FinancialStatements { get; set; } = new List<FinancialStatement>();
+}

@@ -126,6 +126,9 @@
             </EditTemplate>
         </RadzenDataGridColumn>
     </Columns>
+    <LoadingTemplate>
+        <RadzenProgressBarCircular Value="100" ShowValue="false" Mode="ProgressBarMode.Indeterminate"/>
+    </LoadingTemplate>
 </RadzenDataGrid>
 
 @code {
@@ -203,6 +206,8 @@
 
     private async Task LoadData()
     {
+        await ShowLoading();
+        
         _bondTypes = new(Enum.GetNames(typeof(BondType)));
         await DataAccess.ParallelGetCacheOrDataAsync(AccountAgencyLOALoad, AccountLOALoad, DivisionsLoad);
     }
@@ -260,7 +265,9 @@
     {
         if (!ValidateFields(loa))
             return;
+        
         await ShowLoading();
+        
         await _grid.UpdateRow(loa);
     }
 
@@ -282,6 +289,8 @@
 
     private async Task ExecuteSetAccountLoa(AccountAgencyLOADto loa)
     {
+        await ShowLoading();
+        
         var result = await DataAccess.SetAgencyLoa(loa.Id, loa.AgencyNumber, loa.AccountNum, loa.Effective,
             loa.Expiration, loa.LoaSingle, loa.LoaAggregate, "", loa.Division!, loa.BondType!, "");
         if (!result.Success)
@@ -296,6 +305,8 @@
 
     private async Task ReloadData(Guid id)
     {
+        await ShowLoading();
+        
         var editedResult = await DataAccess.GetAccountAgencyLOAById(id);
         if (!editedResult.Success)
         {

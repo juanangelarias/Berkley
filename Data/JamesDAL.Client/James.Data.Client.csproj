@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="StrawberryShake.Blazor" Version="15.1.12" />
-    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="15.1.12" />
+    <PackageReference Include="StrawberryShake.Blazor" Version="16.0.9" />
+    <PackageReference Include="StrawberryShake.Transport.WebSockets" Version="16.0.9" />
   </ItemGroup>
 
   <ItemGroup>

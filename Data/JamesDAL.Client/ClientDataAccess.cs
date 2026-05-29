@@ -1768,7 +1768,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<AccountProgramDto>> GetAccountProgramById(Guid id)
         {
             var result = await ExecuteGet<AccountProgramDto>(async () =>
-                    await jamesClient.GetAccountProgramById.ExecuteAsync(id), "AccountProgramById");
+                await jamesClient.GetAccountProgramById.ExecuteAsync(id), "AccountProgramById");
             
             return result;
         }
@@ -1989,8 +1989,8 @@ namespace James.Data.Client
                 ReasonId = reasonId
             }));
         }
-        
-        #region OnlineSystem
+
+        #endregion
 
         #region Indemnity and Bank
 
@@ -2010,8 +2010,8 @@ namespace James.Data.Client
 
         #endregion
 
-        #endregion
-        
+        #region OnlineSystem
+       
         public async Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems()
         {
             var result =

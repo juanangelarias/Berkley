@@ -1,0 +1,6 @@
+query GetAgreementTypes {
+    agreementTypes {
+        id
+        type
+    }
+}

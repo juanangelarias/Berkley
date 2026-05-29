@@ -1,0 +1,219 @@
+@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+    <RadzenRow>
+        <RadzenColumn Size="4">
+            <JamesFormField Text="Tax ID" AllowFloatingLabel="false" Style="width: 90%;">
+                <ChildContent> @*TODO: Once encryption is figured out replace these values*@
+                    <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" Visible="@_showTaxId"/>
+                    <RadzenPassword Value="Placeholder" Disabled="@(true)" Style="color: black;"
+                                    Visible="@(!_showTaxId)"/>
+                </ChildContent>
+                <End>
+                    <AuthorizeView Policy="InRoleCanSeeAccountTaxId">
+                        <RadzenButton Icon="@(_showTaxId ? "visibility" : "visibility_off")" Variant="Variant.Text"
+                                      Size="ButtonSize.Small" Click="@(() => _showTaxId = !_showTaxId)"/>
+                    </AuthorizeView>
+                </End>
+            </JamesFormField>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenText Text="Agreement and Indemnitors" TextStyle="TextStyle.DisplayH6" class="rz-mt-2"/>
+    </RadzenRow>
+    <RadzenRow>
+        <RadzenDataGrid TItem="Indemnitor" Data="@_indemnitors" @ref="@_grid" AllowAlternatingRows="true"
+                        AllowFiltering="true" EditMode="DataGridEditMode.Single" AllowSorting="true"
+                        RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate">
+            <HeaderTemplate>
+                <RadzenButton Icon="add" Text="New Agreement / Indemnitor" Variant="Variant.Text"
+                              Size="ButtonSize.Small"
+                              Click="@AddIndemnitor" Disabled="@_editing"/>
+            </HeaderTemplate>
+            <Columns>
+                <RadzenDataGridColumn Title="Agreement Date" Property="@nameof(Indemnitor.AgreementDate)" Width="14rem">
+                    <Template Context="indemnitor">
+                        <RadzenText Text="@indemnitor.AgreementDate.ToString("MM/dd/yyyy")"/>
+                    </Template>
+                    <EditTemplate Context="indemnitor">
+                        <RadzenDatePicker @bind-Value="@indemnitor.AgreementDate" ShowTime="false"
+                                          DateFormat="MM/dd/yyyy" Name="date"/>
+                        <RadzenRequiredValidator Text="Agreement date is required" Component="date"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Type" Property="@nameof(Indemnitor.AgreementType)" Width="8rem">
+                    <Template Context="indemnitor">
+                        <RadzenText Text="@(indemnitor.AgreementType ?? "")"/>
+                    </Template>
+                    <EditTemplate Context="indemnitor">
+                        <RadzenDropDown TValue="string" Data="@_agreementTypes" @bind-Value="@indemnitor.AgreementType"
+                                        TextProperty="@nameof(AgreementTypeDm.Type)" Name="type"
+                                        ValueProperty="@nameof(AgreementTypeDm.Type)"/>
+                        <RadzenRequiredValidator Text="Agreement type is required" Component="type"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="Signed Document" Width="14rem" Filterable="false" Sortable="false">
+                    <Template Context="indemnitor">
+                        <RadzenButton Icon="picture_as_pdf" Text="Download" ButtonStyle="ButtonStyle.Info"
+                                      Variant="Variant.Text" Size="ButtonSize.Small" Click="DownloadIndemnitorDocument"/>
+                    </Template>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Title="DocuSign" Filterable="false" Sortable="false">
+                    <Template Context="indemnitor">
+                        @*This field does not exist in the database*@
+                        <RadzenCheckBox TValue="bool" Value="true"/>
+                    </Template>
+                    <EditTemplate Context="indemnitor">
+
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
+                                      Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="9rem"
+                                      Resizable="false">
+                    <Template Context="indemnitor">
+                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Disabled="@(_editing)"
+                                      Click="@(_ => EditRow(indemnitor))" @onclick:stopPropagation="true"/>
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1"
+                                      Click="@(_ => DeleteRow(indemnitor))" @onclick:stopPropagation="true"
+                                      Disabled="@(_editing)"/>
+                    </Template>
+                    <EditTemplate Context="indemnitor">
+                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" Click="@(_ => SaveRow(indemnitor))"
+                                      aria-label="Save"/>
+                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1"
+                                      Click="@(_ => CancelEdit(indemnitor))" aria-label="Cancel"/>
+                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
+                                      Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1"
+                                      Click="@(_ => DeleteRow(indemnitor))" aria-label="Delete"/>
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenRow>
+</RadzenStack>
+
+@code {
+    [Parameter, EditorRequired] public Account Account { get; set; }
+
+    private RadzenDataGrid<Indemnitor> _grid = null!;
+    private List<Indemnitor> _indemnitors = [];
+    private List<AgreementTypeDm> _agreementTypes = [];
+    private bool _editing;
+    private bool _showTaxId;
+
+    #region Loaders
+
+    #region Indemnitors Load
+
+    private IDataAccessResult<List<Indemnitor>> _indemnitorsResult = null!;
+
+    private LoadItem IndemnitorsLoad => AddEventNotify(new LoadItem<List<Indemnitor>>
+    {
+        Key = CacheKeys.AccountIndemnitors(Account.AccountNum),
+        AsyncLoadTask = async () => _indemnitorsResult = await DataAccess.GetIndemnitorsByAccount(Account.AccountNum),
+        CacheLoadTask = cache => _indemnitorsResult = new DataAccessResult<List<Indemnitor>>
+        {
+            Data = (List<Indemnitor>)cache!
+        },
+        ResultVariable = () => _indemnitorsResult,
+        AfterLoad = () => { _indemnitors = _indemnitorsResult.Data!; }
+    }, "indemnitors");
+
+    #endregion
+
+    #region Agreement Types Load
+
+    private IDataAccessResult<List<AgreementTypeDm>> _agreementTypesResult = null!;
+
+    private LoadItem AgreementTypesLoad => AddEventNotify(new LoadItem<List<AgreementTypeDm>>
+    {
+        Key = CacheKeys.AgreementTypes,
+        AsyncLoadTask = async () => _agreementTypesResult = await DataAccess.GetAgreementTypes(),
+        CacheLoadTask = cache => _agreementTypesResult = new DataAccessResult<List<AgreementTypeDm>>
+        {
+            Data = (List<AgreementTypeDm>)cache!
+        },
+        ResultVariable = () => _agreementTypesResult,
+        AfterLoad = () => { _agreementTypes = _agreementTypesResult.Data!; }
+    }, "agreement Types");
+
+    #endregion
+
+    #endregion
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        await ShowLoading();
+
+        await DataAccess.ParallelGetCacheOrDataAsync(IndemnitorsLoad, AgreementTypesLoad);
+    }
+
+    private async Task AddIndemnitor()
+    {
+        if (!_grid.IsValid)
+            return;
+
+        await _grid.InsertRow(new()
+        {
+            Id = Guid.NewGuid()
+        });
+
+        _editing = true;
+    }
+
+    private async Task OnRowCreate(Indemnitor indemnitor)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task OnRowUpdate(Indemnitor indemnitor)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task EditRow(Indemnitor indemnitor)
+    {
+        if (!_grid.IsValid)
+            return;
+
+        _editing = true;
+
+        await _grid.EditRow(indemnitor);
+    }
+
+    private async Task DeleteRow(Indemnitor indemnitor)
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task SaveRow(Indemnitor indemnitor)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void CancelEdit(Indemnitor indemnitor)
+    {
+        _grid.CancelEditRow(indemnitor);
+
+        // reset the values
+
+        _editing = false;
+    }
+
+    private Task DownloadIndemnitorDocument(MouseEventArgs arg)
+    {
+        throw new NotImplementedException();
+    }
+
+}

@@ -1,0 +1,11 @@
+mutation SetIndemnitor($input: SetIndemnitorInput!){
+    setIndemnitor(input: $input){
+        boolean
+    }
+}
+
+mutation DeleteIndemnitor($input: DeleteIndemnitorInput!) {
+    deleteIndemnitor(input: $input) {
+        boolean
+    }
+}

@@ -467,6 +467,10 @@ input BondHoldInput {
   underWriter: UnderwriterInput
 }
 
+type DeleteIndemnitorPayload {
+  boolean: Boolean
+}
+
 type AddSecurityRolePayload {
   boolean: Boolean
 }
@@ -1913,6 +1917,10 @@ type AgencyStatusDm {
   agencyStatusLogOldStatusNavigations: [AgencyStatusLog!]!
 }
 
+input DeleteIndemnitorInput {
+  id: UUID!
+}
+
 input KeyPersonnelInput {
   id: UUID!
   created: DateTime!
@@ -2726,6 +2734,8 @@ type Mutation {
   createEmployee(input: CreateEmployeeInput!): CreateEmployeePayload!
   setBondBlock(input: SetBondBlockInput!): SetBondBlockPayload!
   deleteBondBlock(input: DeleteBondBlockInput!): DeleteBondBlockPayload!
+  setIndemnitor(input: SetIndemnitorInput!): SetIndemnitorPayload!
+  deleteIndemnitor(input: DeleteIndemnitorInput!): DeleteIndemnitorPayload!
   setAccountProgram(input: SetAccountProgramInput!): SetAccountProgramPayload!
   deleteAccountProgram(input: DeleteAccountProgramInput!): DeleteAccountProgramPayload!
   accountProgramChangeStatus(input: AccountProgramChangeStatusInput!): AccountProgramChangeStatusPayload!
@@ -3168,6 +3178,10 @@ type ImagingDocument {
   documentType: String
 }
 
+type SetIndemnitorPayload {
+  boolean: Boolean
+}
+
 type BondBlockAllowedAgency {
   id: UUID!
   created: DateTime!
@@ -3588,6 +3602,13 @@ type PersonalFinancialHeader {
   typeNavigation: PersonalFinancialStatementTypeDm
 }
 
+type AgreementTypeDm {
+  id: UUID!
+  created: DateTime!
+  modified: DateTime!
+  type: String!
+}
+
 type SetOnlineSystemPayload {
   boolean: Boolean
 }
@@ -3741,6 +3762,24 @@ input DeleteAddressInput {
 
 type AccountLOARequestForApprovalPayload {
   boolean: Boolean
+}
+
+input SetIndemnitorInput {
+  id: UUID!
+  accountNum: String!
+  agreementDate: LocalDate!
+  agreementType: String
+  agreementForm: String
+  signatory: String
+  fullName: String!
+  familyName: String
+  title: String
+  netLiquidAssets: Int
+  netWorth: Int
+  indemnityAmount: Int
+  spouseIndemnitor: Boolean!
+  spouseTaxId: String
+  executionDate: LocalDate
 }
 
 type CoInsurer {
@@ -3988,6 +4027,7 @@ type Query {
   searchAgents(searchString: String!): [Agent!]!
   agentLicenses(agentId: UUID!): [AgencyLicense!]!
   agentByNationalProducerNumber(nationalProducerNumber: String! agencyId: UUID!): AgencyAgentDto
+  agreementTypes: [AgreementTypeDm!]!
   bondRequestNumberType(bondNumber: String!): BondRequestNumberType
   bondNumber(bondRequestNumber: String!): String
   searchBondsByBondNumber(bondNumberFragment: String! activeOnly: Boolean!): [Bond!]!
@@ -4028,6 +4068,7 @@ type Query {
   imagingSearchCriteria(imagingId: String! docCategory: ImagingDocumentCategory! useDocCategoryAsCriteria: Boolean! = true): ImagingSearchCriteria!
   allImagingTypes: [ImagingType!]!
   allImagingCategoryTabDivisionType: [VImagingCategoryTabDivisionType!]!
+  indemnitorsByAccount(accountNum: String!): [Indemnitor!]!
   allInsurers: [Insurer!]!
   loaLogsByAccount(accountNumber: String!): [AccountLOADto!]!
   loaLogById(id: UUID!): AccountLOADto

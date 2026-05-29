@@ -407,10 +407,29 @@ namespace James.Shared.Data
 
         public Task<ISaveDataResult> SetBankCpaLegalData(string accountNum, string bank, string bankReferenceName, 
             int bankLoc, int bankLocUsed);
+        
+        #endregion
+        
+        #region Indemnitor
+        
+        public Task<IDataAccessResult<List<Indemnitor>>> GetIndemnitorsByAccount(string accountNum);
+
+        public Task<ISaveDataResult> SetIndemnitor(Guid id, string accountNum, DateOnly agreementDate,
+            string? agreementType, string? agreementForm, string? signatory, string fullName, string? familyName,
+            string? title, int? netLiquidAssets, int? netWorth, int? indemnityAmount, bool spouseIndemnitor,
+            string? spouseTaxId, DateOnly? executionDate);
+
+        public Task<ISaveDataResult> DeleteIndemnitor(Guid id);
+        
+        #endregion
+
+        #region Agreement Types
+
+        public Task<IDataAccessResult<List<AgreementTypeDm>>> GetAgreementTypes();
 
         #endregion
         
-        #region
+        #region Online Systems
 
         public Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems();
         public Task<IDataAccessResult<List<OnlineBondSystem>>> GetOnlineBondSystemsByLegalEntity(Guid entityId);

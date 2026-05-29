@@ -1350,6 +1350,39 @@ namespace James.Data.Server
             return await ExecuteSave(async () => await accountMutation.SetBankCpaLegalData(accountNum, bank,
                 bankReferenceName, bankLoc, bankLocUsed, contextFactory));
         }
+        
+        #endregion
+        
+        #region Indemnitor
+
+        public async Task<IDataAccessResult<List<Indemnitor>>> GetIndemnitorsByAccount(string accountNum)
+        {
+            return await ExecuteGet(async () => await query.GetIndemnitorsByAccount(accountNum, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> SetIndemnitor(Guid id, string accountNum, DateOnly agreementDate,
+            string? agreementType, string? agreementForm, string? signatory, string fullName, string? familyName,
+            string? title, int? netLiquidAssets, int? netWorth, int? indemnityAmount, bool spouseIndemnitor,
+            string? spouseTaxId, DateOnly? executionDate)
+        {
+            return await ExecuteSave(async () => await generalMutation.SetIndemnitor(id, accountNum, agreementDate,
+                agreementType, agreementForm, signatory, fullName, familyName, title, netLiquidAssets, netWorth,
+                indemnityAmount, spouseIndemnitor, spouseTaxId, executionDate, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteIndemnitor(Guid id)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteIndemnitor(id, contextFactory));
+        }
+
+        #endregion
+
+        #region Agreement Types
+
+        public async Task<IDataAccessResult<List<AgreementTypeDm>>> GetAgreementTypes()
+        {
+            return await ExecuteGet(async () => await query.GetAgreementTypes(contextFactory));
+        }
 
         #endregion
         

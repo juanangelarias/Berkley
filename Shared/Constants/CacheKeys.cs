@@ -16,6 +16,7 @@ public static class CacheKeys
     public static string AccountAnnualPremiums(string accountNumber, string type) =>
         $"AccountAnnualPremiums-{accountNumber}-{type}";
     public static string AccountCollaterals(string accountNumber) => $"AccountCollaterals-{accountNumber}";
+    public static string AccountIndemnitors(string accountNumber) => $"AccountIndemnitors-{accountNumber}";
     public static string AccountLastCreditReport(string accountNumber) => $"AccountLastCreditReport-{accountNumber}";
     public static string AccountLOA(string accountNum) => $"AccountLOA-{accountNum}";
     public static string AccountOutstandingLiability(string accountNumber) =>
@@ -76,6 +77,7 @@ public static class CacheKeys
     public const string AgenciesLookup = "AgenciesLookup";
     public const string AgencyStatuses = "AgencyStatuses";
     public const string AgentSystems = "AgentSystems";
+    public const string AgreementTypes = "AgreementTypes";
     // B
     public const string BondBlocks = "BondBlocks";
     public const string Branches = "Branches";

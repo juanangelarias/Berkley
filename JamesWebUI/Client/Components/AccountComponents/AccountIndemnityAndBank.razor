@@ -1,10 +1,13 @@
-﻿<RadzenTabs>
+﻿@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<RadzenTabs @bind-SelectedIndex="@_tabItem" Change="@(args=> TabsChanged(args))" @ref="@_tabs">
     <Tabs>
         <RadzenTabsItem Text="Bank/CPA/Legal" TabName="BankCpaLegal">
             <AccountBankCpaLegal Account="@Account"/>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Indemnity" TabName="Indemnity">
-            
+            <AccountIndemnitors Account="@Account"/>
         </RadzenTabsItem>
         <RadzenTabsItem Text="Collateral" TabName="Collateral">
             
@@ -14,6 +17,37 @@
 
 @code {
     [Parameter, EditorRequired] public Account Account { get; set; }
-
     
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Mn { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Ai { get; set; }
+    
+    private RadzenTabs _tabs = null!;
+    private int _tabItem;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        _tabItem = !string.IsNullOrEmpty(Ai)
+            ? Convert.ToInt32(Ai)
+            : 0;
+    }
+
+    private async Task TabsChanged(int index)
+    {
+        var queryParams = new Dictionary<string, object?>
+        {
+            { "mn", Mn },
+            { "ai", index }
+        };
+
+        var newUri = Navigation.GetUriWithQueryParameters(queryParams);
+        await JSRuntime.InvokeVoidAsync("history.replaceState", null, newUri);
+        Navigation.NavigateTo(newUri, false);
+    }
 }

@@ -1989,9 +1989,9 @@ namespace James.Data.Client
                 ReasonId = reasonId
             }));
         }
-        
-        #region OnlineSystem
 
+        #endregion
+        
         #region Indemnity and Bank
 
         public async Task<ISaveDataResult> SetBankCpaLegalData(string accountNum, string bank, string bankReferenceName,
@@ -2007,10 +2007,65 @@ namespace James.Data.Client
                     BankLocUsed = bankLocUsed,
                 }));
         }
+        
+        #endregion
+
+        #region Indemnitor
+        
+        public async Task<IDataAccessResult<List<Indemnitor>>> GetIndemnitorsByAccount(string accountNum)
+        {
+            return await ExecuteGet<List<Indemnitor>>(
+                async () => await jamesClient.GetIndemnitorsByAccount.ExecuteAsync(accountNum), "IndemnitorsByAccount");
+        }
+
+        public async Task<ISaveDataResult> SetIndemnitor(Guid id, string accountNum, DateOnly agreementDate, 
+            string? agreementType, string? agreementForm, string? signatory, string fullName, string? familyName, 
+            string? title, int? netLiquidAssets, int? netWorth, int? indemnityAmount, bool spouseIndemnitor, 
+            string? spouseTaxId, DateOnly? executionDate)
+        {
+            return await ExecuteSave(async () => await jamesClient.SetIndemnitor.ExecuteAsync(new SetIndemnitorInput
+            {
+                Id = id,
+                AccountNum = accountNum,
+                AgreementDate = agreementDate,
+                AgreementType = agreementType,
+                AgreementForm = agreementForm,
+                Signatory = signatory,
+                FullName = fullName,
+                FamilyName = familyName,
+                Title = title,
+                NetLiquidAssets = netLiquidAssets,
+                NetWorth = netWorth,
+                IndemnityAmount = indemnityAmount,
+                SpouseIndemnitor = spouseIndemnitor,
+                SpouseTaxId = spouseTaxId,
+                ExecutionDate = executionDate
+            }));
+        }
+
+        public async Task<ISaveDataResult> DeleteIndemnitor(Guid id)
+        {
+            return await ExecuteSave(async () => await jamesClient.DeleteIndemnitor.ExecuteAsync(new DeleteIndemnitorInput
+            {
+                Id = id
+            }));
+        }
 
         #endregion
 
+        #region Agreement Types
+
+        public async Task<IDataAccessResult<List<AgreementTypeDm>>> GetAgreementTypes()
+        {
+            var result = await ExecuteGet<List<AgreementTypeDm>>(async () => await jamesClient.GetAgreementTypes.ExecuteAsync(),
+                "AgreementTypes");
+
+            return result;
+        }
+
         #endregion
+
+        #region OnlineSystem
         
         public async Task<IDataAccessResult<List<AgentSystemDm>>> GetOnlineSystems()
         {

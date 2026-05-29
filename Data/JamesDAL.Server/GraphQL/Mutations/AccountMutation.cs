@@ -181,15 +181,15 @@ public class AccountMutation
         var account = await ctx.Accounts.FirstOrDefaultAsync(f => f.AccountNum == accountNum);
         if (account == null)
             throw new NotFoundException();
-        
+
         account.Bank = bank;
         account.BankReferenceName = bankReferenceName;
         account.BankLoc = bankLoc;
         account.BankLocused = bankLocUsed;
-        
+
         ctx.Accounts.Update(account);
         await ctx.SaveChangesAsync();
-        
+
         return true;
     }
 

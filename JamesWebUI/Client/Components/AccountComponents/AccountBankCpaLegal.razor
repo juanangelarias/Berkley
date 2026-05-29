@@ -1,6 +1,6 @@
 ﻿@inherits  JamesLayoutComponentBase
 
-@inject IDataAccess DataClient
+@inject IDataAccess DataAccess
 
 <RadzenRow JustifyContent="JustifyContent.Left">
     <RadzenColumn Size="4">
@@ -113,7 +113,7 @@
         if (!_form.IsValid)
             return;
 
-        var response = await DataClient.SetBankCpaLegalData(Account.AccountNum, _bankInfo.BankName ?? "", 
+        var response = await DataAccess.SetBankCpaLegalData(Account.AccountNum, _bankInfo.BankName ?? "", 
             _bankInfo.BankReferenceName ?? "", _bankInfo.BankLOC ?? 0, _bankInfo.BackLOCUsed ?? 0);
 
         if (!response.Success)

@@ -1200,8 +1200,7 @@ namespace James.Data.Server
         }
 
         public async Task<ISaveDataResult> SetUnderwriterRecommendation(Guid id, string accountNum, Guid postedBy,
-            string comments,
-            string description)
+            string comments, string description)
         {
             return await ExecuteSave(async () => await generalMutation
                 .SetUnderwriterRecommendation(id, accountNum, postedBy, comments, description, contextFactory));
@@ -1246,7 +1245,7 @@ namespace James.Data.Server
             return await ExecuteGet(async () => await query.GetLoaLogsByAccount(accountNum, contextFactory));
         }
 
-        public async Task<IDataAccessResult<AccountLOADto>> GetLoaLogById(Guid id)
+        public async Task<IDataAccessResult<AccountLOADto?>> GetLoaLogById(Guid id)
         {
             return await ExecuteGet(async () => await query.GetLoaLogById(id, contextFactory));
         }
@@ -1338,6 +1337,18 @@ namespace James.Data.Server
         {
             return await ExecuteSave(async () =>
                 await generalMutation.AccountLOADecline(reasonId, contextFactory));
+        }
+
+        #endregion
+
+        #region Indemnity and Bank
+
+        public async Task<ISaveDataResult> SetBankCpaLegalData(string accountNum, string bank, string bankReferenceName,
+            int bankLoc,
+            int bankLocUsed)
+        {
+            return await ExecuteSave(async () => await accountMutation.SetBankCpaLegalData(accountNum, bank,
+                bankReferenceName, bankLoc, bankLocUsed, contextFactory));
         }
 
         #endregion

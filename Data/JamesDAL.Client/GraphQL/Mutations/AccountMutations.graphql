@@ -79,3 +79,9 @@ mutation DeleteCreditReport($input: DeleteCreditReportInput!) {
         boolean
     }
 }
+
+mutation SetBankCpaLegalData($input: SetBankCpaLegalDataInput!) {
+    setBankCpaLegalData(input: $input){
+        boolean
+    }
+}

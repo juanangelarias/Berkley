@@ -1,0 +1,19 @@
+﻿<RadzenTabs>
+    <Tabs>
+        <RadzenTabsItem Text="Bank/CPA/Legal" TabName="BankCpaLegal">
+            <AccountBankCpaLegal Account="@Account"/>
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Indemnity" TabName="Indemnity">
+            
+        </RadzenTabsItem>
+        <RadzenTabsItem Text="Collateral" TabName="Collateral">
+            
+        </RadzenTabsItem>
+    </Tabs>
+</RadzenTabs>
+
+@code {
+    [Parameter, EditorRequired] public Account Account { get; set; }
+
+    
+}

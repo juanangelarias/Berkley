@@ -1,5 +1,5 @@
 ﻿using James.Data.Server.Exceptions;
-using Microsoft.AspNetCore.Authorization;
+using HotChocolate.Authorization;
 
 namespace James.Data.Server.GraphQL.Mutations;
 

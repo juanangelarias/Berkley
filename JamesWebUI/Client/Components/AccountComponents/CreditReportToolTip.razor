@@ -1,0 +1,39 @@
+﻿<RadzenCard Style="width: 400px; background-color: transparent" Variant="Variant.Flat">
+    <RadzenRow Gap="0">
+        <RadzenColumn Size="4">
+            <RadzenText Text="Credit Report" TextStyle="TextStyle.Caption"/>
+        </RadzenColumn>
+        <RadzenColumn Size="8">
+            <RadzenText Text="@CreditReport?.CreditReport" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow Gap="0">
+        <RadzenColumn Size="4">
+            <RadzenText Text="Pulled" TextStyle="TextStyle.Caption"/>
+        </RadzenColumn>
+        <RadzenColumn Size="8">
+            <RadzenText Text="@($"{CreditReport?.Pulled:yyyy-MM-dd}")" Style="white-space: normal;"
+                        TextStyle="TextStyle.Caption"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow Gap="0">
+        <RadzenColumn Size="4">
+            <RadzenText Text="Rating" TextStyle="TextStyle.Caption"/>
+        </RadzenColumn>
+        <RadzenColumn Size="8">
+            <RadzenText Text="@(CreditReport?.Rating)" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+        </RadzenColumn>
+    </RadzenRow>
+    <RadzenRow Gap="0">
+        <RadzenColumn Size="4">
+            <RadzenText Text="Remarks" TextStyle="TextStyle.Caption"/>
+        </RadzenColumn>
+        <RadzenColumn Size="8">
+            <RadzenText Text="@(CreditReport?.Remarks)" Style="white-space: normal;" TextStyle="TextStyle.Caption"/>
+        </RadzenColumn>
+    </RadzenRow>
+</RadzenCard>
+
+@code {
+    [Parameter, EditorRequired] public required CreditReportHistory? CreditReport { get; set; }
+}

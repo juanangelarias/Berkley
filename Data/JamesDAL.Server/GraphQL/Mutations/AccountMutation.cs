@@ -172,6 +172,27 @@ public class AccountMutation
         return true;
     }
 
+    [Authorize]
+    public async Task<bool> SetBankCpaLegalData(string accountNum, string bank, string bankReferenceName, int bankLoc,
+        int bankLocUsed, [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var account = await ctx.Accounts.FirstOrDefaultAsync(f => f.AccountNum == accountNum);
+        if (account == null)
+            throw new NotFoundException();
+        
+        account.Bank = bank;
+        account.BankReferenceName = bankReferenceName;
+        account.BankLoc = bankLoc;
+        account.BankLocused = bankLocUsed;
+        
+        ctx.Accounts.Update(account);
+        await ctx.SaveChangesAsync();
+        
+        return true;
+    }
+
     #region Commercial
 
     [Authorize]

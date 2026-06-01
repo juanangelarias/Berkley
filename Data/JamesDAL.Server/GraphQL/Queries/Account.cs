@@ -1,4 +1,5 @@
 ﻿using HotChocolate.Authorization;
+using James.Data.Server.Exceptions;
 using James.Shared.Dto;
 using SharedBusinessLogic;
 using static System.DateTime;
@@ -498,6 +499,66 @@ public partial class Query
                         .AccountStatus ?? "Unknown"
                 })
                 .ToList()
+        };
+
+        return response;
+    }
+
+    [Authorize]
+    public async Task<AccountAbstractDto> GetAccountAbstract(string accountNum,
+        [Service] IDbContextFactory<JamesDatabaseContext> contextFactory)
+    {
+        var ctx = await contextFactory.CreateDbContextAsync();
+
+        var account = ctx.Accounts
+            .Include(i => i.AgencyNumberNavigation)
+            .ThenInclude(i => i.IdNavigation)
+            .Include(i => i.Agent)
+            .ThenInclude(i => i.IdNavigation)
+            .Include(i => i.Underwriter)
+            .ThenInclude(i => i.IdNavigation)
+            .FirstOrDefault(f => f.AccountNum == accountNum);
+
+        if (account == null)
+            throw new NotFoundException("Account not found.");
+        
+        var collateral = ctx.Collaterals
+            .Where(r=>r.AccountNum == accountNum &&
+                      r.Expiration > DateOnly.FromDateTime(DateTime.Today))
+            .Select(s=>s.Amount)
+            .Sum() ?? 0;
+
+        var liability = ctx.Bonds
+            .Where(r => r.AccountNum == accountNum &&
+                        r.Status == "Open")
+            .Select(s => s.CurrentBondLiability)
+            .Sum();
+
+        var lastCreditReport = await GetLastCreditReport(accountNum, contextFactory);
+
+        var response = new AccountAbstractDto
+        {
+            AccountNum = account.AccountNum,
+            PrivateOrPublic = account.IsPrivatelyOwned == null
+                ? "Unknown"
+                : account.IsPrivatelyOwned!.Value
+                    ? "Private"
+                    : "Public",
+            SoleShareCoSurety = string.IsNullOrEmpty(account.SharedSurety)
+                ? "Sole"
+                : "Shared",
+            CoSureties = account.SharedSurety ?? "",
+            PotentialPremium = account.EstimatedAnnualPremium ?? 0,
+            AgencyName = account.AgencyNumberNavigation?.IdNavigation.FullName ?? "",
+            AgentName = account.Agent?.IdNavigation.FullName ?? "",
+            Underwriter = account.Underwriter?.IdNavigation.FullName ?? "",
+            Collateral = collateral,
+            CurrentOutstandingLiability = liability,
+            LastCreditReport = lastCreditReport,
+            
+            // ToDo: We will to fill this fields in the future
+            Rate = "* TBD *",
+            Commission = "* TBD *"
         };
 
         return response;

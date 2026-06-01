@@ -262,7 +262,7 @@
     private async Task EditSystem(OnlineBondSystem system)
     {
         _isEditMode = true;
-        _originalOnLineBondSystem = system.DeepClone();
+        _originalOnLineBondSystem = system.Clone();
 
         SetAvailableSystems(system.SystemName);
         
@@ -391,7 +391,7 @@
             .Select(s => s.SystemName)
             .ToList();
         
-        if (usedSystemNames.Any(s => s == systemName))
+        if (usedSystemNames.Any(s => s == systemName) && systemName != null)
             usedSystemNames.Remove(systemName);
         
         AvailableSystems = Systems

@@ -16,8 +16,6 @@
 
 <PageTitle>BasisTNG - Agency Profile</PageTitle>
 
-@* ReSharper disable ConditionalAccessQualifierIsNonNullableAccordingToAPIContract *@
-
 <RadzenStack Orientation="Orientation.Vertical" Gap="10px">
     <RadzenPanel Style="border-radius: 20px;" Collapsed="_summaryView" class="rz-shadow-7">
         <FooterTemplate>
@@ -212,27 +210,27 @@
             </RadzenRow>
         </ChildContent>
     </RadzenPanel>
-    <RadzenPanel Style="border-radius: 20px;">
+    <RadzenPanel Style="border-radius: 20px;" Visible="@(_displayDetails)">
         <PositionSavingTabs @ref="@TabsAgencyProfile" @bind-SelectedIndex="@TabsAgencyProfile.NewSelectedIndex"
                             TabControlName="tabsAgencyProfile">
             <Tabs>
                 <PositionSavingTabsItem Text="General Info" TabName="tabGenInfo">
-                    <AgencyGeneralInfoGrids Agency="@_agencyToDisplay"/>
+                    <AgencyGeneralInfoGrids Agency="@(_agencyToDisplay)"/>
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Agents" TabName="tabAgents">
-                    <AgencyAgentsGrid Agency="@_agencyToDisplay"/>
+                    <AgencyAgentsGrid Agency="@(_agencyToDisplay)"/>
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Inventory" TabName="tabInventory">
-                    <AgencyInventoryGrid AgencyId="@_agencyToDisplay.Id"/>
+                    <AgencyInventoryGrid AgencyId="@(_agencyToDisplay.Id)"/>
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Accounts and Bonds" TabName="tabAccountsBonds">
-                    <AgencyAccountsAndBonds Agency="@_agencyToDisplay"/>
+                    <AgencyAccountsAndBonds Agency="@(_agencyToDisplay)"/>
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Commission Rates" TabName="tabCommissionRates">
-                    <AgencyCommissionRates Agency="@_agencyToDisplay" AgencyStatus="@_agencyToDisplay?.Status"/>
+                    <AgencyCommissionRates Agency="@(_agencyToDisplay)" AgencyStatus="@(_agencyToDisplay.Status)"/>
                 </PositionSavingTabsItem>
                 <PositionSavingTabsItem Text="Virtual File" TabName="tabVirtualFile">
-                    <ImagingFull ImagingId="@_agencyToDisplay?.AgencyNumber"
+                    <ImagingFull ImagingId="@(_agencyToDisplay.AgencyNumber)"
                                  DocumentCategory="ImagingDocumentCategory.Agency"/>
                 </PositionSavingTabsItem>
             </Tabs>
@@ -248,6 +246,7 @@
     private bool _summaryView;
     private bool EditMode { get; set; }
     private bool ShowTaxId { get; set; }
+    private bool _displayDetails => _agencyToDisplay.Id != Guid.Empty;
 
     private PositionSavingTabs TabsAgencyProfile { get; set; } = new();
     private List<Branch> AllBranches { get; set; } = [];
@@ -333,7 +332,7 @@
     private async Task ShowStatusDialog()
     {
         await DialogService.OpenAsync<AgencyStatusGrid>("Agency Status",
-            new Dictionary<string, object>() { { "AgencyNumber", _agencyToDisplay.AgencyNumber }, { "CurrentStatus", _agencyToDisplay.Status } },
+            new() { { "AgencyNumber", _agencyToDisplay.AgencyNumber }, { "CurrentStatus", _agencyToDisplay.Status } },
             new DialogOptions()
             {
                 Resizable = false,

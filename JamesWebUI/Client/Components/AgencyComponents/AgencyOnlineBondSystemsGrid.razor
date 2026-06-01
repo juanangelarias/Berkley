@@ -1,5 +1,5 @@
-﻿@using Blazorise.DeepCloner
-@inherits JamesGridLayoutComponentBase<OnlineBondSystem>
+﻿@inherits JamesGridLayoutComponentBase<OnlineBondSystem>
+
 @inject IDataAccess DataAccess
 
 <RadzenDataGrid TItem="OnlineBondSystem" @ref="@Grid" Data="@OnlineBondSystems" ColumnWidth="125px"
@@ -94,6 +94,7 @@
     private bool _isEditMode;
     private OnlineBondSystem? _originalOnLineBondSystem;
     private string _agentOnlineSystemKey = "";
+    private Guid? _onlineBondSystemInsurerId;
 
     #region Loaders
 
@@ -128,7 +129,15 @@
             Data = (List<Insurer>)cache!
         },
         ResultVariable = () => _insurersResult,
-        AfterLoad = () => { Insurers = _insurersResult.Data!; }
+        AfterLoad = () =>
+        {
+            if(_onlineBondSystemInsurerId == null)
+                Insurers = _insurersResult.Data!;
+            else
+                Insurers = _insurersResult.Data!
+                    .Where(x => x.Id == _onlineBondSystemInsurerId)
+                    .ToList();
+        }
     }, "insurers");
 
     #endregion
@@ -159,6 +168,8 @@
 
         await ShowLoading();
 
+        _onlineBondSystemInsurerId = TemporalSettingForAFutureTable.OnlineBondSystemInsurerId; 
+        
         await DataAccess.ParallelGetCacheOrDataAsync(InsurersLoad, SystemsLoad);
     }
 
@@ -249,7 +260,7 @@
     private async Task EditSystem(OnlineBondSystem system)
     {
         _isEditMode = true;
-        _originalOnLineBondSystem = system.DeepClone();
+        _originalOnLineBondSystem = Tools.Clone(system);
 
         SetAvailableSystems(system.SystemName);
         
@@ -316,13 +327,13 @@
             valid = false;
         }
 
-    if (system.InsurerId == Guid.Empty)
+        if (system.InsurerId == Guid.Empty)
         {
             NotifyValidationError("Insurer is required");
             valid = false;
         }
 
-        if (!(system.WritingLimit < 1)) 
+        if (system.WritingLimit is >= 1) 
             return valid;
         
         NotifyValidationError("Writing Limit must be greater than 0");
@@ -378,7 +389,7 @@
             .Select(s => s.SystemName)
             .ToList();
         
-        if (usedSystemNames.Any(s => s == systemName))
+        if (usedSystemNames.Any(s => s == systemName) && systemName != null)
             usedSystemNames.Remove(systemName);
         
         AvailableSystems = Systems

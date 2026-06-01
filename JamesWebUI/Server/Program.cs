@@ -48,7 +48,6 @@ try
     ConfirmAppSettingsEntry("Auth0:Authority");
     ConfirmAppSettingsEntry("Auth0:ClientId");
     ConfirmAppSettingsEntry("Auth0:ClientSecret");
-    ConfirmAppSettingsEntry("AppSettings:OnlineBondSystemInsurerId");
     var auth0Authority = config["Auth0:Authority"]!;
 
     var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
@@ -94,9 +93,6 @@ try
         .AddJamesGraphQlTypes()
         .AddMutationConventions()
         .AddInMemorySubscriptions();
-    
-    builder.Services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
-    builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<AppSettings>>().Value);
     
     builder.Services.AddControllersWithViews();
     builder.Services.AddRazorPages();

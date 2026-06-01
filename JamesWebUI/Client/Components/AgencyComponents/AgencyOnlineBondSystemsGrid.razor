@@ -1,7 +1,6 @@
 ﻿@inherits JamesGridLayoutComponentBase<OnlineBondSystem>
 
 @inject IDataAccess DataAccess
-@inject AppSettings AppSettings
 
 <RadzenDataGrid TItem="OnlineBondSystem" @ref="@Grid" Data="@OnlineBondSystems" ColumnWidth="125px"
                 Style="border-radius: 10px; height: 400px;" EmptyText="No records to display"
@@ -170,7 +169,7 @@
 
         await ShowLoading();
 
-        _onlineBondSystemInsurerId = AppSettings.OnlineBondSystemInsurerId; 
+        _onlineBondSystemInsurerId = TemporalSettingForAFutureTable.OnlineBondSystemInsurerId; 
         
         await DataAccess.ParallelGetCacheOrDataAsync(InsurersLoad, SystemsLoad);
     }

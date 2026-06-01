@@ -95,7 +95,6 @@
     private OnlineBondSystem? _originalOnLineBondSystem;
     private string _agentOnlineSystemKey = "";
     private Guid? _onlineBondSystemInsurerId;
-    
 
     #region Loaders
 
@@ -261,7 +260,7 @@
     private async Task EditSystem(OnlineBondSystem system)
     {
         _isEditMode = true;
-        _originalOnLineBondSystem = system.Clone();
+        _originalOnLineBondSystem = Tools.Clone(system);
 
         SetAvailableSystems(system.SystemName);
         

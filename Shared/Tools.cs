@@ -1,4 +1,5 @@
-using Newtonsoft.Json;
+
+using System.Text.Json;
 
 namespace James.Shared;
 
@@ -12,12 +13,9 @@ public static class Tools
         return value.Length <= maxLength ? value : value.Substring(0, maxLength) + "...";
     }
     
-    public static T? Clone<T>(this T? obj)
+    public static T Clone<T>(T obj)
     {
-        var targetJson = JsonConvert.SerializeObject(obj);
-        
-        var target = JsonConvert.DeserializeObject<T>(targetJson);
-        
-        return target;
+        var json = JsonSerializer.Serialize(obj);
+        return JsonSerializer.Deserialize<T>(json)!;
     }
 }

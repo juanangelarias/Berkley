@@ -6,6 +6,8 @@ using James.Data.Server;
 using James.Data.Server.GraphQL;
 using James.Data.Server.GraphQL.Mutations;
 using James.Data.Server.Model;
+using James.Shared.Model;
+using Microsoft.Extensions.Options;
 using James.Shared;
 using James.Shared.Constants;
 using James.Shared.Data;
@@ -18,12 +20,9 @@ using JamesWebUI.Server.Helpers;
 using JamesWebUI.Server.SharedServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Radzen;
 using Serilog;
 using System.Diagnostics;
@@ -50,7 +49,6 @@ try
     ConfirmAppSettingsEntry("Auth0:ClientId");
     ConfirmAppSettingsEntry("Auth0:ClientSecret");
     var auth0Authority = config["Auth0:Authority"]!;
-
 
     var domain = auth0Authority[(auth0Authority.IndexOf("://", StringComparison.Ordinal) + 3)..];
     builder.Services

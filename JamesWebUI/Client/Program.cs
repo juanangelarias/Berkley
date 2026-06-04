@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Radzen;
 using StrawberryShake;
 using System.Text.Json.Serialization;
+using James.Shared.Model;
+using Microsoft.Extensions.Options;
 using ThemeService = JamesWebUI.Client.Services.ThemeService;
 
 

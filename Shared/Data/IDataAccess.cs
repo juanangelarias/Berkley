@@ -412,14 +412,13 @@ namespace James.Shared.Data
         
         #region Indemnitor
         
-        public Task<IDataAccessResult<List<Indemnitor>>> GetIndemnitorsByAccount(string accountNum);
+        public Task<IDataAccessResult<List<IndemnityDto>>> GetIndemnitorsByAccount(string accountNum);
 
-        public Task<ISaveDataResult> SetIndemnitor(Guid id, string accountNum, DateOnly agreementDate,
-            string? agreementType, string? agreementForm, string? signatory, string fullName, string? familyName,
-            string? title, int? netLiquidAssets, int? netWorth, int? indemnityAmount, bool spouseIndemnitor,
-            string? spouseTaxId, DateOnly? executionDate);
+        public Task<ISaveDataResult> SetIndemnitors(IndemnityDto indemnity);
 
         public Task<ISaveDataResult> DeleteIndemnitor(Guid id);
+        
+        public Task<ISaveDataResult> DeleteIndemnitorRange(List<Guid> ids);
         
         #endregion
 

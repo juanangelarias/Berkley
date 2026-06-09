@@ -1,0 +1,319 @@
+﻿@inherits JamesLayoutComponentBase
+
+@inject IDataAccess DataAccess
+
+<RadzenTemplateForm TItem="IndemnityDto" Data="_model">
+    <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+        <RadzenRow>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" JustifyContent="JustifyContent.Center">
+                <RadzenColumn SizeSM="12" SizeMD="4">
+                    <RadzenFormField Text="Agreement Date" class="rz-w-100">
+                        <RadzenDatePicker TValue="DateOnly" @bind-Value="_model.AgreementDate" ShowTime="false"
+                                          DateFormat="MM-dd-yyyy" Name="agreementDate"/>
+                        <RadzenRequiredValidator Text="Agreement date is required" Component="agreementDate" Popup="true"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn SizeSM="12" SizeMD="4">
+                    <RadzenFormField Text="Agreement Type" class="rz-w-100">
+                        <RadzenDropDown TValue="string" Data="AgreementTypes" @bind-Value="_model.AgreementType"
+                                        ValueProperty="@nameof(AgreementTypeDm.Type)"
+                                        TextProperty="@nameof(AgreementTypeDm.Type)"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn SizeSM="12" SizeMD="4">
+                    <RadzenFormField Text="Agreement Form" class="rz-w-100">
+                        <RadzenTextBox @bind-Value="_model.AgreementForm" Name="agreementForm" MaxLength="15"/>
+                        <RadzenLengthValidator Max="15" Text="Agreement form cannot exceed 15 characters"
+                                               Component="agreementForm" Popup="true"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+                <RadzenColumn SizeSM="12" SizeMD="4">
+                    <RadzenFormField Text="DocuSign" class="rz-w-100">
+                        <RadzenCheckBox TValue="bool" @bind-Value="_model.DocuSign" Name="docuSign"/>
+                    </RadzenFormField>
+                </RadzenColumn>
+            </RadzenStack>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenDataGrid TItem="IndemnityDetailDto" Data="_model.Details" EditMode="DataGridEditMode.Single"
+                            RowUpdate="OnRowUpdate" RowCreate="OnRowCreate" @ref="_grid">
+                <HeaderTemplate>
+                    <RadzenButton Text="Add Indemnitor" Icon="add" ButtonStyle="ButtonStyle.Success"
+                                  Variant="Variant.Text" Click="AddRow" Disabled="@(_editMode)"/>
+                </HeaderTemplate>
+                <Columns>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="Id" Title="Id" Visible="false"/>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="FullName" Title="Full Name"
+                                          Width="16rem">
+                        <Template Context="det">
+                            <RadzenText Text="@det.FullName" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenTextBox @bind-Value="det.FullName" Name="fullName" MaxLength="255"/>
+                            <RadzenRequiredValidator Text="Full name is required" Component="fullName" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="NetLiquidAssets" Width="10rem"
+                                          Title="Net Liquid Assets" TextAlign="TextAlign.Right">
+                        <Template Context="det">
+                            <RadzenText Text="@($"{det.NetLiquidAssets:c0}")" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenNumeric @bind-Value="det.NetLiquidAssets" Name="netLiquidAssets" ShowUpDown="false"/>
+                            <RadzenRequiredValidator Text="Net liquid assets is required" Component="netLiquidAssets" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="NetWorth" Title="Net Worth" Width="10rem"
+                                          TextAlign="TextAlign.Right">
+                        <Template Context="det">
+                            <RadzenText Text="@($"{det.NetWorth:c0}")" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenNumeric @bind-Value="det.NetWorth" Name="netWorth" ShowUpDown="false"/>
+                            <RadzenRequiredValidator Text="Net worth is required" Component="netWorth" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="IndemnityAmount" Width="12rem"
+                                          Title="Indemnity Amount" TextAlign="TextAlign.Right">
+                        <Template Context="det">
+                            <RadzenText Text="@($"{det.IndemnityAmount:c0}")" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenNumeric @bind-Value="det.IndemnityAmount" Name="indemnityAmount" ShowUpDown="false"/>
+                            <RadzenRequiredValidator Text="Indemnity amount is required" Component="indemnityAmount" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="SpouseIndemnitor" Width="12rem"
+                                          Title="Spouse Indemnitor" TextAlign="TextAlign.Center">
+                        <Template Context="det">
+                            <RadzenText Text="@(det.SpouseIndemnitor ? "Yes" : "No")" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenCheckBox @bind-Value="det.SpouseIndemnitor" Name="spouseIndemnitor"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="EncryptSpouseTaxId" Width="10rem"
+                                          Title="Spouse Tax Id">
+                        <Template Context="det">
+                            <RadzenText Text="*********" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="Signatory" Title="Signatory"
+                                          Width="12rem">
+                        <Template Context="det">
+                            <RadzenText Text="@det.Signatory" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenTextBox @bind-Value="det.Signatory" Name="signatory"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="Title" Title="Title" Width="14rem">
+                        <Template Context="det">
+                            <RadzenText Text="@det.Title" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenTextBox @bind-Value="@det.Title" Name="title"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="IndemnityDetailDto" Property="ExecutionDate" Title="Execution Date"
+                                          Width="10rem">
+                        <Template Context="det">
+                            <RadzenText Text="@($"{det.ExecutionDate:MM/dd/yyyy}")" TextStyle="TextStyle.Body2"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenDatePicker TValue="DateOnly?" @bind-Value="@det.ExecutionDate" Name="executionDate"/>
+                            <RadzenRequiredValidator Text="Execution Date is required" Component="executionDate" Popup="true"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="7rem">
+                        <Template Context="det">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small"
+                                          Click="() => EditRow(det)" Disabled="@(_editMode)" class="rz-mr-1"/>
+                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                          Click="() => DeleteRow(det)" Disabled="@(_editMode)"/>
+                        </Template>
+                        <EditTemplate Context="det">
+                            <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small"
+                                          Click="@(() => OnRowSave(det))" class="rz-mr-1"/>
+                            <RadzenButton Icon="cancel" ButtonStyle="ButtonStyle.Info" Size="ButtonSize.Small"
+                                          Click="@(() => OnRowCancel(det))"/>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenRow>
+        <RadzenRow>
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" class="rz-pt-8">
+                <RadzenButton Text="Cancel" Icon="cancel" Click="Cancel" ButtonType="ButtonType.Reset"
+                              ButtonStyle="ButtonStyle.Secondary" Disabled="@_editMode"/>
+                <RadzenButton Text="Save" Icon="check" ButtonType="ButtonType.Submit"
+                              ButtonStyle="ButtonStyle.Primary" Click="Save" Disabled="@_editMode"/>
+            </RadzenStack>
+        </RadzenRow>
+    </RadzenStack>
+</RadzenTemplateForm>
+
+@code {
+    [Parameter, EditorRequired] public required IndemnityDto Indemnity { get; set; }
+    [Parameter, EditorRequired] public required List<AgreementTypeDm> AgreementTypes { get; set; }
+
+    private RadzenDataGrid<IndemnityDetailDto> _grid = null!;
+    private IndemnityDto _original = null!;
+    private IndemnityDto _model = null!;
+    private IndemnityDetailDto? _control;
+    private bool _editMode;
+    private bool HasChanges => !AreEqual(_original, _model);
+
+    protected override void OnParametersSet()
+    {
+        _original = Tools.Clone(Indemnity);
+        _model = Tools.Clone(Indemnity);
+    }
+
+    private void OnRowCreate(IndemnityDetailDto row)
+    {
+        _model.Details.Add(row);
+
+        StateHasChanged();
+        _editMode = false;
+    }
+
+    private void OnRowUpdate(IndemnityDetailDto row)
+    {
+        var existing = _model.Details.FirstOrDefault(d => d.Id == row.Id);
+
+        if (existing != null)
+        {
+            existing.FullName = row.FullName;
+            existing.NetLiquidAssets = row.NetLiquidAssets;
+            existing.NetWorth = row.NetWorth;
+            existing.IndemnityAmount = row.IndemnityAmount;
+            existing.SpouseIndemnitor = row.SpouseIndemnitor;
+            existing.EncryptSpouseTaxId = row.EncryptSpouseTaxId;
+            existing.Signatory = row.Signatory;
+            existing.Title = row.Title;
+            existing.ExecutionDate = row.ExecutionDate;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task AddRow()
+    {
+        if (!_grid.IsValid)
+            return;
+
+        await _grid.InsertRow(new()
+        {
+            Id = Guid.NewGuid()
+        });
+
+        _editMode = true;
+    }
+
+    private void EditRow(IndemnityDetailDto row)
+    {
+        _control = Tools.Clone(row);
+        _editMode = true;
+        _grid.EditRow(row);
+    }
+
+    private async Task DeleteRow(IndemnityDetailDto row)
+    {
+        _model.Details.Remove(row);
+        await _grid.Reload();
+    }
+
+    private void OnRowCancel(IndemnityDetailDto row)
+    {
+        if (_control == null)
+            return;
+
+        var index = _model.Details
+            .IndexOf(row);
+
+        if (index <= 0)
+            return;
+
+        _model.Details[index] = Tools.Clone(_control);
+        _control = null;
+
+        _editMode = false;
+    }
+
+    private async Task OnRowSave(IndemnityDetailDto row)
+    {
+        if(!_grid.IsValid)
+            return;
+        
+        _editMode = false;
+        await _grid.UpdateRow(row);
+    }
+
+    private async Task Cancel()
+    {
+        if (HasChanges)
+        {
+            var confirm = await DialogService.Confirm("You have unsaved changes. Discard them?",
+                "Confirm", new() { OkButtonText = "Yes", CancelButtonText = "No" });
+
+            if (confirm != true)
+                return;
+        }
+
+        DialogService.Close();
+    }
+
+    private async Task Save()
+    {
+        if (HasChanges)
+        {
+            var response = await DataAccess.SetIndemnitors(_model);
+            if (!response.Success)
+            {
+                NotifySaveError(response.Errors, "indemnity");
+                return;
+            }
+
+            NotifySuccessfulSave("indemnity");
+
+            DialogService.Close(_model);
+        }
+        else
+            DialogService.Close();
+    }
+
+    private bool AreEqual(IndemnityDto a, IndemnityDto b)
+    {
+        if (a.AccountNum != b.AccountNum ||
+            a.AgreementDate != b.AgreementDate ||
+            a.AgreementType != b.AgreementType ||
+            a.AgreementForm != b.AgreementForm ||
+            a.DocuSign != b.DocuSign)
+            return false;
+
+        if(a.Details.Count != b.Details.Count)
+            return false;
+        
+        foreach (var da in a.Details)
+        {
+            var db = b.Details.FirstOrDefault(f => f.Id == da.Id);
+
+            if (db == null)
+                return false;
+
+            if (da.FullName != db.FullName ||
+                da.NetLiquidAssets != db.NetLiquidAssets ||
+                da.NetWorth != db.NetWorth ||
+                da.IndemnityAmount != db.IndemnityAmount ||
+                da.SpouseIndemnitor != db.SpouseIndemnitor ||
+                da.Signatory != db.Signatory ||
+                da.Title != db.Title ||
+                da.ExecutionDate != db.ExecutionDate)
+                return false;
+        }
+
+        return true;
+    }
+
+}

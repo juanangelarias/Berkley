@@ -1,11 +1,17 @@
-mutation SetIndemnitor($input: SetIndemnitorInput!){
-    setIndemnitor(input: $input){
+mutation SetIndemnitors($input: SetIndemnitorsInput!){
+    setIndemnitors(input: $input){
         boolean
     }
 }
 
 mutation DeleteIndemnitor($input: DeleteIndemnitorInput!) {
     deleteIndemnitor(input: $input) {
+        boolean
+    }
+}
+
+mutation DeleteIndemnitorRange($input: DeleteIndemnitorRangeInput!){
+    deleteIndemnitorRange(input: $input) {
         boolean
     }
 }

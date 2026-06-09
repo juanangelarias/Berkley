@@ -4,21 +4,18 @@ query GetIndemnitorsByAccount($accountNum: String!) {
         agreementDate
         agreementForm
         agreementType
-        created
-        encryptSpouseTaxId
-        executionDate
-        familyName
-        fullName
-        givenName
-        id
-        indemnityAmount
-        mainEmailAddress
-        middleInitial
-        modified
-        netLiquidAssets
-        netWorth
-        signatory
-        spouseIndemnitor
-        title
+        docuSign
+        details {
+            encryptSpouseTaxId
+            executionDate
+            fullName
+            id
+            indemnityAmount
+            netLiquidAssets
+            netWorth
+            signatory
+            spouseIndemnitor
+            title
+        }
     }
 }

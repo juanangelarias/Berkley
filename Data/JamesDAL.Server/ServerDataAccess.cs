@@ -1355,24 +1355,24 @@ namespace James.Data.Server
         
         #region Indemnitor
 
-        public async Task<IDataAccessResult<List<Indemnitor>>> GetIndemnitorsByAccount(string accountNum)
+        public async Task<IDataAccessResult<List<IndemnityDto>>> GetIndemnitorsByAccount(string accountNum)
         {
             return await ExecuteGet(async () => await query.GetIndemnitorsByAccount(accountNum, contextFactory));
         }
 
-        public async Task<ISaveDataResult> SetIndemnitor(Guid id, string accountNum, DateOnly agreementDate,
-            string? agreementType, string? agreementForm, string? signatory, string fullName, string? familyName,
-            string? title, int? netLiquidAssets, int? netWorth, int? indemnityAmount, bool spouseIndemnitor,
-            string? spouseTaxId, DateOnly? executionDate)
+        public async Task<ISaveDataResult> SetIndemnitors(IndemnityDto indemnity)
         {
-            return await ExecuteSave(async () => await generalMutation.SetIndemnitor(id, accountNum, agreementDate,
-                agreementType, agreementForm, signatory, fullName, familyName, title, netLiquidAssets, netWorth,
-                indemnityAmount, spouseIndemnitor, spouseTaxId, executionDate, contextFactory));
+            return await ExecuteSave(async () => await generalMutation.SetIndemnitors(indemnity, contextFactory));
         }
 
         public async Task<ISaveDataResult> DeleteIndemnitor(Guid id)
         {
             return await ExecuteSave(async () => await generalMutation.DeleteIndemnitor(id, contextFactory));
+        }
+
+        public async Task<ISaveDataResult> DeleteIndemnitorRange(List<Guid> ids)
+        {
+            return await ExecuteSave(async () => await generalMutation.DeleteIndemnitorRange(ids, contextFactory));
         }
 
         #endregion

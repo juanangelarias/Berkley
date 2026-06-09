@@ -1901,7 +1901,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<List<LineOfAuthorityReason>>> GetLOAReasonByAccount(string accountNum)
         {
             var result = await ExecuteGet<List<LineOfAuthorityReason>>(async () =>
-                await jamesClient.GetLOAReasonByAccount.ExecuteAsync(accountNum), "GetLOAReasonByAccount");
+                await jamesClient.GetLOAReasonByAccount.ExecuteAsync(accountNum), "LOAReasonByAccount");
 
             return result;
         }
@@ -2012,42 +2012,62 @@ namespace James.Data.Client
 
         #region Indemnitor
         
-        public async Task<IDataAccessResult<List<Indemnitor>>> GetIndemnitorsByAccount(string accountNum)
+        public async Task<IDataAccessResult<List<IndemnityDto>>> GetIndemnitorsByAccount(string accountNum)
         {
-            return await ExecuteGet<List<Indemnitor>>(
+            return await ExecuteGet<List<IndemnityDto>>(
                 async () => await jamesClient.GetIndemnitorsByAccount.ExecuteAsync(accountNum), "IndemnitorsByAccount");
         }
 
-        public async Task<ISaveDataResult> SetIndemnitor(Guid id, string accountNum, DateOnly agreementDate, 
-            string? agreementType, string? agreementForm, string? signatory, string fullName, string? familyName, 
-            string? title, int? netLiquidAssets, int? netWorth, int? indemnityAmount, bool spouseIndemnitor, 
-            string? spouseTaxId, DateOnly? executionDate)
+        public async Task<ISaveDataResult> SetIndemnitors(IndemnityDto indemnity)
         {
-            return await ExecuteSave(async () => await jamesClient.SetIndemnitor.ExecuteAsync(new SetIndemnitorInput
+            
+            var input = new SetIndemnitorsInput
             {
-                Id = id,
-                AccountNum = accountNum,
-                AgreementDate = agreementDate,
-                AgreementType = agreementType,
-                AgreementForm = agreementForm,
-                Signatory = signatory,
-                FullName = fullName,
-                FamilyName = familyName,
-                Title = title,
-                NetLiquidAssets = netLiquidAssets,
-                NetWorth = netWorth,
-                IndemnityAmount = indemnityAmount,
-                SpouseIndemnitor = spouseIndemnitor,
-                SpouseTaxId = spouseTaxId,
-                ExecutionDate = executionDate
-            }));
+                Indemnity = new IndemnityDtoInput
+                {
+                    AccountNum = indemnity.AccountNum,
+                    AgreementDate = indemnity.AgreementDate,
+                    AgreementType = indemnity.AgreementType,
+                    AgreementForm = indemnity.AgreementForm,
+                    DocuSign = indemnity.DocuSign,
+                    Details =
+                    [
+                        .. indemnity.Details.Select(d => new IndemnityDetailDtoInput
+                        {
+                            Id = d.Id,
+                            FullName = d.FullName,
+                            NetLiquidAssets = d.NetLiquidAssets,
+                            NetWorth = d.NetWorth,
+                            IndemnityAmount = d.IndemnityAmount,
+                            SpouseIndemnitor = d.SpouseIndemnitor,
+                            EncryptSpouseTaxId = d.EncryptSpouseTaxId,
+                            Signatory = d.Signatory,
+                            Title = d.Title,
+                            ExecutionDate = d.ExecutionDate
+                        })
+                    ]
+                }
+            };
+
+            
+            var result = await ExecuteSave(async () => await jamesClient.SetIndemnitors.ExecuteAsync(input));
+            
+            return result;
         }
 
         public async Task<ISaveDataResult> DeleteIndemnitor(Guid id)
         {
-            return await ExecuteSave(async () => await jamesClient.DeleteIndemnitor.ExecuteAsync(new DeleteIndemnitorInput
+            return await ExecuteSave(async () => await jamesClient.DeleteIndemnitor.ExecuteAsync(new()
             {
                 Id = id
+            }));
+        }
+
+        public async Task<ISaveDataResult> DeleteIndemnitorRange(List<Guid> ids)
+        {
+            return await ExecuteSave(async () => await jamesClient.DeleteIndemnitorRange.ExecuteAsync(new()
+            {
+                Ids = ids
             }));
         }
 

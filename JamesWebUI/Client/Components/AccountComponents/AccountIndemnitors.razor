@@ -7,8 +7,8 @@
         <RadzenColumn Size="4">
             <JamesFormField Text="Tax ID" AllowFloatingLabel="false" Style="width: 90%;">
                 <ChildContent> @*TODO: Once encryption is figured out replace these values*@
-                    <RadzenTextBox Value="Placeholder" Disabled="true" Style="color: black;" Visible="@_showTaxId"/>
-                    <RadzenPassword Value="Placeholder" Disabled="@(true)" Style="color: black;"
+                    <RadzenTextBox Value="Not Implemented" Disabled="true" Style="color: black;" Visible="@_showTaxId"/>
+                    <RadzenPassword Value="Not Implemented" Disabled="@(true)" Style="color: black;"
                                     Visible="@(!_showTaxId)"/>
                 </ChildContent>
                 <End>
@@ -24,74 +24,96 @@
         <RadzenText Text="Agreement and Indemnitors" TextStyle="TextStyle.DisplayH6" class="rz-mt-2"/>
     </RadzenRow>
     <RadzenRow>
-        <RadzenDataGrid TItem="Indemnitor" Data="@_indemnitors" @ref="@_grid" AllowAlternatingRows="true"
-                        AllowFiltering="true" EditMode="DataGridEditMode.Single" AllowSorting="true"
-                        RowCreate="@OnRowCreate" RowUpdate="@OnRowUpdate">
+        <RadzenDataGrid TItem="IndemnityDto" Data="@_indemnitors" @ref="@_grid" AllowAlternatingRows="true"
+                        AllowFiltering="true" EditMode="DataGridEditMode.Single" AllowSorting="true">
             <HeaderTemplate>
                 <RadzenButton Icon="add" Text="New Agreement / Indemnitor" Variant="Variant.Text"
-                              Size="ButtonSize.Small"
-                              Click="@AddIndemnitor" Disabled="@_editing"/>
+                              Size="ButtonSize.Small" Click="@AddIndemnitor"/>
             </HeaderTemplate>
+            <Template Context="indemnity">
+                <RadzenDataGrid TItem="IndemnityDetailDto" Data="indemnity.Details">
+                    <Columns>
+                        <RadzenDataGridColumn Title="Indemnitor" Property="@nameof(IndemnityDetailDto.FullName)"
+                                              Width="10rem"/>
+                        <RadzenDataGridColumn Title="Net Liquid Assets" Width="10rem" TextAlign="TextAlign.Right"
+                                              Property="@nameof(IndemnityDetailDto.NetLiquidAssets)">
+                            <Template Context="ind">
+                                <RadzenText Text="@($"{ind.NetLiquidAssets:c0}")" TextStyle="TextStyle.Body2"
+                                            TextAlign="TextAlign.Right"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Net Worth" Property="@nameof(IndemnityDetailDto.NetWorth)"
+                                              Width="10rem" TextAlign="TextAlign.Right">
+                            <Template Context="ind">
+                                <RadzenText Text="@($"{ind.NetWorth:c0}")" TextStyle="TextStyle.Body2"
+                                            TextAlign="TextAlign.Right"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Indemnity Amount"
+                                              Property="@nameof(IndemnityDetailDto.IndemnityAmount)"
+                                              Width="12rem" TextAlign="TextAlign.Right">
+                            <Template Context="ind">
+                                <RadzenText Text="@($"{ind.IndemnityAmount:c0}")" TextStyle="TextStyle.Body2"
+                                            TextAlign="TextAlign.Right"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Spouse Indemnitor" Width="9rem" TextAlign="TextAlign.Center"
+                                              Property="@nameof(IndemnityDetailDto.SpouseIndemnitor)">
+                            <Template Context="det">
+                                <RadzenText Text="@(det.SpouseIndemnitor ? "Yes" : "No")" TextStyle="TextStyle.Body2"
+                                            TextAlign="TextAlign.Center"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Tax Id" Property="@nameof(IndemnityDetailDto.EncryptSpouseTaxId)"
+                                              Width="10rem">
+                            <Template>
+                                <RadzenText Text="*********" TextStyle="TextStyle.Body2"/>
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn Title="Signatory" Property="@nameof(IndemnityDetailDto.Signatory)"
+                                              Width="8rem"/>
+                        <RadzenDataGridColumn Title="Title" Property="@nameof(IndemnityDetailDto.Title)"
+                                              Width="10rem"/>
+                        <RadzenDataGridColumn Title="Execution Date" Width="10rem"
+                                              Property="@nameof(IndemnityDetailDto.ExecutionDate)"/>
+                    </Columns>
+                </RadzenDataGrid>
+            </Template>
             <Columns>
                 <RadzenDataGridColumn Title="Agreement Date" Property="@nameof(Indemnitor.AgreementDate)" Width="14rem">
-                    <Template Context="indemnitor">
-                        <RadzenText Text="@indemnitor.AgreementDate.ToString("MM/dd/yyyy")"/>
+                    <Template Context="indemnity">
+                        <RadzenText Text="@indemnity.AgreementDate.ToString("MM/dd/yyyy")"/>
                     </Template>
-                    <EditTemplate Context="indemnitor">
-                        <RadzenDatePicker @bind-Value="@indemnitor.AgreementDate" ShowTime="false"
-                                          DateFormat="MM/dd/yyyy" Name="date"/>
-                        <RadzenRequiredValidator Text="Agreement date is required" Component="date"/>
-                    </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Type" Property="@nameof(Indemnitor.AgreementType)" Width="8rem">
-                    <Template Context="indemnitor">
-                        <RadzenText Text="@(indemnitor.AgreementType ?? "")"/>
+                    <Template Context="indemnity">
+                        <RadzenText Text="@(indemnity.AgreementType ?? "")"/>
                     </Template>
-                    <EditTemplate Context="indemnitor">
-                        <RadzenDropDown TValue="string" Data="@_agreementTypes" @bind-Value="@indemnitor.AgreementType"
-                                        TextProperty="@nameof(AgreementTypeDm.Type)" Name="type"
-                                        ValueProperty="@nameof(AgreementTypeDm.Type)"/>
-                        <RadzenRequiredValidator Text="Agreement type is required" Component="type"/>
-                    </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="Signed Document" Width="14rem" Filterable="false" Sortable="false">
-                    <Template Context="indemnitor">
+                    <Template Context="indemnity">
                         <RadzenButton Icon="picture_as_pdf" Text="Download" ButtonStyle="ButtonStyle.Info"
-                                      Variant="Variant.Text" Size="ButtonSize.Small" Click="DownloadIndemnitorDocument"/>
+                                      Variant="Variant.Text" Size="ButtonSize.Small"
+                                      Click="DownloadIndemnitorDocument"/>
                     </Template>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Title="DocuSign" Filterable="false" Sortable="false">
-                    <Template Context="indemnitor">
+                    <Template Context="indemnity">
                         @*This field does not exist in the database*@
                         <RadzenCheckBox TValue="bool" Value="true"/>
                     </Template>
-                    <EditTemplate Context="indemnitor">
-
-                    </EditTemplate>
                 </RadzenDataGridColumn>
                 <RadzenDataGridColumn Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right"
                                       Frozen="true" FrozenPosition="FrozenColumnPosition.Right" Width="9rem"
                                       Resizable="false">
-                    <Template Context="indemnitor">
+                    <Template Context="indemnity">
                         <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
-                                      Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1" Disabled="@(_editing)"
-                                      Click="@(_ => EditRow(indemnitor))" @onclick:stopPropagation="true"/>
-                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
-                                      Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1"
-                                      Click="@(_ => DeleteRow(indemnitor))" @onclick:stopPropagation="true"
-                                      Disabled="@(_editing)"/>
-                    </Template>
-                    <EditTemplate Context="indemnitor">
-                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat"
-                                      Size="ButtonSize.Medium" Click="@(_ => SaveRow(indemnitor))"
-                                      aria-label="Save"/>
-                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat"
                                       Size="ButtonSize.Medium" class="rz-my-1 rz-ms-1"
-                                      Click="@(_ => CancelEdit(indemnitor))" aria-label="Cancel"/>
+                                      Click="@(_ => EditRow(indemnity))" @onclick:stopPropagation="true"/>
                         <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Variant="Variant.Flat"
                                       Size="ButtonSize.Medium" Shade="Shade.Lighter" class="rz-my-1 rz-ms-1"
-                                      Click="@(_ => DeleteRow(indemnitor))" aria-label="Delete"/>
-                    </EditTemplate>
+                                      Click="@(_ => DeleteRow(indemnity))" @onclick:stopPropagation="true"/>
+                    </Template>
                 </RadzenDataGridColumn>
             </Columns>
         </RadzenDataGrid>
@@ -101,25 +123,24 @@
 @code {
     [Parameter, EditorRequired] public Account Account { get; set; }
 
-    private RadzenDataGrid<Indemnitor> _grid = null!;
-    private List<Indemnitor> _indemnitors = [];
+    private RadzenDataGrid<IndemnityDto> _grid = null!;
+    private List<IndemnityDto> _indemnitors = [];
     private List<AgreementTypeDm> _agreementTypes = [];
-    private bool _editing;
     private bool _showTaxId;
 
     #region Loaders
 
-    #region Indemnitors Load
+    #region Indemnities Load
 
-    private IDataAccessResult<List<Indemnitor>> _indemnitorsResult = null!;
+    private IDataAccessResult<List<IndemnityDto>> _indemnitorsResult = null!;
 
-    private LoadItem IndemnitorsLoad => AddEventNotify(new LoadItem<List<Indemnitor>>
+    private LoadItem IndemnitorsLoad => AddEventNotify(new LoadItem<List<IndemnityDto>>
     {
         Key = CacheKeys.AccountIndemnitors(Account.AccountNum),
         AsyncLoadTask = async () => _indemnitorsResult = await DataAccess.GetIndemnitorsByAccount(Account.AccountNum),
-        CacheLoadTask = cache => _indemnitorsResult = new DataAccessResult<List<Indemnitor>>
+        CacheLoadTask = cache => _indemnitorsResult = new DataAccessResult<List<IndemnityDto>>
         {
-            Data = (List<Indemnitor>)cache!
+            Data = (List<IndemnityDto>)cache!
         },
         ResultVariable = () => _indemnitorsResult,
         AfterLoad = () => { _indemnitors = _indemnitorsResult.Data!; }
@@ -161,59 +182,80 @@
 
     private async Task AddIndemnitor()
     {
-        if (!_grid.IsValid)
+        var newIndemnity = await ShowDialog(null);
+
+        if (newIndemnity == null)
             return;
 
-        await _grid.InsertRow(new()
+        await _grid.InsertRow(newIndemnity);
+        await _grid.Reload();
+
+        await DataAccess.UpdateCacheAsync(CacheKeys.AccountIndemnitors(Account.AccountNum), _indemnitors);
+    }
+
+    private async Task EditRow(IndemnityDto indemnity)
+    {
+        var editedIndemnity = await ShowDialog(indemnity);
+
+        if (editedIndemnity == null)
+            return;
+
+        var index = _indemnitors.IndexOf(indemnity);
+        if (index < 0)
+            return;
+
+        _indemnitors[index] = editedIndemnity;
+
+        await DataAccess.UpdateCacheAsync(CacheKeys.AccountIndemnitors(Account.AccountNum), _indemnitors);
+
+        await _grid.Reload();
+    }
+
+    private async Task<IndemnityDto?> ShowDialog(IndemnityDto? indemnity)
+    {
+        indemnity ??= new() { AccountNum = Account.AccountNum, Details = [] };
+
+        var parameters = new Dictionary<string, object?>
         {
-            Id = Guid.NewGuid()
-        });
+            { "Indemnity", indemnity },
+            { "AgreementTypes", _agreementTypes }
+        };
+        var options = new DialogOptions()
+        {
+            Resizable = false,
+            Draggable = true,
+            CloseDialogOnEsc = false,
+            CloseDialogOnOverlayClick = false,
+            ShowClose = false,
+            Width = "80rem"
+        };
 
-        _editing = true;
+        var response = await DialogService.OpenAsync<AccountIndemnityEditDialog>("Indemnity", parameters, options);
+        if (response == null)
+            return null;
+
+        return response as IndemnityDto;
     }
 
-    private async Task OnRowCreate(Indemnitor indemnitor)
+    private async Task DeleteRow(IndemnityDto indemnity)
     {
-        throw new NotImplementedException();
-    }
+        var ids = indemnity.Details.Select(x => x.Id).ToList();
+        await DataAccess.DeleteIndemnitorRange(ids);
 
-    private async Task OnRowUpdate(Indemnitor indemnitor)
-    {
-        throw new NotImplementedException();
-    }
-
-    private async Task EditRow(Indemnitor indemnitor)
-    {
-        if (!_grid.IsValid)
+        var index = _indemnitors.IndexOf(indemnity);
+        if (index < 0)
             return;
 
-        _editing = true;
-
-        await _grid.EditRow(indemnitor);
+        _indemnitors.RemoveAt(index);
+        await _grid.Reload();
     }
 
-    private async Task DeleteRow(Indemnitor indemnitor)
+    private async Task DownloadIndemnitorDocument()
     {
-        throw new NotImplementedException();
-    }
-
-    private async Task SaveRow(Indemnitor indemnitor)
-    {
-        throw new NotImplementedException();
-    }
-
-    private void CancelEdit(Indemnitor indemnitor)
-    {
-        _grid.CancelEditRow(indemnitor);
-
-        // reset the values
-
-        _editing = false;
-    }
-
-    private Task DownloadIndemnitorDocument(MouseEventArgs arg)
-    {
-        throw new NotImplementedException();
+        RenderFragment msg = @<div class="alert alert-warning">
+                                 <p>Indemnitor document download is not implemented yet.</p>
+                             </div>;
+        await DialogService.Alert(msg, "Indemnitor Document Download");
     }
 
 }

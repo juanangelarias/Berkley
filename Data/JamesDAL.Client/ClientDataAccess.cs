@@ -1194,7 +1194,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<DateTime?>> GetFirstIndemnityDate(string accountNum)
         {
             var response = await ExecuteGet<DateTime?>(async () =>
-                await jamesClient.GetFirstIndemnity.ExecuteAsync(accountNum));
+                await jamesClient.GetFirstIndemnity.ExecuteAsync(accountNum), "GetFirstIndemnity");
 
             return response;
         }

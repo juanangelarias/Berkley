@@ -7,14 +7,14 @@
         <RadzenColumn Size="4">
             <JamesFormField Text="Tax ID" AllowFloatingLabel="false" Style="width: 90%;">
                 <ChildContent> @*TODO: Once encryption is figured out replace these values*@
-                    <RadzenTextBox Value="Not Implemented" Disabled="true" Style="color: black;" Visible="@_showTaxId"/>
-                    <RadzenPassword Value="Not Implemented" Disabled="@(true)" Style="color: black;"
+                    <RadzenTextBox Value="@_accountTaxId" Disabled="true" Style="color: black;" Visible="@_showTaxId"/>
+                    <RadzenPassword Value="@_accountTaxId" Disabled="@(true)" Style="color: black;"
                                     Visible="@(!_showTaxId)"/>
                 </ChildContent>
                 <End>
                     <AuthorizeView Policy="InRoleCanSeeAccountTaxId">
                         <RadzenButton Icon="@(_showTaxId ? "visibility" : "visibility_off")" Variant="Variant.Text"
-                                      Size="ButtonSize.Small" Click="@(() => _showTaxId = !_showTaxId)"/>
+                                      Size="ButtonSize.Small" Click="@ToggleAccountTaxIdVisibility"/>
                     </AuthorizeView>
                 </End>
             </JamesFormField>
@@ -127,6 +127,7 @@
     private List<IndemnityDto> _indemnitors = [];
     private List<AgreementTypeDm> _agreementTypes = [];
     private bool _showTaxId;
+    private string _accountTaxId = "************";
 
     #region Loaders
 
@@ -256,6 +257,23 @@
                                  <p>Indemnitor document download is not implemented yet.</p>
                              </div>;
         await DialogService.Alert(msg, "Indemnitor Document Download");
+    }
+    
+    private async Task GetAccountTaxId()
+    {
+        // ToDo: Once we have a way to encrypt/decrypt we need to create this method
+        //_accountTaxId = await DataAccess.GetTaxId(Account.AccountNum);
+        
+        _accountTaxId = "Not Implemented";
+    }
+
+    private async Task ToggleAccountTaxIdVisibility()
+    {
+        _showTaxId = !_showTaxId;
+        if(_showTaxId)
+            await GetAccountTaxId();
+        else
+            _accountTaxId = "************";     // This is to remove the actual tax id from the UI memory
     }
 
 }

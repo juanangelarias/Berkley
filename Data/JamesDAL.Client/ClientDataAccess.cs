@@ -1194,7 +1194,7 @@ namespace James.Data.Client
         public async Task<IDataAccessResult<DateTime?>> GetFirstIndemnityDate(string accountNum)
         {
             var response = await ExecuteGet<DateTime?>(async () =>
-                await jamesClient.GetFirstIndemnity.ExecuteAsync(accountNum), "GetFirstIndemnity");
+                await jamesClient.GetFirstIndemnity.ExecuteAsync(accountNum), "FirstIndemnity");
 
             return response;
         }
@@ -2020,10 +2020,9 @@ namespace James.Data.Client
 
         public async Task<ISaveDataResult> SetIndemnitors(IndemnityDto indemnity)
         {
-            
             var input = new SetIndemnitorsInput
             {
-                Indemnity = new IndemnityDtoInput
+                Indemnity = new()
                 {
                     AccountNum = indemnity.AccountNum,
                     AgreementDate = indemnity.AgreementDate,

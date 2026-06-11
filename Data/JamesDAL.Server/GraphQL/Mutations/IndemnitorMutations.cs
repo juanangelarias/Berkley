@@ -35,8 +35,13 @@ public partial class GeneralMutation
             {
                 var indemnitorsToDelete = ctx.Indemnitors
                     .Where(i => toDelete.Contains(i.Id));
+
+                var legalEntitiesToDelete = ctx.LegalEntities
+                    .Where(le => toDelete.Contains(le.Id));
                 
                 ctx.Indemnitors.RemoveRange(indemnitorsToDelete);
+                ctx.LegalEntities.RemoveRange(legalEntitiesToDelete);
+                
                 await ctx.SaveChangesAsync();
             }
             
